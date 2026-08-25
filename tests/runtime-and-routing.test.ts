@@ -184,6 +184,65 @@ describe("design decision semantics", () => {
   });
 });
 
+describe("decision to SDIR mapping", () => {
+  const frame = architectureProductFrame();
+  const context = architectureContext();
+
+  it("promotes and orders regions according to information_hierarchy", () => {
+    const decisions = architectureDecisions("ds_map");
+    decisions.information_hierarchy = { primary: ["architecture", "toolbar"], secondary: ["navigation", "inspector"] };
+    const sdir = new SdirEngine().generate(frame, context, decisions);
+    expect(sdir.screen.regions.map((region) => region.id)).toEqual(["architecture", "toolbar", "navigation", "inspector"]);
+    expect(sdir.screen.regions.find((region) => region.id === "architecture")?.importance).toBe("dominant");
+    expect(sdir.screen.regions.find((region) => region.id === "toolbar")?.importance).toBe("primary");
+    expect(sdir.screen.regions.find((region) => region.id === "inspector")?.importance).toBe("contextual");
+  });
+
+  it("turns an always-visible inspector choice into persistent visibility and relationship", () => {
+    const decisions = architectureDecisions("ds_map");
+    decisions.major_choices = [
+      { id: "inspector_behavior", choice: "always_visible", rationale: "audit workflow needs persistent detail", confidence: "high", references: ["inspector"] },
+    ];
+    const sdir = new SdirEngine().generate(frame, context, decisions);
+    expect(sdir.screen.regions.find((region) => region.id === "inspector")?.visibility.condition).toBe("always");
+    expect(sdir.screen.relationships).toEqual([
+      { source: "architecture", target: "inspector", type: "persistent_side_by_side" },
+    ]);
+  });
+
+  it("carries unresolved questions into the SDIR unresolved area", () => {
+    const decisions = architectureDecisions("ds_map");
+    decisions.unresolved = [
+      { id: "keyboard_zoom", impact: "high", affects: ["architecture"] },
+      "how should relation counts be summarized?",
+    ];
+    const sdir = new SdirEngine().generate(frame, context, decisions);
+    expect(sdir.screen.unresolved).toEqual([
+      { id: "keyboard_zoom", question: "keyboard_zoom", impact: "high", affects: ["architecture"] },
+      { id: "open_1", question: "how should relation counts be summarized?", impact: "medium", affects: [] },
+    ]);
+    expect(new SdirEngine().validate(sdir, decisions).status).toBe("PASS");
+  });
+
+  it("records rejected alternatives as traceability without adding regions", () => {
+    const decisions = dataExplorerDecisions("ds_map");
+    decisions.rejected = [{ option: "PAT-CANVAS-WORKSPACE", reason: "rows are compared more than traced" }];
+    const sdir = new SdirEngine().generate(frame, context, decisions);
+    expect(sdir.screen.rejected_alternatives).toEqual([
+      { option: "PAT-CANVAS-WORKSPACE", reason: "rows are compared more than traced" },
+    ]);
+    expect(sdir.screen.regions.map((region) => region.id).sort()).toEqual(["data", "detail"]);
+    expect(sdir.screen.archetype.pattern_ref).toBe("PAT-DATA-EXPLORER");
+  });
+
+  it("keeps the pattern skeleton as the floor when decisions are minimal", () => {
+    const sdir = new SdirEngine().generate(frame, context, settingsDecisions("ds_map"));
+    expect(sdir.screen.regions.map((region) => region.id)).toEqual(["settings", "settings_navigation"]);
+    expect(sdir.screen.unresolved).toEqual([]);
+    expect(sdir.screen.rejected_alternatives).toEqual([]);
+  });
+});
+
 describe("SDIR referential integrity", () => {
   const frame = architectureProductFrame();
   const context = architectureContext();

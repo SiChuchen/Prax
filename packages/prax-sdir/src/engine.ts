@@ -1,6 +1,7 @@
 import type { DesignContext, DesignDecisions, ProductFrame } from "prax-runtime";
 import { zodIssues } from "prax-runtime";
 import { SdirSchema, type Sdir, type SdirIssue, type SdirValidation } from "./contracts.js";
+import { patternSurfaceContract } from "./surfaces.js";
 
 const FORBIDDEN_KEY = /(^|_)(width|height|padding|margin|display|grid|flex|color|font|radius|shadow|css|class|classname|component|framework|tailwind|pixel|px)($|_)/i;
 const FORBIDDEN_VALUE = /(\d+(?:\.\d+)?px\b|display\s*:\s*(?:flex|grid)|grid-template|rounded-(?:sm|md|lg|xl)|(?:Radix|Vue|React|Compose)[A-Z]\w*)/i;
@@ -83,31 +84,97 @@ function regionsForPattern(pattern: string): Sdir["screen"]["regions"] {
   ];
 }
 
+type SdirRegion = Sdir["screen"]["regions"][number];
+
+function matchesSurface(region: SdirRegion, surface: string): boolean {
+  return region.id === surface || region.role === surface;
+}
+
+function applyHierarchy(
+  skeleton: SdirRegion[],
+  decisions: DesignDecisions,
+  contract: ReturnType<typeof patternSurfaceContract>,
+): SdirRegion[] {
+  const primary = decisions.information_hierarchy.primary;
+  const secondary = decisions.information_hierarchy.secondary;
+  const ordered: SdirRegion[] = [];
+  const used = new Set<string>();
+
+  const withImportance = (region: SdirRegion, isPrimary: boolean): SdirRegion => {
+    if (region.role === "contextual_inspector") return region;
+    if (isPrimary) {
+      const isDominant = contract?.dominant.includes(region.id) === true || contract?.dominant.includes(region.role) === true;
+      return { ...region, importance: isDominant ? "dominant" : "primary" };
+    }
+    return { ...region, importance: "supporting" };
+  };
+
+  for (const surface of [...primary, ...secondary]) {
+    const region = skeleton.find((candidate) => !used.has(candidate.id) && matchesSurface(candidate, surface));
+    if (region !== undefined) {
+      used.add(region.id);
+      ordered.push(withImportance(region, primary.includes(surface)));
+    }
+  }
+  for (const region of skeleton) {
+    if (!used.has(region.id)) ordered.push(region);
+  }
+  return ordered;
+}
+
+function inspectorChoice(decisions: DesignDecisions, inspector: SdirRegion | undefined) {
+  if (inspector === undefined) return undefined;
+  return decisions.major_choices.find((choice) =>
+    choice.references.some((reference) => reference === inspector.id || reference === inspector.role),
+  );
+}
+
 export class SdirEngine {
   public generate(frame: ProductFrame, context: DesignContext, decisions: DesignDecisions): Sdir {
-    const regions = regionsForPattern(decisions.primary_structure.pattern);
+    const pattern = decisions.primary_structure.pattern;
+    const contract = patternSurfaceContract(pattern);
+    let regions = applyHierarchy(regionsForPattern(pattern), decisions, contract);
     const inspector = regions.find((region) => region.role === "contextual_inspector");
+    const choice = inspectorChoice(decisions, inspector);
+    const persistentInspector = choice?.choice === "always_visible";
+    if (inspector !== undefined && persistentInspector) {
+      regions = regions.map((region) =>
+        region.id === inspector.id ? { ...region, visibility: { condition: "always" } } : region,
+      );
+    }
     const primarySurface = regions.find(
       (region) => region.role === "dominant_workspace" || region.role === "collection",
     );
     const relationships =
       inspector !== undefined && primarySurface !== undefined && primarySurface.id !== inspector.id
-        ? [{ source: primarySurface.id, target: inspector.id, type: "selection_drives_contextual_detail" }]
+        ? [
+            {
+              source: primarySurface.id,
+              target: inspector.id,
+              type: persistentInspector ? "persistent_side_by_side" : "selection_drives_contextual_detail",
+            },
+          ]
         : [];
+    let openCounter = 0;
+    const unresolved = decisions.unresolved.map((unknown) =>
+      typeof unknown === "string"
+        ? { id: `open_${(openCounter += 1)}`, question: unknown, impact: "medium" as const, affects: [] }
+        : { id: unknown.id, question: unknown.id, impact: unknown.impact, affects: unknown.affects },
+    );
     return SdirSchema.parse({
       version: "0.1",
       screen: {
-        id: `${decisions.primary_structure.pattern.toLowerCase().replaceAll("pat-", "").replaceAll("-", "_")}_screen`,
+        id: `${pattern.toLowerCase().replaceAll("pat-", "").replaceAll("-", "_")}_screen`,
         intent: {
           primary_task: frame.tasks.primary,
           secondary_tasks: frame.tasks.secondary,
         },
-        archetype: { pattern_ref: decisions.primary_structure.pattern },
+        archetype: { pattern_ref: pattern },
         density_intent: context.density_intent,
         regions,
         relationships,
         interaction_intents:
-          decisions.primary_structure.pattern === "PAT-CANVAS-WORKSPACE"
+          pattern === "PAT-CANVAS-WORKSPACE"
             ? ["spatial_overview", "direct_selection", "pan_zoom", "progressive_inspection", "keyboard_equivalent"]
             : ["preserve_context", "keyboard_equivalent"],
         required_states: ["loading", "empty", "ready", "selected", "error"],
@@ -118,6 +185,11 @@ export class SdirEngine {
             adapter_may_choose: ["native landmarks", "accessible composite widgets", "responsive region arrangement"],
           },
         ],
+        unresolved,
+        rejected_alternatives: decisions.rejected.map((rejected) => ({
+          option: rejected.option,
+          reason: rejected.reason,
+        })),
       },
     });
   }

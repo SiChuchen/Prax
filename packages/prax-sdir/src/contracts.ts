@@ -39,6 +39,19 @@ export const SdirSchema = z.object({
         }),
       )
       .min(1),
+    unresolved: z
+      .array(
+        z.object({
+          id: NonEmpty,
+          question: NonEmpty,
+          impact: z.enum(["low", "medium", "high"]),
+          affects: z.array(NonEmpty).default([]),
+        }),
+      )
+      .default([]),
+    rejected_alternatives: z
+      .array(z.object({ option: NonEmpty, reason: NonEmpty }))
+      .default([]),
   }),
 });
 
