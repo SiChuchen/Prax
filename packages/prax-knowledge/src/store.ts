@@ -1,4 +1,5 @@
 import { readFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
 import { z } from "zod";
 import {
@@ -231,6 +232,6 @@ export class KnowledgeStore {
 }
 
 export async function loadBuiltInKnowledgeStore(): Promise<KnowledgeStore> {
-  const filePath = new URL("../data/knowledge.yaml", import.meta.url);
-  return KnowledgeStore.fromYamlFile(filePath.pathname);
+  const filePath = fileURLToPath(new URL("../data/knowledge.yaml", import.meta.url));
+  return KnowledgeStore.fromYamlFile(filePath);
 }

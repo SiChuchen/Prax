@@ -40,7 +40,7 @@ describe("product-first runtime", () => {
     const created = await first.createSession({ projectRoot, requirement: "Design an architecture canvas", mode: "greenfield" });
     const second = new FileSessionStore({ stateRoot: join(root, "state") });
     expect((await second.getSession(created.id)).id).toBe("ds_resume_test");
-    expect(await second.artifactDirectory(created.id)).toContain(".prax/design/sessions/ds_resume_test");
+    expect(await second.artifactDirectory(created.id)).toContain(join(".prax", "design", "sessions", "ds_resume_test"));
   });
 
   it("requires an explicit resolution for capability gaps", () => {
@@ -52,6 +52,11 @@ describe("product-first runtime", () => {
 });
 
 describe("context routing and disclosure", () => {
+  it("loads the built-in knowledge pack on any platform", async () => {
+    const store = await loadBuiltInKnowledgeStore();
+    expect(store.size()).toBe(23);
+  });
+
   it("routes Canvas and Settings patterns without cross-contamination", async () => {
     const store = await loadBuiltInKnowledgeStore();
     const router = new DesignRouter(store);
