@@ -41,7 +41,16 @@ it("runs Architecture Canvas end-to-end and supports cross-Agent resume", async 
   expect(routedPatterns[0]?.id).toBe("PAT-CANVAS-WORKSPACE");
   expect(JSON.stringify(routed)).not.toContain("pattern_contract");
 
-  const inspected = await service.designInspect({ design_session_id: sessionId, ids: ["PAT-CANVAS-WORKSPACE"], depth: "L2", reason: "compare and select the primary pattern with explicit tradeoffs" });
+  const inspected = await service.designInspect({
+    design_session_id: sessionId,
+    ids: ["PAT-CANVAS-WORKSPACE"],
+    depth: "L2",
+    purpose: {
+      kind: "compare_alternatives",
+      target_ids: ["PAT-CANVAS-WORKSPACE"],
+      question: "Compare the canvas workspace against alternatives with explicit tradeoffs",
+    },
+  });
   expect(inspected.status).toBe("PASS");
   expect(JSON.stringify(inspected)).toContain("pattern_contract");
 

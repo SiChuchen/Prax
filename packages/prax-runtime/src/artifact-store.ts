@@ -13,7 +13,12 @@ import { parse, stringify } from "yaml";
 import { z } from "zod";
 import {
   ARTIFACT_FILES,
+  CapabilityMapSchema,
+  DesignContextSchema,
+  DesignDecisionsSchema,
   DesignSessionSchema,
+  ProductFrameSchema,
+  zodIssues,
   type ArtifactKey,
   type DesignMode,
   type DesignSession,
@@ -31,6 +36,18 @@ const SessionIndexSchema = z.object({
 });
 
 type SessionIndex = z.infer<typeof SessionIndexSchema>;
+
+const ARTIFACT_SCHEMAS: Partial<Record<ArtifactKey, z.ZodType>> = {
+  session: DesignSessionSchema,
+  productFrame: ProductFrameSchema,
+  designContext: DesignContextSchema,
+  designDecisions: DesignDecisionsSchema,
+  capabilityGaps: CapabilityMapSchema,
+};
+
+const LOCK_STALE_MS = 30_000;
+const LOCK_RETRY_MS = 25;
+const LOCK_ATTEMPTS = 40;
 
 export class PraxRuntimeError extends Error {
   public constructor(
@@ -266,7 +283,19 @@ export class FileSessionStore {
     if (key === "requirement") {
       return text as T;
     }
-    return parse(text) as T;
+    const raw = parse(text);
+    const schema = ARTIFACT_SCHEMAS[key];
+    if (schema === undefined) {
+      return raw as T;
+    }
+    const parsed = schema.safeParse(raw);
+    if (!parsed.success) {
+      throw new PraxRuntimeError(
+        "ARTIFACT_SCHEMA_INVALID",
+        `Restored artifact ${relativePath} for ${session.id} failed schema validation: ${zodIssues(parsed.error).join("; ")}`,
+      );
+    }
+    return parsed.data as T;
   }
 
   public async artifactDirectory(sessionId: string): Promise<string> {
@@ -336,10 +365,64 @@ export class FileSessionStore {
       release = resolveQueue;
     });
     await prior;
+    const unlock = await this.acquireStateLock();
     try {
       return await operation();
     } finally {
+      await unlock();
       release();
+    }
+  }
+
+  private async acquireStateLock(): Promise<() => Promise<void>> {
+    const lockPath = join(this.stateRoot, "write.lock");
+    await mkdir(this.stateRoot, { recursive: true });
+    const identity = `${process.pid} ${Date.now()}`;
+    const release = async () => {
+      await unlink(lockPath).catch(() => undefined);
+    };
+    for (let attempt = 0; ; attempt += 1) {
+      try {
+        await writeFile(lockPath, identity, { encoding: "utf8", flag: "wx" });
+        return release;
+      } catch (error) {
+        if (
+          error === null ||
+          typeof error !== "object" ||
+          !("code" in error) ||
+          (error as { code?: unknown }).code !== "EEXIST"
+        ) {
+          throw error;
+        }
+      }
+      const heldSince = await this.lockTimestamp(lockPath);
+      if (heldSince !== undefined && Date.now() - heldSince > LOCK_STALE_MS) {
+        await writeFile(lockPath, identity, { encoding: "utf8" });
+        return release;
+      }
+      if (attempt >= LOCK_ATTEMPTS) {
+        let holder = "unknown";
+        try {
+          holder = (await readFile(lockPath, "utf8")).trim();
+        } catch {
+          // The lock may have been released between the failed create and this read.
+        }
+        throw new PraxRuntimeError(
+          "SESSION_LOCK_HELD",
+          `Another Prax process holds the state lock at ${lockPath} (holder: ${holder}). The write was not applied.`,
+        );
+      }
+      await new Promise((resolveDelay) => setTimeout(resolveDelay, LOCK_RETRY_MS));
+    }
+  }
+
+  private async lockTimestamp(lockPath: string): Promise<number | undefined> {
+    try {
+      const content = (await readFile(lockPath, "utf8")).trim();
+      const timestamp = Number(content.split(" ")[1]);
+      return Number.isFinite(timestamp) ? timestamp : undefined;
+    } catch {
+      return undefined;
     }
   }
 }

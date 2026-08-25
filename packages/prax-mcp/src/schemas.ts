@@ -34,11 +34,17 @@ export const DesignRouteInputSchema = z.object({
   question: z.string().trim().min(1),
 });
 
+export const DisclosurePurposeInputSchema = z.object({
+  kind: z.enum(["compare_alternatives", "resolve_conflict", "validate_decision", "investigate_risk"]),
+  target_ids: z.array(z.string().trim().min(1)).default([]),
+  question: z.string().trim().min(1),
+});
+
 export const DesignInspectInputSchema = z.object({
   design_session_id: SessionId,
   ids: z.array(z.string().trim().min(1)).min(1).max(20),
   depth: DisclosureDepthSchema,
-  reason: z.string().trim().min(1),
+  purpose: DisclosurePurposeInputSchema,
 });
 
 export const DesignDecideInputSchema = z.object({

@@ -3,6 +3,7 @@ import {
   DesignContextSchema,
   DesignDecisionsSchema,
   ProductFrameSchema,
+  ProductObjectOverrideSchema,
   type ArtifactValidation,
   type CapabilityMap,
   type DesignContext,
@@ -34,6 +35,13 @@ function productObjectLooksBackendShaped(object: {
   );
 }
 
+function productObjectJustified(object: { justified_override?: unknown }): boolean {
+  return (
+    object.justified_override !== undefined &&
+    ProductObjectOverrideSchema.safeParse(object.justified_override).success
+  );
+}
+
 export function validateProductFrame(
   input: unknown,
   mode: DesignMode,
@@ -58,26 +66,33 @@ export function validateProductFrame(
 
   if (
     parsed.data.mental_model_hypothesis.confidence === "low" &&
-    parsed.data.mental_model_hypothesis.evidence.length === 0
+    parsed.data.mental_model_hypothesis.evidence.length === 0 &&
+    parsed.data.open_questions.length === 0
   ) {
     issues.push(
       "A low-confidence mental model requires evidence or an explicit open question before architecture can be derived.",
     );
   }
 
-  const backendShaped = parsed.data.product_objects.filter(
-    productObjectLooksBackendShaped,
-  );
-  if (backendShaped.length >= Math.min(2, parsed.data.product_objects.length)) {
+  const backendShaped = parsed.data.product_objects.filter(productObjectLooksBackendShaped);
+  const unjustified = backendShaped.filter((object) => !productObjectJustified(object));
+  const justified = backendShaped.filter((object) => productObjectJustified(object));
+  if (unjustified.length >= Math.min(2, parsed.data.product_objects.length)) {
     return {
       status: "REVIEW",
       issues: [
-        `Product Objects appear to reproduce backend vocabulary: ${backendShaped.map((item) => item.id).join(", ")}.`,
-        "Translate these into concepts users recognize, or record evidence that the backend terms are established product concepts.",
+        `Product Objects appear to reproduce backend vocabulary without a justified override: ${unjustified.map((item) => item.id).join(", ")}.`,
+        "Translate these into concepts users recognize, or record a structured justified_override (rationale, user_evidence, risks, accepted_by) showing the backend terms are established product concepts.",
       ],
       warnings,
       value: parsed.data,
     };
+  }
+  for (const object of justified) {
+    const override = ProductObjectOverrideSchema.parse(object.justified_override);
+    warnings.push(
+      `${object.id} advances as a backend-shaped object under an override accepted by ${override.accepted_by}: ${override.rationale} (risks: ${override.risks.join("; ")})`,
+    );
   }
 
   if (parsed.data.open_questions.length > 0) {

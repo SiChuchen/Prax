@@ -1,14 +1,25 @@
 import type { DisclosureDepth, DesignSession, GateResult } from "prax-runtime";
 
-const L2_REASON = /(decid|select|reject|compar|conflict|rationale|trade.?off|选择|拒绝|比较|冲突|理由|权衡)/i;
-const L3_REASON = /(evidence|source|dispute|review|verify|audit|证据|来源|争议|审查|验证|核验)/i;
+export type DisclosurePurposeKind =
+  | "compare_alternatives"
+  | "resolve_conflict"
+  | "validate_decision"
+  | "investigate_risk";
+
+export interface DisclosurePurpose {
+  kind: DisclosurePurposeKind;
+  target_ids: readonly string[];
+  question: string;
+}
+
+const L3_KINDS = new Set<DisclosurePurposeKind>(["validate_decision", "investigate_risk"]);
 
 export class DisclosureGate {
   public authorize(
     session: DesignSession,
     ids: readonly string[],
     depth: DisclosureDepth,
-    reason: string,
+    purpose: DisclosurePurpose,
   ): GateResult<{ authorized_ids: string[] }> {
     if (ids.length === 0) {
       return { status: "RETRY", code: "EMPTY_INSPECTION", message: "At least one routed knowledge id is required." };
@@ -25,16 +36,23 @@ export class DisclosureGate {
         message: `Knowledge must be routed before inspection: ${unauthorized.join(", ")}`,
       };
     }
-    if (reason.trim().length === 0) {
-      return { status: "RETRY", code: "INSPECTION_REASON_REQUIRED", message: "A decision-specific inspection reason is required." };
+    if (purpose.question.trim().length === 0) {
+      return { status: "RETRY", code: "INSPECTION_PURPOSE_REQUIRED", message: "A decision- or evidence-specific question is required." };
     }
-    if (depth === "L2" && !L2_REASON.test(reason)) {
-      return { status: "BLOCK", code: "L2_REASON_INSUFFICIENT", message: "L2 requires a selection, rejection, comparison, conflict, rationale, or trade-off reason." };
+    const unroutedTargets = purpose.target_ids.filter((id) => !routed.has(id));
+    if (unroutedTargets.length > 0) {
+      return {
+        status: "BLOCK",
+        code: "PURPOSE_TARGET_NOT_ROUTED",
+        message: `Inspection purpose references unrouted knowledge: ${unroutedTargets.join(", ")}`,
+      };
     }
-    if (depth === "L3" && !L3_REASON.test(reason)) {
-      return { status: "BLOCK", code: "L3_REASON_INSUFFICIENT", message: "L3 is reserved for evidence, source verification, dispute, audit, or review." };
+    if (depth === "L2" && purpose.target_ids.length === 0) {
+      return { status: "BLOCK", code: "L2_PURPOSE_INSUFFICIENT", message: "L2 requires a purpose naming the alternatives or conflicts being compared." };
+    }
+    if (depth === "L3" && !L3_KINDS.has(purpose.kind)) {
+      return { status: "BLOCK", code: "L3_PURPOSE_INSUFFICIENT", message: "L3 is reserved for validate_decision or investigate_risk purposes; evidence depth is not for casual comparison." };
     }
     return { status: "PASS", data: { authorized_ids: [...ids] } };
   }
 }
-

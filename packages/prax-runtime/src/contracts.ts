@@ -40,6 +40,15 @@ export type Confidence = z.infer<typeof ConfidenceSchema>;
 
 const NonEmptyStringSchema = z.string().trim().min(1);
 
+export const ProductObjectOverrideSchema = z.object({
+  override_type: z.literal("backend_object_is_product_object"),
+  rationale: NonEmptyStringSchema,
+  user_evidence: z.array(NonEmptyStringSchema).min(1),
+  risks: z.array(NonEmptyStringSchema).min(1),
+  accepted_by: z.enum(["agent", "human"]),
+});
+export type ProductObjectOverride = z.infer<typeof ProductObjectOverrideSchema>;
+
 export const ProductFrameSchema = z.object({
   user: z.object({
     primary_role: NonEmptyStringSchema,
@@ -59,6 +68,7 @@ export const ProductFrameSchema = z.object({
         id: NonEmptyStringSchema,
         user_name: NonEmptyStringSchema,
         purpose: NonEmptyStringSchema,
+        justified_override: ProductObjectOverrideSchema.optional(),
       }),
     )
     .min(1),

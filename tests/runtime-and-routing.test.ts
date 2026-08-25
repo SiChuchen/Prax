@@ -1,4 +1,4 @@
-import { mkdtemp, mkdir, rm } from "node:fs/promises";
+import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -41,6 +41,41 @@ describe("product-first runtime", () => {
     expect(validateProductFrame(frame, "greenfield").status).toBe("REVIEW");
   });
 
+  it("advances backend-shaped objects only under a structured justified override", () => {
+    const override = {
+      override_type: "backend_object_is_product_object",
+      rationale: "Operators already call these objects by their backend names in runbooks.",
+      user_evidence: ["user_requirement"],
+      risks: ["UI language may drift toward backend vocabulary"],
+      accepted_by: "human",
+    };
+    const justified = architectureProductFrame();
+    justified.product_objects = [
+      { id: "provider_model", user_name: "provider_model", purpose: "backend record", justified_override: override },
+      { id: "route_config", user_name: "route_config", purpose: "backend record", justified_override: override },
+    ];
+    const result = validateProductFrame(justified, "greenfield");
+    expect(result.status).toBe("WARN");
+    expect(result.warnings.join(" ")).toMatch(/provider_model/);
+
+    const partiallyJustified = architectureProductFrame();
+    partiallyJustified.product_objects = [
+      { id: "provider_model", user_name: "provider_model", purpose: "backend record", justified_override: override },
+      { id: "route_config", user_name: "route_config", purpose: "backend record" },
+      { id: "proxy_config", user_name: "proxy_config", purpose: "backend record" },
+    ];
+    expect(validateProductFrame(partiallyJustified, "greenfield").status).toBe("REVIEW");
+  });
+
+  it("accepts a low-confidence mental model with an explicit open question instead of evidence", () => {
+    const frame = architectureProductFrame();
+    frame.mental_model_hypothesis.confidence = "low";
+    frame.mental_model_hypothesis.evidence = [];
+    frame.open_questions = ["Does the user think in flows or in nodes?"];
+    const result = validateProductFrame(frame, "greenfield");
+    expect(result.status).not.toBe("EXPAND");
+  });
+
   it("persists and resumes explicit sessions", async () => {
     const root = await mkdtemp(join(tmpdir(), "prax-runtime-"));
     cleanup.push(root);
@@ -59,6 +94,51 @@ describe("product-first runtime", () => {
       needs: [{ id: "trace", product_action: "trace", required_experience: ["preserve context"], capabilities: [], status: "gap" }],
     });
     expect(result.status).toBe("RETRY");
+  });
+
+  it("revalidates restored artifacts against their schemas", async () => {
+    const root = await mkdtemp(join(tmpdir(), "prax-runtime-"));
+    cleanup.push(root);
+    const projectRoot = join(root, "project");
+    await mkdir(projectRoot);
+    const store = new FileSessionStore({ stateRoot: join(root, "state"), idGenerator: () => "ds_restore" });
+    const session = await store.createSession({ projectRoot, requirement: "Design an architecture canvas", mode: "greenfield" });
+    const advanced = await store.commit(
+      { ...session, updated_at: new Date().toISOString(), revision: session.revision + 1 },
+      [{ key: "productFrame", value: architectureProductFrame() }],
+    );
+    const directory = await store.artifactDirectory("ds_restore");
+    await writeFile(join(directory, "product-frame.yaml"), "user: broken\n", "utf8");
+    await expect(store.readArtifact(advanced, "productFrame")).rejects.toMatchObject({ code: "ARTIFACT_SCHEMA_INVALID" });
+  });
+
+  it("rejects cross-process session writes while the state lock is held", async () => {
+    const root = await mkdtemp(join(tmpdir(), "prax-runtime-"));
+    cleanup.push(root);
+    const projectRoot = join(root, "project");
+    await mkdir(projectRoot);
+    const stateRoot = join(root, "state");
+    const store = new FileSessionStore({ stateRoot, idGenerator: () => "ds_lock" });
+    const session = await store.createSession({ projectRoot, requirement: "Design an architecture canvas", mode: "greenfield" });
+    await writeFile(join(stateRoot, "write.lock"), `999999 ${Date.now()}`, "utf8");
+    await expect(
+      store.commit({ ...session, updated_at: new Date().toISOString(), revision: session.revision + 1 }),
+    ).rejects.toMatchObject({ code: "SESSION_LOCK_HELD" });
+  });
+
+  it("steals a stale state lock and completes the write", async () => {
+    const root = await mkdtemp(join(tmpdir(), "prax-runtime-"));
+    cleanup.push(root);
+    const projectRoot = join(root, "project");
+    await mkdir(projectRoot);
+    const stateRoot = join(root, "state");
+    const store = new FileSessionStore({ stateRoot, idGenerator: () => "ds_stale_lock" });
+    const session = await store.createSession({ projectRoot, requirement: "Design an architecture canvas", mode: "greenfield" });
+    await writeFile(join(stateRoot, "write.lock"), `999999 ${Date.now() - 120_000}`, "utf8");
+    const committed = await store.commit(
+      { ...session, updated_at: new Date().toISOString(), revision: session.revision + 1 },
+    );
+    expect(committed.revision).toBe(session.revision + 1);
   });
 });
 
@@ -89,7 +169,7 @@ describe("context routing and disclosure", () => {
     expect(settings.patterns.map((item) => item.id)).not.toContain("PAT-CANVAS-WORKSPACE");
   });
 
-  it("blocks unrouted and unjustified deep inspection", () => {
+  it("blocks unrouted knowledge regardless of purpose", () => {
     const gate = new DisclosureGate();
     const session = {
       id: "ds_1", project_root: "/tmp/project", mode: "greenfield", phase: "DECISION",
@@ -98,9 +178,32 @@ describe("context routing and disclosure", () => {
       disclosures: [], routing_history: [{ question: "pattern", selected_ids: ["PAT-CANVAS-WORKSPACE"], excluded_ids: [], confidence: "high", routed_at: new Date().toISOString() }],
       artifacts: {}, unresolved: [], warnings: [],
     } as const;
-    expect(gate.authorize(session, ["PAT-SETTINGS-SECTIONS"], "L1", "compare").status).toBe("BLOCK");
-    expect(gate.authorize(session, ["PAT-CANVAS-WORKSPACE"], "L3", "I am curious").status).toBe("BLOCK");
-    expect(gate.authorize(session, ["PAT-CANVAS-WORKSPACE"], "L3", "verify evidence source for review").status).toBe("PASS");
+    expect(
+      gate.authorize(session, ["PAT-SETTINGS-SECTIONS"], "L1", { kind: "compare_alternatives", target_ids: ["PAT-SETTINGS-SECTIONS"], question: "Is settings a plausible alternative?" }).status,
+    ).toBe("BLOCK");
+  });
+
+  it("authorizes deep inspection only with a structured, depth-appropriate purpose", () => {
+    const gate = new DisclosureGate();
+    const session = {
+      id: "ds_1", project_root: "/tmp/project", mode: "greenfield", phase: "DECISION",
+      created_at: new Date().toISOString(), updated_at: new Date().toISOString(), revision: 1,
+      requirement_ref: "requirement.md", completed_gates: [], current_gate: { name: "decision" },
+      disclosures: [], routing_history: [{ question: "pattern", selected_ids: ["PAT-CANVAS-WORKSPACE"], excluded_ids: [], confidence: "high", routed_at: new Date().toISOString() }],
+      artifacts: {}, unresolved: [], warnings: [],
+    } as const;
+    expect(
+      gate.authorize(session, ["PAT-CANVAS-WORKSPACE"], "L2", { kind: "compare_alternatives", target_ids: ["PAT-CANVAS-WORKSPACE"], question: "Compare canvas workspace against the data explorer before deciding." }).status,
+    ).toBe("PASS");
+    const l3WithShallowPurpose = gate.authorize(session, ["PAT-CANVAS-WORKSPACE"], "L3", { kind: "compare_alternatives", target_ids: ["PAT-CANVAS-WORKSPACE"], question: "Which pattern do I prefer?" });
+    expect(l3WithShallowPurpose.status).toBe("BLOCK");
+    expect(l3WithShallowPurpose.code).toBe("L3_PURPOSE_INSUFFICIENT");
+    expect(
+      gate.authorize(session, ["PAT-CANVAS-WORKSPACE"], "L3", { kind: "investigate_risk", target_ids: ["PAT-CANVAS-WORKSPACE"], question: "Verify the evidence sources behind this pattern before trusting it." }).status,
+    ).toBe("PASS");
+    const unroutedTarget = gate.authorize(session, ["PAT-CANVAS-WORKSPACE"], "L3", { kind: "validate_decision", target_ids: ["PAT-SETTINGS-SECTIONS"], question: "Validate the decision against evidence." });
+    expect(unroutedTarget.status).toBe("BLOCK");
+    expect(unroutedTarget.code).toBe("PURPOSE_TARGET_NOT_ROUTED");
   });
 });
 

@@ -181,14 +181,14 @@ export class PraxService {
     const session = await this.sessions.getSession(input.design_session_id);
     const blocked = operationBlock(session, "design_inspect");
     if (blocked !== undefined) return blocked;
-    const authorized = this.disclosureGate.authorize(session, input.ids, input.depth, input.reason);
+    const authorized = this.disclosureGate.authorize(session, input.ids, input.depth, input.purpose);
     if (authorized.status !== "PASS") return { ...authorized };
     const now = this.sessions.nowIso();
     const knowledge = input.ids.map((id) => this.knowledge.inspect(id, input.depth));
     const additions = input.ids.map((id) => ({
       knowledge_id: id,
       depth: input.depth,
-      trigger: input.reason,
+      trigger: `${input.purpose.kind}: ${input.purpose.question}`,
       disclosed_at: now,
     }));
     await this.sessions.commit(
