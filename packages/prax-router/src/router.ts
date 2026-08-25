@@ -1,5 +1,5 @@
 import type { KnowledgeEntry, KnowledgeStore, KnowledgeType } from "prax-knowledge";
-import type { DesignContext, ProductFrame } from "prax-runtime";
+import type { CanonicalClassification, DesignContext, ProductFrame } from "prax-runtime";
 import type {
   CandidateAudit,
   ExcludedCandidate,
@@ -12,6 +12,25 @@ interface ScoredEntry {
   score: number;
   audit: CandidateAudit;
 }
+
+interface CanonicalRouting {
+  classification: CanonicalClassification;
+  taskTokens: readonly string[];
+  domainTokens: readonly string[];
+}
+
+const TASK_SCOPE_TOKENS: Record<string, readonly string[]> = {
+  inspect_relationships: ["inspect", "trace", "explore"],
+  trace_flow: ["trace", "explore"],
+  compare_filter_records: ["compare", "filter", "inspect"],
+  configure_preferences: ["configure"],
+};
+
+const DOMAIN_SCOPE_TOKENS: Record<string, readonly string[]> = {
+  software_architecture: ["architecture"],
+  data_exploration: ["data", "logs"],
+  preferences: ["settings"],
+};
 
 const TYPE_CAPS: Partial<Record<KnowledgeType, number>> = {
   principle: 5,
@@ -51,17 +70,48 @@ function anyMatch(values: readonly string[], haystack: string): string | undefin
   return values.find((value) => haystack.includes(normalized(value)));
 }
 
-function hardScopeMismatch(entry: KnowledgeEntry, context: DesignContext, haystack: string): string | undefined {
+function canonicalRouting(context: DesignContext): CanonicalRouting | undefined {
+  const classification = context.classification;
+  if (classification === undefined) return undefined;
+  return {
+    classification,
+    taskTokens: TASK_SCOPE_TOKENS[classification.task_type] ?? [],
+    domainTokens: DOMAIN_SCOPE_TOKENS[classification.domain_id] ?? [],
+  };
+}
+
+function hardScopeMismatch(
+  entry: KnowledgeEntry,
+  context: DesignContext,
+  haystack: string,
+  canonical: CanonicalRouting | undefined,
+): string | undefined {
   const scope = entry.scope;
   const platform = `${context.platform.family}_${context.platform.form_factor}`;
   if (scope.platform.length > 0 && !scope.platform.some((value) => normalized(value) === platform)) {
     return `platform scope ${scope.platform.join(", ")} does not include ${platform}`;
   }
-  if (scope.domain.length > 0 && anyMatch(scope.domain, haystack) === undefined) {
-    return `domain scope ${scope.domain.join(", ")} does not match ${context.domain.type}`;
+  if (scope.domain.length > 0) {
+    const matches =
+      canonical !== undefined
+        ? scope.domain.some((value) => canonical.domainTokens.includes(normalized(value)))
+        : anyMatch(scope.domain, haystack) !== undefined;
+    if (!matches) {
+      return canonical !== undefined
+        ? `domain scope ${scope.domain.join(", ")} does not match canonical domain_id ${canonical.classification.domain_id}`
+        : `domain scope ${scope.domain.join(", ")} does not match ${context.domain.type}`;
+    }
   }
-  if (scope.task_type.length > 0 && anyMatch(scope.task_type, haystack) === undefined) {
-    return `task scope ${scope.task_type.join(", ")} does not match the framed task`;
+  if (scope.task_type.length > 0) {
+    const matches =
+      canonical !== undefined
+        ? scope.task_type.some((value) => canonical.taskTokens.includes(normalized(value)))
+        : anyMatch(scope.task_type, haystack) !== undefined;
+    if (!matches) {
+      return canonical !== undefined
+        ? `task scope ${scope.task_type.join(", ")} does not match canonical task_type ${canonical.classification.task_type}`
+        : `task scope ${scope.task_type.join(", ")} does not match the framed task`;
+    }
   }
   if (scope.density.length > 0 && !scope.density.includes(context.density_intent)) {
     return `density scope ${scope.density.join(", ")} does not include ${context.density_intent}`;
@@ -69,19 +119,42 @@ function hardScopeMismatch(entry: KnowledgeEntry, context: DesignContext, haysta
   return undefined;
 }
 
-function scoreEntry(entry: KnowledgeEntry, context: DesignContext, haystack: string): ScoredEntry {
+function scoreEntry(
+  entry: KnowledgeEntry,
+  context: DesignContext,
+  haystack: string,
+  canonical: CanonicalRouting | undefined,
+): ScoredEntry {
   const trigger = anyMatch(entry.triggers, haystack);
   const scopeMatch: string[] = [];
   let score = 0;
 
-  if (trigger !== undefined) score += 8;
-  if (entry.scope.domain.length > 0 && anyMatch(entry.scope.domain, haystack) !== undefined) {
-    score += 6;
-    scopeMatch.push(`domain:${context.domain.type}`);
-  }
-  if (entry.scope.task_type.length > 0 && anyMatch(entry.scope.task_type, haystack) !== undefined) {
-    score += 5;
-    scopeMatch.push(`task:${context.task.primary}`);
+  if (canonical === undefined) {
+    if (trigger !== undefined) score += 8;
+    if (entry.scope.domain.length > 0 && anyMatch(entry.scope.domain, haystack) !== undefined) {
+      score += 6;
+      scopeMatch.push(`domain:${context.domain.type}`);
+    }
+    if (entry.scope.task_type.length > 0 && anyMatch(entry.scope.task_type, haystack) !== undefined) {
+      score += 5;
+      scopeMatch.push(`task:${context.task.primary}`);
+    }
+  } else {
+    if (trigger !== undefined) score += 4;
+    if (
+      entry.scope.domain.length > 0 &&
+      entry.scope.domain.some((value) => canonical.domainTokens.includes(normalized(value)))
+    ) {
+      score += 6;
+      scopeMatch.push(`domain_id:${canonical.classification.domain_id}`);
+    }
+    if (
+      entry.scope.task_type.length > 0 &&
+      entry.scope.task_type.some((value) => canonical.taskTokens.includes(normalized(value)))
+    ) {
+      score += 5;
+      scopeMatch.push(`task_type:${canonical.classification.task_type}`);
+    }
   }
   if (entry.scope.platform.includes("web_desktop")) {
     score += 3;
@@ -101,9 +174,13 @@ function scoreEntry(entry: KnowledgeEntry, context: DesignContext, haystack: str
     score,
     audit: {
       selected_because:
-        trigger === undefined
-          ? "generic scoped guidance ranked for the current decision"
-          : `trigger '${trigger}' matched the framed product question`,
+        canonical !== undefined
+          ? `canonical task_type=${canonical.classification.task_type} and domain_id=${canonical.classification.domain_id} match this entry's scope${
+              trigger === undefined ? "" : `; natural-language trigger '${trigger}' supports it`
+            }`
+          : trigger === undefined
+            ? "generic scoped guidance ranked for the current decision"
+            : `trigger '${trigger}' matched the framed product question`,
       trigger: trigger ?? "scope_and_lifecycle",
       scope_match: scopeMatch.length === 0 ? ["generic"] : scopeMatch,
       confidence,
@@ -116,6 +193,7 @@ export class DesignRouter {
 
   public route(frame: ProductFrame, context: DesignContext, question: string): RoutingResult {
     const haystack = contextTokens(frame, context, question);
+    const canonical = canonicalRouting(context);
     const scored: ScoredEntry[] = [];
     const excluded: ExcludedCandidate[] = [];
 
@@ -125,12 +203,12 @@ export class DesignRouter {
         excluded.push({ id: entry.id, reason: "deprecated knowledge is not preferred" });
         continue;
       }
-      const mismatch = hardScopeMismatch(entry, context, haystack);
+      const mismatch = hardScopeMismatch(entry, context, haystack, canonical);
       if (mismatch !== undefined) {
         if (entry.type === "pattern") excluded.push({ id: entry.id, reason: mismatch });
         continue;
       }
-      const candidate = scoreEntry(entry, context, haystack);
+      const candidate = scoreEntry(entry, context, haystack, canonical);
       if (candidate.score < 4) continue;
       scored.push(candidate);
     }
@@ -149,8 +227,10 @@ export class DesignRouter {
     const patterns = select("pattern");
     const platformProfile = select("platform_convention");
     const bestPattern = patterns[0];
+    const lowConfidenceClassification =
+      canonical !== undefined && canonical.classification.confidence === "low";
     const confidence =
-      bestPattern === undefined
+      lowConfidenceClassification || bestPattern === undefined
         ? "low"
         : bestPattern.routing.confidence === "high"
           ? "high"
@@ -168,4 +248,3 @@ export class DesignRouter {
     };
   }
 }
-

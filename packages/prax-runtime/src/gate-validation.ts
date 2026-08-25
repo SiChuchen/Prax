@@ -11,6 +11,7 @@ import {
   type ProductFrame,
   zodIssues,
 } from "./contracts.js";
+import { classifyDesignContext } from "./classification.js";
 
 const BACKEND_SHAPED_TERMS = [
   /(^|_)(api|db|table|service|repository|endpoint)($|_)/i,
@@ -95,6 +96,7 @@ export function validateProductFrame(
 
 export function validateDesignContext(
   input: unknown,
+  frame: ProductFrame,
 ): ArtifactValidation<DesignContext> {
   const parsed = DesignContextSchema.safeParse(input);
   if (!parsed.success) {
@@ -125,11 +127,18 @@ export function validateDesignContext(
     warnings.push("Design Context is usable with medium confidence.");
   }
 
+  const classification = classifyDesignContext(frame, parsed.data);
+  if (classification.confidence === "low") {
+    warnings.push(
+      `Canonical classification is low-confidence (task_type=${classification.task_type}, domain_id=${classification.domain_id}); the router will stay conservative.`,
+    );
+  }
+
   return {
     status: issues.length === 0 ? (warnings.length === 0 ? "PASS" : "WARN") : "EXPAND",
     issues,
     warnings,
-    value: parsed.data,
+    value: { ...parsed.data, classification },
   };
 }
 

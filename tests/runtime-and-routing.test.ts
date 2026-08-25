@@ -7,6 +7,7 @@ import { DesignRouter, DisclosureGate } from "prax-router";
 import {
   FileSessionStore,
   validateCapabilityMap,
+  validateDesignContext,
   validateDesignDecisions,
   validateProductFrame,
 } from "prax-runtime";
@@ -15,6 +16,8 @@ import {
   architectureContext,
   architectureDecisions,
   architectureProductFrame,
+  chineseArchitectureContext,
+  chineseArchitectureFrame,
   dataExplorerDecisions,
   settingsContext,
   settingsDecisions,
@@ -181,6 +184,67 @@ describe("design decision semantics", () => {
     unknown.major_choices[0].references = ["provider_settings_backend"];
     const unknownResult = validateDesignDecisions(unknown, decisionContext);
     expect(unknownResult.codes).toContain("MAJOR_CHOICE_REFERENCE_UNKNOWN");
+  });
+});
+
+describe("canonical context classification", () => {
+  it("classifies a Chinese architecture requirement into stable canonical ids and routes by them", async () => {
+    const frame = chineseArchitectureFrame();
+    const validated = validateDesignContext(chineseArchitectureContext(), frame);
+    expect(validated.status).toBe("PASS");
+    const classification = validated.value!.classification!;
+    expect(classification.version).toBe("1");
+    expect(classification.task_type).toBe("inspect_relationships");
+    expect(classification.domain_id).toBe("software_architecture");
+    expect(classification.interaction_mode).toBe("canvas_with_contextual_inspector");
+    expect(classification.product_type).toBe("internal_engineering_tool");
+    expect(classification.primary_object_type).toBe("architecture_node");
+    expect(classification.confidence).toBe("high");
+    expect(classification.evidence.length).toBeGreaterThan(0);
+
+    const store = await loadBuiltInKnowledgeStore();
+    const routed = new DesignRouter(store).route(frame, validated.value!, "选择承载主任务的界面结构");
+    expect(routed.status).toBe("PASS");
+    expect(routed.patterns[0]?.id).toBe("PAT-CANVAS-WORKSPACE");
+    expect(routed.patterns.map((pattern) => pattern.id)).not.toContain("PAT-SETTINGS-SECTIONS");
+  });
+
+  it("classifies English contexts into the same canonical ids", () => {
+    const validated = validateDesignContext(architectureContext(), architectureProductFrame());
+    const classification = validated.value!.classification!;
+    expect(classification.task_type).toBe("inspect_relationships");
+    expect(classification.domain_id).toBe("software_architecture");
+    expect(classification.interaction_mode).toBe("canvas_with_contextual_inspector");
+    expect(classification.primary_object_type).toBe("architecture_node");
+
+    const settingsFrame = architectureProductFrame();
+    settingsFrame.tasks = { primary: "configure settings", secondary: [] };
+    settingsFrame.product_objects = [{ id: "preference", user_name: "preference", purpose: "change product behavior" }];
+    const settingsValidated = validateDesignContext(settingsContext(), settingsFrame);
+    const settingsClassification = settingsValidated.value!.classification!;
+    expect(settingsClassification.task_type).toBe("configure_preferences");
+    expect(settingsClassification.domain_id).toBe("preferences");
+    expect(settingsClassification.interaction_mode).toBe("sections_with_navigation");
+  });
+
+  it("reports an explicit unknown instead of fabricating a classification", async () => {
+    const frame = chineseArchitectureFrame();
+    frame.tasks = { primary: "占卜卦象", secondary: [] };
+    frame.product_objects = [{ id: "hexagram", user_name: "卦象", purpose: "占卜结果" }];
+    const context = chineseArchitectureContext();
+    context.task = { primary: "占卜", modes: ["起卦"], frequency: "low" };
+    context.domain = { type: "玄学", entities: ["卦象"] };
+    const validated = validateDesignContext(context, frame);
+    const classification = validated.value!.classification!;
+    expect(classification.task_type).toBe("unknown");
+    expect(classification.domain_id).toBe("unknown");
+    expect(classification.confidence).toBe("low");
+    expect(classification.open_questions.length).toBeGreaterThan(0);
+
+    const store = await loadBuiltInKnowledgeStore();
+    const routed = new DesignRouter(store).route(frame, validated.value!, "如何呈现卦象");
+    expect(routed.status).toBe("EXPAND");
+    expect(routed.confidence).toBe("low");
   });
 });
 

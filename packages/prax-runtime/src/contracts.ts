@@ -104,6 +104,20 @@ export const MaterialUnknownSchema = z.union([
 ]);
 export type MaterialUnknown = z.infer<typeof MaterialUnknownSchema>;
 
+export const CanonicalClassificationSchema = z.object({
+  version: z.literal("1"),
+  task_type: NonEmptyStringSchema,
+  domain_id: NonEmptyStringSchema,
+  interaction_mode: NonEmptyStringSchema,
+  product_type: NonEmptyStringSchema,
+  primary_object_type: NonEmptyStringSchema,
+  secondary_object_types: z.array(NonEmptyStringSchema).default([]),
+  confidence: ConfidenceSchema,
+  evidence: z.array(NonEmptyStringSchema).default([]),
+  open_questions: z.array(NonEmptyStringSchema).default([]),
+});
+export type CanonicalClassification = z.infer<typeof CanonicalClassificationSchema>;
+
 export const DesignContextSchema = z.object({
   id: NonEmptyStringSchema.optional(),
   user: z.object({
@@ -141,6 +155,7 @@ export const DesignContextSchema = z.object({
     overall: ConfidenceSchema,
   }),
   unknowns: z.array(MaterialUnknownSchema).default([]),
+  classification: CanonicalClassificationSchema.optional(),
 });
 export type DesignContext = z.infer<typeof DesignContextSchema>;
 

@@ -122,7 +122,8 @@ export class PraxService {
     const session = await this.sessions.getSession(input.design_session_id);
     const blocked = operationBlock(session, "design_context");
     if (blocked !== undefined) return blocked;
-    const validation = validateDesignContext(input.design_context);
+    const frame = await this.requireArtifact<ProductFrame>(session, "productFrame");
+    const validation = validateDesignContext(input.design_context, frame);
     if (validation.status !== "PASS" && validation.status !== "WARN") {
       return {
         status: validation.status,
