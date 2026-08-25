@@ -1,0 +1,26 @@
+session_id: golden_architecture_canvas
+primary_structure:
+  pattern: PAT-CANVAS-WORKSPACE
+  rationale:
+    - relationships are first-class product objects
+    - selection must preserve global architecture context
+  confidence: high
+information_hierarchy:
+  primary: [architecture]
+  secondary: [navigation, contextual_inspector, toolbar]
+density:
+  intent: compact
+  strategy: [perceptual grouping, stable alignment, quiet supporting chrome]
+  avoid: [card per entity, decorative surfaces]
+major_choices:
+  - id: inspector_behavior
+    choice: selection_driven
+    rationale: preserve workspace context while exposing contextual detail
+    confidence: high
+rejected:
+  - option: PAT-DATA-EXPLORER
+    reason: row comparison does not preserve spatial topology
+  - option: PAT-LIST-DETAIL
+    reason: collection order is secondary to relationships
+unresolved: []
+

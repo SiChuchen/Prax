@@ -1,0 +1,41 @@
+version: "0.1"
+screen:
+  id: canvas_workspace_screen
+  intent:
+    primary_task: inspect architecture
+    secondary_tasks: [trace relationship, inspect entity, follow flow]
+  archetype:
+    pattern_ref: PAT-CANVAS-WORKSPACE
+  density_intent: compact
+  regions:
+    - id: navigation
+      role: primary_navigation
+      importance: supporting
+      visibility: { condition: always }
+      behavior_intent: [preserve_context]
+    - id: architecture
+      role: dominant_workspace
+      importance: dominant
+      visibility: { condition: always }
+      behavior_intent: [spatial_overview, direct_selection, pan_zoom]
+    - id: toolbar
+      role: supporting_toolbar
+      importance: supporting
+      visibility: { condition: task_driven }
+      behavior_intent: [keyboard_equivalent]
+    - id: inspector
+      role: contextual_inspector
+      importance: contextual
+      visibility: { condition: selection_driven }
+      behavior_intent: [selection_driven, progressive_inspection]
+  relationships:
+    - source: architecture
+      target: inspector
+      type: selection_drives_contextual_detail
+  interaction_intents: [spatial_overview, direct_selection, pan_zoom, progressive_inspection, keyboard_equivalent]
+  required_states: [loading, empty, ready, selected, error]
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize regions while preserving hierarchy?
+      adapter_may_choose: [native landmarks, accessible composite widgets, responsive region arrangement]
+

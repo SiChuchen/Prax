@@ -1,0 +1,31 @@
+{
+  "name": "prax",
+  "version": "0.1.0",
+  "description": "Prax — Product-first design intelligence for coding agents.",
+  "type": "module",
+  "private": true,
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b --pretty false",
+    "test": "npm run build && vitest run",
+    "test:watch": "vitest",
+    "dev:mcp": "tsx packages/prax-mcp/src/stdio.ts",
+    "start:mcp": "node packages/prax-mcp/dist/stdio.js",
+    "prax": "node packages/prax-mcp/dist/cli.js"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "2.0.0",
+    "@types/node": "24.13.3",
+    "tsx": "4.23.12",
+    "typescript": "7.0.2",
+    "vitest": "4.1.11"
+  }
+}

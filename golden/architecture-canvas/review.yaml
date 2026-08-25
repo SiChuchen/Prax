@@ -1,0 +1,41 @@
+benchmark:
+  id: PRAX-GOLDEN-001
+  level: artifact_review
+  empirical_user_evidence: false
+  same_requirement: requirement.md
+  candidates:
+    bare: bare-agent-baseline.md
+    prax: design-mcp-result.md
+rubric:
+  - product_model_alignment
+  - primary_task_clarity
+  - context_preservation
+  - hierarchy_and_density
+  - state_completeness
+  - decision_traceability
+findings:
+  bare:
+    product_model_alignment: fail
+    primary_task_clarity: inconclusive
+    context_preservation: fail
+    hierarchy_and_density: fail
+    state_completeness: fail
+    decision_traceability: fail
+  prax:
+    product_model_alignment: pass
+    primary_task_clarity: pass
+    context_preservation: pass_by_intent
+    hierarchy_and_density: pass_by_intent
+    state_completeness: pass
+    decision_traceability: pass
+quality_floor_result: raised_at_artifact_level
+architecture_revision:
+  before: persistent inspector with equal primary importance
+  observation: equal prominence competed with the architecture and weakened the dominant workspace commitment
+  after: selection-driven contextual inspector with contextual importance
+  affected_runtime_assets: [PAT-CANVAS-WORKSPACE, H-19, screen.sdir.yaml]
+remaining_evidence:
+  - keyboard walkthrough on an implementation
+  - relationship-trace usability task
+  - visual hierarchy review from rendered output
+
