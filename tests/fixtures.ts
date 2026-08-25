@@ -79,7 +79,13 @@ export function architectureDecisions(sessionId: string): DesignDecisions {
       avoid: ["card per entity", "decorative surfaces"],
     },
     major_choices: [
-      { id: "inspector_behavior", choice: "selection_driven", rationale: "preserve workspace context while exposing detail", confidence: "high" },
+      {
+        id: "inspector_behavior",
+        choice: "selection_driven",
+        rationale: "preserve workspace context while exposing detail",
+        confidence: "high",
+        references: ["architecture_node", "relationship"],
+      },
     ],
     rejected: [
       { option: "PAT-DATA-EXPLORER", reason: "row comparison does not preserve spatial topology" },

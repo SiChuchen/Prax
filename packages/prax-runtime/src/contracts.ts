@@ -146,6 +146,14 @@ export type DesignContext = z.infer<typeof DesignContextSchema>;
 
 const DecisionConfidenceSchema = ConfidenceSchema.default("medium");
 
+export const HierarchyOverrideSchema = z.object({
+  basis: NonEmptyStringSchema,
+  evidence_refs: z.array(NonEmptyStringSchema).min(1),
+  risks: z.array(NonEmptyStringSchema).min(1),
+  accepted_by: z.enum(["agent", "human"]),
+});
+export type HierarchyOverride = z.infer<typeof HierarchyOverrideSchema>;
+
 export const DesignDecisionsSchema = z.object({
   session_id: NonEmptyStringSchema,
   primary_structure: z.object({
@@ -156,6 +164,7 @@ export const DesignDecisionsSchema = z.object({
   information_hierarchy: z.object({
     primary: z.array(NonEmptyStringSchema).min(1),
     secondary: z.array(NonEmptyStringSchema).default([]),
+    override: HierarchyOverrideSchema.optional(),
   }),
   density: z.object({
     intent: z.enum(["compact", "regular", "spacious"]),
@@ -169,6 +178,7 @@ export const DesignDecisionsSchema = z.object({
         choice: NonEmptyStringSchema,
         rationale: NonEmptyStringSchema,
         confidence: DecisionConfidenceSchema,
+        references: z.array(NonEmptyStringSchema).default([]),
       }),
     )
     .default([]),
@@ -269,6 +279,7 @@ export interface ArtifactValidation<T> {
   status: GateStatus;
   issues: string[];
   warnings: string[];
+  codes?: string[];
   value?: T;
 }
 

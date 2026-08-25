@@ -20,7 +20,7 @@ import {
   type GateStatus,
   type ProductFrame,
 } from "prax-runtime";
-import { SdirEngine, SdirSchema, type Sdir } from "prax-sdir";
+import { patternSurfaceContract, SdirEngine, SdirSchema, type Sdir } from "prax-sdir";
 import {
   PraxValidator,
   ValidationPlanSchema,
@@ -214,14 +214,19 @@ export class PraxService {
     const inspectedAtLeastL1 = new Set(
       session.disclosures.filter((record) => depthRank[record.depth] >= 1).map((record) => record.knowledge_id),
     );
+    const context = await this.requireArtifact<DesignContext>(session, "designContext");
+    const frame = await this.requireArtifact<ProductFrame>(session, "productFrame");
     const validation = validateDesignDecisions(input.design_decisions, {
       sessionId: session.id,
       routedPatternIds,
       inspectedAtLeastL1,
       plausibleAlternativeCount: routedPatternIds.size,
+      frame,
+      context,
+      patternSurfaces: patternSurfaceContract(input.design_decisions.primary_structure.pattern),
     });
-    const context = await this.requireArtifact<DesignContext>(session, "designContext");
     if (validation.value !== undefined && validation.value.density.intent !== context.density_intent) {
+      validation.codes?.push("DECISION_DENSITY_MISMATCH");
       validation.issues.push("Decision density intent must match Design Context or record an explicit context revision.");
       validation.status = "EXPAND";
     }
@@ -229,6 +234,7 @@ export class PraxService {
       return {
         status: validation.status,
         conflicts: validation.issues,
+        codes: validation.codes ?? [],
         warnings: validation.warnings,
         required_expansions: validation.issues,
         next: nextTool("design_inspect"),

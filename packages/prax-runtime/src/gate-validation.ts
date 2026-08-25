@@ -133,11 +133,116 @@ export function validateDesignContext(
   };
 }
 
+export interface PatternSurfaces {
+  dominant: string[];
+  contextual: string[];
+}
+
 export interface DecisionValidationContext {
   sessionId: string;
   routedPatternIds: ReadonlySet<string>;
   inspectedAtLeastL1: ReadonlySet<string>;
   plausibleAlternativeCount: number;
+  frame: ProductFrame;
+  context: DesignContext;
+  patternSurfaces?: PatternSurfaces | undefined;
+}
+
+interface DecisionIssue {
+  code: string;
+  message: string;
+}
+
+function normalizedToken(value: string): string {
+  return value.trim().toLowerCase();
+}
+
+function decisionReferenceVocabulary(frame: ProductFrame, context: DesignContext): Set<string> {
+  return new Set(
+    [
+      frame.user.primary_role,
+      frame.goal.primary,
+      frame.tasks.primary,
+      ...frame.tasks.secondary,
+      ...frame.product_objects.flatMap((object) => [object.id, object.user_name, object.purpose]),
+      ...frame.mental_model_hypothesis.evidence,
+      context.task.primary,
+      ...context.task.modes,
+      context.domain.type,
+      ...context.domain.entities,
+      ...context.priorities,
+    ].map(normalizedToken),
+  );
+}
+
+function hierarchyFindings(decisions: DesignDecisions, surfaces: PatternSurfaces): DecisionIssue[] {
+  const dominant = surfaces.dominant.map(normalizedToken);
+  const contextual = surfaces.contextual.map(normalizedToken);
+  const findings: DecisionIssue[] = [];
+  const primary = decisions.information_hierarchy.primary;
+  if (!primary.some((surface) => dominant.includes(normalizedToken(surface)))) {
+    findings.push({
+      code: "HIERARCHY_DOMINANT_NOT_PRIMARY",
+      message: `No dominant workspace surface (${surfaces.dominant.join(", ")}) appears in information_hierarchy.primary; the surface carrying the primary task must lead the hierarchy.`,
+    });
+  }
+  for (const surface of primary) {
+    if (contextual.includes(normalizedToken(surface))) {
+      findings.push({
+        code: "HIERARCHY_CONTEXTUAL_SURFACES_DOMINANT",
+        message: `Contextual inspection surface '${surface}' is placed in information_hierarchy.primary; it must stay subordinate to the dominant workspace unless a justified override is recorded.`,
+      });
+    }
+  }
+  return findings;
+}
+
+function semanticFindings(
+  decisions: DesignDecisions,
+  context: DecisionValidationContext,
+  vocabulary: Set<string>,
+): { issues: DecisionIssue[]; acceptedOverride?: DesignDecisions["information_hierarchy"]["override"] } {
+  const findings: DecisionIssue[] = [];
+  let acceptedOverride: DesignDecisions["information_hierarchy"]["override"] | undefined;
+
+  if (context.patternSurfaces !== undefined) {
+    const hierarchy = hierarchyFindings(decisions, context.patternSurfaces);
+    const override = decisions.information_hierarchy.override;
+    if (hierarchy.length > 0 && override !== undefined) {
+      const unknownRefs = override.evidence_refs.filter((ref) => !vocabulary.has(normalizedToken(ref)));
+      if (unknownRefs.length === 0) {
+        acceptedOverride = override;
+      } else {
+        findings.push({
+          code: "DECISION_OVERRIDE_EVIDENCE_UNKNOWN",
+          message: `information_hierarchy.override cites evidence (${unknownRefs.join(", ")}) that does not resolve to the Product Frame or Design Context; record real user evidence or an explicit open question.`,
+        });
+        findings.push(...hierarchy);
+      }
+    } else {
+      findings.push(...hierarchy);
+    }
+  }
+
+  for (const choice of decisions.major_choices) {
+    if (choice.references.length === 0) {
+      findings.push({
+        code: "MAJOR_CHOICE_REFERENCE_MISSING",
+        message: `major_choices '${choice.id}' does not reference any product object, task, or context concept; record structured references.`,
+      });
+      continue;
+    }
+    for (const reference of choice.references) {
+      if (!vocabulary.has(normalizedToken(reference))) {
+        findings.push({
+          code: "MAJOR_CHOICE_REFERENCE_UNKNOWN",
+          message: `major_choices '${choice.id}' references '${reference}', which is not a known product object, task, or context concept.`,
+        });
+      }
+    }
+  }
+
+  return { issues: findings, acceptedOverride };
 }
 
 export function validateDesignDecisions(
@@ -155,28 +260,47 @@ export function validateDesignDecisions(
 
   const issues: string[] = [];
   const warnings: string[] = [];
+  const codes: string[] = [];
   const chosen = parsed.data.primary_structure.pattern;
 
   if (parsed.data.session_id !== context.sessionId) {
+    codes.push("DECISION_SESSION_MISMATCH");
     issues.push("design_decisions.session_id does not match design_session_id.");
   }
   if (!context.routedPatternIds.has(chosen)) {
+    codes.push("DECISION_PATTERN_NOT_ROUTED");
     issues.push(`Chosen Pattern ${chosen} was not returned by the Design Router.`);
   }
   if (!context.inspectedAtLeastL1.has(chosen)) {
+    codes.push("DECISION_PATTERN_NOT_INSPECTED");
     issues.push(`Chosen Pattern ${chosen} was not inspected to at least L1.`);
   }
   if (
     context.plausibleAlternativeCount > 1 &&
     parsed.data.rejected.length === 0
   ) {
+    codes.push("DECISION_ALTERNATIVE_NOT_REJECTED");
     issues.push("At least one plausible alternative must be explicitly rejected.");
   }
   const highImpactUnknowns = parsed.data.unresolved.filter(
     (unknown) => typeof unknown !== "string" && unknown.impact === "high",
   );
   if (highImpactUnknowns.length > 0) {
+    codes.push("DECISION_HIGH_IMPACT_UNRESOLVED");
     issues.push("High-impact design decisions remain unresolved.");
+  }
+
+  const vocabulary = decisionReferenceVocabulary(context.frame, context.context);
+  const semantic = semanticFindings(parsed.data, context, vocabulary);
+  if (semantic.acceptedOverride !== undefined) {
+    const override = semantic.acceptedOverride;
+    warnings.push(
+      `information_hierarchy deviates from the pattern contract under an override accepted by ${override.accepted_by}: ${override.basis} (risks: ${override.risks.join("; ")})`,
+    );
+  }
+  for (const finding of semantic.issues) {
+    codes.push(finding.code);
+    issues.push(finding.message);
   }
 
   if (parsed.data.primary_structure.confidence === "low") {
@@ -187,6 +311,7 @@ export function validateDesignDecisions(
     status: issues.length === 0 ? (warnings.length === 0 ? "PASS" : "WARN") : "EXPAND",
     issues,
     warnings,
+    codes,
     value: parsed.data,
   };
 }

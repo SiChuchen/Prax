@@ -7,9 +7,10 @@ import { DesignRouter, DisclosureGate } from "prax-router";
 import {
   FileSessionStore,
   validateCapabilityMap,
+  validateDesignDecisions,
   validateProductFrame,
 } from "prax-runtime";
-import { SdirEngine } from "prax-sdir";
+import { patternSurfaceContract, SdirEngine } from "prax-sdir";
 import {
   architectureContext,
   architectureDecisions,
@@ -100,6 +101,89 @@ describe("context routing and disclosure", () => {
   });
 });
 
+describe("design decision semantics", () => {
+  const frame = architectureProductFrame();
+  const designContext = architectureContext();
+  const canvasSurfaces = { dominant: ["architecture", "dominant_workspace"], contextual: ["inspector", "contextual_inspector"] };
+  const decisionContext = {
+    sessionId: "ds_dec_sem",
+    routedPatternIds: new Set(["PAT-CANVAS-WORKSPACE"]),
+    inspectedAtLeastL1: new Set(["PAT-CANVAS-WORKSPACE"]),
+    plausibleAlternativeCount: 3,
+    frame,
+    context: designContext,
+    patternSurfaces: canvasSurfaces,
+  };
+
+  it("rejects an inspector-first hierarchy even when the pattern is correct", () => {
+    const decisions = architectureDecisions("ds_dec_sem");
+    decisions.information_hierarchy = { primary: ["inspector"], secondary: ["architecture", "toolbar"] };
+    const result = validateDesignDecisions(decisions, decisionContext);
+    expect(result.status).toBe("EXPAND");
+    expect(result.codes).toContain("HIERARCHY_CONTEXTUAL_SURFACES_DOMINANT");
+    expect(result.codes).toContain("HIERARCHY_DOMINANT_NOT_PRIMARY");
+    expect(result.issues.join(" ")).toMatch(/inspector/);
+    expect(result.issues.join(" ")).toMatch(/architecture/);
+  });
+
+  it("rejects a correct pattern whose hierarchy buries the primary task surface", () => {
+    const decisions = architectureDecisions("ds_dec_sem");
+    decisions.information_hierarchy = { primary: ["toolbar"], secondary: ["architecture", "inspector"] };
+    const result = validateDesignDecisions(decisions, decisionContext);
+    expect(result.status).toBe("EXPAND");
+    expect(result.codes).toContain("HIERARCHY_DOMINANT_NOT_PRIMARY");
+  });
+
+  it("accepts a justified hierarchy override with resolvable evidence", () => {
+    const decisions = architectureDecisions("ds_dec_sem");
+    decisions.information_hierarchy = {
+      primary: ["inspector"],
+      secondary: ["architecture", "toolbar"],
+      override: {
+        basis: "Users primarily audit individual nodes; the canvas is reference context.",
+        evidence_refs: ["user_requirement"],
+        risks: ["weaker spatial orientation", "relationship tracing needs extra steps"],
+        accepted_by: "human",
+      },
+    };
+    const result = validateDesignDecisions(decisions, decisionContext);
+    expect(result.status).toBe("WARN");
+    expect(result.issues).toEqual([]);
+    expect(result.warnings.join(" ")).toMatch(/override/);
+  });
+
+  it("rejects an override whose evidence does not resolve", () => {
+    const decisions = architectureDecisions("ds_dec_sem");
+    decisions.information_hierarchy = {
+      primary: ["inspector"],
+      secondary: ["architecture", "toolbar"],
+      override: {
+        basis: "Feels better this way.",
+        evidence_refs: ["gut_feeling"],
+        risks: ["hierarchy inversion"],
+        accepted_by: "agent",
+      },
+    };
+    const result = validateDesignDecisions(decisions, decisionContext);
+    expect(result.status).toBe("EXPAND");
+    expect(result.codes).toContain("DECISION_OVERRIDE_EVIDENCE_UNKNOWN");
+    expect(result.codes).toContain("HIERARCHY_CONTEXTUAL_SURFACES_DOMINANT");
+  });
+
+  it("rejects major choices that reference nothing real", () => {
+    const missing = architectureDecisions("ds_dec_sem");
+    missing.major_choices[0].references = [];
+    const result = validateDesignDecisions(missing, decisionContext);
+    expect(result.status).toBe("EXPAND");
+    expect(result.codes).toContain("MAJOR_CHOICE_REFERENCE_MISSING");
+
+    const unknown = architectureDecisions("ds_dec_sem");
+    unknown.major_choices[0].references = ["provider_settings_backend"];
+    const unknownResult = validateDesignDecisions(unknown, decisionContext);
+    expect(unknownResult.codes).toContain("MAJOR_CHOICE_REFERENCE_UNKNOWN");
+  });
+});
+
 describe("SDIR referential integrity", () => {
   const frame = architectureProductFrame();
   const context = architectureContext();
@@ -127,6 +211,25 @@ describe("SDIR referential integrity", () => {
         expect(ids.has(relationship.target)).toBe(true);
       }
       expect(engine.validate(sdir, decisions).status).toBe("PASS");
+    }
+  });
+
+  it("keeps the surface contract consistent with the generated region skeletons", () => {
+    const engine = new SdirEngine();
+    for (const decisions of [
+      architectureDecisions("ds_sdir_ref"),
+      dataExplorerDecisions("ds_sdir_ref"),
+      settingsDecisions("ds_sdir_ref"),
+    ]) {
+      const contract = patternSurfaceContract(decisions.primary_structure.pattern);
+      expect(contract).toBeDefined();
+      const sdir = engine.generate(frame, context, decisions);
+      const ids = new Set(sdir.screen.regions.map((region) => region.id));
+      expect(contract!.dominant.some((surface) => ids.has(surface))).toBe(true);
+      const inspector = sdir.screen.regions.find((region) => region.role === "contextual_inspector");
+      if (inspector !== undefined) {
+        expect(contract!.contextual).toContain(inspector.id);
+      }
     }
   });
 
