@@ -89,6 +89,38 @@ export function architectureDecisions(sessionId: string): DesignDecisions {
   };
 }
 
+export function dataExplorerDecisions(sessionId: string): DesignDecisions {
+  return {
+    session_id: sessionId,
+    primary_structure: {
+      pattern: "PAT-DATA-EXPLORER",
+      rationale: ["comparing records is the primary task", "filtering narrows the collection before inspection"],
+      confidence: "high",
+    },
+    information_hierarchy: { primary: ["data"], secondary: ["detail"] },
+    density: { intent: "compact", strategy: ["aligned columns", "scannable rows"], avoid: ["card per record"] },
+    major_choices: [],
+    rejected: [],
+    unresolved: [],
+  };
+}
+
+export function settingsDecisions(sessionId: string): DesignDecisions {
+  return {
+    session_id: sessionId,
+    primary_structure: {
+      pattern: "PAT-SETTINGS-SECTIONS",
+      rationale: ["preferences group by user goal", "each change needs explicit confirmation"],
+      confidence: "high",
+    },
+    information_hierarchy: { primary: ["settings"], secondary: ["settings_navigation"] },
+    density: { intent: "regular", strategy: ["goal-grouped sections", "quiet labels"], avoid: ["backend config order"] },
+    major_choices: [],
+    rejected: [],
+    unresolved: [],
+  };
+}
+
 export function architectureCapabilities(): CapabilityMap {
   return {
     needs: [

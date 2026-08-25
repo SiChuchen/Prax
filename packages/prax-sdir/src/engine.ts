@@ -1,6 +1,6 @@
 import type { DesignContext, DesignDecisions, ProductFrame } from "prax-runtime";
 import { zodIssues } from "prax-runtime";
-import { SdirSchema, type Sdir, type SdirValidation } from "./contracts.js";
+import { SdirSchema, type Sdir, type SdirIssue, type SdirValidation } from "./contracts.js";
 
 const FORBIDDEN_KEY = /(^|_)(width|height|padding|margin|display|grid|flex|color|font|radius|shadow|css|class|classname|component|framework|tailwind|pixel|px)($|_)/i;
 const FORBIDDEN_VALUE = /(\d+(?:\.\d+)?px\b|display\s*:\s*(?:flex|grid)|grid-template|rounded-(?:sm|md|lg|xl)|(?:Radix|Vue|React|Compose)[A-Z]\w*)/i;
@@ -86,7 +86,14 @@ function regionsForPattern(pattern: string): Sdir["screen"]["regions"] {
 export class SdirEngine {
   public generate(frame: ProductFrame, context: DesignContext, decisions: DesignDecisions): Sdir {
     const regions = regionsForPattern(decisions.primary_structure.pattern);
-    const hasInspector = regions.some((region) => region.id === "inspector" || region.id === "detail");
+    const inspector = regions.find((region) => region.role === "contextual_inspector");
+    const primarySurface = regions.find(
+      (region) => region.role === "dominant_workspace" || region.role === "collection",
+    );
+    const relationships =
+      inspector !== undefined && primarySurface !== undefined && primarySurface.id !== inspector.id
+        ? [{ source: primarySurface.id, target: inspector.id, type: "selection_drives_contextual_detail" }]
+        : [];
     return SdirSchema.parse({
       version: "0.1",
       screen: {
@@ -98,9 +105,7 @@ export class SdirEngine {
         archetype: { pattern_ref: decisions.primary_structure.pattern },
         density_intent: context.density_intent,
         regions,
-        relationships: hasInspector
-          ? [{ source: "architecture", target: regions.some((region) => region.id === "inspector") ? "inspector" : "detail", type: "selection_drives_contextual_detail" }]
-          : [],
+        relationships,
         interaction_intents:
           decisions.primary_structure.pattern === "PAT-CANVAS-WORKSPACE"
             ? ["spatial_overview", "direct_selection", "pan_zoom", "progressive_inspection", "keyboard_equivalent"]
@@ -120,32 +125,79 @@ export class SdirEngine {
   public validate(input: unknown, decisions?: DesignDecisions): SdirValidation {
     const schemaResult = SdirSchema.safeParse(input);
     const schemaErrors = schemaResult.success ? [] : zodIssues(schemaResult.error);
-    const semanticErrors = renderLeakIssues(input);
+    const issues: SdirIssue[] = renderLeakIssues(input).map((message) => ({
+      code: "SDIR_RENDER_LEVEL_LEAK",
+      message,
+    }));
     const warnings: string[] = [];
 
     if (schemaResult.success) {
-      semanticErrors.push(...experimentalVocabularyIssues(schemaResult.data));
-      const stateSet = new Set(schemaResult.data.screen.required_states);
+      const sdir = schemaResult.data;
+      issues.push(
+        ...experimentalVocabularyIssues(sdir).map((message) => ({
+          code: "SDIR_UNKNOWN_VOCABULARY",
+          message,
+        })),
+      );
+      const stateSet = new Set(sdir.screen.required_states);
       for (const required of ["loading", "empty", "ready", "error"] as const) {
-        if (!stateSet.has(required)) semanticErrors.push(`required_states must include ${required}.`);
+        if (!stateSet.has(required)) {
+          issues.push({ code: "SDIR_STATE_MISSING", message: `required_states must include ${required}.` });
+        }
       }
-      if (
-        decisions !== undefined &&
-        schemaResult.data.screen.archetype.pattern_ref !== decisions.primary_structure.pattern
-      ) {
-        semanticErrors.push("SDIR pattern_ref must match the approved primary structure decision.");
+      if (decisions !== undefined && sdir.screen.archetype.pattern_ref !== decisions.primary_structure.pattern) {
+        issues.push({
+          code: "SDIR_PATTERN_MISMATCH",
+          message: "SDIR pattern_ref must match the approved primary structure decision.",
+        });
       }
-      if (
-        schemaResult.data.screen.archetype.pattern_ref === "PAT-CANVAS-WORKSPACE" &&
-        !stateSet.has("selected")
-      ) {
-        semanticErrors.push("Canvas Workspace requires a selected state.");
+      if (sdir.screen.archetype.pattern_ref === "PAT-CANVAS-WORKSPACE" && !stateSet.has("selected")) {
+        issues.push({ code: "SDIR_STATE_MISSING", message: "Canvas Workspace requires a selected state." });
       }
+      issues.push(...referentialIssues(sdir));
     }
 
-    if (!schemaResult.success || semanticErrors.length > 0) {
-      return { status: "RETRY", schema_errors: schemaErrors, semantic_errors: semanticErrors, warnings };
+    const semanticErrors = issues.map((issue) => issue.message);
+    if (!schemaResult.success || issues.length > 0) {
+      return { status: "RETRY", schema_errors: schemaErrors, semantic_errors: semanticErrors, semantic_issues: issues, warnings };
     }
-    return { status: "PASS", schema_errors: [], semantic_errors: [], warnings, value: schemaResult.data };
+    return { status: "PASS", schema_errors: [], semantic_errors: [], semantic_issues: [], warnings, value: schemaResult.data };
   }
+}
+
+function referentialIssues(sdir: Sdir): SdirIssue[] {
+  const issues: SdirIssue[] = [];
+  const declared = new Set<string>();
+  const duplicates = new Set<string>();
+  for (const region of sdir.screen.regions) {
+    if (declared.has(region.id)) duplicates.add(region.id);
+    declared.add(region.id);
+  }
+  for (const id of duplicates) {
+    issues.push({
+      code: "SDIR_REGION_ID_DUPLICATE",
+      message: `Region id '${id}' is declared more than once; region ids must be unique.`,
+    });
+  }
+  sdir.screen.relationships.forEach((relationship, index) => {
+    if (!declared.has(relationship.source)) {
+      issues.push({
+        code: "SDIR_RELATION_REGION_NOT_FOUND",
+        message: `relationships[${index}].source '${relationship.source}' does not reference a declared region id.`,
+      });
+    }
+    if (!declared.has(relationship.target)) {
+      issues.push({
+        code: "SDIR_RELATION_REGION_NOT_FOUND",
+        message: `relationships[${index}].target '${relationship.target}' does not reference a declared region id.`,
+      });
+    }
+    if (relationship.source === relationship.target) {
+      issues.push({
+        code: "SDIR_RELATION_SELF_LOOP",
+        message: `relationships[${index}] links region '${relationship.source}' to itself; relationships must connect distinct regions.`,
+      });
+    }
+  });
+  return issues;
 }

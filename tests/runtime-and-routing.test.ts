@@ -10,7 +10,14 @@ import {
   validateProductFrame,
 } from "prax-runtime";
 import { SdirEngine } from "prax-sdir";
-import { architectureContext, architectureProductFrame, settingsContext } from "./fixtures.js";
+import {
+  architectureContext,
+  architectureDecisions,
+  architectureProductFrame,
+  dataExplorerDecisions,
+  settingsContext,
+  settingsDecisions,
+} from "./fixtures.js";
 
 const cleanup: string[] = [];
 
@@ -90,6 +97,68 @@ describe("context routing and disclosure", () => {
     expect(gate.authorize(session, ["PAT-SETTINGS-SECTIONS"], "L1", "compare").status).toBe("BLOCK");
     expect(gate.authorize(session, ["PAT-CANVAS-WORKSPACE"], "L3", "I am curious").status).toBe("BLOCK");
     expect(gate.authorize(session, ["PAT-CANVAS-WORKSPACE"], "L3", "verify evidence source for review").status).toBe("PASS");
+  });
+});
+
+describe("SDIR referential integrity", () => {
+  const frame = architectureProductFrame();
+  const context = architectureContext();
+
+  it("generates a data→detail relationship for PAT-DATA-EXPLORER, not a ghost architecture region", () => {
+    const sdir = new SdirEngine().generate(frame, context, dataExplorerDecisions("ds_sdir_ref"));
+    expect(sdir.screen.regions.map((region) => region.id).sort()).toEqual(["data", "detail"]);
+    expect(sdir.screen.relationships).toEqual([
+      { source: "data", target: "detail", type: "selection_drives_contextual_detail" },
+    ]);
+  });
+
+  it("keeps every generated relationship endpoint inside the declared regions for all built-in patterns", () => {
+    const engine = new SdirEngine();
+    const allDecisions = [
+      architectureDecisions("ds_sdir_ref"),
+      dataExplorerDecisions("ds_sdir_ref"),
+      settingsDecisions("ds_sdir_ref"),
+    ];
+    for (const decisions of allDecisions) {
+      const sdir = engine.generate(frame, context, decisions);
+      const ids = new Set(sdir.screen.regions.map((region) => region.id));
+      for (const relationship of sdir.screen.relationships) {
+        expect(ids.has(relationship.source)).toBe(true);
+        expect(ids.has(relationship.target)).toBe(true);
+      }
+      expect(engine.validate(sdir, decisions).status).toBe("PASS");
+    }
+  });
+
+  it("rejects relationships with undeclared endpoints, reporting source and target separately", () => {
+    const decisions = architectureDecisions("ds_sdir_ref");
+    const sdir = new SdirEngine().generate(frame, context, decisions);
+    const corrupted = structuredClone(sdir);
+    corrupted.screen.relationships = [
+      { source: "ghost_surface", target: "phantom_panel", type: "selection_drives_contextual_detail" },
+    ];
+    const result = new SdirEngine().validate(corrupted, decisions);
+    expect(result.status).toBe("RETRY");
+    expect(result.semantic_issues.map((issue) => issue.code)).toEqual([
+      "SDIR_RELATION_REGION_NOT_FOUND",
+      "SDIR_RELATION_REGION_NOT_FOUND",
+    ]);
+    expect(result.semantic_errors.join(" ")).toContain("source 'ghost_surface'");
+    expect(result.semantic_errors.join(" ")).toContain("target 'phantom_panel'");
+  });
+
+  it("rejects duplicate region ids and self-loop relationships", () => {
+    const decisions = architectureDecisions("ds_sdir_ref");
+    const sdir = new SdirEngine().generate(frame, context, decisions);
+    const corrupted = structuredClone(sdir);
+    corrupted.screen.regions = [...corrupted.screen.regions, { ...corrupted.screen.regions[0] }];
+    corrupted.screen.relationships = [
+      { source: "architecture", target: "architecture", type: "selection_drives_contextual_detail" },
+    ];
+    const result = new SdirEngine().validate(corrupted, decisions);
+    expect(result.status).toBe("RETRY");
+    expect(result.semantic_issues.map((issue) => issue.code)).toContain("SDIR_REGION_ID_DUPLICATE");
+    expect(result.semantic_issues.map((issue) => issue.code)).toContain("SDIR_RELATION_SELF_LOOP");
   });
 });
 

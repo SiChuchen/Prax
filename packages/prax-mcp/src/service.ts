@@ -262,6 +262,7 @@ export class PraxService {
         status: validation.status,
         schema_errors: validation.schema_errors,
         semantic_errors: validation.semantic_errors,
+        semantic_issues: validation.semantic_issues,
         warnings: validation.warnings,
         next: nextTool("design_sdir"),
       };

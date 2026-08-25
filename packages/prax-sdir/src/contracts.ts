@@ -44,10 +44,16 @@ export const SdirSchema = z.object({
 
 export type Sdir = z.infer<typeof SdirSchema>;
 
+export interface SdirIssue {
+  code: string;
+  message: string;
+}
+
 export interface SdirValidation {
   status: "PASS" | "RETRY" | "REVIEW";
   schema_errors: string[];
   semantic_errors: string[];
+  semantic_issues: SdirIssue[];
   warnings: string[];
   value?: Sdir;
 }
