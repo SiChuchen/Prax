@@ -12,13 +12,16 @@ interface Rule {
 
 const TASK_TYPE_RULES: Rule[] = [
   { id: "configure_preferences", tokens: ["configure", "configuration", "settings", "preferences", "配置", "设置", "偏好"] },
-  { id: "compare_filter_records", tokens: ["compare", "filter", "rows", "columns", "logs", "比较", "筛选", "过滤", "表格", "日志"] },
+  { id: "manage_lifecycle", tokens: ["manage", "administer", "lifecycle", "provision", "管理", "生命周期", "启停"] },
+  { id: "compare_filter_records", tokens: ["compare", "filter", "columns", "logs", "比较", "筛选", "过滤", "表格", "日志"] },
+  { id: "browse_collection", tokens: ["browse", "collection", "catalog", "scan", "浏览", "清单", "目录"] },
   { id: "inspect_relationships", tokens: ["inspect", "architecture", "relationship", "canvas", "graph", "topology", "检视", "查看", "架构", "关系", "拓扑", "画布"] },
   { id: "trace_flow", tokens: ["trace", "follow", "追踪", "跟踪", "流程"] },
 ];
 
 const DOMAIN_RULES: Rule[] = [
   { id: "preferences", tokens: ["settings", "preference", "设置", "偏好", "配置"] },
+  { id: "observability_analytics", tokens: ["observability", "analytics", "telemetry", "usage", "metric", "monitoring", "观测", "分析", "遥测", "用量", "监控"] },
   { id: "data_exploration", tokens: ["data", "log", "record", "数据", "日志", "记录"] },
   { id: "software_architecture", tokens: ["architecture", "topology", "架构", "拓扑", "系统"] },
 ];
@@ -26,6 +29,7 @@ const DOMAIN_RULES: Rule[] = [
 const INTERACTION_MODE_RULES: Rule[] = [
   { id: "canvas_with_contextual_inspector", tokens: ["canvas", "spatial", "graph", "topology", "architecture", "relationship", "画布", "拓扑", "架构", "关系"] },
   { id: "collection_with_contextual_detail", tokens: ["compare", "filter", "rows", "list", "table", "比较", "筛选", "列表", "表格"] },
+  { id: "inventory_with_lifecycle_actions", tokens: ["manage", "administer", "lifecycle", "inventory", "管理", "生命周期", "盘点"] },
   { id: "sections_with_navigation", tokens: ["settings", "sections", "设置", "配置", "偏好"] },
 ];
 

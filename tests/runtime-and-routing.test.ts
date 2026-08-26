@@ -392,6 +392,50 @@ describe("canonical context classification", () => {
     expect(settingsClassification.interaction_mode).toBe("sections_with_navigation");
   });
 
+  it("classifies observability and usage-analytics domains and routes the collection patterns", async () => {
+    const frame = architectureProductFrame();
+    frame.tasks = { primary: "browse usage records", secondary: [] };
+    frame.product_objects = [
+      { id: "usage_record", user_name: "usage record", purpose: "one metered usage event" },
+      { id: "source", user_name: "data source", purpose: "where usage originates" },
+    ];
+    const context = architectureContext();
+    context.task = { primary: "browse usage records", modes: ["browse"], frequency: "high" };
+    context.domain = { type: "observability analytics", entities: ["usage_record", "metric", "telemetry"] };
+    context.priorities = ["scan records", "compare usage"];
+    const validated = validateDesignContext(context, frame);
+    const classification = validated.value!.classification!;
+    expect(classification.task_type).toBe("browse_collection");
+    expect(classification.domain_id).toBe("observability_analytics");
+
+    const store = await loadBuiltInKnowledgeStore();
+    const routed = new DesignRouter(store).route(frame, validated.value!, "Browse and compare usage records");
+    const patternIds = routed.patterns.map((pattern) => pattern.id);
+    expect(routed.status).toBe("PASS");
+    expect(patternIds).toContain("PAT-LIST-DETAIL");
+    expect(patternIds).toContain("PAT-DATA-EXPLORER");
+  });
+
+  it("classifies lifecycle administration and routes PAT-RESOURCE-MANAGEMENT", async () => {
+    const frame = architectureProductFrame();
+    frame.tasks = { primary: "manage providers", secondary: [] };
+    frame.product_objects = [{ id: "provider", user_name: "provider", purpose: "an external service provider" }];
+    const context = architectureContext();
+    context.task = { primary: "manage provider lifecycle", modes: ["manage"], frequency: "medium" };
+    context.domain = { type: "administration", entities: ["provider"] };
+    context.priorities = ["safe lifecycle actions"];
+    const validated = validateDesignContext(context, frame);
+    const classification = validated.value!.classification!;
+    expect(classification.task_type).toBe("manage_lifecycle");
+    expect(classification.interaction_mode).toBe("inventory_with_lifecycle_actions");
+    expect(classification.open_questions.length).toBeGreaterThan(0);
+
+    const store = await loadBuiltInKnowledgeStore();
+    const routed = new DesignRouter(store).route(frame, validated.value!, "Manage the provider lifecycle safely");
+    expect(routed.status).toBe("PASS");
+    expect(routed.patterns.map((pattern) => pattern.id)).toContain("PAT-RESOURCE-MANAGEMENT");
+  });
+
   it("reports an explicit unknown instead of fabricating a classification", async () => {
     const frame = chineseArchitectureFrame();
     frame.tasks = { primary: "占卜卦象", secondary: [] };

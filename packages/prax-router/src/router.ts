@@ -23,12 +23,15 @@ const TASK_SCOPE_TOKENS: Record<string, readonly string[]> = {
   inspect_relationships: ["inspect", "trace", "explore"],
   trace_flow: ["trace", "explore"],
   compare_filter_records: ["compare", "filter", "inspect"],
+  browse_collection: ["browse", "inspect"],
+  manage_lifecycle: ["manage", "administer"],
   configure_preferences: ["configure"],
 };
 
 const DOMAIN_SCOPE_TOKENS: Record<string, readonly string[]> = {
   software_architecture: ["architecture"],
   data_exploration: ["data", "logs"],
+  observability_analytics: ["data", "logs"],
   preferences: ["settings"],
 };
 
