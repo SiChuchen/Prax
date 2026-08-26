@@ -15,6 +15,9 @@ import {
   validateCapabilityMap,
   validateDesignContext,
   validateDesignDecisions,
+  validateExistingUnderstanding,
+  validateIntentLite,
+  frameUnderstandingAlignment,
   validateProductFrame,
   validateRequirementConfirmation,
   type CapabilityMap,
@@ -22,6 +25,7 @@ import {
   type DesignDecisions,
   type DesignOperation,
   type DesignSession,
+  type ExistingUnderstanding,
   type GateStatus,
   type ProductFrame,
 } from "prax-runtime";
@@ -163,6 +167,88 @@ export class PraxService {
     const session = await this.sessions.getSession(input.design_session_id);
     const blocked = operationBlock(session, "design_frame");
     if (blocked !== undefined) return blocked;
+    const gate = currentGate(session);
+    const now = this.sessions.nowIso();
+
+    if (gate === "understanding") {
+      if (input.existing_understanding === undefined) {
+        return {
+          status: "EXPAND",
+          issues: ["The understanding gate expects an existing_understanding payload."],
+          next: nextTool("design_frame"),
+        };
+      }
+      const validation = validateExistingUnderstanding(
+        input.existing_understanding,
+        session.mode,
+        session.lifecycle_policy?.change_kind,
+      );
+      if (validation.status !== "PASS" && validation.status !== "WARN") {
+        return {
+          status: validation.status,
+          issues: validation.issues,
+          codes: validation.codes ?? [],
+          warnings: validation.warnings,
+          next: nextTool("design_frame"),
+        };
+      }
+      const updated = advanceSession(session, "understanding", now);
+      await this.sessions.commit(updated, [{ key: "existingUnderstanding", value: validation.value }]);
+      return {
+        status: validation.status,
+        warnings: validation.warnings,
+        phase: updated.phase,
+        next: nextTool(NEXT_TOOL_BY_GATE[currentGate(updated)]),
+      };
+    }
+
+    if (gate === "intent_lite") {
+      if (input.intent_lite === undefined) {
+        return {
+          status: "EXPAND",
+          issues: ["The intent gate expects an intent_lite payload."],
+          next: nextTool("design_frame"),
+        };
+      }
+      const expectedKind = session.lifecycle_policy?.change_kind === "defect_fix" ? "defect_fix" : "visual_polish";
+      const validation = validateIntentLite(input.intent_lite, expectedKind);
+      if (validation.status !== "PASS") {
+        return {
+          status: validation.status,
+          issues: validation.issues,
+          codes: validation.codes ?? [],
+          warnings: [],
+          next: nextTool("design_frame"),
+        };
+      }
+      const updated = advanceSession(session, "intent_lite", now);
+      const intent = validation.value!;
+      const brief = {
+        version: "0.1",
+        mode_plan: {
+          change_list: [intent.change],
+          regression_checks: intent.regression_points,
+          surfaces: intent.surfaces,
+        },
+      };
+      await this.sessions.commit(updated, [
+        { key: "intentLite", value: intent },
+        { key: "implementationBrief", value: brief },
+      ]);
+      return {
+        status: "PASS",
+        phase: updated.phase,
+        next: nextTool(NEXT_TOOL_BY_GATE[currentGate(updated)]),
+      };
+    }
+
+    if (input.product_frame === undefined) {
+      return {
+        status: "EXPAND",
+        issues: ["The framing gate expects a product_frame payload."],
+        next: nextTool("design_frame"),
+      };
+    }
     const validation = validateProductFrame(input.product_frame, session.mode);
     if (validation.status !== "PASS" && validation.status !== "WARN") {
       return {
@@ -172,14 +258,19 @@ export class PraxService {
         next: nextTool("design_frame"),
       };
     }
-    const updated = advanceSession(session, "framing", this.sessions.nowIso());
+    const updated = advanceSession(session, "framing", now);
     await this.sessions.commit(updated, [{ key: "productFrame", value: validation.value }]);
+    const understanding = await this.sessions.readArtifact<ExistingUnderstanding>(session, "existingUnderstanding");
+    const extraWarnings =
+      understanding !== undefined && (session.mode === "existing_product" || session.mode === "rework")
+        ? frameUnderstandingAlignment(validation.value!, understanding, session.mode)
+        : [];
     return {
-      status: validation.status,
+      status: extraWarnings.length > 0 ? "WARN" : validation.status,
       missing_or_uncertain: [],
-      warnings: validation.warnings,
+      warnings: [...validation.warnings, ...extraWarnings],
       phase: updated.phase,
-      next: nextTool("design_context"),
+      next: nextTool(NEXT_TOOL_BY_GATE[currentGate(updated)]),
     };
   }
 

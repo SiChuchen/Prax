@@ -3,6 +3,7 @@ import {
   DesignContextSchema,
   DesignDecisionsSchema,
   ExistingUnderstandingSchema,
+  IntentLiteSchema,
   ProductFrameSchema,
   ProductObjectOverrideSchema,
   RequirementConfirmationSchema,
@@ -13,6 +14,7 @@ import {
   type DesignDecisions,
   type DesignMode,
   type ExistingUnderstanding,
+  type IntentLite,
   type ProductFrame,
   type RequirementConfirmation,
   zodIssues,
@@ -502,4 +504,49 @@ export function validateExistingUnderstanding(
     codes,
     value: data,
   };
+}
+
+export function validateIntentLite(
+  input: unknown,
+  expectedKind: ChangeKind,
+): ArtifactValidation<IntentLite> {
+  const parsed = IntentLiteSchema.safeParse(input);
+  if (!parsed.success) {
+    return { status: "RETRY", issues: zodIssues(parsed.error), warnings: [] };
+  }
+  const issues: string[] = [];
+  const codes: string[] = [];
+  if (parsed.data.kind !== expectedKind) {
+    codes.push("INTENT_KIND_MISMATCH");
+    issues.push(`intent_lite.kind '${parsed.data.kind}' does not match the session's change_kind '${expectedKind}'.`);
+  }
+  return { status: issues.length === 0 ? "PASS" : "EXPAND", issues, warnings: [], codes, value: parsed.data };
+}
+
+export function frameUnderstandingAlignment(
+  frame: ProductFrame,
+  understanding: ExistingUnderstanding,
+  mode: DesignMode,
+): string[] {
+  const known = new Set(understanding.current_objects.map((object) => object.id));
+  const warnings: string[] = [];
+  const introduced = frame.product_objects.filter((object) => !known.has(object.id)).map((object) => object.id);
+  if (introduced.length > 0) {
+    warnings.push(
+      `Frame introduces product objects absent from the existing understanding (${introduced.join(", ")}); confirm they are genuinely new to users, not unexamined backend nouns.`,
+    );
+  }
+  if (mode === "rework") {
+    const replaced = new Set([...understanding.must_replace, ...understanding.free_to_reconsider]);
+    const legacyIds = new Set(understanding.current_objects.map((object) => object.id));
+    const copied = frame.product_objects
+      .filter((object) => legacyIds.has(object.id) && !replaced.has(object.id))
+      .map((object) => object.id);
+    if (copied.length > 0) {
+      warnings.push(
+        `Rework frame reuses legacy objects without declaring them free_to_reconsider or must_replace (${copied.join(", ")}); fresh derivation must start from tasks.`,
+      );
+    }
+  }
+  return warnings;
 }

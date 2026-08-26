@@ -2,6 +2,8 @@ import type {
   CapabilityMap,
   DesignContext,
   DesignDecisions,
+  ExistingUnderstanding,
+  IntentLite,
   ProductFrame,
   RequirementConfirmation,
 } from "prax-runtime";
@@ -15,6 +17,63 @@ export function requirementConfirmation(): RequirementConfirmation {
     open_questions: [],
     confirmed_with_user: true,
     confirmed_at: "2026-08-26T00:00:00.000Z",
+  };
+}
+
+export function architectureUnderstanding(changeTargets: string[] = ["settings"]): ExistingUnderstanding {
+  return {
+    version: "0.1",
+    current_objects: [
+      { id: "architecture_node", user_name: "架构节点", purpose: "系统组成部分", evidence_refs: ["app/architecture"] },
+      { id: "preference", user_name: "配置项", purpose: "改变产品行为", evidence_refs: ["app/settings"] },
+    ],
+    current_surfaces: [
+      { id: "canvas", purpose: "架构画布", evidence_refs: ["app/architecture"] },
+      { id: "settings", purpose: "配置", evidence_refs: ["app/settings"] },
+    ],
+    established_patterns: ["PAT-CANVAS-WORKSPACE"],
+    user_habits: ["左侧导航切换"],
+    constraints_and_debt: [],
+    change_targets: changeTargets,
+    actual_usage: [],
+    pain_points: [],
+    must_preserve: [],
+    must_replace: [],
+    free_to_reconsider: [],
+    migration_notes: [],
+    design_authorities: ["docs/DESIGN.md"],
+  };
+}
+
+export function reworkUnderstanding(): ExistingUnderstanding {
+  return {
+    version: "0.1",
+    current_objects: [{ id: "architecture_node", user_name: "架构节点", purpose: "系统组成部分", evidence_refs: ["app/architecture"] }],
+    current_surfaces: [{ id: "canvas", purpose: "架构画布", evidence_refs: ["app/architecture"] }],
+    established_patterns: [],
+    user_habits: [],
+    constraints_and_debt: [],
+    change_targets: [],
+    actual_usage: ["从画布进、逐节点排查关系"],
+    pain_points: ["全局关系一屏太多，聚焦后丢失方位"],
+    must_preserve: ["flow 数据", "canvas"],
+    must_replace: ["architecture_node"],
+    free_to_reconsider: [],
+    migration_notes: ["旧入口保留一个月"],
+    design_authorities: ["docs/DESIGN.md"],
+  };
+}
+
+export function intentLite(kind: "visual_polish" | "defect_fix"): IntentLite {
+  return {
+    version: "0.1",
+    kind,
+    surfaces: ["login"],
+    current_hierarchy_summary: "表单优先居中，错误内联",
+    change: "字阶 token 降一级；间距 S2→S1",
+    basis: "审查发现登录标题层级与全站不一致",
+    evidence_refs: ["docs/DESIGN.md#typography"],
+    regression_points: ["对比度", "焦点可见性", "键盘路径"],
   };
 }
 

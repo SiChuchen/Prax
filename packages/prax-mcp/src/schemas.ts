@@ -6,6 +6,8 @@ import {
   DesignDecisionsSchema,
   DesignModeSchema,
   DisclosureDepthSchema,
+  ExistingUnderstandingSchema,
+  IntentLiteSchema,
   ProductFrameSchema,
   RequirementConfirmationSchema,
 } from "prax-runtime";
@@ -31,10 +33,25 @@ const ResumeConfirmationInput = z.strictObject({
 
 export const DesignStartInputSchema = z.union([ResumeConfirmationInput, CreateSessionInput]);
 
-export const DesignFrameInputSchema = z.object({
-  design_session_id: SessionId,
-  product_frame: ProductFrameSchema,
-});
+export const DesignFrameInputSchema = z
+  .object({
+    design_session_id: SessionId,
+    product_frame: ProductFrameSchema.optional(),
+    existing_understanding: ExistingUnderstandingSchema.optional(),
+    intent_lite: IntentLiteSchema.optional(),
+  })
+  .superRefine((input, ctx) => {
+    const payloads = [input.product_frame, input.existing_understanding, input.intent_lite].filter(
+      (value) => value !== undefined,
+    );
+    if (payloads.length !== 1) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["product_frame"],
+        message: "Exactly one of product_frame, existing_understanding, or intent_lite is required.",
+      });
+    }
+  });
 
 export const DesignContextInputSchema = z.object({
   design_session_id: SessionId,

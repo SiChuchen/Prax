@@ -17,7 +17,7 @@ import {
   validateExistingUnderstanding,
   type DesignSession,
 } from "prax-runtime";
-import { requirementConfirmation } from "./fixtures.js";
+import { architectureProductFrame, intentLite, requirementConfirmation, reworkUnderstanding } from "./fixtures.js";
 
 const FULL_TAIL = ["context", "route", "decide", "sdir", "reconcile", "prepare", "validate"];
 const REWORK_TAIL = ["context", "route", "decide", "sdir", "prepare", "validate"];
@@ -250,5 +250,48 @@ describe("existing understanding validation", () => {
 
     const uncovered = validateExistingUnderstanding({ ...reworkInput, must_preserve: [] }, "rework");
     expect(uncovered.codes).toContain("REWORK_COVERAGE_INCOMPLETE");
+  });
+});
+
+describe("design frame payload dispatch", () => {
+  async function confirmedService(mode: "rework" | "existing_product", changeKind?: "modify_surface" | "visual_polish") {
+    const root = await mkdtemp(join(tmpdir(), "prax-frame-"));
+    cleanup.push(root);
+    const projectRoot = join(root, "project");
+    await mkdir(projectRoot);
+    const store = new FileSessionStore({ stateRoot: join(root, "state"), idGenerator: () => "ds_frame" });
+    const service = await PraxService.create({ sessions: store });
+    await service.designStart({
+      requirement: "x",
+      project_root: projectRoot,
+      mode,
+      ...(changeKind === undefined ? {} : { change_kind: changeKind }),
+      requirement_confirmation: requirementConfirmation(),
+    });
+    return { service, store };
+  }
+
+  it("routes an understanding payload through the understanding gate for rework", async () => {
+    const { service } = await confirmedService("rework");
+    const result = await service.designFrame({ design_session_id: "ds_frame", existing_understanding: reworkUnderstanding() });
+    expect(result.status).toBe("PASS");
+    expect(result.phase).toBe("PRODUCT_FRAMING");
+  });
+
+  it("routes an intent-lite payload and persists a lightweight brief", async () => {
+    const { service, store } = await confirmedService("existing_product", "visual_polish");
+    const result = await service.designFrame({ design_session_id: "ds_frame", intent_lite: intentLite("visual_polish") });
+    expect(result.status).toBe("PASS");
+    expect(result.phase).toBe("VALIDATION");
+    const session = await store.getSession("ds_frame");
+    const brief = await store.readArtifact<{ mode_plan?: unknown }>(session, "implementationBrief");
+    expect(JSON.stringify(brief)).toMatch(/change_list/);
+  });
+
+  it("rejects a product frame while the session expects understanding", async () => {
+    const { service } = await confirmedService("rework");
+    const result = await service.designFrame({ design_session_id: "ds_frame", product_frame: architectureProductFrame() });
+    expect(result.status).toBe("EXPAND");
+    expect(JSON.stringify(result)).toMatch(/existing_understanding/);
   });
 });
