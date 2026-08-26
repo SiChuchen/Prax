@@ -41,7 +41,7 @@ The project-local directory is the handoff packet:
 ├── compiled-context.yaml         # task-scoped implementation packet
 ├── context-compilation-trace.yaml
 └── validation-report.yaml
-.prax/design/corrections.yaml     # project-local correction/regression memory
+.prax/corrections.yaml            # project-local correction/regression memory
 ```
 
 `session.yaml` contains revision, phase, gate history, routed IDs, disclosure

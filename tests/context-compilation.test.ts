@@ -40,9 +40,9 @@ async function preparedModifySession(corrections: Correction[], sessionId: strin
   const projectRoot = join(root, "project");
   await mkdir(projectRoot);
   const stateRoot = join(root, "state");
-  await mkdir(stateRoot, { recursive: true });
+  await mkdir(join(projectRoot, ".prax"), { recursive: true });
   if (corrections.length > 0) {
-    await writeFile(join(stateRoot, "corrections.yaml"), stringify({ version: "0.1", corrections }), "utf8");
+    await writeFile(join(projectRoot, ".prax", "corrections.yaml"), stringify({ version: "0.1", corrections }), "utf8");
   }
   const store = new FileSessionStore({ stateRoot, idGenerator: () => sessionId });
   const service = await PraxService.create({ sessions: store });

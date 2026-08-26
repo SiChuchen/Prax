@@ -1,3 +1,4 @@
+import { join } from "node:path";
 import {
   KnowledgeStore,
   loadBuiltInKnowledgeStore,
@@ -258,7 +259,7 @@ export class PraxService {
         intentLite: intent,
         planRevision: lightPlan.revision,
         planCheckIds: lightPlan.plan.checks.map((check) => check.id),
-        corrections: await loadCorrections(this.sessions.stateRoot),
+        corrections: await loadCorrections(join(session.project_root, ".prax")),
       });
       await this.sessions.commit(updated, [
         { key: "intentLite", value: intent },
@@ -790,7 +791,7 @@ export class PraxService {
       ...(manifestForCompilation === undefined ? {} : { manifest: manifestForCompilation }),
       planRevision: persistedPlan.revision,
       planCheckIds: persistedPlan.plan.checks.map((check) => check.id),
-      corrections: await loadCorrections(this.sessions.stateRoot),
+      corrections: await loadCorrections(join(session.project_root, ".prax")),
     });
     const updated = advanceSession(session, "prepare", this.sessions.nowIso());
     await this.sessions.commit(updated, [
@@ -871,7 +872,7 @@ export class PraxService {
     const { value: persistedPlan, changed: planChanged } = await this.resolveValidationPlan(session);
     const plan = persistedPlan.plan;
 
-    const corrections = await loadCorrections(this.sessions.stateRoot);
+    const corrections = await loadCorrections(join(session.project_root, ".prax"));
     const understanding =
       (await this.sessions.readArtifact<ExistingUnderstanding>(session, "existingUnderstanding")) ?? undefined;
     const intentLiteArtifact =

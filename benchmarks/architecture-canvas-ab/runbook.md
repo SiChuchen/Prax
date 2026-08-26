@@ -45,7 +45,16 @@ ls -la .prax 2>/dev/null; ls -la | grep -i prax
 
 For Arm B only: ensure the Prax MCP server is configured for the agent
 session and `.prax/` will be created inside this worktree (project root =
-worktree root).
+worktree root). Prax is installed globally (`npm link` from
+`packages/prax-mcp`); register it with the agent CLI, e.g. for Claude Code:
+
+```bash
+claude mcp add prax -- prax-mcp
+```
+
+`prax doctor` must report PASS before the first Arm B run. Session artifacts
+land in `<worktree>/.prax/design/sessions/<id>/`; project-local correction
+memory (if pre-seeded) belongs at `<worktree>/.prax/corrections.yaml`.
 
 ### 2.3 Start the fresh agent session
 

@@ -36,9 +36,9 @@ async function correctionStoreWith(corrections: Correction[]) {
   const projectRoot = join(root, "project");
   await mkdir(projectRoot);
   const stateRoot = join(root, "state");
-  await mkdir(stateRoot, { recursive: true });
+  await mkdir(join(projectRoot, ".prax"), { recursive: true });
   await writeFile(
-    join(stateRoot, "corrections.yaml"),
+    join(projectRoot, ".prax", "corrections.yaml"),
     stringify({ version: "0.1", corrections }),
     "utf8",
   );
