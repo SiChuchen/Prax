@@ -144,6 +144,68 @@ export const MaterialUnknownSchema = z.union([
 ]);
 export type MaterialUnknown = z.infer<typeof MaterialUnknownSchema>;
 
+export const RequirementConfirmationSchema = z.object({
+  version: z.literal("0.1"),
+  user_quote: z.array(NonEmptyStringSchema).min(1),
+  restatement: NonEmptyStringSchema,
+  boundaries: z.object({
+    in_scope: z.array(NonEmptyStringSchema).min(1),
+    out_of_scope: z.array(NonEmptyStringSchema),
+  }),
+  open_questions: z.array(MaterialUnknownSchema).default([]),
+  confirmed_with_user: z.literal(true),
+  confirmed_at: z.string().datetime(),
+});
+export type RequirementConfirmation = z.infer<typeof RequirementConfirmationSchema>;
+
+export const ExistingUnderstandingSchema = z.object({
+  version: z.literal("0.1"),
+  current_objects: z
+    .array(
+      z.object({
+        id: NonEmptyStringSchema,
+        user_name: NonEmptyStringSchema,
+        purpose: NonEmptyStringSchema,
+        evidence_refs: z.array(NonEmptyStringSchema).default([]),
+      }),
+    )
+    .default([]),
+  current_surfaces: z
+    .array(
+      z.object({
+        id: NonEmptyStringSchema,
+        purpose: NonEmptyStringSchema,
+        evidence_refs: z.array(NonEmptyStringSchema).default([]),
+      }),
+    )
+    .default([]),
+  established_patterns: z.array(NonEmptyStringSchema).default([]),
+  user_habits: z.array(NonEmptyStringSchema).default([]),
+  constraints_and_debt: z.array(NonEmptyStringSchema).default([]),
+  change_targets: z.array(NonEmptyStringSchema).default([]),
+  actual_usage: z.array(NonEmptyStringSchema).default([]),
+  pain_points: z.array(NonEmptyStringSchema).default([]),
+  must_preserve: z.array(NonEmptyStringSchema).default([]),
+  must_replace: z.array(NonEmptyStringSchema).default([]),
+  free_to_reconsider: z.array(NonEmptyStringSchema).default([]),
+  migration_notes: z.array(NonEmptyStringSchema).default([]),
+  design_authorities: z.array(NonEmptyStringSchema).default([]),
+});
+export type ExistingUnderstanding = z.infer<typeof ExistingUnderstandingSchema>;
+export type ExistingUnderstandingInput = z.input<typeof ExistingUnderstandingSchema>;
+
+export const IntentLiteSchema = z.object({
+  version: z.literal("0.1"),
+  kind: z.enum(["visual_polish", "defect_fix"]),
+  surfaces: z.array(NonEmptyStringSchema).min(1),
+  current_hierarchy_summary: NonEmptyStringSchema,
+  change: NonEmptyStringSchema,
+  basis: NonEmptyStringSchema,
+  evidence_refs: z.array(NonEmptyStringSchema).min(1),
+  regression_points: z.array(NonEmptyStringSchema).min(1),
+});
+export type IntentLite = z.infer<typeof IntentLiteSchema>;
+
 export const CanonicalClassificationSchema = z.object({
   version: z.literal("1"),
   task_type: NonEmptyStringSchema,
@@ -318,6 +380,8 @@ export const DesignSessionSchema = z.object({
   artifacts: z.record(z.string(), NonEmptyStringSchema).default({}),
   unresolved: z.array(NonEmptyStringSchema).default([]),
   warnings: z.array(NonEmptyStringSchema).default([]),
+  lifecycle_policy: LifecyclePolicySchema.optional(),
+  design_authorities: z.array(NonEmptyStringSchema).default([]),
 });
 export type DesignSession = z.infer<typeof DesignSessionSchema>;
 
@@ -349,6 +413,10 @@ export const ARTIFACT_FILES = {
   capabilityGaps: "capability-gaps.yaml",
   implementationBrief: "implementation-brief.yaml",
   validationReport: "validation-report.yaml",
+  requirementConfirmation: "requirement-confirmation.yaml",
+  existingUnderstanding: "existing-understanding.yaml",
+  intentLite: "intent-lite.yaml",
+  sdirDelta: "sdir-delta.yaml",
 } as const;
 
 export type ArtifactKey = keyof typeof ARTIFACT_FILES;

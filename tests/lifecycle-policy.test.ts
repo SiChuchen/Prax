@@ -1,6 +1,11 @@
+import { mkdtemp, mkdir, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   DEFAULT_LEGACY_POLICY,
+  DesignSessionSchema,
+  FileSessionStore,
   GATE_PHASE,
   NEXT_TOOL_BY_GATE,
   PraxRuntimeError,
@@ -53,5 +58,41 @@ describe("lifecycle policy", () => {
       ]),
     ).toEqual(["framing", "context", "route", "decide", "sdir", "reconcile", "prepare", "validate"]);
     expect(normalizeCompletedGates(["framing", "validate"])).toEqual(["framing", "validate"]);
+  });
+});
+
+const cleanup: string[] = [];
+afterEach(async () => {
+  await Promise.all(cleanup.splice(0).map((path) => rm(path, { recursive: true, force: true })));
+});
+
+describe("session policy persistence", () => {
+  it("stores the policy snapshot, authorities, and starts at the first gate phase", async () => {
+    const root = await mkdtemp(join(tmpdir(), "prax-policy-"));
+    cleanup.push(root);
+    const projectRoot = join(root, "project");
+    await mkdir(projectRoot);
+    const store = new FileSessionStore({ stateRoot: join(root, "state"), idGenerator: () => "ds_policy" });
+    const session = await store.createSession({
+      projectRoot,
+      requirement: "Rework the console",
+      mode: "rework",
+      lifecyclePolicy: lifecyclePolicyFor("rework"),
+      designAuthorities: ["docs/DESIGN.md"],
+    });
+    expect(session.lifecycle_policy?.gates[0]).toBe("confirm");
+    expect(session.phase).toBe("REQUIREMENT_CONFIRMATION");
+    expect(session.design_authorities).toEqual(["docs/DESIGN.md"]);
+  });
+
+  it("parses legacy sessions without policy or authorities", () => {
+    const legacy = DesignSessionSchema.parse({
+      id: "ds_old", project_root: "/tmp/p", mode: "greenfield", phase: "PRODUCT_FRAMING",
+      created_at: new Date().toISOString(), updated_at: new Date().toISOString(), revision: 1,
+      requirement_ref: "requirement.md", completed_gates: [], current_gate: { name: "product_framing" },
+      disclosures: [], routing_history: [], artifacts: {}, unresolved: [], warnings: [],
+    });
+    expect(legacy.lifecycle_policy).toBeUndefined();
+    expect(legacy.design_authorities).toEqual([]);
   });
 });

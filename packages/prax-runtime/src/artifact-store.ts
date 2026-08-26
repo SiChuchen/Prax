@@ -17,12 +17,17 @@ import {
   DesignContextSchema,
   DesignDecisionsSchema,
   DesignSessionSchema,
+  ExistingUnderstandingSchema,
+  IntentLiteSchema,
   ProductFrameSchema,
+  RequirementConfirmationSchema,
   zodIssues,
   type ArtifactKey,
   type DesignMode,
   type DesignSession,
+  type LifecyclePolicy,
 } from "./contracts.js";
+import { GATE_PHASE } from "./lifecycle-policy.js";
 import { PraxRuntimeError } from "./errors.js";
 
 const IndexEntrySchema = z.object({
@@ -44,6 +49,9 @@ const ARTIFACT_SCHEMAS: Partial<Record<ArtifactKey, z.ZodType>> = {
   designContext: DesignContextSchema,
   designDecisions: DesignDecisionsSchema,
   capabilityGaps: CapabilityMapSchema,
+  requirementConfirmation: RequirementConfirmationSchema,
+  existingUnderstanding: ExistingUnderstandingSchema,
+  intentLite: IntentLiteSchema,
 };
 
 const LOCK_STALE_MS = 30_000;
@@ -126,6 +134,8 @@ export class FileSessionStore {
     requirement: string;
     mode: DesignMode;
     projectId?: string;
+    lifecyclePolicy?: LifecyclePolicy;
+    designAuthorities?: string[];
   }): Promise<DesignSession> {
     return this.withLock(async () => {
       const projectRoot = resolve(input.projectRoot);
@@ -162,13 +172,15 @@ export class FileSessionStore {
         ...(input.projectId === undefined ? {} : { project_id: input.projectId }),
         project_root: projectRoot,
         mode: input.mode,
-        phase: "PRODUCT_FRAMING",
+        phase: input.lifecyclePolicy === undefined ? "PRODUCT_FRAMING" : GATE_PHASE[input.lifecyclePolicy.gates[0]!],
         created_at: now,
         updated_at: now,
         revision: 0,
         requirement_ref: ARTIFACT_FILES.requirement,
         completed_gates: [],
-        current_gate: { name: "product_framing" },
+        current_gate: {
+          name: input.lifecyclePolicy === undefined ? "product_framing" : input.lifecyclePolicy.gates[0]!,
+        },
         disclosures: [],
         routing_history: [],
         artifacts: {
@@ -177,6 +189,8 @@ export class FileSessionStore {
         },
         unresolved: [],
         warnings: [],
+        ...(input.lifecyclePolicy === undefined ? {} : { lifecycle_policy: input.lifecyclePolicy }),
+        design_authorities: input.designAuthorities ?? [],
       };
 
       await mkdir(sessionDirectory, { recursive: true });
