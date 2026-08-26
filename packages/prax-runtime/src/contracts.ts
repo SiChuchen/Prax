@@ -482,6 +482,7 @@ export const ARTIFACT_FILES = {
   intentLite: "intent-lite.yaml",
   sdirDelta: "sdir-delta.yaml",
   contextManifest: "context-manifest.yaml",
+  validationPlan: "validation-plan.yaml",
 } as const;
 
 export type ArtifactKey = keyof typeof ARTIFACT_FILES;

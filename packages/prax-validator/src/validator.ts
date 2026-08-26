@@ -88,10 +88,49 @@ const PATTERN_CHECKS: Record<string, ValidationCheck[]> = {
   ],
 };
 
+const CHECK_PROFILE: Record<string, { profile: string; facet: string }> = {
+  requirement_alignment: { profile: "semantic_integrity", facet: "semantic" },
+  semantic_conformance: { profile: "semantic_integrity", facet: "semantic" },
+  state_completeness: { profile: "state_coverage", facet: "behavioral" },
+  product_model_alignment: { profile: "semantic_integrity", facet: "semantic" },
+  keyboard: { profile: "keyboard_accessibility", facet: "behavioral" },
+  hierarchy_review: { profile: "semantic_integrity", facet: "visual_hierarchy" },
+  untouched_surface_regression: { profile: "runtime_degradation", facet: "behavioral" },
+  pattern_consistency: { profile: "semantic_integrity", facet: "semantic" },
+  authority_consistency: { profile: "semantic_integrity", facet: "epistemic" },
+  fresh_derivation_check: { profile: "semantic_integrity", facet: "semantic" },
+  migration_readiness: { profile: "persistence_integrity", facet: "behavioral" },
+  delta_conformance: { profile: "semantic_integrity", facet: "semantic" },
+  hierarchy_preserved: { profile: "semantic_integrity", facet: "visual_hierarchy" },
+  readability: { profile: "visual_snapshot", facet: "visual" },
+  regression_check: { profile: "runtime_degradation", facet: "behavioral" },
+  relationship_trace: { profile: "relationship_integrity", facet: "behavioral" },
+  context_preservation: { profile: "relationship_integrity", facet: "behavioral" },
+  canvas_signal_hierarchy: { profile: "semantic_integrity", facet: "visual_hierarchy" },
+  filter_state: { profile: "state_coverage", facet: "behavioral" },
+  comparison_scan: { profile: "state_coverage", facet: "behavioral" },
+  settings_grouping: { profile: "semantic_integrity", facet: "semantic" },
+  safe_change: { profile: "state_coverage", facet: "behavioral" },
+  destructive_recovery: { profile: "runtime_degradation", facet: "behavioral" },
+};
+
+function withProfiles(checks: ValidationCheck[]): ValidationCheck[] {
+  return checks.map((check) => {
+    const mapping = CHECK_PROFILE[check.id];
+    if (mapping === undefined || check.profile !== undefined) return check;
+    return { ...check, profile: mapping.profile, facet: mapping.facet };
+  });
+}
+
 export class PraxValidator {
   private readonly sdirEngine = new SdirEngine();
 
   public plan(input: ValidationPlanInput): ValidationPlan {
+    const plan = this.assemblePlan(input);
+    return { ...plan, checks: withProfiles(plan.checks) };
+  }
+
+  private assemblePlan(input: ValidationPlanInput): ValidationPlan {
     const policy = input.policyContext;
     if (policy === undefined) {
       const patternChecks = input.decisions !== undefined ? PATTERN_CHECKS[input.decisions.primary_structure.pattern] ?? [] : [];

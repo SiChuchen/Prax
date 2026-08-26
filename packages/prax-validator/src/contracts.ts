@@ -6,6 +6,8 @@ export const ValidationCheckSchema = z.object({
   id: NonEmpty,
   label: NonEmpty,
   kind: z.enum(["deterministic", "assistive", "empirical"]),
+  profile: NonEmpty.optional(),
+  facet: NonEmpty.optional(),
   requirement: NonEmpty,
   evidence_required: z.boolean(),
 });
@@ -17,6 +19,28 @@ export const ValidationPlanSchema = z.object({
   checks: z.array(ValidationCheckSchema).min(1),
 });
 export type ValidationPlan = z.infer<typeof ValidationPlanSchema>;
+
+export const PersistedValidationPlanSchema = z.object({
+  version: z.literal("0.1"),
+  revision: z.number().int().positive(),
+  session_id: NonEmpty,
+  derived_from: z.object({
+    artifact_digests: z.record(z.string(), NonEmpty),
+  }),
+  plan: ValidationPlanSchema,
+  history: z
+    .array(
+      z.object({
+        revision: z.number().int().positive(),
+        derived_from: z.object({
+          artifact_digests: z.record(z.string(), NonEmpty),
+        }),
+        checks: z.array(ValidationCheckSchema),
+      }),
+    )
+    .default([]),
+});
+export type PersistedValidationPlan = z.infer<typeof PersistedValidationPlanSchema>;
 
 export const ValidationEvidenceItemSchema = z.object({
   check_id: NonEmpty,

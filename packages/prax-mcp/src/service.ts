@@ -8,6 +8,7 @@ import {
   FileSessionStore,
   advanceSession,
   checkOperationAllowed,
+  contentDigest,
   currentGate,
   deriveContextManifest,
   lifecyclePolicyFor,
@@ -38,9 +39,9 @@ import {
 import { patternSurfaceContract, SdirEngine, validateSdirDelta, type Sdir, type SdirDelta } from "prax-sdir";
 import {
   PraxValidator,
-  ValidationPlanSchema,
+  PersistedValidationPlanSchema,
+  type PersistedValidationPlan,
   type ValidationEvidence,
-  type ValidationPlan,
 } from "prax-validator";
 import type {
   DesignContextInput,
@@ -233,8 +234,14 @@ export class PraxService {
       const updated = advanceSession(session, "intent_lite", now);
       const intent = validation.value!;
       const manifest = deriveContextManifest({ session: updated, understanding, intentLite: intent });
+      const { value: lightPlan, changed: lightPlanChanged } = await this.resolveValidationPlan(updated);
       const brief = {
         version: "0.1",
+        validation_plan_ref: {
+          artifact: "validation-plan.yaml",
+          revision: lightPlan.revision,
+        },
+        validation_requirements: lightPlan.plan.checks.map((check) => check.id),
         mode_plan: {
           change_list: [intent.change],
           regression_checks: intent.regression_points,
@@ -245,6 +252,7 @@ export class PraxService {
         { key: "intentLite", value: intent },
         { key: "contextManifest", value: manifest },
         { key: "implementationBrief", value: brief },
+        ...(lightPlanChanged ? [{ key: "validationPlan" as const, value: lightPlan }] : []),
       ]);
       return {
         status: "PASS",
@@ -702,7 +710,8 @@ export class PraxService {
       ? await this.requireArtifact<CapabilityMap>(session, "capabilityGaps")
       : { needs: [] as CapabilityMap["needs"] };
     const states = sdirArtifact?.screen.required_states ?? ["loading", "empty", "ready", "error"];
-    const validationPlan = await this.validationPlanFor(session);
+    const { value: persistedPlan, changed: planChanged } = await this.resolveValidationPlan(session);
+    const validationPlan = persistedPlan.plan;
 
     let modePlan: Record<string, unknown> | undefined;
     if (policy.mode === "rework" && understanding !== undefined) {
@@ -746,11 +755,18 @@ export class PraxService {
       approved_component_contracts: this.componentContracts(decisions.primary_structure.pattern),
       states_required: states,
       capability_gaps: capabilityMap.needs.filter((need) => need.status === "gap" || need.status === "blocked"),
+      validation_plan_ref: {
+        artifact: "validation-plan.yaml",
+        revision: persistedPlan.revision,
+      },
       validation_requirements: validationPlan.checks.map((check) => check.id),
       ...(modePlan === undefined ? {} : { mode_plan: modePlan }),
     };
     const updated = advanceSession(session, "prepare", this.sessions.nowIso());
-    await this.sessions.commit(updated, [{ key: "implementationBrief", value: implementationBrief }]);
+    await this.sessions.commit(updated, [
+      { key: "implementationBrief", value: implementationBrief },
+      ...(planChanged ? [{ key: "validationPlan" as const, value: persistedPlan }] : []),
+    ]);
     return {
       status: "PASS",
       implementation_brief: implementationBrief,
@@ -759,24 +775,58 @@ export class PraxService {
     };
   }
 
-  private async validationPlanFor(session: DesignSession): Promise<ValidationPlan> {
-    const policy = sessionPolicy(session);
+  private async resolveValidationPlan(session: DesignSession): Promise<{
+    value: PersistedValidationPlan;
+    changed: boolean;
+  }> {
     const understanding =
       (await this.sessions.readArtifact<ExistingUnderstanding>(session, "existingUnderstanding")) ?? undefined;
-    const authorities = [
-      ...new Set([...session.design_authorities, ...(understanding?.design_authorities ?? [])]),
-    ];
-    return this.validator.plan({
+    const frame = (await this.sessions.readArtifact<ProductFrame>(session, "productFrame")) ?? undefined;
+    const context = (await this.sessions.readArtifact<DesignContext>(session, "designContext")) ?? undefined;
+    const decisions = (await this.sessions.readArtifact<DesignDecisions>(session, "designDecisions")) ?? undefined;
+    const intentLite = (await this.sessions.readArtifact<IntentLite>(session, "intentLite")) ?? undefined;
+
+    const digests: Record<string, string> = {};
+    if (frame !== undefined) digests.product_frame = contentDigest(frame);
+    if (context !== undefined) digests.design_context = contentDigest(context);
+    if (decisions !== undefined) digests.design_decisions = contentDigest(decisions);
+    if (intentLite !== undefined) digests.intent_lite = contentDigest(intentLite);
+    if (understanding !== undefined) digests.existing_understanding = contentDigest(understanding);
+
+    const stored = await this.sessions.readArtifact<PersistedValidationPlan>(session, "validationPlan");
+    const canonical = (value: Record<string, string>) =>
+      JSON.stringify(Object.fromEntries(Object.entries(value).sort(([a], [b]) => a.localeCompare(b))));
+    if (stored !== undefined && stored.session_id === session.id && canonical(stored.derived_from.artifact_digests) === canonical(digests)) {
+      return { value: stored, changed: false };
+    }
+
+    const policy = sessionPolicy(session);
+    const authorities = [...new Set([...session.design_authorities, ...(understanding?.design_authorities ?? [])])];
+    const plan = this.validator.plan({
       policyContext: {
         mode: session.mode,
         ...(policy.change_kind === undefined ? {} : { change_kind: policy.change_kind }),
         authorities,
       },
-      frame: (await this.sessions.readArtifact<ProductFrame>(session, "productFrame")) ?? undefined,
-      context: (await this.sessions.readArtifact<DesignContext>(session, "designContext")) ?? undefined,
-      decisions: (await this.sessions.readArtifact<DesignDecisions>(session, "designDecisions")) ?? undefined,
-      intentLite: (await this.sessions.readArtifact<IntentLite>(session, "intentLite")) ?? undefined,
+      ...(frame === undefined ? {} : { frame }),
+      ...(context === undefined ? {} : { context }),
+      ...(decisions === undefined ? {} : { decisions }),
+      ...(intentLite === undefined ? {} : { intentLite }),
     });
+    const value = PersistedValidationPlanSchema.parse({
+      version: "0.1",
+      revision: (stored?.revision ?? 0) + 1,
+      session_id: session.id,
+      derived_from: { artifact_digests: digests },
+      plan,
+      history: [
+        ...(stored?.history ?? []),
+        ...(stored === undefined
+          ? []
+          : [{ revision: stored.revision, derived_from: stored.derived_from, checks: stored.plan.checks }]),
+      ],
+    });
+    return { value, changed: true };
   }
 
   public async designValidate(input: DesignValidateInput): Promise<PraxOutput> {
@@ -784,13 +834,19 @@ export class PraxService {
     const blocked = operationBlock(session, "design_validate");
     if (blocked !== undefined) return blocked;
     const prior = await this.sessions.readArtifact<ValidationReportArtifact>(session, "validationReport");
-    const plan = prior === undefined
-      ? await this.validationPlanFor(session)
-      : ValidationPlanSchema.parse(prior.plan);
+    const { value: persistedPlan, changed: planChanged } = await this.resolveValidationPlan(session);
+    const plan = persistedPlan.plan;
 
     if (input.mode === "plan") {
       await this.sessions.commit(touch(session, this.sessions.nowIso()), [
-        { key: "validationReport", value: { plan, ...(prior?.evidence === undefined ? {} : { evidence: prior.evidence }) } },
+        {
+          key: "validationReport",
+          value: {
+            plan_revision: persistedPlan.revision,
+            ...(prior?.evidence === undefined ? {} : { evidence: prior.evidence }),
+          },
+        },
+        ...(planChanged ? [{ key: "validationPlan" as const, value: persistedPlan }] : []),
       ]);
       return { status: "EXPAND", checks: plan.checks, findings: [], missing_evidence: plan.checks.filter((check) => check.evidence_required).map((check) => check.id), next: nextTool("design_validate") };
     }
@@ -801,7 +857,8 @@ export class PraxService {
       }
       const evidence = this.validator.parseEvidence(input.evidence);
       await this.sessions.commit(touch(session, this.sessions.nowIso()), [
-        { key: "validationReport", value: { plan, evidence } },
+        { key: "validationReport", value: { plan_revision: persistedPlan.revision, evidence } },
+        ...(planChanged ? [{ key: "validationPlan" as const, value: persistedPlan }] : []),
       ]);
       return { status: "PASS", checks: plan.checks, findings: [], missing_evidence: [], next: nextTool("design_validate") };
     }
@@ -822,10 +879,21 @@ export class PraxService {
       ? { ...advanceSession(session, "validate", now), phase: "COMPLETE" as const, current_gate: { name: "complete" } }
       : touch(session, now);
     await this.sessions.commit(updated, [
-      { key: "validationReport", value: { plan, ...(evidence === undefined ? {} : { evidence }), evaluation } },
+      {
+        key: "validationReport",
+        value: {
+          plan_revision: persistedPlan.revision,
+          ...(evidence === undefined ? {} : { evidence }),
+          evaluation,
+        },
+      },
+      ...(planChanged ? [{ key: "validationPlan" as const, value: persistedPlan }] : []),
     ]);
     return {
       ...evaluation,
+      ...(planChanged
+        ? { warnings: [`Validation plan upstream artifacts changed; plan re-derived as revision ${persistedPlan.revision}.`] }
+        : {}),
       phase: updated.phase,
       ...(evaluation.status === "PASS" ? {} : { next: nextTool("design_validate") }),
     };
