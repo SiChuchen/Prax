@@ -14,6 +14,9 @@ export type GateStatus = z.infer<typeof GateStatusSchema>;
 
 export const DesignPhaseSchema = z.enum([
   "NEW",
+  "REQUIREMENT_CONFIRMATION",
+  "UNDERSTANDING",
+  "INTENT_LITE",
   "PRODUCT_FRAMING",
   "CONTEXT",
   "ROUTING",
@@ -29,8 +32,35 @@ export const DesignPhaseSchema = z.enum([
 ]);
 export type DesignPhase = z.infer<typeof DesignPhaseSchema>;
 
-export const DesignModeSchema = z.enum(["greenfield", "existing_product"]);
+export const DesignModeSchema = z.enum(["greenfield", "existing_product", "rework"]);
 export type DesignMode = z.infer<typeof DesignModeSchema>;
+
+export const ChangeKindSchema = z.enum(["add_surface", "modify_surface", "visual_polish", "defect_fix"]);
+export type ChangeKind = z.infer<typeof ChangeKindSchema>;
+
+export const GateNameSchema = z.enum([
+  "confirm",
+  "understanding",
+  "framing",
+  "intent_lite",
+  "context",
+  "route",
+  "decide",
+  "sdir",
+  "sdir_delta",
+  "reconcile",
+  "prepare",
+  "validate",
+]);
+export type GateName = z.infer<typeof GateNameSchema>;
+
+export const LifecyclePolicySchema = z.object({
+  version: z.literal("1"),
+  mode: DesignModeSchema,
+  change_kind: ChangeKindSchema.optional(),
+  gates: z.array(GateNameSchema).min(1),
+});
+export type LifecyclePolicy = z.infer<typeof LifecyclePolicySchema>;
 
 export const DisclosureDepthSchema = z.enum(["L0", "L1", "L2", "L3"]);
 export type DisclosureDepth = z.infer<typeof DisclosureDepthSchema>;
