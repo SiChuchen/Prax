@@ -4,6 +4,7 @@ import { join, resolve } from "node:path";
 import { afterEach, expect, it } from "vitest";
 import { Client } from "@modelcontextprotocol/client";
 import { StdioClientTransport } from "@modelcontextprotocol/client/stdio";
+import { requirementConfirmation } from "./fixtures.js";
 
 const cleanup: string[] = [];
 afterEach(async () => {
@@ -32,7 +33,12 @@ it("starts over stdio, registers exactly ten staged tools, and validates inputs"
 
     const started = await client.callTool({
       name: "design_start",
-      arguments: { requirement: "Inspect an architecture", project_root: projectRoot, mode: "greenfield" },
+      arguments: {
+        requirement: "Inspect an architecture",
+        project_root: projectRoot,
+        mode: "greenfield",
+        requirement_confirmation: requirementConfirmation(),
+      },
     });
     expect(started.isError).not.toBe(true);
     expect(started.structuredContent).toMatchObject({ status: "PASS", phase: "PRODUCT_FRAMING" });

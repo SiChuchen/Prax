@@ -12,6 +12,7 @@ import {
   validateProductFrame,
 } from "prax-runtime";
 import { PraxService } from "prax-mcp";
+import { requirementConfirmation } from "./fixtures.js";
 import { patternSurfaceContract, SdirEngine } from "prax-sdir";
 import {
   architectureCapabilities,
@@ -308,7 +309,7 @@ describe("routing escape hatch", () => {
     context.task = { primary: "占卜", modes: ["起卦"], frequency: "low" };
     context.domain = { type: "玄学", entities: ["卦象"] };
 
-    expect((await service.designStart({ requirement: "呈现卦象", project_root: projectRoot, mode: "greenfield" })).status).toBe("PASS");
+    expect((await service.designStart({ requirement: "呈现卦象", project_root: projectRoot, mode: "greenfield", requirement_confirmation: requirementConfirmation() })).status).toBe("PASS");
     expect((await service.designFrame({ design_session_id: "ds_escape", product_frame: frame })).status).toBe("PASS");
     expect((await service.designContext({ design_session_id: "ds_escape", design_context: context })).status).toMatch(/PASS|WARN/);
 
@@ -536,7 +537,7 @@ describe("decision to SDIR mapping", () => {
     await mkdir(projectRoot);
     const store = new FileSessionStore({ stateRoot: join(root, "state"), idGenerator: () => "ds_revalidate" });
     const service = await PraxService.create({ sessions: store });
-    await service.designStart({ requirement: "Build an Architecture Canvas.", project_root: projectRoot, mode: "greenfield" });
+    await service.designStart({ requirement: "Build an Architecture Canvas.", project_root: projectRoot, mode: "greenfield", requirement_confirmation: requirementConfirmation() });
     await service.designFrame({ design_session_id: "ds_revalidate", product_frame: architectureProductFrame() });
     await service.designContext({ design_session_id: "ds_revalidate", design_context: architectureContext() });
     await service.designRoute({ design_session_id: "ds_revalidate", question: "Choose the primary workspace pattern" });

@@ -2,6 +2,7 @@ import { mkdtemp, mkdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
+import { PraxService } from "prax-mcp";
 import {
   advanceSession,
   checkOperationAllowed,
@@ -15,6 +16,7 @@ import {
   normalizeCompletedGates,
   type DesignSession,
 } from "prax-runtime";
+import { requirementConfirmation } from "./fixtures.js";
 
 const FULL_TAIL = ["context", "route", "decide", "sdir", "reconcile", "prepare", "validate"];
 const REWORK_TAIL = ["context", "route", "decide", "sdir", "prepare", "validate"];
@@ -145,5 +147,58 @@ describe("policy-driven state machine", () => {
       const blocked = checkOperationAllowed(legacy, "design_decide");
       expect(blocked?.next).toEqual({ tool: expectedTool });
     }
+  });
+});
+
+describe("requirement confirmation gate", () => {
+  async function setup() {
+    const root = await mkdtemp(join(tmpdir(), "prax-confirm-"));
+    cleanup.push(root);
+    const projectRoot = join(root, "project");
+    await mkdir(projectRoot);
+    const store = new FileSessionStore({ stateRoot: join(root, "state"), idGenerator: () => "ds_confirm" });
+    const service = await PraxService.create({ sessions: store });
+    return { service, projectRoot, store };
+  }
+
+  it("creates a session awaiting confirmation and accepts the resume submission", async () => {
+    const { service, projectRoot, store } = await setup();
+    const created = await service.designStart({ requirement: "Build a canvas", project_root: projectRoot, mode: "greenfield" });
+    expect(created.status).toBe("PASS");
+    expect(created.phase).toBe("REQUIREMENT_CONFIRMATION");
+    expect(created.next).toEqual({ tool: "design_start" });
+
+    const confirmed = await service.designStart({ design_session_id: "ds_confirm", requirement_confirmation: requirementConfirmation() });
+    expect(confirmed.status).toBe("PASS");
+    expect(confirmed.phase).toBe("PRODUCT_FRAMING");
+    expect((await store.getSession("ds_confirm")).artifacts.requirementConfirmation).toBeDefined();
+  });
+
+  it("accepts a complete confirmation inline at creation", async () => {
+    const { service, projectRoot } = await setup();
+    const started = await service.designStart({
+      requirement: "Build a canvas",
+      project_root: projectRoot,
+      mode: "greenfield",
+      requirement_confirmation: requirementConfirmation(),
+    });
+    expect(started.status).toBe("PASS");
+    expect(started.phase).toBe("PRODUCT_FRAMING");
+  });
+
+  it("rejects an empty out_of_scope with EXPAND", async () => {
+    const { service, projectRoot } = await setup();
+    await service.designStart({ requirement: "Build a canvas", project_root: projectRoot, mode: "greenfield" });
+    const bad = { ...requirementConfirmation(), boundaries: { in_scope: ["x"], out_of_scope: [] } };
+    const result = await service.designStart({ design_session_id: "ds_confirm", requirement_confirmation: bad });
+    expect(result.status).toBe("EXPAND");
+    expect(JSON.stringify(result)).toMatch(/out_of_scope/);
+  });
+
+  it("blocks invalid mode combinations at creation", async () => {
+    const { service, projectRoot } = await setup();
+    const result = await service.designStart({ requirement: "x", project_root: projectRoot, mode: "greenfield", change_kind: "defect_fix" });
+    expect(result.status).toBe("BLOCK");
+    expect(result.code).toBe("UNKNOWN_LIFECYCLE_POLICY");
   });
 });

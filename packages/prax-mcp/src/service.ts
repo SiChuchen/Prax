@@ -8,10 +8,15 @@ import {
   FileSessionStore,
   advanceSession,
   checkOperationAllowed,
+  currentGate,
+  lifecyclePolicyFor,
+  NEXT_TOOL_BY_GATE,
+  PraxRuntimeError,
   validateCapabilityMap,
   validateDesignContext,
   validateDesignDecisions,
   validateProductFrame,
+  validateRequirementConfirmation,
   type CapabilityMap,
   type DesignContext,
   type DesignDecisions,
@@ -79,18 +84,78 @@ export class PraxService {
   }
 
   public async designStart(input: DesignStartInput): Promise<PraxOutput> {
+    if ("design_session_id" in input) {
+      const session = await this.sessions.getSession(input.design_session_id);
+      if (currentGate(session) !== "confirm") {
+        return {
+          status: "BLOCK",
+          code: "GATE_NOT_SATISFIED",
+          message: `Session ${session.id} is not awaiting requirement confirmation.`,
+          next: { tool: NEXT_TOOL_BY_GATE[currentGate(session)] },
+        };
+      }
+      const validation = validateRequirementConfirmation(input.requirement_confirmation);
+      if (validation.status !== "PASS" && validation.status !== "WARN") {
+        return {
+          status: validation.status,
+          issues: validation.issues,
+          warnings: validation.warnings,
+          next: nextTool("design_start"),
+        };
+      }
+      const updated = advanceSession(session, "confirm", this.sessions.nowIso());
+      await this.sessions.commit(updated, [{ key: "requirementConfirmation", value: validation.value }]);
+      return {
+        status: validation.status,
+        design_session_id: session.id,
+        phase: updated.phase,
+        next: nextTool(NEXT_TOOL_BY_GATE[currentGate(updated)]),
+      };
+    }
+
+    let policy;
+    try {
+      policy = lifecyclePolicyFor(input.mode, input.change_kind);
+    } catch (error) {
+      if (error instanceof PraxRuntimeError) {
+        return { status: "BLOCK", code: error.code, message: error.message };
+      }
+      throw error;
+    }
     const session = await this.sessions.createSession({
       projectRoot: input.project_root,
       requirement: input.requirement,
       mode: input.mode,
       ...(input.project_id === undefined ? {} : { projectId: input.project_id }),
+      lifecyclePolicy: policy,
+      designAuthorities: input.design_authorities,
     });
+    if (input.requirement_confirmation === undefined) {
+      return {
+        status: "PASS",
+        design_session_id: session.id,
+        phase: session.phase,
+        next: nextTool("design_start"),
+        required: ["user_quote", "restatement", "boundaries", "confirmed_with_user"],
+      };
+    }
+    const validation = validateRequirementConfirmation(input.requirement_confirmation);
+    if (validation.status !== "PASS" && validation.status !== "WARN") {
+      return {
+        status: validation.status,
+        design_session_id: session.id,
+        issues: validation.issues,
+        warnings: validation.warnings,
+        next: nextTool("design_start"),
+      };
+    }
+    const updated = advanceSession(session, "confirm", this.sessions.nowIso());
+    await this.sessions.commit(updated, [{ key: "requirementConfirmation", value: validation.value }]);
     return {
-      status: "PASS",
+      status: validation.status,
       design_session_id: session.id,
-      phase: session.phase,
-      next: nextTool("design_frame"),
-      required: ["user", "goal", "primary_task", "product_objects"],
+      phase: updated.phase,
+      next: nextTool(NEXT_TOOL_BY_GATE[currentGate(updated)]),
     };
   }
 

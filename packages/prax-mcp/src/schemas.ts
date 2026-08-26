@@ -1,23 +1,35 @@
 import { z } from "zod";
 import {
   CapabilityMapSchema,
+  ChangeKindSchema,
   DesignContextSchema,
   DesignDecisionsSchema,
   DesignModeSchema,
   DisclosureDepthSchema,
   ProductFrameSchema,
+  RequirementConfirmationSchema,
 } from "prax-runtime";
 import { SdirSchema } from "prax-sdir";
 import { ValidationEvidenceSchema } from "prax-validator";
 
 const SessionId = z.string().trim().min(1).describe("Explicit persisted Prax design_session_id");
 
-export const DesignStartInputSchema = z.object({
+const CreateSessionInput = z.strictObject({
   requirement: z.string().trim().min(1),
   project_root: z.string().trim().min(1),
   mode: DesignModeSchema,
+  change_kind: ChangeKindSchema.optional(),
+  design_authorities: z.array(z.string().trim().min(1)).default([]),
   project_id: z.string().trim().min(1).optional(),
+  requirement_confirmation: RequirementConfirmationSchema.optional(),
 });
+
+const ResumeConfirmationInput = z.strictObject({
+  design_session_id: SessionId,
+  requirement_confirmation: RequirementConfirmationSchema,
+});
+
+export const DesignStartInputSchema = z.union([ResumeConfirmationInput, CreateSessionInput]);
 
 export const DesignFrameInputSchema = z.object({
   design_session_id: SessionId,

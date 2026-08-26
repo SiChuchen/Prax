@@ -9,6 +9,7 @@ import {
   architectureContext,
   architectureDecisions,
   architectureProductFrame,
+  requirementConfirmation,
 } from "./fixtures.js";
 
 const cleanup: string[] = [];
@@ -25,7 +26,7 @@ it("runs Architecture Canvas end-to-end and supports cross-Agent resume", async 
   const store = new FileSessionStore({ stateRoot, idGenerator: () => "ds_architecture_canvas" });
   const service = await PraxService.create({ sessions: store });
 
-  const started = await service.designStart({ requirement: "Build an Architecture Canvas for inspecting and tracing a complex software system.", project_root: projectRoot, mode: "greenfield" });
+  const started = await service.designStart({ requirement: "Build an Architecture Canvas for inspecting and tracing a complex software system.", project_root: projectRoot, mode: "greenfield", requirement_confirmation: requirementConfirmation() });
   expect(started.status).toBe("PASS");
   const sessionId = String(started.design_session_id);
 

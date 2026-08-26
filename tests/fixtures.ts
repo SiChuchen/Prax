@@ -3,7 +3,20 @@ import type {
   DesignContext,
   DesignDecisions,
   ProductFrame,
+  RequirementConfirmation,
 } from "prax-runtime";
+
+export function requirementConfirmation(): RequirementConfirmation {
+  return {
+    version: "0.1",
+    user_quote: ["把系统架构画成可交互的画布，选中节点能看到细节"],
+    restatement: "工程师用户需要在保留全局上下文的前提下检视与追踪架构关系；成功标准是选中即聚焦、清除即还原。",
+    boundaries: { in_scope: ["architecture canvas workspace"], out_of_scope: ["settings pages", "data explorer"] },
+    open_questions: [],
+    confirmed_with_user: true,
+    confirmed_at: "2026-08-26T00:00:00.000Z",
+  };
+}
 
 export function architectureProductFrame(): ProductFrame {
   return {

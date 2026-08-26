@@ -4,15 +4,48 @@ import {
   DesignDecisionsSchema,
   ProductFrameSchema,
   ProductObjectOverrideSchema,
+  RequirementConfirmationSchema,
   type ArtifactValidation,
   type CapabilityMap,
   type DesignContext,
   type DesignDecisions,
   type DesignMode,
   type ProductFrame,
+  type RequirementConfirmation,
   zodIssues,
 } from "./contracts.js";
 import { classifyDesignContext } from "./classification.js";
+
+export function validateRequirementConfirmation(input: unknown): ArtifactValidation<RequirementConfirmation> {
+  const parsed = RequirementConfirmationSchema.safeParse(input);
+  if (!parsed.success) {
+    return { status: "RETRY", issues: zodIssues(parsed.error), warnings: [] };
+  }
+  const issues: string[] = [];
+  const warnings: string[] = [];
+  if (parsed.data.boundaries.out_of_scope.length === 0) {
+    issues.push(
+      "boundaries.out_of_scope must declare at least one excluded concern; scope drift is the most common restatement failure.",
+    );
+  }
+  const highImpact = parsed.data.open_questions.filter((question) => typeof question !== "string" && question.impact === "high");
+  if (highImpact.length > 0) {
+    issues.push(
+      `High-impact open questions must be resolved or explicitly accepted before design starts: ${highImpact
+        .map((question) => (typeof question === "string" ? question : question.id))
+        .join(", ")}.`,
+    );
+  }
+  if (parsed.data.open_questions.length > 0) {
+    warnings.push(`${parsed.data.open_questions.length} requirement question(s) remain recorded.`);
+  }
+  return {
+    status: issues.length === 0 ? (warnings.length === 0 ? "PASS" : "WARN") : "EXPAND",
+    issues,
+    warnings,
+    value: parsed.data,
+  };
+}
 
 const BACKEND_SHAPED_TERMS = [
   /(^|_)(api|db|table|service|repository|endpoint)($|_)/i,
