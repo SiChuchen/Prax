@@ -1,5 +1,6 @@
-import type { DesignContext, DesignDecisions, ProductFrame } from "prax-runtime";
-import { SdirEngine, type Sdir } from "prax-sdir";
+import type { ChangeKind, DesignContext, DesignDecisions, DesignMode, IntentLite, ProductFrame } from "prax-runtime";
+import { SdirEngine, validateSdirDelta, type Sdir } from "prax-sdir";
+import type { SdirDelta } from "prax-sdir";
 import {
   ValidationEvidenceSchema,
   ValidationPlanSchema,
@@ -10,6 +11,14 @@ import {
   type ValidationPlan,
 } from "./contracts.js";
 
+const REQUIREMENT_CHECK: ValidationCheck = {
+  id: "requirement_alignment",
+  label: "Requirement alignment",
+  kind: "assistive",
+  requirement: "The delivered result matches the confirmed restatement, scope, and success definition.",
+  evidence_required: true,
+};
+
 const UNIVERSAL_CHECKS: ValidationCheck[] = [
   { id: "semantic_conformance", label: "Semantic conformance", kind: "deterministic", requirement: "SDIR is valid, semantic, and aligned to the approved pattern.", evidence_required: false },
   { id: "state_completeness", label: "State completeness", kind: "deterministic", requirement: "Required loading, empty, ready, and error states exist.", evidence_required: false },
@@ -17,6 +26,51 @@ const UNIVERSAL_CHECKS: ValidationCheck[] = [
   { id: "keyboard", label: "Keyboard operability", kind: "empirical", requirement: "Primary work and selection are operable with keyboard and visible focus.", evidence_required: true },
   { id: "hierarchy_review", label: "Hierarchy review", kind: "assistive", requirement: "Visual prominence follows SDIR importance rather than implementation convenience.", evidence_required: true },
 ];
+
+const EXISTING_CHECKS: ValidationCheck[] = [
+  { id: "untouched_surface_regression", label: "Untouched surface regression", kind: "empirical", requirement: "Surfaces outside the declared change targets behave exactly as before.", evidence_required: true },
+  { id: "pattern_consistency", label: "Pattern consistency", kind: "assistive", requirement: "The change follows the established patterns recorded in the existing-product understanding.", evidence_required: true },
+  { id: "authority_consistency", label: "Design authority consistency", kind: "assistive", requirement: "The result stays consistent with the declared design authorities.", evidence_required: true },
+];
+
+const REWORK_CHECKS: ValidationCheck[] = [
+  { id: "fresh_derivation_check", label: "Fresh derivation", kind: "assistive", requirement: "Product objects derive from user tasks, not from copying the legacy structure.", evidence_required: true },
+  { id: "migration_readiness", label: "Migration readiness", kind: "empirical", requirement: "The migration plan covers every must_preserve item.", evidence_required: true },
+];
+
+const DELTA_CONFORMANCE_CHECK: ValidationCheck = {
+  id: "delta_conformance",
+  label: "Delta conformance",
+  kind: "deterministic",
+  requirement: "The sdir_delta passes referential and render-leak validation.",
+  evidence_required: false,
+};
+
+const LIGHT_CHECKS: Record<"visual_polish" | "defect_fix", ValidationCheck[]> = {
+  visual_polish: [
+    { id: "hierarchy_preserved", label: "Hierarchy preserved", kind: "assistive", requirement: "The visual change does not alter the surface's information hierarchy.", evidence_required: true },
+    { id: "readability", label: "Readability", kind: "empirical", requirement: "Contrast and type-scale evidence shows text remains readable.", evidence_required: true },
+    REQUIREMENT_CHECK,
+  ],
+  defect_fix: [
+    { id: "regression_check", label: "Regression check", kind: "empirical", requirement: "The fix resolves the reported defect without behavior change elsewhere.", evidence_required: true },
+    REQUIREMENT_CHECK,
+  ],
+};
+
+export interface ValidationPolicyContext {
+  mode: DesignMode;
+  change_kind?: ChangeKind | undefined;
+  authorities?: string[] | undefined;
+}
+
+export interface ValidationPlanInput {
+  policyContext?: ValidationPolicyContext | undefined;
+  frame?: ProductFrame | undefined;
+  context?: DesignContext | undefined;
+  decisions?: DesignDecisions | undefined;
+  intentLite?: IntentLite | undefined;
+}
 
 const PATTERN_CHECKS: Record<string, ValidationCheck[]> = {
   "PAT-CANVAS-WORKSPACE": [
@@ -37,17 +91,63 @@ const PATTERN_CHECKS: Record<string, ValidationCheck[]> = {
 export class PraxValidator {
   private readonly sdirEngine = new SdirEngine();
 
-  public plan(_frame: ProductFrame, context: DesignContext, decisions: DesignDecisions): ValidationPlan {
-    const patternChecks = PATTERN_CHECKS[decisions.primary_structure.pattern] ?? [];
-    const riskChecks: ValidationCheck[] =
-      context.risk.destructive_actions === "none"
-        ? []
-        : [{ id: "destructive_recovery", label: "Destructive recovery", kind: "deterministic", requirement: "Destructive actions match error cost with prevention or recovery.", evidence_required: true }];
+  public plan(input: ValidationPlanInput): ValidationPlan {
+    const policy = input.policyContext;
+    if (policy === undefined) {
+      const patternChecks = input.decisions !== undefined ? PATTERN_CHECKS[input.decisions.primary_structure.pattern] ?? [] : [];
+      const riskChecks = this.riskChecks(input.context);
+      return ValidationPlanSchema.parse({
+        version: "0.1",
+        ...(input.decisions === undefined ? {} : { pattern_ref: input.decisions.primary_structure.pattern }),
+        checks: [...UNIVERSAL_CHECKS, ...patternChecks, ...riskChecks, REQUIREMENT_CHECK],
+      });
+    }
+
+    const lightKind =
+      policy.change_kind === "visual_polish" || policy.change_kind === "defect_fix" ? policy.change_kind : undefined;
+    if (lightKind !== undefined) {
+      return ValidationPlanSchema.parse({
+        version: "0.1",
+        checks: [...LIGHT_CHECKS[lightKind]],
+      });
+    }
+
+    if (policy.mode === "existing_product" && policy.change_kind === "modify_surface") {
+      return ValidationPlanSchema.parse({
+        version: "0.1",
+        ...(input.decisions === undefined ? {} : { pattern_ref: input.decisions.primary_structure.pattern }),
+        checks: [DELTA_CONFORMANCE_CHECK, ...EXISTING_CHECKS, REQUIREMENT_CHECK],
+      });
+    }
+
+    const patternChecks = input.decisions !== undefined ? PATTERN_CHECKS[input.decisions.primary_structure.pattern] ?? [] : [];
+    const riskChecks = this.riskChecks(input.context);
+    const policyChecks =
+      policy.mode === "rework" ? REWORK_CHECKS : policy.mode === "existing_product" ? EXISTING_CHECKS : [];
+    const authorityCheck = this.authorityCheck(policy.authorities);
+    const existingChecks = policy.mode === "existing_product" ? EXISTING_CHECKS.map((c) => (c.id === "authority_consistency" ? authorityCheck : c)) : policyChecks;
     return ValidationPlanSchema.parse({
       version: "0.1",
-      pattern_ref: decisions.primary_structure.pattern,
-      checks: [...UNIVERSAL_CHECKS, ...patternChecks, ...riskChecks],
+      ...(input.decisions === undefined ? {} : { pattern_ref: input.decisions.primary_structure.pattern }),
+      checks: [...UNIVERSAL_CHECKS, ...patternChecks, ...riskChecks, ...existingChecks, REQUIREMENT_CHECK],
     });
+  }
+
+  private riskChecks(context?: DesignContext | undefined): ValidationCheck[] {
+    return context !== undefined && context.risk.destructive_actions !== "none"
+      ? [{ id: "destructive_recovery", label: "Destructive recovery", kind: "deterministic", requirement: "Destructive actions match error cost with prevention or recovery.", evidence_required: true }]
+      : [];
+  }
+
+  private authorityCheck(authorities?: string[] | undefined): ValidationCheck {
+    const suffix = authorities !== undefined && authorities.length > 0 ? ` Declared authorities: ${authorities.join(", ")}.` : "";
+    return {
+      id: "authority_consistency",
+      label: "Design authority consistency",
+      kind: "assistive",
+      requirement: `The result stays consistent with the declared design authorities.${suffix}`,
+      evidence_required: true,
+    };
   }
 
   public parseEvidence(input: unknown): ValidationEvidence {
@@ -56,29 +156,56 @@ export class PraxValidator {
 
   public evaluate(input: {
     plan: ValidationPlan;
-    sdir: Sdir;
-    decisions: DesignDecisions;
+    sdir?: Sdir | undefined;
+    sdirDelta?: SdirDelta | undefined;
+    decisions?: DesignDecisions | undefined;
     evidence?: ValidationEvidence;
   }): ValidationEvaluation {
     const provided = new Map(input.evidence?.items.map((item) => [item.check_id, item]) ?? []);
     const findings: ValidationFinding[] = [];
-    const sdirValidation = this.sdirEngine.validate(input.sdir, input.decisions);
+    const checkIds = new Set(input.plan.checks.map((check) => check.id));
 
-    for (const check of input.plan.checks) {
-      if (check.id === "semantic_conformance" || check.id === "state_completeness") {
-        const failed = sdirValidation.status !== "PASS";
+    if (checkIds.has("semantic_conformance") || checkIds.has("state_completeness")) {
+      const sdirValidation = this.sdirEngine.validate(input.sdir, input.decisions);
+      const failed = sdirValidation.status !== "PASS";
+      for (const check of ["semantic_conformance", "state_completeness"] as const) {
+        if (!checkIds.has(check)) continue;
         findings.push({
-          check_id: check.id,
+          check_id: check,
           kind: "deterministic",
           outcome: failed ? "fail" : "pass",
           message: failed
             ? [...sdirValidation.schema_errors, ...sdirValidation.semantic_errors].join("; ")
-            : check.requirement,
+            : input.plan.checks.find((candidate) => candidate.id === check)!.requirement,
           source: "prax-validator",
         });
+      }
+    }
+
+    if (checkIds.has("delta_conformance")) {
+      const deltaValidation = input.sdirDelta !== undefined ? validateSdirDelta(input.sdirDelta) : undefined;
+      findings.push({
+        check_id: "delta_conformance",
+        kind: "deterministic",
+        outcome: deltaValidation === undefined || deltaValidation.status !== "PASS" ? "fail" : "pass",
+        message:
+          deltaValidation === undefined
+            ? "sdir_delta artifact is missing."
+            : deltaValidation.status === "PASS"
+              ? input.plan.checks.find((candidate) => candidate.id === "delta_conformance")!.requirement
+              : deltaValidation.semantic_errors.join("; "),
+        source: "prax-validator",
+      });
+    }
+
+    for (const check of input.plan.checks) {
+      if (
+        check.id === "semantic_conformance" ||
+        check.id === "state_completeness" ||
+        check.id === "delta_conformance"
+      ) {
         continue;
       }
-
       const evidence = provided.get(check.id);
       if (evidence !== undefined) {
         findings.push({
@@ -115,4 +242,3 @@ export class PraxValidator {
     return { status, checks: input.plan.checks, findings, missing_evidence: missingEvidence };
   }
 }
-

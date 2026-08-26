@@ -13,7 +13,7 @@ export type ValidationCheck = z.infer<typeof ValidationCheckSchema>;
 
 export const ValidationPlanSchema = z.object({
   version: z.literal("0.1"),
-  pattern_ref: NonEmpty,
+  pattern_ref: NonEmpty.optional(),
   checks: z.array(ValidationCheckSchema).min(1),
 });
 export type ValidationPlan = z.infer<typeof ValidationPlanSchema>;

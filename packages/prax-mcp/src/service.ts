@@ -28,16 +28,18 @@ import {
   type DesignSession,
   type ExistingUnderstanding,
   type GateStatus,
+  type IntentLite,
   type ProductFrame,
   type RequirementConfirmation,
   ProductFrameSchema,
   DesignContextSchema,
 } from "prax-runtime";
-import { patternSurfaceContract, SdirEngine, SdirSchema, validateSdirDelta, type Sdir } from "prax-sdir";
+import { patternSurfaceContract, SdirEngine, validateSdirDelta, type Sdir, type SdirDelta } from "prax-sdir";
 import {
   PraxValidator,
   ValidationPlanSchema,
   type ValidationEvidence,
+  type ValidationPlan,
 } from "prax-validator";
 import type {
   DesignContextInput,
@@ -694,24 +696,33 @@ export class PraxService {
     };
   }
 
-  private async validationPlanFor(session: DesignSession): Promise<import("prax-validator").ValidationPlan> {
-    const frame = await this.requireArtifact<ProductFrame>(session, "productFrame");
-    const context = await this.requireArtifact<DesignContext>(session, "designContext");
-    const decisions = await this.requireArtifact<DesignDecisions>(session, "designDecisions");
-    return this.validator.plan(frame, context, decisions);
+  private async validationPlanFor(session: DesignSession): Promise<ValidationPlan> {
+    const policy = sessionPolicy(session);
+    const understanding =
+      (await this.sessions.readArtifact<ExistingUnderstanding>(session, "existingUnderstanding")) ?? undefined;
+    const authorities = [
+      ...new Set([...session.design_authorities, ...(understanding?.design_authorities ?? [])]),
+    ];
+    return this.validator.plan({
+      policyContext: {
+        mode: session.mode,
+        ...(policy.change_kind === undefined ? {} : { change_kind: policy.change_kind }),
+        authorities,
+      },
+      frame: (await this.sessions.readArtifact<ProductFrame>(session, "productFrame")) ?? undefined,
+      context: (await this.sessions.readArtifact<DesignContext>(session, "designContext")) ?? undefined,
+      decisions: (await this.sessions.readArtifact<DesignDecisions>(session, "designDecisions")) ?? undefined,
+      intentLite: (await this.sessions.readArtifact<IntentLite>(session, "intentLite")) ?? undefined,
+    });
   }
 
   public async designValidate(input: DesignValidateInput): Promise<PraxOutput> {
     const session = await this.sessions.getSession(input.design_session_id);
     const blocked = operationBlock(session, "design_validate");
     if (blocked !== undefined) return blocked;
-    const frame = await this.requireArtifact<ProductFrame>(session, "productFrame");
-    const context = await this.requireArtifact<DesignContext>(session, "designContext");
-    const decisions = await this.requireArtifact<DesignDecisions>(session, "designDecisions");
-    const sdir = SdirSchema.parse(await this.requireArtifact<Sdir>(session, "sdir"));
     const prior = await this.sessions.readArtifact<ValidationReportArtifact>(session, "validationReport");
     const plan = prior === undefined
-      ? this.validator.plan(frame, context, decisions)
+      ? await this.validationPlanFor(session)
       : ValidationPlanSchema.parse(prior.plan);
 
     if (input.mode === "plan") {
@@ -733,7 +744,16 @@ export class PraxService {
     }
 
     const evidence = input.evidence ?? prior?.evidence;
-    const evaluation = this.validator.evaluate({ plan, sdir, decisions, ...(evidence === undefined ? {} : { evidence }) });
+    const sdirArtifact = (await this.sessions.readArtifact<Sdir>(session, "sdir")) ?? undefined;
+    const sdirDeltaArtifact = (await this.sessions.readArtifact<SdirDelta>(session, "sdirDelta")) ?? undefined;
+    const decisionsArtifact = (await this.sessions.readArtifact<DesignDecisions>(session, "designDecisions")) ?? undefined;
+    const evaluation = this.validator.evaluate({
+      plan,
+      ...(sdirArtifact === undefined ? {} : { sdir: sdirArtifact }),
+      ...(sdirDeltaArtifact === undefined ? {} : { sdirDelta: sdirDeltaArtifact }),
+      ...(decisionsArtifact === undefined ? {} : { decisions: decisionsArtifact }),
+      ...(evidence === undefined ? {} : { evidence }),
+    });
     const now = this.sessions.nowIso();
     const updated = evaluation.status === "PASS"
       ? { ...advanceSession(session, "validate", now), phase: "COMPLETE" as const, current_gate: { name: "complete" } }

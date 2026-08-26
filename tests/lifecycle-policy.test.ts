@@ -19,6 +19,7 @@ import {
 } from "prax-runtime";
 import { architectureCapabilities, architectureContext, architectureDecisions, architectureProductFrame, architectureUnderstanding, intentLite, requirementConfirmation, reworkUnderstanding, sdirDelta } from "./fixtures.js";
 import { validateSdirDelta } from "prax-sdir";
+import { PraxValidator } from "prax-validator";
 
 const FULL_TAIL = ["context", "route", "decide", "sdir", "reconcile", "prepare", "validate"];
 const REWORK_TAIL = ["context", "route", "decide", "sdir", "prepare", "validate"];
@@ -463,5 +464,40 @@ describe("mode-differentiated implementation brief", () => {
     const brief = prepared.implementation_brief as { mode_plan: { migration_plan: { per_surface: Array<{ treatment: string }> } } };
     expect(brief.mode_plan.migration_plan.per_surface.length).toBeGreaterThan(0);
     expect(brief.mode_plan.migration_plan.per_surface.every((entry) => ["preserve", "rework"].includes(entry.treatment))).toBe(true);
+  });
+});
+
+describe("policy-aware validation plans", () => {
+  const validator = new PraxValidator();
+  const base = { frame: architectureProductFrame(), context: architectureContext(), decisions: architectureDecisions("x") };
+
+  it("adds existing-product and rework checks", () => {
+    const ids = (policyContext: Record<string, unknown>) =>
+      validator.plan({ ...base, policyContext: policyContext as never }).checks.map((check: { id: string }) => check.id);
+    expect(ids({ mode: "existing_product", change_kind: "add_surface" })).toContain("untouched_surface_regression");
+    expect(ids({ mode: "rework" })).toContain("fresh_derivation_check");
+    expect(ids({ mode: "rework" })).toContain("migration_readiness");
+    expect(ids({ mode: "greenfield" })).toContain("requirement_alignment");
+  });
+
+  it("uses delta-aware checks for modify_surface instead of full-SDIR checks", () => {
+    const plan = validator.plan({ ...base, policyContext: { mode: "existing_product", change_kind: "modify_surface" } as never });
+    const ids = plan.checks.map((check: { id: string }) => check.id);
+    expect(ids).toContain("delta_conformance");
+    expect(ids).toContain("untouched_surface_regression");
+    expect(ids).not.toContain("semantic_conformance");
+    expect(ids).not.toContain("state_completeness");
+  });
+
+  it("uses light-path checks without requiring frame or decisions", () => {
+    const plan = validator.plan({
+      policyContext: { mode: "existing_product", change_kind: "visual_polish" } as never,
+      intentLite: intentLite("visual_polish"),
+    });
+    const ids = plan.checks.map((check: { id: string }) => check.id);
+    expect(ids).toContain("hierarchy_preserved");
+    expect(ids).toContain("readability");
+    expect(ids).not.toContain("semantic_conformance");
+    expect(plan.pattern_ref).toBeUndefined();
   });
 });
