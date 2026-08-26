@@ -1,0 +1,679 @@
+# =============================================================================
+# Systemsmith Design Intelligence — D7 设计规则 Schema 草案
+# Design_Rule_Schema_Draft.yaml
+#
+# 日期：2026-08-25  状态：草案（候选方案对比稿，非定稿）
+# 目的：为 Agent 可执行的设计规则知识底座提出 3 个候选 Schema（A/B/C），
+#       并给出与三者正交的冲突裁决机制（priority_layers + conflict_resolution）。
+# 方法论约束（来自 dim08 与交叉验证报告，写作依据见配套说明文档）：
+#   1. 规则系统只覆盖"可判定子集"；不可判定的交给检索 + LLM 推理 + 人工兜底
+#      （专家系统 MYCIN/XCON 教训 [C019][D003]）。
+#   2. context 是稀缺预算：知识必须结构化 + 按需检索 + 渐进披露，
+#      禁止全量加载（Lost-in-the-Middle [A026]、Context Rot [C031]、
+#      Anthropic 工程立场 [B005]）。
+#   3. 每条知识必须标注类型：scientific_model / design_heuristic /
+#      platform_convention / internet_myth，不得混用。
+#   4. 每条规则必须能回答"Systemsmith 为什么有这条规则"：
+#      statement ← rationale ← evidence ← source（AIS 归因标准 [A040]）。
+#
+# 引用格式：方括号内为 Source_Registry.md 全局 ID（如 [B006]）。
+# =============================================================================
+
+meta:
+  deliverable: D7
+  title: Agent 可执行设计规则 Schema 候选方案
+  version: "0.1-draft"
+  date: "2026-08-25"
+  status: draft_for_review
+  candidates: [schema_a_flat_rule, schema_b_progressive_disclosure, schema_c_policy_as_code]
+  orthogonal_sections: [shared_vocabulary, priority_layers, conflict_resolution]
+  note: >
+    三个候选 Schema 不是互斥的三个产品，而是同一份知识内容的三种组织/消费协议；
+    推荐路径（B 组织 + C 执行化子集 + A 作为采集起点）见配套说明文档第 6 节。
+
+# =============================================================================
+# 共享词汇表（三个 Schema 共用的枚举与定义）
+# =============================================================================
+shared_vocabulary:
+
+  # 知识类型四分（批判性纪律：每条规则必须归类，全文一致使用）
+  knowledge_type:
+    scientific_model:
+      definition: 可还原到人类认知/知觉不变量的实证模型（Fitts、Hick、Gestalt 分组律等），带边界条件
+      requirement: 必须给出 cognitive_anchor（认知不变量引用）与原始实验来源
+    design_heuristic:
+      definition: 经验性设计准则（Nielsen 启发式、模式语言），有效但非定律，存在适用域
+      requirement: 必须给出 applies_when 与 does_not_apply_when
+    platform_convention:
+      definition: 平台/生态惯例（44pt、48dp、8pt 网格），只对特定平台+版本成立
+      requirement: 必须给出 platform 与 valid_from/valid_to；跨平台引用时 authority 降级
+    internet_myth:
+      definition: 无法回溯一手来源或已被证伪的传播性说法（3-click rule、菜单≤7 项）
+      requirement: 隔离存储于 myth_quarantine，仅供 Agent 主动反驳用户输入，不进入默认检索语料
+
+  # 证据权威级（S–E 静态初始级；动态调整见 conflict_resolution.evidence_grading）
+  # 语义经交叉验证 §5 裁决统一：N=规范级，A=原始同行评审研究/HCI Canon，
+  # B=OS 平台级规范，C=产品级设计系统与厂商自研数据，D=产品实证，E=灵感/其他
+  authority_initial: [N, A, B, C, D, E]
+
+  # 生命周期成熟度（借鉴组件成熟度模型：分级管可信度，成熟度管生命周期）
+  lifecycle_status:
+    draft: 单一来源，未交叉验证
+    reviewed: 人工审定通过
+    stable: ≥2 个独立来源收敛
+    deprecated: 被新版标准/证据取代（必须填 supersedes 链）
+
+  # 验证方法四分类（自动化边界的依据见说明文档第 4 节）
+  validation_method:
+    lint: 确定性静态检查；零误报原则；不确定→转人工（axe-core 范式 [B001][D001]）
+    heuristic_review: 结构化评审 rubric；LLM 初筛 + 偏差缓解协议 + 人工终裁 [A028][C033]
+    runtime: 运行态交互式取证；操作控件、观察状态转移、测试错误恢复路径 [C005]
+    user_test: 真实用户测试；usability 是 outcome 而非 property，机器不可判定 [N040]
+
+# =============================================================================
+# Schema A：扁平规则条目（任务书设想的强化版）
+# -----------------------------------------------------------------------------
+# 形态：单文件单规则（one rule per file），全部字段平铺。
+# 定位：知识采集与审定的"录入格式"；diff 友好；生成成本低。
+# 已知缺陷：无分层 → 全量加载会撞上 context 经济性约束 [A026][C031]；
+#           检索依赖外部索引，条目自身不含触发语义。
+# =============================================================================
+schema_a_flat_rule:
+  description: 扁平规则条目——每条规则一个自包含 YAML 文档
+  file_convention: rules/{category}/{id}.yaml
+
+  field_spec:
+    id:
+      type: string
+      pattern: "^R-[A-Z]{2,4}-[0-9]{3}$"
+      comment: 全局唯一、稳定、不复用；deprecated 规则的 id 永久保留
+    name:
+      type: string
+      comment: 10 字以内中文短名，供索引与人读
+    category:
+      type: enum
+      values: [layout_hierarchy, density, navigation, interaction, feedback, error_handling, accessibility, typography, color, motion, data_display]
+    knowledge_type:
+      type: enum
+      values: [scientific_model, design_heuristic, platform_convention, internet_myth]
+      comment: 见 shared_vocabulary.knowledge_type；强制字段
+    statement:
+      type: string
+      comment: 规则本体，单一可判定命题；禁止"尽量""合理"等不可证伪措辞
+    rationale:
+      type: string
+      comment: 为什么成立——机制层解释（认知机制/实证发现/平台约束），不是复述 statement
+    evidence:
+      source_ids:
+        type: list[string]
+        comment: Source Registry 全局 ID；生成时随行携带，禁止事后补挂 [A040][A041]
+      authority_initial:
+        type: enum
+        values: [N, A, B, C, D, E]
+        comment: 初始级；动态升降级由 conflict_resolution.evidence_grading 处理
+      confidence:
+        type: enum
+        values: [high, medium, low]
+        comment: medium=单一权威来源，必须注明；low=呈现不确定性
+    scope:
+      user_type: { type: enum, values: [novice, intermediate, expert, mixed], comment: 新手/专家规则的适用域必须显式区分 }
+      task_type: { type: "list[string]", comment: 受控词汇：data_exploration / monitoring / content_editing / configuration / communication … }
+      density: { type: enum, values: [sparse, comfortable, compact, any] }
+      platform: { type: "list[string]", comment: "取值 [web_desktop, web_mobile, ios, android, compose, flutter, qt, any]；platform_convention 类规则禁止填 any" }
+    applies_when:
+      type: list[string]
+      comment: 适用条件（触发语义）；同时充当检索 metadata filter 与 lex specialis 匹配键
+    does_not_apply_when:
+      type: list[string]
+      comment: 反适用条件；缺失该字段的规则不得进入 stable（防"无边界规则"反模式）
+    conflicts_with:
+      type: list[object]
+      fields:
+        rule_id: string
+        resolution: string   # 引用 conflict_resolution 的裁决路径或 DDR 编号
+    examples:
+      type: list[string]
+    counterexamples:
+      type: list[string]
+      comment: 反例与正例数量相当；反例是规则边界的实证记录
+    validation:
+      method: { type: enum, values: [lint, heuristic_review, runtime, user_test] }
+      automatable: { type: enum, values: [full, partial, none], comment: full=确定性可判定；partial=LLM 初筛+人工复核；none=只能实证 }
+      procedure: { type: string, comment: 可操作检查步骤；automatable=partial 时必须含"何时转人工"判据 }
+    lifecycle:
+      status: { type: enum, values: [draft, reviewed, stable, deprecated] }
+      owner: { type: string, comment: 责任人/责任团队；无 owner 的规则不得入库 }
+      version: { type: string, comment: semver；内容变更必须升版 }
+      source_version: { type: string, comment: 所依据来源的版本/日期（lex posterior 的数据基础），如 "WCAG 2.2 (2023-10, errata 2024-12)" }
+      review_by: { type: date, comment: 强制复审日期；前沿层条目默认 6 个月 }
+      supersedes: { type: "list[string]", comment: 被本规则取代的规则 id 链 }
+
+  # ---- 实例 A-1：视觉层级主导规则（偏 judgment）----
+  instances:
+    - id: R-LAY-001
+      name: 工作区层级主导
+      category: layout_hierarchy
+      knowledge_type: design_heuristic   # 经验准则，锚定知觉实证，非物理定律
+      statement: >
+        在多区域工作区界面中，承担主要任务的区域必须在视觉层级上主导辅助区域：
+        其面积占比、对比度权重与视觉出口（visual anchor）数量须使首次注视落在主工作区，
+        辅助区域（导航、筛选、元信息）不得使用比主工作区更强的视觉权重。
+      rationale: >
+        前注意加工（preattentive processing）决定了用户首先被高对比、大面积、
+        共同区域（common region）包围的元素吸引 [N028][A018]；TERESA 的 AUI 组合算子
+        将 Hierarchy（重要性层级）列为与 Grouping/Ordering 并列的一等形式化对象 [A057]，
+        即"重要性→视觉权重"的映射是可结构化的设计知识。层级倒置（辅助区强于主区）
+        会系统性拉长任务定向时间。
+      evidence:
+        source_ids: [N028, A018, A057, N027]
+        authority_initial: A
+        confidence: high   # 多源收敛（知觉实证 + 形式化先例）
+      scope:
+        user_type: mixed
+        task_type: [data_exploration, monitoring, content_editing]
+        density: any
+        platform: [any]   # design_heuristic 可跨平台；具体权重数值属渲染域，不在本条
+      applies_when:
+        - 界面含 ≥2 个功能区域（主工作区 + ≥1 辅助区）
+        - 区域间存在明确的主辅任务关系
+      does_not_apply_when:
+        - 单区域界面（全屏编辑器、沉浸式阅读）
+        - 辅助区本身是当前任务焦点（如调试时 Inspector 临时成为主区——应以区域角色切换表达，而非削弱层级）
+        - 告警/安全提示需要瞬时抢占注意力的场景（由 feedback 类规则管辖，见 conflicts_with）
+      conflicts_with:
+        - rule_id: R-FBK-002   # 告警显著性规则
+          resolution: 场景化裁决：持续性告警不突破层级主导；触发性高危告警按 priority_layers L1（safety）非补偿覆盖，见 DDR-0007
+      examples:
+        - 数据浏览器：结果表格占视口 ≥55%，筛选面板以低一档表面色与更窄栏宽退居侧栏
+        - IDE：编辑区字号/对比度最高，outline/terminal 默认折叠或弱化
+      counterexamples:
+        - 营销落地页首屏（非工作区界面，不受本条管辖）
+        - 把导航栏做成品牌色高饱和填充——辅助区视觉权重反超主工作区
+      validation:
+        method: heuristic_review   # 不可纯 lint 判定："视觉权重"含裁量
+        automatable: partial
+        procedure: >
+          (1) lint 子集可自动判定：区域面积占比、色相对比度量级可从渲染树计算；
+          (2) "首次注视是否落在主区"属判断项：LLM 评审须按 rubric 锚点打分并成对交换复评
+          [A028][C033]，结论标注 needs_human_review；
+          (3) 截图级评审不得作为终裁——层级问题常随交互状态变化，需 runtime 取证 [C005]。
+      lifecycle:
+        status: reviewed
+        owner: knowledge-base-team
+        version: "1.0.0"
+        source_version: "TERESA (IUI 2003); Healey et al. 1993; Palmer & Rock 1994"
+        review_by: 2027-02-25
+        supersedes: []
+
+    # ---- 实例 A-2：破坏性操作可恢复性规则（偏 machine-checkable）----
+    - id: R-ERR-001
+      name: 破坏性操作可恢复
+      category: error_handling
+      knowledge_type: design_heuristic   # Nielsen 启发式 #3/#5 的特化；平台有对应惯例实现
+      statement: >
+        任何导致用户数据不可再生性丢失的操作（删除、覆盖、批量修改），
+        必须满足以下二者之一：(a) 提供明确时限内的撤销（undo）通道；
+        (b) 在执行前展示指明后果对象的确认步骤。
+        同时具备 (a) 时 (b) 可省略；两者皆无的实现判定为违规。
+      rationale: >
+        Nielsen 启发式"用户控制与自由"（undo/redo）与"错误预防"自 1994 年
+        因子分析萃取以来 30 年未实质变更 [N039][A050]；其认知根源是 slip 类错误
+        不可完全预防，因此恢复通道比更多确认弹窗更符合错误容忍原则——
+        "undo > confirmation"是可还原到错误分类理论的稳定知识。
+        确认对话框的替代方案与模式边界见 [A013]。
+      evidence:
+        source_ids: [A050, N039, A013]
+        authority_initial: A
+        confidence: high
+      scope:
+        user_type: mixed
+        task_type: [data_exploration, content_editing, configuration]
+        density: any
+        platform: [any]
+      applies_when:
+        - 操作对象为不可再生数据（用户创建内容、配置、文件）
+        - 操作不可逆或逆操作成本显著高于正操作
+      does_not_apply_when:
+        - 操作对象可再生（重建索引、重新生成缓存）
+        - 软删除架构且回收站保留期 ≥30 天已全局声明（视为已满足 (a) 的特例）
+        - 高频批量场景下逐条确认会破坏操作流——应改用批量确认 + 全局 undo，见 DDR-0007 的场景化裁决
+      conflicts_with:
+        - rule_id: R-EFF-003   # 专家用户操作效率规则
+          resolution: lex specialis：批量场景特化规则优先，但必须保留全局 undo 底线（非补偿约束）
+      examples:
+        - Gmail 删除邮件后 5 秒 toast undo（满足 a，无确认弹窗）
+        - 数据库管理工具 DROP TABLE 前要求输入表名确认（满足 b，高危场景强化）
+      counterexamples:
+        - 点击删除立即物理删除且无任何反馈——违规
+        - 每次删除都弹确认但确认文案不指明对象——部分违规（形式满足、实质不满足，lint 应标记为 uncertain 转人工）
+      validation:
+        method: lint   # 主体可确定性判定
+        automatable: full
+        procedure: >
+          在组件树/SDIR 上检索标记为 destructive 的操作入口；
+          检查其交互契约中是否存在 (a) undo 通道（时限、范围声明）
+          或 (b) 前置确认步骤（含后果对象占位符）。
+          确认文案是否"指明对象"属语义判断，判不确定时按零误报原则
+          输出 needs_review 而非 violation [B001][D001]。
+      lifecycle:
+        status: stable
+        owner: knowledge-base-team
+        version: "1.1.0"
+        source_version: "Nielsen heuristics (1994, 2020 措辞刷新)"
+        review_by: 2027-08-25
+        supersedes: [R-ERR-000]
+
+# =============================================================================
+# Schema B：三层渐进披露（Anthropic Agent Skills 映射）
+# -----------------------------------------------------------------------------
+# 形态：规则内容不变，按"消费时机"切成三层：
+#   L1 索引层：~100 token 元数据，常驻/可枚举（对应 SKILL.md frontmatter）
+#   L2 正文层：<5k token，检索命中后加载（对应 SKILL.md body）
+#   L3 附件层：例证/反例/验证规程/冲突档案，执行与验证阶段按需读取，容量不设限
+# 依据：Agent Skills 三层渐进披露（L1 ~100 tokens / L2 <5k / L3+ unlimited）
+#       [B006]，跨厂商事实标准化 [C004]；实测发现成本中位 ~80 token/skill、
+#       正文中位 ~2000 token [D002]（单一来源，中等置信）。
+# 动机：context 是稀缺预算，"最小高信号 token 集" [B005]；
+#       全量加载在中部位置被系统性忽略 [A026][C031]。
+# 已知缺陷：三层内容必须保持语义一致（L1 的 trigger 与 L2 的 applies_when
+#           漂移即检索失灵）；维护成本 = 每条规则 × 3 份表述。
+# =============================================================================
+schema_b_progressive_disclosure:
+  description: 三层渐进披露——同一份规则按消费时机分层供给
+  directory_convention: |
+    rules/{category}/{id}/
+      L1.index.yaml        # 常驻索引
+      L2.body.yaml         # 命中加载
+      L3.evidence.yaml     # 按需读取（可再拆多文件）
+
+  # ---- L1：索引层（发现与触发的唯一依据）----
+  L1_index:
+    token_budget: "~100 tokens/条"
+    loading: always_enumerable   # 全量可枚举；Agent 每轮只见 L1
+    field_spec:
+      id: { type: string }
+      name: { type: string }
+      one_line_statement: { type: string, comment: ≤40 字的规则内核；是 L1 中唯一的语义内容 }
+      knowledge_type: { type: enum, values: [scientific_model, design_heuristic, platform_convention, internet_myth] }
+      authority_initial: { type: "enum [N, A, B, C, D, E]" }
+      lifecycle_status: { type: "enum [draft, reviewed, stable, deprecated]", comment: deprecated 条目保留索引但标注替代者，防止 Agent 引用死规则 }
+      trigger_conditions:
+        comment: >
+          检索语义的核心设计。三段式匹配：
+          (1) metadata 硬过滤（AND 跨维度、OR 维度内）：先把不符 scope 的规则排除，
+              对应"先过滤后检索"工程基线 [B029]；
+          (2) 语义召回：对 one_line_statement + task_types 做 hybrid search
+              （BM25 补精确术语、embedding 补语义 [B029]）；
+          (3) 具体性打分：命中规则的 scope 与当前场景的匹配精确度排序，
+              作为 lex specialis 的运行时实现（详见 conflict_resolution）。
+        fields:
+          task_types:   { type: "list[string]", comment: 与 shared task 受控词汇一致 }
+          domain_entities: { type: "list[string]", comment: 领域对象：table / form / dialog / chart / tree / timeline … }
+          component_types: { type: "list[string]", comment: "交互语义类型（MARIA 式 selection/edit/output/control [A062]），非框架组件名" }
+          density:      { type: enum, values: [sparse, comfortable, compact, any] }
+          platform:     { type: "list[string]" }
+          phase:        { type: "list[enum]", values: [generate, review, validate, refactor], comment: Agent 工作流阶段——生成期与验证期加载不同规则集 }
+        match_semantics:
+          across_facets: AND
+          within_facet: OR
+          any_is_wildcard: true
+          negative_filters: { source: L2.does_not_apply_when, comment: 反适用条件在 L1 只存摘要键，全文在 L2 }
+
+  # ---- L2：正文层（判断依据）----
+  L2_body:
+    token_budget: "<5000 tokens/条"
+    loading: on_trigger   # L1 命中后加载
+    field_spec:
+      id: { type: string, comment: 与 L1 一致；三层一致性校验的锚 }
+      statement: { type: string }
+      rationale: { type: string }
+      scope: { $ref: schema_a_flat_rule.field_spec.scope, comment: 字段定义与 Schema A 完全一致——A 是 B 的内容超集 }
+      applies_when: { type: "list[string]" }
+      does_not_apply_when: { type: "list[string]" }
+      evidence_summary:
+        source_ids: { type: "list[string]" }
+        authority_initial: { type: "enum [N, A, B, C, D, E]" }
+        confidence: { type: "enum [high, medium, low]" }
+        upgrade_downgrade_flags: { type: "list[string]", comment: GRADE 式升降级域命中标记（如 cross_platform_converged / stale_source） }
+      conflicts_with: { $ref: schema_a_flat_rule.field_spec.conflicts_with }
+      validation_summary:
+        method: { type: "enum [lint, heuristic_review, runtime, user_test]" }
+        automatable: { type: "enum [full, partial, none]" }
+        quick_check: { type: string, comment: ≤3 步的快速判定；完整规程在 L3 }
+    consistency_contract:
+      comment: >
+        三层一致性维护规则：(1) L1.one_line_statement 必须是 L2.statement 的忠实缩写，
+        入库时做 ALCE 式 entailment 检查 [A041]；(2) L1.trigger_conditions 与
+        L2.applies_when/does_not_apply_when 由同一 source of truth 生成，禁止手工双写；
+        (3) 任何 L2 变更触发 L1 重生成。
+
+  # ---- L3：附件层（例证与验证档案）----
+  L3_evidence:
+    token_budget: unlimited   # 按需读取；验证阶段才需要
+    loading: on_demand
+    field_spec:
+      examples: { type: "list[string]" }
+      counterexamples: { type: "list[string]" }
+      validation_procedure: { type: string, comment: 完整检查规程，含转人工判据 }
+      conflict_dossier: { type: "list[string]", comment: 涉及本规则的 DDR 编号与冲突裁决记录 }
+      excerpts: { type: "list[object]", comment: 原始文献关键句摘录（含 source_id + 原文），供 provenance 审计 }
+
+  # ---- 实例 B-1 / B-2：与 Schema A 相同的两条规则，演示分层切法 ----
+  instances:
+    - id: R-LAY-001
+      L1:
+        id: R-LAY-001
+        name: 工作区层级主导
+        one_line_statement: 主工作区必须在视觉层级上主导辅助区域
+        knowledge_type: design_heuristic
+        authority_initial: A
+        lifecycle_status: reviewed
+        trigger_conditions:
+          task_types: [data_exploration, monitoring, content_editing]
+          domain_entities: [workspace, panel, sidebar, inspector]
+          component_types: [grouping, output]
+          density: any
+          platform: [any]
+          phase: [generate, review]
+      L2:
+        statement: 同 Schema A 实例 A-1.statement（略，三层共享同一内容源）
+        rationale: 同 A-1.rationale（略）
+        scope: { user_type: mixed, task_type: [data_exploration, monitoring, content_editing], density: any, platform: [any] }
+        applies_when: [界面含 ≥2 个功能区域, 区域间存在明确主辅任务关系]
+        does_not_apply_when: [单区域界面, 辅助区为当前任务焦点, 高危告警瞬时抢占]
+        evidence_summary: { source_ids: [N028, A018, A057, N027], authority_initial: A, confidence: high, upgrade_downgrade_flags: [cross_discipline_converged] }
+        conflicts_with: [ { rule_id: R-FBK-002, resolution: DDR-0007 } ]
+        validation_summary: { method: heuristic_review, automatable: partial, quick_check: "面积占比与对比度量级可 lint；首次注视落点须评审+runtime 取证" }
+      L3:
+        examples: 同 A-1.examples（略）
+        counterexamples: 同 A-1.counterexamples（略）
+        validation_procedure: 同 A-1.validation.procedure 完整版（略）
+        conflict_dossier: [DDR-0007]
+        excerpts:
+          - { source_id: A057, text: "Hierarchy: different levels of importance can be defined among a set of elements." }
+
+    - id: R-ERR-001
+      L1:
+        id: R-ERR-001
+        name: 破坏性操作可恢复
+        one_line_statement: 破坏性操作必须有 undo 通道或指明后果的前置确认
+        knowledge_type: design_heuristic
+        authority_initial: A
+        lifecycle_status: stable
+        trigger_conditions:
+          task_types: [content_editing, configuration, data_exploration]
+          domain_entities: [delete_action, bulk_action, destructive_command, dialog]
+          component_types: [control]
+          density: any
+          platform: [any]
+          phase: [generate, review, validate]
+      L2:
+        statement: 同 Schema A 实例 A-2.statement（略）
+        rationale: 同 A-2.rationale（略）
+        scope: { user_type: mixed, task_type: [data_exploration, content_editing, configuration], density: any, platform: [any] }
+        applies_when: [操作对象不可再生, 操作不可逆或逆成本显著更高]
+        does_not_apply_when: [对象可再生, 全局软删除保留 ≥30 天已声明, 高频批量场景改用批量确认+全局 undo]
+        evidence_summary: { source_ids: [A050, N039, A013], authority_initial: A, confidence: high, upgrade_downgrade_flags: [] }
+        conflicts_with: [ { rule_id: R-EFF-003, resolution: "lex specialis，保留全局 undo 底线" } ]
+        validation_summary: { method: lint, automatable: full, quick_check: "组件树查 destructive 入口的 undo/确认契约" }
+      L3:
+        examples: 同 A-2.examples（略）
+        counterexamples: 同 A-2.counterexamples（略）
+        validation_procedure: 同 A-2.validation.procedure 完整版（略）
+        conflict_dossier: []
+        excerpts:
+          - { source_id: A050, text: "User control and freedom: users often perform actions by mistake… support undo and redo." }
+
+# =============================================================================
+# Schema C：policy-as-code 分层（OPA/Rego + axe-core 启发）
+# -----------------------------------------------------------------------------
+# 形态：规则按"可判定性"分为两个物种，各自有不同的表达语言：
+#   machine_checkable：声明式条件（match + assert），确定性执行，
+#     零误报原则，uncertain → 转人工而非判违规（axe-core 范式 [B001][D001]）；
+#     输出 SARIF/JSON，可直接进 CI；每次决策产出可回放审计日志（OPA 范式 [B028][D006]）。
+#   judgment_required：结构化评审 rubric（criteria + anchors + 取证规程 +
+#     评委协议 + 人工终裁点），不可编译为布尔判定。
+# 依据：专家系统教训——规则引擎只该承载可判定子集，LLM 可推理的不要硬编码
+#       [C019][D003]；自动化地板/中间带/天花板三段式（交叉验证 H2/H3）：
+#       自动化无障碍检测覆盖率 ≈57%（issue 量口径）[C002]，
+#       LLM 问题检测 κ≈0.50 但严重性判断 α≈0 [C006][A017]。
+# 已知缺陷：只能覆盖可判定子集；rubric 类规则依赖 LLM 评审，存在已知偏差
+#           （position/verbosity/self-preference [A028]，kappa 缩水 33–41pp [C033]），
+#           必须有降级与校准协议。
+# =============================================================================
+schema_c_policy_as_code:
+  description: 策略即代码——可判定子集确定性执行，判断子集结构化评审
+  file_convention: policies/{package}/{id}.policy.yaml   # package = 规则包（可版本化、可审计、可热更新，规则外化 [E027]）
+
+  # ---- 物种一：machine_checkable（确定性 lint）----
+  machine_checkable:
+    principles:
+      zero_false_positives: 宁可漏报不可误报；每条产出必须 explainable + actionable [D005][E015]
+      uncertain_to_human: 判不确定时输出 needs_review，禁止输出 violation [B001][D001]
+      decision_log: 每次评估产生可回放决策日志（input + 命中规则 + 结论）[B028]
+      progressive_enforcement: CI 中先 warning 后 error，渐进收紧 [D005]
+    field_spec:
+      id: { type: string }
+      kind: { const: machine_checkable }
+      severity: { type: "enum [error, warning, info]", comment: 初始一律 warning；稳定后收紧 }
+      match:
+        type: object
+        comment: 声明式选择器——在组件树/SDIR 上定位评估对象（类 Rego 的声明式语义，保证确定性与终止性 [D006]）
+        fields:
+          where: { type: string, comment: 结构化条件表达式，如 "component.interaction_semantics == 'control' AND component.tags contains 'destructive'" }
+      assert:
+        type: object
+        fields:
+          all_of: { type: "list[string]", comment: 全部满足的子条件 }
+          any_of: { type: "list[string]", comment: 满足其一的子条件 }
+          none_of: { type: "list[string]", comment: 禁止出现的子条件 }
+      on_uncertain:
+        type: object
+        fields:
+          condition: { type: string, comment: 什么算"不确定"，如"确认文案是否指明对象需语义判断" }
+          action: { const: flag_for_manual_review }
+      output:
+        format: { type: "enum [SARIF, JSON]" }
+        message_template: { type: string, comment: 含规则 id、命中位置、修复指引、evidence 引用 }
+      provenance:
+        rule_ref: { type: string, comment: 指向知识库规则条目（如 R-ERR-001）；policy 是规则的执行投影，内容与规则库同步生成 }
+
+    instance:
+      id: POL-ERR-001
+      kind: machine_checkable
+      severity: warning   # 上线初期 warning，两个发布周期无争议后升 error
+      provenance: { rule_ref: R-ERR-001 }
+      match:
+        where: "operation.tags contains 'destructive' AND operation.target.renewable == false"
+      assert:
+        any_of:
+          - "operation.contract.undo exists AND operation.contract.undo.window >= 5s"
+          - "operation.contract.pre_confirm exists AND operation.contract.pre_confirm.specifies_target == true"
+      on_uncertain:
+        condition: "pre_confirm.specifies_target 需文案语义判断，lint 不可判"
+        action: flag_for_manual_review
+      output:
+        format: SARIF
+        message_template: "[POL-ERR-001] 破坏性操作 '{operation.name}' 缺少 undo 通道或前置确认（规则 R-ERR-001，证据 [A050][N039]）。修复：添加限时 undo 或指明对象的确认步骤。"
+
+  # ---- 物种二：judgment_required（结构化评审 rubric）----
+  judgment_required:
+    principles:
+      rubric_anchored: 评分锚点显式化，禁止自由发挥式评审（criteria drift 防线 [A029]）
+      bias_mitigation: 成对比较须交换顺序复评；多评委；定期与人类标注校准 [A028][C033]
+      evidence_collection: 截图级评审不得终裁；必须交互式取证——操作控件、观察状态转移、测试错误恢复路径 [C005]
+      human_final: 严重性排序与放行裁决属自动化天花板（α≈0 [C006][A017]），人工终裁不可省
+    field_spec:
+      id: { type: string }
+      kind: { const: judgment_required }
+      rubric:
+        type: object
+        fields:
+          criteria: { type: "list[object]", comment: "每条 = {name, question, anchors: {1, 3, 5}} 锚点式量表" }
+          evidence_required: { type: "list[string]", comment: 评审前必须收集的运行态证据 }
+      judge_protocol:
+        type: object
+        fields:
+          mode: { type: "enum [pairwise, absolute]", comment: "优先 pairwise——绝对打分与批量排序显著发散 [A055]" }
+          order_swap: { type: boolean }
+          n_judges: { type: integer }
+          calibration: { type: string, comment: 与人类标注样本的定期校准频率与 κ 门槛 }
+      escalation:
+        type: object
+        fields:
+          to_human_when: { type: "list[string]", comment: 触发人工终裁的条件（severity 判定、评委分歧、低置信） }
+      degradation:
+        type: object
+        comment: 优雅降级路径：规则外情形（无命中 rubric）→ 检索 + LLM 推理，输出标注 unverified_reasoning，禁止伪装成规则结论
+        fields:
+          fallback: { const: retrieval_plus_llm_reasoning }
+          output_label: { const: unverified_reasoning }
+
+    instance:
+      id: POL-LAY-001
+      kind: judgment_required
+      provenance: { rule_ref: R-LAY-001 }
+      rubric:
+        criteria:
+          - name: first_fixation_target
+            question: 首次注视是否落在主工作区？
+            anchors: { 1: "明显落在辅助区（品牌色导航/高饱和侧栏）", 3: "无主从之分，注视分散", 5: "明确落在主工作区，辅助区可辨但不竞争" }
+          - name: weight_ratio
+            question: 主辅区域的视觉权重比是否与任务主辅关系一致？
+            anchors: { 1: "辅助区权重反超", 3: "接近相等", 5: "主区显著主导且层级单调递减" }
+        evidence_required:
+          - 渲染树区域面积与对比度量化（lint 子集，交 POL-LAY-001-lint 执行）
+          - ≥3 个交互状态的运行态截图（默认态/选择驱动态/告警态），禁止仅凭首屏 [C005]
+      judge_protocol:
+        mode: pairwise
+        order_swap: true
+        n_judges: 2
+        calibration: 每季度与人类标注样本校准，κ < 0.4 时暂停自动评审仅保留 lint 子集
+      escalation:
+        to_human_when: [评委间分差 ≥2, 涉及 severity 排序, 任一评委置信度 low]
+      degradation:
+        fallback: retrieval_plus_llm_reasoning
+        output_label: unverified_reasoning
+
+# =============================================================================
+# 冲突裁决机制（与三个 Schema 正交；A/B/C 共用）
+# -----------------------------------------------------------------------------
+# 设计依据（dim08 Part B + Insight 6）：
+#   - 分层混合模型：上段非补偿（字典序），下段补偿式打分 [A010][A039]
+#   - lex specialis 与 lex posterior 作为正交维度 [A033][A034]
+#   - 和谐解释优先：多数"冲突"是 applies_when 界定不清的伪冲突 [A033]
+#   - 冲突场景化（ATAM 六要素），裁决沉淀为 Design Decision Record [A007][B003][B002]
+#   - 证据分级 GRADE 式：初始级 + 升级域/降级域 [N013][N014][N015]
+# =============================================================================
+
+priority_layers:
+  model: lexicographic_above_compensatory_below   # 分层混合：先非补偿筛选、后补偿排序 [A010]
+  layers:
+    - id: L0_user_task_need
+      compensatory: false
+      note: 最高层但防滥用：确立 user need 只接受 D 级可用性测试证据，PM 主张不构成 need
+    - id: L1_safety_accessibility
+      compensatory: false
+      note: 非补偿底线——任何低层偏好的加权总和不得覆盖 WCAG 违规或安全风险 [A010][A039]；合规 baseline = WCAG 2.2 AA [N005]；WCAG 3.0 为 watch-only（WD 2026-03-03）[N004]
+    - id: L2_product_constitution
+      compensatory: false
+      note: 产品级硬约束（品牌宪法、已裁决 DDR）；修订须走元规则流程
+    - id: L2.5_universal_principles
+      name: 通用 UX 原则（D3）
+      compensatory: true
+      note: 通用 UX 原则层（D3 的 P-xx 条目）；补偿区首层，与 L3/L4/L5 共同参与加权打分，与 D9 §3.3 修正链一致
+    - id: L3_platform_convention
+      compensatory: true
+      note: 平台惯例层；scope 内 B 级，跨平台引用降 C；44pt/48dp/24px 三体系不可混用 [N002]
+    - id: L4_product_pattern
+      compensatory: true
+      note: 产品模式层（自有设计系统惯例）
+    - id: L5_visual_preference
+      compensatory: true
+      note: 视觉偏好层——允许补偿式打分；E 级灵感源不进默认检索语料，只由显式 inspiration 工具调用
+  scoring_within_compensatory_zone:
+    method: weighted_additive
+    constraint: 权重表本身版本化；任何 compensatory 层的总分不得穿透上方非补偿层（防补偿泄漏 [A010]）
+
+conflict_resolution:
+  pipeline:
+    # 第 0 步：和谐解释优先
+    - step: harmonize
+      action: 先尝试细化双方 applies_when 消解冲突；法学经验表明多数表面冲突可经解释消解 [A033]
+      output: 若消解 → 更新两条规则的 scope，不产生 DDR
+    # 第 1 步：非补偿层检查
+    - step: layer_check
+      action: 冲突涉及非补偿层（L0/L1/L2）时，字典序优先，低层规则无条件退让 [A010]
+    # 第 2 步：正交维度裁决
+    - step: orthogonal_axes
+      axes:
+        lex_specialis:
+          rule: applies_when 更精确匹配当前场景的规则优先；跨级适用但不得突破非补偿层 [A033]
+          match_key: scope 重叠度（task_type × domain_entity × density × platform 的匹配位数）
+        lex_posterior:
+          rule: 同级冲突时新版优先（WCAG 2.2 > 2.1；HIG 现行版 > 存档版）[A034]
+          data_requirement: 规则必须带 source_version 与 review_by，否则本维度不可用
+    # 第 3 步：场景化裁决（补偿层内的真实权衡）
+    - step: scenario_adjudication
+      action: ATAM 式场景化——冲突不在原则层抽象裁决，落到具体场景的权衡点 [A007][D004]
+      scenario_six_elements: [source, stimulus, environment, artifact, response, response_measure]
+      output: Design Decision Record（见下方 ddr_schema）
+  evidence_grading:
+    model: GRADE_dynamic
+    initial: authority_initial（N–E 静态级）
+    downgrade_domains:
+      - staleness: 来源超 review_by 未复审 / 平台规范已换代（ISO 2024–2025 密集换代的教训）
+      - indirectness: 证据来自消费级/营销语境，应用于企业工具场景
+      - inconsistency: 来源自身违反其准则（平台自己不遵守自家规范）
+    upgrade_domains:
+      - cross_platform_convergence: ≥2 个独立平台/体系收敛（B 级可事实上升至 A-）
+      - empirical_support: 有同行评审实证支持的产品模式（D→B）
+    separation_of_concerns: 证据确定性 ≠ 推荐强度（GRADE EtD 分离 [N014]）；authority 高不等于强制推行
+
+  # DDR（Design Decision Record）结构——ADR 格式的冲突裁决实例化 [B003][B002]
+  ddr_schema:
+    fields: [id, title, status, context, conflicting_rules, scenario, tradeoff_point, decision, basis, consequences, supersedes]
+    status_enum: [proposed, accepted, superseded, deprecated]
+    note: 裁决本身成为 D 级证据沉淀回知识库；supersedes 链保留完整历史 [B003]
+
+  # ---- 完整冲突裁决示例：极简主义 vs 专业信息密度（企业数据浏览器场景）----
+  worked_example:
+    ddr:
+      id: DDR-0012
+      title: 企业数据浏览器中信息密度优先于极简主义
+      status: accepted
+      conflicting_rules:
+        - rule_id: R-LAY-010   # 极简主义规则："移除一切不直接服务当前任务的元素"（design_heuristic，consumer 语境来源）
+          evidence: { authority_initial: B, confidence: medium }
+        - rule_id: R-DEN-001   # 密度规则："数据探索任务的默认密度应为 compact，信息寻获效率优先"（有密度论证实证支撑）
+          evidence: { authority_initial: A, confidence: high }
+      scenario:                # ATAM 六要素 [A007]
+        source: 数据分析师（expert 用户，每日 4 小时以上使用）
+        stimulus: 在 10 万行级结果表中定位异常模式
+        environment: 企业内网桌面端，27 寸显示器，工作时段
+        artifact: 数据浏览器的结果视图与筛选面板
+        response: 用户在单次视口内完成模式定位，无需滚动比对
+        response_measure: 定位任务完成时间；单位视口有效信息行数
+      tradeoff_point: 结果视图的默认密度档位与可见字段数（SDIR 中 density 承诺与 column visibility 决策）
+      adjudication_path:
+        - harmonize: 失败——两条规则的 applies_when 在"企业数据浏览器"场景真实重叠，非伪冲突
+        - layer_check: 双方均属补偿层（L2.5/L3/L4/L5），无字典序裁决
+        - lex_specialis: >
+            R-DEN-001 的 scope（task_type=data_exploration, density=compact, user_type=expert）
+            精确匹配场景；R-LAY-010 的 scope 为通用/消费级语境（indirectness 降级域命中）。
+            具体规则优先 [A033]。
+        - lex_posterior: 不适用（无版本冲突）
+        - compensatory_scoring: 不必要——lex_specialis 已裁决；保留打分仅在双方具体性相当时启用
+      decision: >
+        企业数据浏览器场景下 R-DEN-001 优先：默认 compact 密度、筛选面板常驻可见、
+        不应用极简主义的"隐藏至需要时"策略；极简主义规则在该 scope 内降权而非废除。
+      basis: >
+        lex specialis（scope 匹配精确度）+ 证据动态评级（极简主义规则的来源语境为
+        消费级产品，indirectness 降级；密度论证有结构化实证支撑）。
+        注：engagement 类原则在企业场景的降权同理——规范层原则的应用优先级
+        依赖 context of use（交叉验证 C7，Open，保留为活例 [N045][A053]）。
+      consequences:
+        positive: 数据探索任务效率可测提升；裁决模式可复用于其他 enterprise 场景
+        negative: 新用户首次接触的视觉复杂度上升——由渐进披露（非密度削减）缓解
+        follow_up: 裁决沉淀为 D 级证据；6 个月后以自家可用性测试复核（防"过拟合自家产品"——generalize 时降级）
+      supersedes: []
