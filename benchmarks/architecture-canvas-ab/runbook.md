@@ -1,9 +1,9 @@
 # PRAX-AB-001 Execution Runbook (operator manual)
 
 Who runs this: the human operator, in **fresh agent sessions** (one session per
-arm per replicate; never continue a used conversation). Worktrees live under
-the original ecp directory. After all runs finish, hand the run packages to a
-review session (checklist at the end).
+arm per replicate; never continue a used conversation). Worktrees live at
+`E:\codex-prj\ab-worktrees\` (parent level, one branch per run). After all
+runs finish, hand the run packages to a review session (checklist at the end).
 
 ## 0. Preconditions (verified 2026-08-26)
 
@@ -20,7 +20,7 @@ review session (checklist at the end).
 cd E:\codex-prj\Prax\Prax
 git rev-parse HEAD                      # -> write into prax-lock.yaml runtime_commit
 sha256sum benchmarks/architecture-canvas-ab/requirement.md   # -> experiment-manifest
-mkdir E:\codex-prj\ecp\ab-worktrees
+mkdir E:\codex-prj\ab-worktrees   # worktrees live at the PARENT level, not inside the repo
 ```
 
 Decide run order in advance and randomize it (e.g. roll a die or shuffle
@@ -31,9 +31,9 @@ Decide run order in advance and randomize it (e.g. roll a die or shuffle
 ### 2.1 Create the isolated worktree (each run on its own branch)
 
 ```bash
-cd E:\codex-prj\ecp\engineering-control-plane
-git worktree add -b ab/run-NN-<arm> ..\ab-worktrees\run-NN-<arm> 2c77838
-cd ..\ab-worktrees\run-NN-<arm>
+cd E:\codex-prj\ecp
+git worktree add -b ab/run-NN-<arm> E:\codex-prj\ab-worktrees\run-NN-<arm> 2c77838
+cd E:\codex-prj\ab-worktrees\run-NN-<arm>
 npm ci
 ```
 
