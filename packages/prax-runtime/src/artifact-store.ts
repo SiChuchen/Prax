@@ -23,6 +23,7 @@ import {
   type DesignMode,
   type DesignSession,
 } from "./contracts.js";
+import { PraxRuntimeError } from "./errors.js";
 
 const IndexEntrySchema = z.object({
   session_file: z.string().min(1),
@@ -48,16 +49,6 @@ const ARTIFACT_SCHEMAS: Partial<Record<ArtifactKey, z.ZodType>> = {
 const LOCK_STALE_MS = 30_000;
 const LOCK_RETRY_MS = 25;
 const LOCK_ATTEMPTS = 40;
-
-export class PraxRuntimeError extends Error {
-  public constructor(
-    public readonly code: string,
-    message: string,
-  ) {
-    super(message);
-    this.name = "PraxRuntimeError";
-  }
-}
 
 export interface ArtifactWrite {
   key: ArtifactKey;
