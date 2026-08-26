@@ -12,6 +12,8 @@ import {
   currentGate,
   deriveContextManifest,
   lifecyclePolicyFor,
+  loadCorrections,
+  relevantCorrections,
   NEXT_TOOL_BY_GATE,
   PraxRuntimeError,
   sessionPolicy,
@@ -837,6 +839,28 @@ export class PraxService {
     const { value: persistedPlan, changed: planChanged } = await this.resolveValidationPlan(session);
     const plan = persistedPlan.plan;
 
+    const corrections = await loadCorrections(this.sessions.stateRoot);
+    const understanding =
+      (await this.sessions.readArtifact<ExistingUnderstanding>(session, "existingUnderstanding")) ?? undefined;
+    const intentLiteArtifact =
+      (await this.sessions.readArtifact<IntentLite>(session, "intentLite")) ?? undefined;
+    const scopeSurfaces = [
+      ...new Set([
+        ...(understanding?.current_surfaces.map((surface) => surface.id) ?? []),
+        ...(understanding?.change_targets ?? []),
+        ...(intentLiteArtifact?.surfaces ?? []),
+      ]),
+    ];
+    const relevant = relevantCorrections(corrections, { surfaces: scopeSurfaces });
+    const regressionObligations = relevant.map((correction) => ({
+      correction_id: correction.id,
+      check_id: correction.regression.check_id,
+      surfaces: correction.scope.surfaces,
+    }));
+    const regressionCheckIds = [
+      ...new Set(relevant.map((correction) => correction.regression.check_id)),
+    ];
+
     if (input.mode === "plan") {
       await this.sessions.commit(touch(session, this.sessions.nowIso()), [
         {
@@ -848,7 +872,19 @@ export class PraxService {
         },
         ...(planChanged ? [{ key: "validationPlan" as const, value: persistedPlan }] : []),
       ]);
-      return { status: "EXPAND", checks: plan.checks, findings: [], missing_evidence: plan.checks.filter((check) => check.evidence_required).map((check) => check.id), next: nextTool("design_validate") };
+      return {
+        status: "EXPAND",
+        checks: plan.checks,
+        findings: [],
+        missing_evidence: [
+          ...new Set([
+            ...plan.checks.filter((check) => check.evidence_required).map((check) => check.id),
+            ...regressionCheckIds,
+          ]),
+        ],
+        ...(regressionObligations.length === 0 ? {} : { correction_regressions: regressionObligations }),
+        next: nextTool("design_validate"),
+      };
     }
 
     if (input.mode === "submit_evidence") {
@@ -889,13 +925,19 @@ export class PraxService {
       },
       ...(planChanged ? [{ key: "validationPlan" as const, value: persistedPlan }] : []),
     ]);
+    const unevidencedRegressions = regressionCheckIds.filter(
+      (checkId) => !evidence?.items.some((item) => item.check_id === checkId && item.outcome === "pass"),
+    );
+    const finalMissing = [...new Set([...evaluation.missing_evidence, ...unevidencedRegressions])];
     return {
       ...evaluation,
+      ...(finalMissing.length > evaluation.missing_evidence.length ? { missing_evidence: finalMissing } : {}),
+      ...(regressionObligations.length === 0 ? {} : { correction_regressions: regressionObligations }),
       ...(planChanged
         ? { warnings: [`Validation plan upstream artifacts changed; plan re-derived as revision ${persistedPlan.revision}.`] }
         : {}),
       phase: updated.phase,
-      ...(evaluation.status === "PASS" ? {} : { next: nextTool("design_validate") }),
+      ...(evaluation.status === "PASS" && finalMissing.length === 0 ? {} : { next: nextTool("design_validate") }),
     };
   }
 
