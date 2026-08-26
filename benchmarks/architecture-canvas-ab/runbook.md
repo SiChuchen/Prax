@@ -27,11 +27,11 @@ Decide run order in advance and randomize it (e.g. roll a die or shuffle
 
 ## 2. Per-run procedure (repeat 6×)
 
-### 2.1 Create the isolated worktree
+### 2.1 Create the isolated worktree (each run on its own branch)
 
 ```bash
 cd E:\codex-prj\ecp\engineering-control-plane
-git worktree add ..\ab-worktrees\run-NN-<arm> 2c77838
+git worktree add -b ab/run-NN-<arm> ..\ab-worktrees\run-NN-<arm> 2c77838
 cd ..\ab-worktrees\run-NN-<arm>
 npm ci
 ```
