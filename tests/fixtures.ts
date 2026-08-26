@@ -73,7 +73,7 @@ export function intentLite(kind: "visual_polish" | "defect_fix"): IntentLite {
   return {
     version: "0.1",
     kind,
-    surfaces: ["login"],
+    surfaces: ["settings"],
     current_hierarchy_summary: "表单优先居中，错误内联",
     change: "字阶 token 降一级；间距 S2→S1",
     basis: "审查发现登录标题层级与全站不一致",
@@ -289,5 +289,12 @@ export function sdirDelta(): SdirDelta {
     preserved: ["settings_navigation"],
     regression_points: ["键盘路径", "保存态可见性"],
     capability_needs: [],
+    impact: {
+      changes_product_objects: false,
+      changes_region_structure: false,
+      changes_interaction_model: false,
+      changes_state_model: false,
+      adds_capability: false,
+    },
   };
 }

@@ -6,18 +6,32 @@ export interface ImpactFinding {
   recommendedKind?: ChangeKind | DesignMode;
 }
 
-const STRUCTURAL_TOKENS = [
-  "reorganize", "restructure", "rearrange", "redesign", "refactor", "rework",
-  "navigation", "navigator", "sidebar", "inspector", "panel", "layout",
-  "region", "information architecture", "split", "merge",
-  "new page", "new surface", "new section", "add section",
-  "重组", "重构", "重排", "重设计", "导航", "侧边栏", "检视面板", "信息架构",
-  "布局", "区域", "拆分", "合并", "新增页面", "新增区域", "新增面板",
+const STRUCTURAL_ACTIONS = [
+  "reorganize", "restructure", "rearrange", "refactor", "redesign", "split",
+  "merge", "move", "replace", "remove", "add", "create", "introduce", "convert", "turn",
+  "重组", "重构", "重排", "拆分", "合并", "移到", "移入", "替换", "新增", "创建", "引入", "转成", "改成",
 ];
 
-export function structuralTokensIn(text: string): string[] {
+const STRUCTURAL_OBJECTS = [
+  "navigation", "navigator", "sidebar", "inspector", "panel", "layout",
+  "region", "hierarchy", "information architecture", "section", "page",
+  "surface", "header", "tabs", "tree",
+  "导航", "侧边栏", "检视面板", "面板", "布局", "区域", "层级", "信息架构",
+  "分区", "页面", "顶栏", "标签页", "树",
+];
+
+function hasToken(text: string, token: string): boolean {
+  return new RegExp(`(^|[^a-z])${token}([^a-z]|$)`, "i").test(text) || text.includes(token);
+}
+
+export function structuralCombinationIn(text: string): { actions: string[]; objects: string[] } | undefined {
   const lower = text.toLowerCase();
-  return STRUCTURAL_TOKENS.filter((token) => lower.includes(token));
+  const actions = STRUCTURAL_ACTIONS.filter((token) => hasToken(lower, token));
+  const objects = STRUCTURAL_OBJECTS.filter((token) => hasToken(lower, token));
+  if (actions.length > 0 && objects.length > 0) {
+    return { actions, objects };
+  }
+  return undefined;
 }
 
 export function classifyIntentImpact(
@@ -40,11 +54,11 @@ export function classifyIntentImpact(
         recommendedKind: recommended,
       });
     }
-    const structuralTokens = structuralTokensIn(intent.change);
-    if (structuralTokens.length > 0) {
+    const combination = structuralCombinationIn(`${intent.change} ${intent.basis}`);
+    if (combination !== undefined) {
       findings.push({
         code: "LIFECYCLE_KIND_MISMATCH",
-        message: `The change description contains structural vocabulary (${structuralTokens.join(", ")}) inconsistent with '${changeKind}'. If the structure really changes, restart as 'modify_surface'; otherwise rephrase to the concrete visual/defect scope.`,
+        message: `The change description pairs structural actions (${combination.actions.join(", ")}) with structural objects (${combination.objects.join(", ")}), which is inconsistent with '${changeKind}'. If the structure really changes, restart as 'modify_surface'; otherwise rephrase to the concrete visual/defect scope.`,
         recommendedKind: "modify_surface",
       });
     }

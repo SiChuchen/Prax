@@ -81,9 +81,18 @@ export const SdirDeltaChangeSchema = z.object({
 });
 export type SdirDeltaChange = z.infer<typeof SdirDeltaChangeSchema>;
 
+export const SdirDeltaImpactSchema = z.object({
+  changes_product_objects: z.boolean().default(false),
+  changes_region_structure: z.boolean().default(false),
+  changes_interaction_model: z.boolean().default(false),
+  changes_state_model: z.boolean().default(false),
+  adds_capability: z.boolean().default(false),
+});
+
 export const SdirDeltaSchema = z.object({
   version: z.literal("0.1"),
   surface: NonEmpty,
+  impact: SdirDeltaImpactSchema,
   base_regions: z
     .array(
       z.object({

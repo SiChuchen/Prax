@@ -136,7 +136,8 @@ describe("mode-differentiated lifecycle end to end", () => {
   });
 
   it("existing_product + visual_polish runs the light path with a light check set", async () => {
-    const { service } = await startSession("ds_polish", "existing_product", "visual_polish", "把登录页字阶调小");
+    const { service } = await startSession("ds_polish", "existing_product", "visual_polish", "把设置页字阶调小");
+    await service.designFrame({ design_session_id: "ds_polish", existing_understanding: architectureUnderstanding(["settings"]) });
     const intent = await service.designFrame({ design_session_id: "ds_polish", intent_lite: intentLite("visual_polish") });
     expect(intent.status).toBe("PASS");
     expect(intent.phase).toBe("VALIDATION");
@@ -149,7 +150,8 @@ describe("mode-differentiated lifecycle end to end", () => {
   });
 
   it("existing_product + defect_fix runs the lightest path with regression checks only", async () => {
-    const { service } = await startSession("ds_fix", "existing_product", "defect_fix", "修复登录按钮焦点丢失");
+    const { service } = await startSession("ds_fix", "existing_product", "defect_fix", "修复设置按钮焦点丢失");
+    await service.designFrame({ design_session_id: "ds_fix", existing_understanding: architectureUnderstanding(["settings"]) });
     const intent = await service.designFrame({ design_session_id: "ds_fix", intent_lite: intentLite("defect_fix") });
     expect(intent.phase).toBe("VALIDATION");
     const planned = await service.designValidate({ design_session_id: "ds_fix", mode: "plan" });

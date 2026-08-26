@@ -70,8 +70,8 @@ export function lifecyclePolicyFor(mode: DesignMode, changeKind?: ChangeKind): L
     const gatesByKind: Record<ChangeKind, GateName[]> = {
       add_surface: ["confirm", "understanding", "framing", ...FULL_TAIL],
       modify_surface: ["confirm", "understanding", "route", "decide", "sdir_delta", "prepare", "validate"],
-      visual_polish: ["confirm", "intent_lite", "validate"],
-      defect_fix: ["confirm", "intent_lite", "validate"],
+      visual_polish: ["confirm", "understanding", "intent_lite", "validate"],
+      defect_fix: ["confirm", "understanding", "intent_lite", "validate"],
     };
     return { version: "1", mode, change_kind: changeKind, gates: gatesByKind[changeKind] };
   }

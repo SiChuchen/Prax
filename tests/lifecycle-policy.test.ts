@@ -34,8 +34,8 @@ describe("lifecycle policy", () => {
     expect(lifecyclePolicyFor("existing_product", "modify_surface").gates).toEqual([
       "confirm", "understanding", "route", "decide", "sdir_delta", "prepare", "validate",
     ]);
-    expect(lifecyclePolicyFor("existing_product", "visual_polish").gates).toEqual(["confirm", "intent_lite", "validate"]);
-    expect(lifecyclePolicyFor("existing_product", "defect_fix").gates).toEqual(["confirm", "intent_lite", "validate"]);
+    expect(lifecyclePolicyFor("existing_product", "visual_polish").gates).toEqual(["confirm", "understanding", "intent_lite", "validate"]);
+    expect(lifecyclePolicyFor("existing_product", "defect_fix").gates).toEqual(["confirm", "understanding", "intent_lite", "validate"]);
   });
 
   it("rejects invalid combinations and preserves a rework change_kind hint", () => {
@@ -285,6 +285,8 @@ describe("design frame payload dispatch", () => {
 
   it("routes an intent-lite payload and persists a lightweight brief", async () => {
     const { service, store } = await confirmedService("existing_product", "visual_polish");
+    const understood = await service.designFrame({ design_session_id: "ds_frame", existing_understanding: architectureUnderstanding() });
+    expect(understood.phase).toBe("INTENT_LITE");
     const result = await service.designFrame({ design_session_id: "ds_frame", intent_lite: intentLite("visual_polish") });
     expect(result.status).toBe("PASS");
     expect(result.phase).toBe("VALIDATION");
@@ -316,6 +318,13 @@ describe("sdir delta", () => {
     preserved: ["settings_navigation"],
     regression_points: ["键盘路径", "保存态可见性"],
     capability_needs: [],
+    impact: {
+      changes_product_objects: false,
+      changes_region_structure: false,
+      changes_interaction_model: false,
+      changes_state_model: false,
+      adds_capability: false,
+    },
   };
 
   it("accepts a well-formed delta", () => {
@@ -573,7 +582,7 @@ describe("apply_delta mode semantics", () => {
 
 describe("confirmation evidence model", () => {
   it("blocks a pending confirmation and warns on brief-sufficient confirmations", () => {
-    const pending = { ...requirementConfirmation(), confirmation: { status: "pending_user_confirmation" as const, evidence: [{ type: "task_brief" as const, ref: "brief" }], confirmed_at: "2026-08-26T00:00:00.000Z" } };
+    const pending = { ...requirementConfirmation(), confirmation: { status: "pending_user_confirmation" as const, requested_at: "2026-08-26T00:00:00.000Z" } };
     const blocked = validateRequirementConfirmation(pending);
     expect(blocked.status).toBe("BLOCK");
     expect(blocked.codes).toContain("CONFIRMATION_PENDING");
@@ -695,5 +704,121 @@ describe("change impact classification", () => {
     const rejected = await service.designSdir({ design_session_id: "ds_imp", mode: "apply_delta", sdir_delta: newSurface });
     expect(rejected.status).toBe("REVIEW");
     expect(rejected.code).toBe("LIFECYCLE_KIND_MISMATCH");
+  });
+});
+
+describe("architect-review hardening regressions", () => {
+  it("flags an unknown surface on a real light-path session", async () => {
+    const root = await mkdtemp(join(tmpdir(), "prax-light-"));
+    cleanup.push(root);
+    const projectRoot = join(root, "project");
+    await mkdir(projectRoot);
+    const store = new FileSessionStore({ stateRoot: join(root, "state"), idGenerator: () => "ds_light" });
+    const service = await PraxService.create({ sessions: store });
+    await service.designStart({
+      requirement: "改视觉", project_root: projectRoot, mode: "existing_product", change_kind: "visual_polish",
+      requirement_confirmation: requirementConfirmation(),
+    });
+    await service.designFrame({ design_session_id: "ds_light", existing_understanding: architectureUnderstanding(["settings"]) });
+    const stranger = intentLite("visual_polish");
+    stranger.surfaces = ["billing"];
+    const result = await service.designFrame({ design_session_id: "ds_light", intent_lite: stranger });
+    expect(result.status).toBe("REVIEW");
+    expect(result.codes).toContain("SURFACE_NOT_DECLARED");
+  });
+
+  it("binds confirmation evidence types to the declared status", () => {
+    const wrongEvidence = {
+      ...requirementConfirmation(),
+      confirmation: {
+        status: "explicit_user_confirmation" as const,
+        evidence: [{ type: "task_brief" as const, ref: "docs/task.md" }],
+        confirmed_at: "2026-08-26T00:00:00.000Z",
+      },
+    };
+    const explicit = validateRequirementConfirmation(wrongEvidence);
+    expect(explicit.status).toBe("EXPAND");
+    expect(explicit.issues.join(" ")).toMatch(/conversation_message/);
+
+    const wrongSufficient = {
+      ...requirementConfirmation(),
+      confirmation: {
+        status: "requirement_is_sufficient" as const,
+        evidence: [{ type: "conversation_message" as const, ref: "chat" }],
+        confirmed_at: "2026-08-26T00:00:00.000Z",
+      },
+    };
+    const sufficient = validateRequirementConfirmation(wrongSufficient);
+    expect(sufficient.status).toBe("EXPAND");
+    expect(sufficient.issues.join(" ")).toMatch(/task_brief/);
+  });
+
+  it("rejects deltas that mutate product objects or use unknown field keys", () => {
+    const objectMutation = structuredClone(sdirDelta());
+    objectMutation.impact.changes_product_objects = true;
+    const objectResult = validateSdirDelta(objectMutation);
+    expect(objectResult.status).toBe("PASS");
+
+    const strayField = structuredClone(sdirDelta());
+    strayField.changes[0].fields = { product_objects: ["new_account_model"] };
+    const fieldResult = validateSdirDelta(strayField);
+    expect(fieldResult.status).toBe("RETRY");
+    expect(fieldResult.semantic_issues.map((issue: { code: string }) => issue.code)).toContain("SDIR_FIELD_UNKNOWN");
+  });
+
+  it("reviews a modify delta that declares product-object impact", async () => {
+    const root = await mkdtemp(join(tmpdir(), "prax-objimp-"));
+    cleanup.push(root);
+    const projectRoot = join(root, "project");
+    await mkdir(projectRoot);
+    const store = new FileSessionStore({ stateRoot: join(root, "state"), idGenerator: () => "ds_objimp" });
+    const service = await PraxService.create({ sessions: store });
+    await service.designStart({
+      requirement: "改设置页", project_root: projectRoot, mode: "existing_product", change_kind: "modify_surface",
+      requirement_confirmation: requirementConfirmation(),
+    });
+    await service.designFrame({ design_session_id: "ds_objimp", existing_understanding: architectureUnderstanding(["settings"]) });
+    await service.designRoute({ design_session_id: "ds_objimp", question: "如何改" });
+    const session = await store.getSession("ds_objimp");
+    const patternId = session.routing_history.flatMap((record) => record.selected_ids).find((id) => id.startsWith("PAT-")) ?? "PAT-SETTINGS-SECTIONS";
+    await service.designInspect({
+      design_session_id: "ds_objimp", ids: [patternId], depth: "L1",
+      purpose: { kind: "compare_alternatives", target_ids: [patternId], question: "确认" },
+    });
+    await service.designDecide({
+      design_session_id: "ds_objimp",
+      design_decisions: {
+        session_id: "ds_objimp",
+        primary_structure: { pattern: patternId, rationale: ["分区"], confidence: "high" },
+        information_hierarchy: { primary: ["settings"], secondary: ["search"] },
+        density: { intent: "regular", strategy: ["分区标题"], avoid: [] },
+        major_choices: [], rejected: [{ option: "长表单", reason: "x" }], unresolved: [],
+      },
+    });
+    const mutating = structuredClone(sdirDelta());
+    mutating.impact.changes_product_objects = true;
+    const rejected = await service.designSdir({ design_session_id: "ds_objimp", mode: "apply_delta", sdir_delta: mutating });
+    expect(rejected.status).toBe("REVIEW");
+    expect(JSON.stringify(rejected)).toMatch(/rework/);
+  });
+
+  it("keeps genuine visual fixes out of the structural scan while catching real restructures", () => {
+    for (const [text, shouldFlag] of [
+      ["fix sidebar color contrast", false],
+      ["repair panel focus ring visibility", false],
+      ["fix layout shift on the login form", false],
+      ["replace the list with tabs", true],
+      ["move search controls into the header", true],
+      ["把搜索移到顶栏", true],
+    ] as const) {
+      const intent = intentLite("visual_polish");
+      intent.change = text;
+      const result = validateIntentLite(intent, "visual_polish");
+      if (shouldFlag) {
+        expect(result.status).toBe("REVIEW");
+      } else {
+        expect(result.status).toBe("PASS");
+      }
+    }
   });
 });

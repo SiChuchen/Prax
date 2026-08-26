@@ -148,6 +148,9 @@ export const ConfirmationEvidenceSchema = z.object({
   type: z.enum(["conversation_message", "task_brief", "user_document"]),
   ref: NonEmptyStringSchema,
 });
+export type ConfirmationEvidence = z.infer<typeof ConfirmationEvidenceSchema>;
+
+const ConfirmedEvidenceList = z.array(ConfirmationEvidenceSchema).min(1);
 
 export const RequirementConfirmationSchema = z.object({
   version: z.literal("0.1"),
@@ -159,11 +162,22 @@ export const RequirementConfirmationSchema = z.object({
     scope_complete: z.boolean().default(false),
   }),
   open_questions: z.array(MaterialUnknownSchema).default([]),
-  confirmation: z.object({
-    status: z.enum(["explicit_user_confirmation", "requirement_is_sufficient", "pending_user_confirmation"]),
-    evidence: z.array(ConfirmationEvidenceSchema).min(1),
-    confirmed_at: z.string().datetime(),
-  }),
+  confirmation: z.discriminatedUnion("status", [
+    z.object({
+      status: z.literal("explicit_user_confirmation"),
+      evidence: ConfirmedEvidenceList,
+      confirmed_at: z.string().datetime(),
+    }),
+    z.object({
+      status: z.literal("requirement_is_sufficient"),
+      evidence: ConfirmedEvidenceList,
+      confirmed_at: z.string().datetime(),
+    }),
+    z.object({
+      status: z.literal("pending_user_confirmation"),
+      requested_at: z.string().datetime(),
+    }),
+  ]),
 });
 export type RequirementConfirmation = z.infer<typeof RequirementConfirmationSchema>;
 

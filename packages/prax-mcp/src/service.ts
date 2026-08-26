@@ -146,7 +146,7 @@ export class PraxService {
         design_session_id: session.id,
         phase: session.phase,
         next: nextTool("design_start"),
-        required: ["user_quote", "restatement", "boundaries", "confirmed_with_user"],
+        required: ["user_quote", "restatement", "boundaries", "confirmation.status", "confirmation.evidence"],
       };
     }
     const validation = validateRequirementConfirmation(input.requirement_confirmation);
@@ -314,11 +314,15 @@ export class PraxService {
     if (blocked !== undefined) return blocked;
     const frameArtifact = await this.sessions.readArtifact<ProductFrame>(session, "productFrame");
     const contextArtifact = await this.sessions.readArtifact<DesignContext>(session, "designContext");
-    const understanding = await this.sessions.readArtifact<ExistingUnderstanding>(session, "existingUnderstanding");
-    const confirmation = await this.sessions.readArtifact<RequirementConfirmation>(session, "requirementConfirmation");
+    const derived = frameArtifact === undefined || contextArtifact === undefined;
+    const understanding = derived
+      ? await this.sessions.readArtifact<ExistingUnderstanding>(session, "existingUnderstanding")
+      : undefined;
+    const confirmation = derived
+      ? await this.sessions.readArtifact<RequirementConfirmation>(session, "requirementConfirmation")
+      : undefined;
     const frame = frameArtifact ?? this.derivedFrame(understanding, confirmation);
     const context = contextArtifact ?? this.derivedContext(understanding, confirmation, session.design_authorities);
-    const derived = frameArtifact === undefined || contextArtifact === undefined;
     const route = this.router.route(frame, context, input.question);
     const now = this.sessions.nowIso();
     const selectedIds = [
@@ -566,17 +570,23 @@ export class PraxService {
           next: nextTool("design_sdir"),
         };
       }
-      const gateUnderstanding =
-        (await this.sessions.readArtifact<ExistingUnderstanding>(session, "existingUnderstanding")) ?? undefined;
-      if (
-        gateUnderstanding !== undefined &&
-        !gateUnderstanding.current_surfaces.some((surface) => surface.id === validation.value!.surface)
-      ) {
+      const gateUnderstanding = await this.requireArtifact<ExistingUnderstanding>(session, "existingUnderstanding");
+      if (!gateUnderstanding.current_surfaces.some((surface) => surface.id === validation.value!.surface)) {
         return {
           status: "REVIEW",
           code: "LIFECYCLE_KIND_MISMATCH",
           issues: [
-            `sdir_delta targets surface '${validation.value!.surface}' which is not in the existing understanding; building a new surface is add_surface work, and changing the product model is rework. Restart the session with the matching change_kind.`,
+            `sdir_delta targets surface '${validation.value!.surface}' which is not in the existing understanding; building a new surface is add_surface work. Restart the session with the matching change_kind.`,
+          ],
+          next: nextTool("design_sdir"),
+        };
+      }
+      if (validation.value!.impact.changes_product_objects) {
+        return {
+          status: "REVIEW",
+          code: "LIFECYCLE_KIND_MISMATCH",
+          issues: [
+            "The sdir_delta declares changes_product_objects; mutating the product model is rework, not modify_surface. Restart the session in rework mode so the product frame is re-derived.",
           ],
           next: nextTool("design_sdir"),
         };

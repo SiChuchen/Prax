@@ -11,6 +11,7 @@ export function validateSdirDelta(input: unknown): SdirDeltaValidation {
   const issues: SdirIssue[] = [];
   const declared = new Set(delta.base_regions.map((region) => region.id));
   const added = new Set<string>();
+  const ALLOWED_FIELD_KEYS = new Set(["importance", "visibility", "role", "behavior_intent", "note"]);
 
   delta.changes.forEach((change, index) => {
     if (change.action === "add") {
@@ -33,6 +34,14 @@ export function validateSdirDelta(input: unknown): SdirDeltaValidation {
         code: "SDIR_RELATION_REGION_NOT_FOUND",
         message: `changes[${index}].region '${change.region}' is not a declared base region; only add actions may introduce new regions.`,
       });
+    }
+    for (const key of Object.keys(change.fields)) {
+      if (!ALLOWED_FIELD_KEYS.has(key)) {
+        issues.push({
+          code: "SDIR_FIELD_UNKNOWN",
+          message: `changes[${index}].fields.${key} is not a recognized semantic field; deltas may only adjust importance, visibility, role, behavior_intent, or note. Product-object or model mutations belong to rework.`,
+        });
+      }
     }
     for (const message of renderLeakIssues(change.fields, `changes[${index}].fields`)) {
       issues.push({ code: "SDIR_RENDER_LEVEL_LEAK", message });

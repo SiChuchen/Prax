@@ -68,9 +68,17 @@ run the original full chain with unchanged behavior.
   generate_from_decisions | validate | apply_delta.
 5. **`scope_complete`** replaces boilerplate out_of_scope entries.
 6. **Change impact classification guards the light paths** — impact flags,
-  structural-vocabulary scanning, surface membership checks, and
-  delta-surface checks return REVIEW with a recommended kind when the
-  declared change kind understates the work.
+  structural-vocabulary scanning (action+object combinations, word-boundary
+  for English), surface membership checks, and delta-surface checks return
+  REVIEW with a recommended kind when the declared change kind understates
+  the work. Light paths pass a minimal understanding gate
+  (current_surfaces inventory) so surface membership is verifiable; modify
+  deltas carry their own impact flags, reject unknown semantic field keys,
+  and REVIEW product-object mutations as rework.
+7. **Schema churn within 2026-08-26 is accepted** — the confirmation and
+  intent-lite schemas changed twice before any real session persisted them;
+  pre-policy sessions never contained these artifacts and remain
+  restorable as before.
 
 ## Consequences
 

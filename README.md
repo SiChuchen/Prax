@@ -98,13 +98,13 @@ policy:
 | `greenfield` | confirm → frame → context → route → decide → sdir → reconcile → prepare → validate |
 | `existing_product` + `add_surface` | confirm → understanding → frame → context → route → decide → sdir → reconcile → prepare → validate |
 | `existing_product` + `modify_surface` | confirm → understanding → route → decide → sdir_delta → prepare → validate |
-| `existing_product` + `visual_polish` / `defect_fix` | confirm → intent_lite → validate |
+| `existing_product` + `visual_polish` / `defect_fix` | confirm → understanding → intent_lite → validate |
 | `rework` | confirm → understanding → frame → context → route → decide → sdir → reconcile → prepare → validate |
 
 1. `design_start` — creates the session and gates it behind a structured
-   requirement confirmation (`user_quote`, `restatement`, boundaries,
-   `confirmed_with_user`); the confirmation may be submitted inline or via a
-   resume call.
+   requirement confirmation (`user_quote`, `restatement`, boundaries, and a
+   `confirmation` object whose evidence types must match its status); the
+   confirmation may be submitted inline or via a resume call.
 2. `design_frame` — payload depends on the current gate:
    `existing_understanding` (existing/rework question sets),
    `product_frame`, or a lightweight `intent_lite` for polish/fix sessions.

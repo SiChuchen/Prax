@@ -54,6 +54,23 @@ export function validateRequirementConfirmation(input: unknown): ArtifactValidat
       value: parsed.data,
     };
   }
+  const evidenceTypes = new Set(parsed.data.confirmation.evidence.map((item) => item.type));
+  if (
+    parsed.data.confirmation.status === "explicit_user_confirmation" &&
+    !evidenceTypes.has("conversation_message") &&
+    !evidenceTypes.has("user_document")
+  ) {
+    issues.push(
+      "explicit_user_confirmation requires conversation_message or user_document evidence; a task brief alone is not a user reply.",
+    );
+  }
+  if (
+    parsed.data.confirmation.status === "requirement_is_sufficient" &&
+    !evidenceTypes.has("task_brief") &&
+    !evidenceTypes.has("user_document")
+  ) {
+    issues.push("requirement_is_sufficient requires task_brief or user_document evidence naming the self-sufficient source.");
+  }
   if (parsed.data.confirmation.status === "requirement_is_sufficient") {
     warnings.push(
       "Confirmation relies on the task brief being self-sufficient rather than an explicit user reply; keep the evidence reference auditable.",
@@ -456,17 +473,23 @@ export function validateExistingUnderstanding(
     warnings.push("No external design authorities declared; decisions will be checked only against the built-in pack.");
   }
 
+  const isLightKind = changeKind === "visual_polish" || changeKind === "defect_fix";
   if (mode === "existing_product") {
     const surfaces = new Set(data.current_surfaces.map((surface) => surface.id));
-    for (const target of data.change_targets) {
-      if (!surfaces.has(target)) {
-        codes.push("CHANGE_TARGET_NOT_DECLARED");
-        issues.push(`change_target '${target}' does not map to any declared current_surfaces entry.`);
+    if (!isLightKind) {
+      for (const target of data.change_targets) {
+        if (!surfaces.has(target)) {
+          codes.push("CHANGE_TARGET_NOT_DECLARED");
+          issues.push(`change_target '${target}' does not map to any declared current_surfaces entry.`);
+        }
       }
-    }
-    if (data.current_objects.length === 0 || data.current_surfaces.length === 0) {
+      if (data.current_objects.length === 0 || data.current_surfaces.length === 0) {
+        codes.push("UNDERSTANDING_INCOMPLETE");
+        issues.push("existing_product understanding requires current_objects and current_surfaces.");
+      }
+    } else if (data.current_surfaces.length === 0) {
       codes.push("UNDERSTANDING_INCOMPLETE");
-      issues.push("existing_product understanding requires current_objects and current_surfaces.");
+      issues.push("light paths require at least a current_surfaces inventory so intent surfaces can be verified.");
     }
     if (changeKind === "modify_surface" && data.surface_context === undefined) {
       codes.push("SURFACE_CONTEXT_REQUIRED");
