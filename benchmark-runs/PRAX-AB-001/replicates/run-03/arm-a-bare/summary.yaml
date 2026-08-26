@@ -1,0 +1,43 @@
+run:
+  id: PRAX-AB-001-run-03-A
+  arm: arm-a-bare
+  agent_cli: claude-code (glm-5.3)
+  session: ce40b6a7-1ff3-4543-8ae7-0d2f673f97c0
+  started_at: not_recorded
+  ended_at: not_recorded
+
+result:
+  implementation_completed: true     # uncommitted working-tree changes
+  final_validation: pending_review
+  changed_files: 15 (+2 new: app/architecture/readability.ts, tests/canvas-readability.test.mjs)
+  diff_stat: "512 insertions(+), 184 deletions(-)"
+  docs_touched: [Canvas_Engine_v1_Review.md, evidence svgs, scripts/render-canvas-evidence.mjs]
+
+process:
+  wall_clock_seconds: 2554   # 42m34s, operator-reported
+  model_usage:
+    input_tokens: 798424
+    output_tokens: 300231
+    cache_read_input_tokens: 66837312
+  assistant_turns: 406
+  tool_calls: 235
+  file_edits: 62
+  browser_verification: playwright (23 evaluate / 9 screenshot / 13 click / 14 wait)
+  prax_calls: 0
+  human_clarifications: 0   # operator: agent asked no questions
+  first_pass_at: not_recorded_by_operator
+  first_pass_validation_failures: not_recorded
+  post_first_pass_repair_rounds: not_recorded
+
+contamination_check:
+  prax_dir_absent: true
+  prax_env_absent: true
+  base_commit_verified: 2c77838
+
+evidence:
+  screenshots: 6   # small/medium/large browse defaults, inspector docked camera
+                   # held, ordered trace corridor, landscape region summaries
+  transcript: execution/session-transcript.jsonl
+
+open_questions:
+  - first-pass timing not recorded
