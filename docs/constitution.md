@@ -14,4 +14,6 @@ These invariants are product behavior, not prompting suggestions.
 10. User evidence is submitted by an external actor and is never synthesized as fact.
 11. The filesystem handoff must let another agent resume from `design_session_id` alone.
 12. High floor, soft ceiling: defaults prevent accidental low quality without forbidding justified deviation.
+13. Requirement confirmation precedes every gate: user quote, restatement, and explicit scope boundaries come before any design work.
+14. The posture toward the existing system — authoritative, evidence-only, or absent — determines the lifecycle depth; small changes never pay the full-chain tax.
 
