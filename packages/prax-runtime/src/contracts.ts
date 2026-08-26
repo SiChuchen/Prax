@@ -151,6 +151,7 @@ export const RequirementConfirmationSchema = z.object({
   boundaries: z.object({
     in_scope: z.array(NonEmptyStringSchema).min(1),
     out_of_scope: z.array(NonEmptyStringSchema),
+    scope_complete: z.boolean().default(false),
   }),
   open_questions: z.array(MaterialUnknownSchema).default([]),
   confirmed_with_user: z.literal(true),

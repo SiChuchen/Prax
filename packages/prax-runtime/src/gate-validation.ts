@@ -28,9 +28,9 @@ export function validateRequirementConfirmation(input: unknown): ArtifactValidat
   }
   const issues: string[] = [];
   const warnings: string[] = [];
-  if (parsed.data.boundaries.out_of_scope.length === 0) {
+  if (parsed.data.boundaries.out_of_scope.length === 0 && !parsed.data.boundaries.scope_complete) {
     issues.push(
-      "boundaries.out_of_scope must declare at least one excluded concern; scope drift is the most common restatement failure.",
+      "boundaries must either declare excluded concerns in out_of_scope or explicitly set scope_complete: true when the in_scope list is the entire scope.",
     );
   }
   const highImpact = parsed.data.open_questions.filter((question) => typeof question !== "string" && question.impact === "high");

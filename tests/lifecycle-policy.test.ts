@@ -502,3 +502,31 @@ describe("policy-aware validation plans", () => {
     expect(plan.pattern_ref).toBeUndefined();
   });
 });
+
+describe("requirement scope completeness", () => {
+  async function polishService() {
+    const root = await mkdtemp(join(tmpdir(), "prax-scope-"));
+    cleanup.push(root);
+    const projectRoot = join(root, "project");
+    await mkdir(projectRoot);
+    const store = new FileSessionStore({ stateRoot: join(root, "state"), idGenerator: () => "ds_scope" });
+    const service = await PraxService.create({ sessions: store });
+    return { service, projectRoot };
+  }
+
+  it("accepts an empty out_of_scope only with an explicit scope_complete declaration", async () => {
+    const { service, projectRoot } = await polishService();
+    await service.designStart({ requirement: "修复登录按钮焦点丢失", project_root: projectRoot, mode: "existing_product", change_kind: "defect_fix" });
+
+    const boilerplate = { ...requirementConfirmation(), boundaries: { in_scope: ["login focus"], out_of_scope: [] } };
+    const rejected = await service.designStart({ design_session_id: "ds_scope", requirement_confirmation: boilerplate });
+    expect(rejected.status).toBe("EXPAND");
+
+    const declared = {
+      ...requirementConfirmation(),
+      boundaries: { in_scope: ["login focus"], out_of_scope: [], scope_complete: true },
+    };
+    const accepted = await service.designStart({ design_session_id: "ds_scope", requirement_confirmation: declared });
+    expect(accepted.status).toBe("PASS");
+  });
+});
