@@ -11,7 +11,7 @@ import {
   ProductFrameSchema,
   RequirementConfirmationSchema,
 } from "prax-runtime";
-import { SdirSchema } from "prax-sdir";
+import { SdirDeltaSchema, SdirSchema } from "prax-sdir";
 import { ValidationEvidenceSchema } from "prax-validator";
 
 const SessionId = z.string().trim().min(1).describe("Explicit persisted Prax design_session_id");
@@ -93,6 +93,7 @@ export const DesignSdirInputSchema = z
     design_session_id: SessionId,
     mode: z.enum(["generate_from_decisions", "validate"]),
     sdir: SdirSchema.optional(),
+    sdir_delta: SdirDeltaSchema.optional(),
   })
   .superRefine((input, context) => {
     if (input.mode === "validate" && input.sdir === undefined) {

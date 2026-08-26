@@ -7,6 +7,7 @@ import type {
   ProductFrame,
   RequirementConfirmation,
 } from "prax-runtime";
+import type { SdirDelta } from "prax-sdir";
 
 export function requirementConfirmation(): RequirementConfirmation {
   return {
@@ -261,3 +262,21 @@ export function architectureCapabilities(): CapabilityMap {
   };
 }
 
+
+export function sdirDelta(): SdirDelta {
+  return {
+    version: "0.1",
+    surface: "settings",
+    base_regions: [
+      { id: "settings_navigation", role: "primary_navigation", importance: "supporting" },
+      { id: "settings", role: "configuration_sections", importance: "primary" },
+    ],
+    changes: [
+      { region: "settings", action: "modify", fields: { importance: "dominant" }, rationale: "配置成为主要任务" },
+      { region: "search", action: "add", role: "supporting_toolbar", fields: {}, rationale: "长列表需要检索" },
+    ],
+    preserved: ["settings_navigation"],
+    regression_points: ["键盘路径", "保存态可见性"],
+    capability_needs: [],
+  };
+}

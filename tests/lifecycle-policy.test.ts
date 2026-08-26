@@ -17,7 +17,7 @@ import {
   validateExistingUnderstanding,
   type DesignSession,
 } from "prax-runtime";
-import { architectureProductFrame, intentLite, requirementConfirmation, reworkUnderstanding } from "./fixtures.js";
+import { architectureDecisions, architectureProductFrame, architectureUnderstanding, intentLite, requirementConfirmation, reworkUnderstanding, sdirDelta } from "./fixtures.js";
 import { validateSdirDelta } from "prax-sdir";
 
 const FULL_TAIL = ["context", "route", "decide", "sdir", "reconcile", "prepare", "validate"];
@@ -343,5 +343,95 @@ describe("sdir delta", () => {
     const bad = structuredClone(delta);
     bad.preserved = ["ghost_surface"];
     expect(validateSdirDelta(bad).semantic_issues.map((issue: { code: string }) => issue.code)).toContain("SDIR_RELATION_REGION_NOT_FOUND");
+  });
+});
+
+describe("modify_surface path", () => {
+  async function modifySession(sessionId: string, requirement: string) {
+    const root = await mkdtemp(join(tmpdir(), "prax-modify-"));
+    cleanup.push(root);
+    const projectRoot = join(root, "project");
+    await mkdir(projectRoot);
+    const store = new FileSessionStore({ stateRoot: join(root, "state"), idGenerator: () => sessionId });
+    const service = await PraxService.create({ sessions: store });
+    await service.designStart({
+      requirement,
+      project_root: projectRoot,
+      mode: "existing_product",
+      change_kind: "modify_surface",
+      requirement_confirmation: requirementConfirmation(),
+    });
+    return { service, store };
+  }
+
+  it("runs confirm → understanding → route → decide → sdir_delta with persisted derived inputs", async () => {
+    const { service, store } = await modifySession("ds_modify", "把设置页改成分区检索式");
+    const understood = await service.designFrame({
+      design_session_id: "ds_modify",
+      existing_understanding: architectureUnderstanding(["settings"]),
+    });
+    expect(understood.phase).toBe("ROUTING");
+
+    const routed = await service.designRoute({ design_session_id: "ds_modify", question: "如何在设置页承载检索与分区" });
+    expect(routed.status).toMatch(/PASS|EXPAND/);
+    const session = await store.getSession("ds_modify");
+    expect(session.artifacts.productFrame).toBeDefined();
+    expect(session.artifacts.designContext).toBeDefined();
+    expect(session.warnings.join(" ")).toMatch(/derived/i);
+
+    const patternId = (routed.patterns as Array<{ id: string }>)[0]?.id ?? "PAT-SETTINGS-SECTIONS";
+    await service.designInspect({
+      design_session_id: "ds_modify",
+      ids: [patternId],
+      depth: "L1",
+      purpose: { kind: "compare_alternatives", target_ids: [patternId], question: "确认分区模式适合设置页改造" },
+    });
+    const decided = await service.designDecide({
+      design_session_id: "ds_modify",
+      design_decisions: {
+        session_id: "ds_modify",
+        primary_structure: { pattern: patternId, rationale: ["分区承载不同目标"], confidence: "high" },
+        information_hierarchy: { primary: ["settings"], secondary: ["search"] },
+        density: { intent: "regular", strategy: ["分区标题"], avoid: ["后端配置顺序"] },
+        major_choices: [],
+        rejected: [{ option: "单页长表单", reason: "检索成本高" }],
+        unresolved: [],
+      },
+    });
+    expect(decided.status).toMatch(/PASS|WARN/);
+
+    const delta = await service.designSdir({ design_session_id: "ds_modify", mode: "generate_from_decisions", sdir_delta: sdirDelta() });
+    expect(delta.status).toBe("PASS");
+    expect(delta.phase).toBe("IMPLEMENTATION_READY");
+  });
+
+  it("inserts the reconcile gate when a delta declares capability needs", async () => {
+    const { service } = await modifySession("ds_capneed", "设置页需要后端检索接口");
+    await service.designFrame({ design_session_id: "ds_capneed", existing_understanding: architectureUnderstanding(["settings"]) });
+    const routed = await service.designRoute({ design_session_id: "ds_capneed", question: "检索如何承载" });
+    const patternId = (routed.patterns as Array<{ id: string }>)[0]?.id ?? "PAT-SETTINGS-SECTIONS";
+    await service.designInspect({
+      design_session_id: "ds_capneed",
+      ids: [patternId],
+      depth: "L1",
+      purpose: { kind: "compare_alternatives", target_ids: [patternId], question: "确认模式" },
+    });
+    await service.designDecide({
+      design_session_id: "ds_capneed",
+      design_decisions: {
+        session_id: "ds_capneed",
+        primary_structure: { pattern: patternId, rationale: ["分区"], confidence: "high" },
+        information_hierarchy: { primary: ["settings"], secondary: ["search"] },
+        density: { intent: "regular", strategy: ["分区标题"], avoid: [] },
+        major_choices: [],
+        rejected: [{ option: "长表单", reason: "检索成本高" }],
+        unresolved: [],
+      },
+    });
+    const needy = { ...sdirDelta(), capability_needs: ["backend search endpoint"] };
+    const delta = await service.designSdir({ design_session_id: "ds_capneed", mode: "generate_from_decisions", sdir_delta: needy });
+    expect(delta.status).toBe("PASS");
+    expect(delta.phase).toBe("CAPABILITY_RECONCILIATION");
+    expect(delta.next).toEqual({ tool: "design_reconcile" });
   });
 });

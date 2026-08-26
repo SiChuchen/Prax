@@ -12,6 +12,7 @@ import {
   lifecyclePolicyFor,
   NEXT_TOOL_BY_GATE,
   PraxRuntimeError,
+  sessionPolicy,
   validateCapabilityMap,
   validateDesignContext,
   validateDesignDecisions,
@@ -28,8 +29,11 @@ import {
   type ExistingUnderstanding,
   type GateStatus,
   type ProductFrame,
+  type RequirementConfirmation,
+  ProductFrameSchema,
+  DesignContextSchema,
 } from "prax-runtime";
-import { patternSurfaceContract, SdirEngine, SdirSchema, type Sdir } from "prax-sdir";
+import { patternSurfaceContract, SdirEngine, SdirSchema, validateSdirDelta, type Sdir } from "prax-sdir";
 import {
   PraxValidator,
   ValidationPlanSchema,
@@ -303,8 +307,13 @@ export class PraxService {
     const session = await this.sessions.getSession(input.design_session_id);
     const blocked = operationBlock(session, "design_route");
     if (blocked !== undefined) return blocked;
-    const frame = await this.requireArtifact<ProductFrame>(session, "productFrame");
-    const context = await this.requireArtifact<DesignContext>(session, "designContext");
+    const frameArtifact = await this.sessions.readArtifact<ProductFrame>(session, "productFrame");
+    const contextArtifact = await this.sessions.readArtifact<DesignContext>(session, "designContext");
+    const understanding = await this.sessions.readArtifact<ExistingUnderstanding>(session, "existingUnderstanding");
+    const confirmation = await this.sessions.readArtifact<RequirementConfirmation>(session, "requirementConfirmation");
+    const frame = frameArtifact ?? this.derivedFrame(understanding, confirmation);
+    const context = contextArtifact ?? this.derivedContext(understanding, confirmation, session.design_authorities);
+    const derived = frameArtifact === undefined || contextArtifact === undefined;
     const route = this.router.route(frame, context, input.question);
     const now = this.sessions.nowIso();
     const selectedIds = [
@@ -335,17 +344,102 @@ export class PraxService {
             ],
           }
         : {}),
+      ...(derived
+        ? {
+            warnings: [
+              ...(acceptingScopeGap ? [`Routing scope gap accepted: ${input.accept_scope_gap!.rationale}`] : []),
+              ...session.warnings,
+              "Routing inputs derived from existing understanding (provenance: existing-understanding.yaml + requirement-confirmation.yaml).",
+            ],
+          }
+        : {}),
     };
     const priorLog = (await this.sessions.readArtifact<{ events?: unknown[] }>(session, "routingLog")) ?? {};
-    await this.sessions.commit(updated, [
-      { key: "routingLog", value: { version: "0.1", events: [...(priorLog.events ?? []), { question: input.question, routed_at: now, result: route, ...(acceptingScopeGap ? { scope_gap_accepted: input.accept_scope_gap } : {}) }] } },
-    ]);
+    const artifactWrites: Array<{ key: "routingLog" | "productFrame" | "designContext"; value: unknown }> = [
+      {
+        key: "routingLog",
+        value: {
+          version: "0.1",
+          events: [
+            ...(priorLog.events ?? []),
+            {
+              question: input.question,
+              routed_at: now,
+              result: route,
+              ...(derived ? { derived_from_understanding: true } : {}),
+              ...(acceptingScopeGap ? { scope_gap_accepted: input.accept_scope_gap } : {}),
+            },
+          ],
+        },
+      },
+    ];
+    if (frameArtifact === undefined) {
+      artifactWrites.push({ key: "productFrame", value: frame });
+    }
+    if (contextArtifact === undefined) {
+      artifactWrites.push({ key: "designContext", value: context });
+    }
+    await this.sessions.commit(updated, artifactWrites);
     return {
       ...route,
       ...(acceptingScopeGap ? { status: "WARN" as const } : {}),
       phase: updated.phase,
       next: advances ? nextTool("design_inspect") : nextTool("design_context"),
     };
+  }
+
+  private derivedFrame(
+    understanding: ExistingUnderstanding | undefined,
+    confirmation: RequirementConfirmation | undefined,
+  ): ProductFrame {
+    if (understanding === undefined || confirmation === undefined) {
+      throw new PraxRuntimeError(
+        "ROUTING_INPUTS_MISSING",
+        "Routing requires product_frame/design_context artifacts or an existing-understanding plus requirement-confirmation pair to derive them.",
+      );
+    }
+    return ProductFrameSchema.parse({
+      user: { primary_role: "existing product user", expertise: "mixed", familiarity: "unknown" },
+      goal: { primary: confirmation.restatement },
+      tasks: { primary: understanding.change_targets.join(", ") || "modify surface", secondary: [] },
+      product_objects: understanding.current_objects.map((object) => ({
+        id: object.id,
+        user_name: object.user_name,
+        purpose: object.purpose,
+      })),
+      relationships: [],
+      mental_model_hypothesis: { summary: "derived from existing understanding", confidence: "medium", evidence: ["existing_product"] },
+      primary_success_definition: "the change preserves the existing product model",
+      open_questions: [],
+    });
+  }
+
+  private derivedContext(
+    understanding: ExistingUnderstanding | undefined,
+    confirmation: RequirementConfirmation | undefined,
+    authorities: string[],
+  ): DesignContext {
+    if (understanding === undefined || confirmation === undefined) {
+      throw new PraxRuntimeError(
+        "ROUTING_INPUTS_MISSING",
+        "Routing requires product_frame/design_context artifacts or an existing-understanding plus requirement-confirmation pair to derive them.",
+      );
+    }
+    return DesignContextSchema.parse({
+      user: { expertise: "mixed", familiarity: "unknown" },
+      task: { primary: understanding.change_targets.join(", ") || "modify", modes: ["modify"], frequency: "unknown" },
+      domain: {
+        type: understanding.current_surfaces.map((surface) => surface.id).join(", ") || "existing product",
+        entities: understanding.current_objects.map((object) => object.id),
+      },
+      information: { volume: "unknown", relationship_complexity: "unknown", change_rate: "low", comparison_need: "unknown" },
+      platform: { family: "web", form_factor: "desktop", input: ["pointer", "keyboard"], viewport: "large" },
+      risk: { destructive_actions: "none", error_cost: "medium" },
+      priorities: ["preserve existing habits", ...authorities.slice(0, 2)],
+      density_intent: "regular",
+      confidence: { overall: "medium" },
+      unknowns: [],
+    });
   }
 
   public async designInspect(input: DesignInspectInput): Promise<PraxOutput> {
@@ -441,6 +535,40 @@ export class PraxService {
     }
     const blocked = operationBlock(session, "design_sdir");
     if (blocked !== undefined) return blocked;
+    if (currentGate(session) === "sdir_delta") {
+      if (input.sdir_delta === undefined) {
+        return {
+          status: "RETRY",
+          issues: ["The sdir_delta gate expects a sdir_delta payload."],
+          next: nextTool("design_sdir"),
+        };
+      }
+      const validation = validateSdirDelta(input.sdir_delta);
+      if (validation.status !== "PASS") {
+        return {
+          status: validation.status,
+          schema_errors: validation.schema_errors,
+          semantic_errors: validation.semantic_errors,
+          semantic_issues: validation.semantic_issues,
+          warnings: [],
+          next: nextTool("design_sdir"),
+        };
+      }
+      let policy = sessionPolicy(session);
+      if (validation.value!.capability_needs.length > 0 && !policy.gates.includes("reconcile")) {
+        const gates = [...policy.gates];
+        gates.splice(gates.indexOf("prepare"), 0, "reconcile");
+        policy = { ...policy, gates };
+      }
+      const updated = advanceSession({ ...session, lifecycle_policy: policy }, "sdir_delta", this.sessions.nowIso());
+      await this.sessions.commit(updated, [{ key: "sdirDelta", value: validation.value }]);
+      return {
+        status: "PASS",
+        sdir_delta: validation.value,
+        phase: updated.phase,
+        next: nextTool(NEXT_TOOL_BY_GATE[currentGate(updated)]),
+      };
+    }
     const decisions = await this.requireArtifact<DesignDecisions>(session, "designDecisions");
     const frame = await this.requireArtifact<ProductFrame>(session, "productFrame");
     const context = await this.requireArtifact<DesignContext>(session, "designContext");
