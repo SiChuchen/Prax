@@ -1,0 +1,51 @@
+version: "0.1"
+platform_profile: WEB-DESKTOP
+framework: react
+sdir_ref: sdir-delta.yaml
+decision_ref: design-decisions.yaml
+approved_patterns:
+  - PAT-CANVAS-WORKSPACE
+approved_component_contracts:
+  - ARCHITECTURE-CANVAS
+  - CONTEXTUAL-INSPECTOR
+  - CANVAS-TOOLBAR
+  - STATE-FEEDBACK
+states_required:
+  - loading
+  - empty
+  - ready
+  - error
+capability_gaps: []
+validation_plan_ref:
+  artifact: validation-plan.yaml
+  revision: 1
+validation_requirements:
+  - delta_conformance
+  - untouched_surface_regression
+  - pattern_consistency
+  - authority_consistency
+  - requirement_alignment
+mode_plan:
+  change_sequence:
+    - region: canvas-map
+      action: modify
+      rationale: 六条空间/可读性契约中的五条落在地图本体：默认相机、Region 组合与摘要、边密度、Trace 走廊
+    - region: canvas-inspector
+      action: modify
+      rationale: 问题 6：覆盖式 Inspector 无相机重构；Contextual Inspector 的 screen area 代价由布局响应吸收
+    - region: flow-lens
+      action: preserve_explicit
+      rationale: Trace 入口列表与 IOAYN 学习切片概念保持不变，走廊渲染在 canvas-map 内完成
+    - region: canvas-commandbar
+      action: preserve_explicit
+      rationale: 命令栏职责不变；Fit 语义随默认相机策略更新为适配有效视口
+    - region: revision-timeline
+      action: preserve_explicit
+      rationale: Revision 有效性回放不属于本次修正范围
+  regression_points:
+    - 默认视图不先缩放即可读 Region 与关键 Object 标签（13px 有效文本下限）
+    - Inspector 停靠时画布不塌缩成缩略图（有效视口响应 + 相机重构）
+    - Trace 从入口到结果呈现有序主路径（步骤序号、转换、入口/结果标记）
+    - 不丢失全局上下文地跟随两个对象间的一条关系
+    - 既有几何审计（无重叠、正交、障碍安全）与夹具预算测试保持通过
+    - 拖拽只写本地布局，绝不写架构真相

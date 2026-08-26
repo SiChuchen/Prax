@@ -1,0 +1,49 @@
+version: "0.1"
+user_quote:
+  - 画布上线条繁多混乱，结果不是人类可读的。默认视图就像一个超大的缩略图
+  - 仅改颜色无法修复结构问题。
+  - 可读的屏幕空间节点尺寸——验收单位是屏幕空间尺寸，不是相机 fit 前的节点内部布局宽度
+  - 顶层 Region 二维组合——内部流程/Flow 布局可以保持方向性
+  - 架构级默认密度——默认视图停留在 Region 和关键 Object 标签可读的 Architecture 密度，而不是立即进入 Landscape
+  - 画布内容占据有效视口的大部分——但不要求所有几何一次全部放下
+  - Inspector 停靠化——Inspector 是停靠的工作区面板，相机和有效视口必须响应它（Browse 模式不等于 Landscape 缩放）
+  - 稳定地图 + 有序 Trace 走廊——Trace 是稳定地图上的透镜，应展示有序步骤、转换、入口和结果
+  - 操作者打开画布后，应当：不先缩放就能读 Region 和关键 Object 标签；在不丢失全局上下文的情况下跟随两个对象间的一条关系；运行 Trace 能看到从入口到结果的有序主路径；Inspector 停靠时画布不塌缩成缩略图。
+restatement: 在 ECP Human Web 的 Architecture Canvas v1 现有实现上做空间/可读性修正，而不是重写：修正默认相机策略（Architecture 密度而非全图 fit 缩略图）、顶层 Region 的二维组合布局、Landscape/Region 的强可读摘要、关系线的密度分级与可跟随性、Trace 的有序主路径走廊、Inspector 停靠化与相机/有效视口响应。视觉语言保持安静、结构化、无彩虹配色、无永久发光；语义缩放、Semantic Graph、ELK、React Flow、只读边界与 Agent 维护契约全部保留。以真实浏览器截图作为视觉验收证据，几何生成图不算。
+boundaries:
+  in_scope:
+    - app/architecture/ 下现有实现的修改（布局、投影、交互、节点/边/Region/Inspector/Flow 面板）及相关样式（globals.css）与测试（tests/）
+    - 默认相机/视口行为：Architecture 密度默认视图、Fit 语义、Inspector 停靠后的相机重构
+    - 顶层 Region 二维组合与 Region 强可读摘要
+    - 关系线密度分级（Architecture 密度下的边呈现）与可跟随性
+    - Trace 有序走廊：入口、有序步骤/转换、结果，稳定地图上的透镜
+    - 屏幕空间可读性不变量（节点屏幕尺寸、标签字号下限）
+    - 为改变的行为新增或更新测试，以及真实浏览器截图证据（保存到 ./run-evidence/screenshots/）
+  out_of_scope:
+    - 后端、D1、协议、部署、ECP Change 发布
+    - Runtime Overlay 的新数据源
+    - 重写 Semantic Graph 模型或 Agent 维护契约
+    - 任何部署或远程写操作
+    - 彩虹配色、永久发光、装饰性仪表盘、通用 AI SaaS 卡片、营销装饰
+  scope_complete: true
+open_questions:
+  - id: architecture-density-zoom-floor
+    impact: medium
+    affects:
+      - canvas-camera
+      - semantic-zoom
+  - id: trace-corridor-vs-stable-map
+    impact: medium
+    affects:
+      - trace-mode
+      - flow-rendering
+confirmation:
+  status: requirement_is_sufficient
+  evidence:
+    - type: task_brief
+      ref: 2026-08-26 会话任务简报：Architecture Canvas 可读性修正——REQUIREMENT 全文含产品上下文、问题清单（2026-08-25 用户对交付截图的直接拒绝）、六条已共识修正方向、固定约束、工作范围、不在范围内、验收框架
+    - type: user_document
+      ref: docs/Canvas_Engine_v1_Review.md（v1 冻结约束与已知限制：Landscape 尚无 Region 聚合、真实浏览器 QA 未完成）
+    - type: user_document
+      ref: docs/architecture-canvas-standard-v0.1.md（Architecture Canvas 标准：人类理解工具、导航模型、视觉语言、交互边界）
+  confirmed_at: 2026-08-26T00:00:00Z

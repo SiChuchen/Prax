@@ -1,0 +1,72 @@
+version: "0.1"
+session_id: ds_20260826125836_0151ac6d
+task:
+  surfaces:
+    - canvas-stage
+    - canvas-inspector
+  primary: canvas-stage, canvas-inspector
+product_relationships:
+  - id: region-contains-object
+    source: region
+    target: object
+    type: contains
+    direction: forward
+    meaning: Object 属于一个 Region；Region 可嵌套
+    importance: primary
+  - id: flow-traverses-object
+    source: flow
+    target: object
+    type: traverses
+    direction: forward
+    meaning: Flow 的有序步骤引用同一批对象，是稳定地图上的透镜；对象间语义关系（object→object）由 relationship 对象承载，为避免自环不在此声明
+    importance: primary
+  - id: flow-uses-relationship
+    source: flow
+    target: relationship
+    type: uses
+    direction: forward
+    meaning: Flow 的转换沿已声明的关系边发生
+    importance: supporting
+  - id: revision-pins-object
+    source: revision-snapshot
+    target: object
+    type: pins validity
+    direction: forward
+    meaning: Revision 区间决定当前投影使用哪个对象/关系版本
+    importance: supporting
+region_relationships: []
+decisions:
+  primary_structure: PAT-CANVAS-WORKSPACE
+  density_intent: regular
+  major_choice_ids:
+    - default-camera-architecture-density
+    - root-region-2d-composition
+    - region-strong-summary
+    - edge-density-grading
+    - trace-ordered-corridor
+    - inspector-dock-viewport-response
+must_preserve:
+  - Semantic Graph 边界、adapter、validation、fingerprint 与缓存行为
+  - 公开 Canvas 数据形状与 Agent 维护边界（Architecture Observation 只经 Change 发布）
+  - 只读 Human Web；拖拽只写 localStorage 设备布局
+  - React Flow / ELK / SmartEdge 技术栈与 Minimap/Controls/搜索/Revision Timeline/Change Overlay 功能
+  - 线型关系语法、无彩虹配色、无永久发光的安静视觉语言
+  - 测试夹具预算（15/20、40/70、100/180、64/124）与既有几何审计
+regression_points:
+  - Semantic Graph 边界、adapter、validation、fingerprint 与缓存行为
+  - 公开 Canvas 数据形状与 Agent 维护边界（Architecture Observation 只经 Change 发布）
+  - 只读 Human Web；拖拽只写 localStorage 设备布局
+  - React Flow / ELK / SmartEdge 技术栈与 Minimap/Controls/搜索/Revision Timeline/Change Overlay 功能
+  - 线型关系语法、无彩虹配色、无永久发光的安静视觉语言
+  - 测试夹具预算（15/20、40/70、100/180、64/124）与既有几何审计
+unresolved: []
+corrections: []
+validation:
+  plan_revision: 1
+  check_ids:
+    - delta_conformance
+    - untouched_surface_regression
+    - pattern_consistency
+    - authority_consistency
+    - requirement_alignment
+  regression_check_ids: []

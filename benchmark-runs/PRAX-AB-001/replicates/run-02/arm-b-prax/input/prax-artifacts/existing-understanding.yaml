@@ -1,0 +1,161 @@
+version: "0.1"
+current_objects:
+  - id: region
+    user_name: Region
+    purpose: 语义容器（子系统/域），compound 布局的层级单元，带 depth、order、importance
+    evidence_refs:
+      - app/architecture/semantic-graph.ts:33
+      - app/architecture/region-node.tsx
+  - id: object
+    user_name: 架构对象（Service/Agent/Storage/External）
+    purpose: 画布上的节点，携带名称、摘要、状态、重要性、度数、Flow 步骤
+    evidence_refs:
+      - app/architecture/semantic-graph.ts:43
+      - app/architecture/architecture-node.tsx
+  - id: relationship
+    user_name: 关系（data/control/event/dependency/external）
+    purpose: 对象间有向关系，线型语法而非彩色语法，ELK 语义端口正交路由
+    evidence_refs:
+      - app/architecture/semantic-graph.ts:55
+      - app/architecture/architecture-edge.tsx
+  - id: flow
+    user_name: Flow / Flow Step
+    purpose: 命名系统行为（IOAYN Learning Slice），有序步骤、角色、输入输出、失败模式
+    evidence_refs:
+      - app/architecture/semantic-graph.ts:69
+      - app/architecture/flow-panel.tsx
+  - id: revision-snapshot
+    user_name: Revision 快照与 Change Overlay
+    purpose: 按 Revision 区间的有效性回放与 PENDING 变更预览
+    evidence_refs:
+      - app/architecture/architecture-canvas.tsx:45
+current_relationships:
+  - id: region-contains-object
+    source: region
+    target: object
+    type: contains
+    direction: forward
+    meaning: Object 属于一个 Region；Region 可嵌套
+    condition: always
+    importance: primary
+    evidence_refs: []
+  - id: flow-traverses-object
+    source: flow
+    target: object
+    type: traverses
+    direction: forward
+    meaning: Flow 的有序步骤引用同一批对象，是稳定地图上的透镜；对象间语义关系（object→object）由 relationship 对象承载，为避免自环不在此声明
+    condition: trace mode
+    importance: primary
+    evidence_refs: []
+  - id: flow-uses-relationship
+    source: flow
+    target: relationship
+    type: uses
+    direction: forward
+    meaning: Flow 的转换沿已声明的关系边发生
+    condition: trace mode
+    importance: supporting
+    evidence_refs: []
+  - id: revision-pins-object
+    source: revision-snapshot
+    target: object
+    type: pins validity
+    direction: forward
+    meaning: Revision 区间决定当前投影使用哪个对象/关系版本
+    condition: timeline or overlay
+    importance: supporting
+    evidence_refs: []
+current_surfaces:
+  - id: canvas-commandbar
+    purpose: 模式切换（Browse/Inspect/Focus/Trace）、搜索、Change Overlay、Fit/Layout/Full 动作
+    evidence_refs:
+      - app/architecture/architecture-canvas.tsx:351
+  - id: canvas-stage
+    purpose: React Flow 地图主体：Region、Object 节点、关系边、阅读图例、Minimap/Controls
+    evidence_refs:
+      - app/architecture/canvas-kernel.tsx
+      - app/architecture/projection.ts
+  - id: canvas-inspector
+    purpose: 右侧 336px Inspector：身份/状态/位置、Overview、Relations、Runtime、Input/Output、Raw
+    evidence_refs:
+      - app/architecture/inspector.tsx
+      - app/globals.css:1029
+  - id: flow-lens
+    purpose: 左侧 Flow 列表面板，选择 Flow 进入 Trace
+    evidence_refs:
+      - app/architecture/flow-panel.tsx
+      - app/globals.css:1011
+  - id: revision-timeline
+    purpose: Architecture Timeline：Revision 选择与播放
+    evidence_refs:
+      - app/architecture/architecture-canvas.tsx:374
+  - id: canvas-statusbar
+    purpose: 模式/密度、计数、ELK 耗时、只读声明
+    evidence_refs:
+      - app/architecture/architecture-canvas.tsx:416
+established_patterns:
+  - 四档语义缩放 Landscape/Architecture/Component/Operational（阈值 .48/.80/1.22，先删细节后删对象）
+  - emphasis 语法：对象 primary/related/context/normal/muted，边 active/related/normal/muted/suppressed，分通道而非整体透明度
+  - 关系线型语法（实线/虚线/点线）而非彩虹配色；active 边 2.35px 显著强于 normal 1.25px 且无发光
+  - ELK Layered compound + FIXED_ORDER 语义端口 + 正交路由；SmartEdge 仅作拖拽/增量/Trace 回退
+  - localStorage 仅存设备本地布局（版本化 CanvasLayout 缓存），绝不写架构真相
+  - 13px 有效文本下限、内容感知节点尺寸（232–296 × 124/144）
+  - Inspector 是 320–352px 频段的边缘面板
+user_habits:
+  - 打开画布先读默认视图（当前默认 zoom 初始值 0.72 但 fitView 全图适配立即覆盖）
+  - Fit 按钮预期是重新适配有效视口而非全图缩略
+  - 选择对象后用 F 键 Focus；Escape 退出
+  - Trace 从 Flow 面板进入，预期看到主路径而非高亮集合
+constraints_and_debt:
+  - 保留 Semantic Graph / ELK / React Flow 基础；不重写领域模型与 Agent 维护契约
+  - 现有公开 Canvas 数据形状（types.ts 的 Architecture* 记录、SemanticGraph schema）保持兼容
+  - Human Web 只读；拖拽只写本地画布布局
+  - v1 遗留：Landscape 对象缩减是 importance-based，无 Region 聚合；真实浏览器 QA 从未完成（本次必须补上）
+  - Large 100/180 首次 ELK 布局约 4.2s（缓存后即时）
+change_targets:
+  - canvas-stage
+  - canvas-inspector
+actual_usage:
+  - 操作者打开 /projects/[id] 的 Architecture 视图（生产 Registry 数据）或 /architecture-fixtures（压力夹具）
+  - 默认视图即当前被拒绝的交付形态：全图 fit 缩略图
+pain_points:
+  - 1. 默认 fit 把对象标签压到不可读尺寸（fitView 全图 + padding .16；zoom 常低于 .48 直落 Landscape）
+  - 2. 顶层 Region 排成一条长横条（根层 ELK direction RIGHT 单向铺排）
+  - 3. Landscape 隐藏对象却没有有意义的 Region 摘要（CSS 在 landscape 隐藏 header 的 span/small，Region 只剩名称）
+  - 4. 关系线多且难以跟随（全量等权重渲染，无密度分级）
+  - 5. Trace 只高亮一个集合，没有可读的有序主路径（无入口/结果标记，无步骤走廊）
+  - 6. Inspector 覆盖在画布上，没有相机重构（absolute 覆盖 336px，画布不收缩不 refit）
+  - 7. Region 边框占据空间却没有强可读的摘要（top padding 54px 换来一行弱标签）
+must_preserve:
+  - Semantic Graph 边界、adapter、validation、fingerprint 与缓存行为
+  - 公开 Canvas 数据形状与 Agent 维护边界（Architecture Observation 只经 Change 发布）
+  - 只读 Human Web；拖拽只写 localStorage 设备布局
+  - React Flow / ELK / SmartEdge 技术栈与 Minimap/Controls/搜索/Revision Timeline/Change Overlay 功能
+  - 线型关系语法、无彩虹配色、无永久发光的安静视觉语言
+  - 测试夹具预算（15/20、40/70、100/180、64/124）与既有几何审计
+must_replace:
+  - 默认全图 fitView 相机策略
+  - 根层 Region 单横条布局
+  - Landscape 无摘要的对象删除
+  - normal 关系边无差别全量呈现
+  - Trace 集合高亮（无序走廊、无入口/结果）
+  - Inspector 覆盖式布局（无有效视口响应）
+free_to_reconsider:
+  - 语义缩放阈值 .48/.80/1.22 与 Landscape label compensation 公式（v1 明确标记为 provisional）
+  - Inspector 宽度在 320–352px 频段内的取值与停靠结构
+  - 边权重/透明度、ELK 间距与 padding、节点尺寸在可读性下限之上的取值
+  - Architecture 密度下关键 Object 的筛选规则（importance/度数）
+migration_notes:
+  - 布局缓存有版本键（ecp:canvas-engine-v1:*）：几何语义变化时需 bump 版本避免旧缓存误导
+  - 模块名保持稳定减少 import churn（v1 迁移路径约定）
+  - fixtures 页面与测试直接消费 layout/projection/interaction 纯函数，签名变化需同步测试
+design_authorities:
+  - docs/architecture-canvas-standard-v0.1.md（Canvas 标准：人类理解工具、导航模型、视觉语言、交互边界）
+  - docs/Canvas_Engine_v1_Review.md（v1 冻结约束：13px 文本下限、内容感知节点高度、Landscape 先减对象、Inspector 320–352px 频段、active 边权重显著强于 normal）
+  - 2026-08-26 任务简报中的六条已共识修正方向与固定约束
+surface_context:
+  density: regular
+  user_expertise: expert
+  destructive_actions: none
+  task_frequency: medium

@@ -1,0 +1,63 @@
+run:
+  id: PRAX-AB-001-run-02-B
+  arm: arm-b-prax
+  agent_cli: fill_by_operator
+  started_at: fill_by_operator
+  ended_at: fill_by_operator
+  commit: 114daa3   # single commit on ab/run-02-arm-b, clean tree
+
+result:
+  implementation_completed: true
+  final_validation: COMPLETE   # design_validate 5/5 checks pass, phase COMPLETE
+  changed_files: 18
+  diff_stat: "821 insertions(+), 67 deletions(-)"
+  tests: "21/21 pass (new tests/canvas-readability.test.mjs, 7 cases)"
+  lint_build: pass
+
+prax_flow:
+  design_session_id: ds_20260826125836_0151ac6d
+  gates: start -> frame(existing understanding) -> route -> inspect -> decide
+    (6 major choices) -> sdir delta (canvas-map + canvas-inspector) -> prepare
+    -> validate (COMPLETE)
+  artifacts_persisted: [requirement-confirmation, existing-understanding,
+    product-frame, design-context, routing-log, design-decisions, sdir-delta,
+    implementation-brief, validation-plan, validation-report, context-manifest,
+    compiled-context, context-compilation-trace]
+  prax_calls: fill_by_operator
+
+process:
+  wall_clock_seconds: fill_by_operator
+  model_usage: not_observable
+  tool_calls: not_observable
+  human_clarifications: fill_by_operator
+  first_pass_at: fill_by_operator
+  first_pass_validation_failures: 0    # per operator report (5/5 first pass)
+  post_first_pass_repair_rounds: fill_by_operator
+
+process_observations:
+  - >-
+    MCP tool-call parameters repeatedly failed to arrive; operator completed the
+    flow by driving the same prax-mcp server over raw stdio JSON-RPC. Same
+    server and tool semantics, so the Prax flow evidence stays valid; recorded
+    as a harness/transport observation (candidate: MCP client param handling).
+  - >-
+    Local npm run dev fails via the cloudflare vite plugin workerd bootstrap
+    (reproduces on the unmodified 2c77838 baseline; not introduced by this
+    change). Browser verification used a temporary no-cloudflare-plugin config,
+    removed after verification.
+
+evidence:
+  screenshots: 5   # browse-architecture-density (small/complex), inspector
+                   # docked, trace corridor, landscape region summaries
+  prax_artifacts: input/prax-artifacts/
+
+contamination_check:
+  base_commit_verified: 2c77838
+  arm_a_isolation: intact   # arm A never registered prax MCP
+
+open_questions:
+  - wall-clock, clarification count, first-pass timestamp needed from operator
+  - session transcript export pending (execution/session-transcript.json)
+  - 13px text floor freeze test caught one violation during the run (fixed
+    before commit) — count as a deterministic repair round when filling
+    first_pass_validation_failures if applicable

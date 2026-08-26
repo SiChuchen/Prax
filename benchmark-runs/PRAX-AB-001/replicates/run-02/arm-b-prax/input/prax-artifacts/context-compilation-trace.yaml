@@ -1,0 +1,33 @@
+version: "0.1"
+session_id: ds_20260826125836_0151ac6d
+task_ref: canvas-stage, canvas-inspector
+selected:
+  - ref: product_relationships
+    reason:
+      - region-contains-object:region->object
+      - flow-traverses-object:flow->object
+      - flow-uses-relationship:flow->relationship
+      - revision-pins-object:revision-snapshot->object
+  - ref: region_relationships
+    reason: []
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-CANVAS-WORKSPACE
+  - ref: unresolved
+    reason: []
+  - ref: corrections
+    reason: []
+  - ref: validation-plan@1
+    reason:
+      - delta_conformance
+      - untouched_surface_regression
+      - pattern_consistency
+      - authority_consistency
+      - requirement_alignment
+excluded:
+  - ref: region_relationships
+    reason: sdir_delta carries region changes, not region relationships
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata

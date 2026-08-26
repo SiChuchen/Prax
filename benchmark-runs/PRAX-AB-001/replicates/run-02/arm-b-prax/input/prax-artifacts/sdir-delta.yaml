@@ -1,0 +1,82 @@
+version: "0.1"
+surface: canvas-stage
+impact:
+  changes_product_objects: false
+  changes_region_structure: true
+  changes_interaction_model: true
+  changes_state_model: false
+  adds_capability: false
+base_regions:
+  - id: canvas-map
+    role: 主导空间画布：Region/Object/关系线的 React Flow 地图
+    importance: dominant
+  - id: canvas-inspector
+    role: 右侧 336px 覆盖式 Inspector 详情面板
+    importance: primary
+  - id: flow-lens
+    role: 左侧 Flow 列表（Trace 入口）
+    importance: supporting
+  - id: canvas-commandbar
+    role: 模式切换/搜索/Fit/Layout/Full 命令栏
+    importance: supporting
+  - id: revision-timeline
+    role: Architecture Timeline 修订回放
+    importance: contextual
+  - id: canvas-statusbar
+    role: 密度/计数/耗时/只读状态栏
+    importance: contextual
+changes:
+  - region: canvas-map
+    action: modify
+    role: 主导空间画布：Architecture 密度可读地图
+    fields:
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - 默认相机锚定 Architecture 密度：以顶层 Region 组合面为适配目标，zoom 不低于 Architecture 阈值；Browse 模式不等于 Landscape 缩放
+        - 顶层 Region 二维行列组合；Region 内部保留方向性 Flow 布局
+        - Region 强可读摘要（名称/职责/关键构成/重要性）在所有密度下保留；Landscape 聚合 Region 级信息而非空白
+        - 关系线密度分级：inter-Region 与关键边为主层，普通边降噪；强调通道保证单条关系可跟随
+        - 有序 Trace 走廊：稳定地图透镜 + 入口/结果标记 + 步骤序号徽标 + 步骤→步骤转换；相机 fit 走廊且标签可读
+      note: 保持只读：拖拽只写设备本地画布布局；保持线型关系语法与安静视觉语言（无彩虹配色、无永久发光）；Semantic Graph 公开数据形状与 Agent 维护边界不变
+    rationale: 六条空间/可读性契约中的五条落在地图本体：默认相机、Region 组合与摘要、边密度、Trace 走廊
+  - region: canvas-inspector
+    action: modify
+    role: 停靠式工作区 Inspector 面板（320–352px 频段）
+    fields:
+      importance: primary
+      visibility:
+        condition: selection_driven
+      behavior_intent:
+        - 画布舞台改为 flex 行布局，Inspector 停靠为工作区面板而非 absolute 覆盖
+        - 停靠/收起改变有效视口并触发相机重构（refit 当前关注中心），画布不塌缩成缩略图
+    rationale: 问题 6：覆盖式 Inspector 无相机重构；Contextual Inspector 的 screen area 代价由布局响应吸收
+  - region: flow-lens
+    action: preserve_explicit
+    role: 左侧 Flow 列表（Trace 入口）
+    fields: {}
+    rationale: Trace 入口列表与 IOAYN 学习切片概念保持不变，走廊渲染在 canvas-map 内完成
+  - region: canvas-commandbar
+    action: preserve_explicit
+    role: 模式切换/搜索/Fit/Layout/Full 命令栏
+    fields: {}
+    rationale: 命令栏职责不变；Fit 语义随默认相机策略更新为适配有效视口
+  - region: revision-timeline
+    action: preserve_explicit
+    role: Architecture Timeline 修订回放
+    fields: {}
+    rationale: Revision 有效性回放不属于本次修正范围
+preserved:
+  - flow-lens
+  - canvas-commandbar
+  - revision-timeline
+  - canvas-statusbar
+regression_points:
+  - 默认视图不先缩放即可读 Region 与关键 Object 标签（13px 有效文本下限）
+  - Inspector 停靠时画布不塌缩成缩略图（有效视口响应 + 相机重构）
+  - Trace 从入口到结果呈现有序主路径（步骤序号、转换、入口/结果标记）
+  - 不丢失全局上下文地跟随两个对象间的一条关系
+  - 既有几何审计（无重叠、正交、障碍安全）与夹具预算测试保持通过
+  - 拖拽只写本地布局，绝不写架构真相
+capability_needs: []

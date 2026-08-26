@@ -1,0 +1,65 @@
+user:
+  primary_role: existing product user
+  expertise: mixed
+  familiarity: unknown
+goal:
+  primary: 在 ECP Human Web 的 Architecture Canvas v1 现有实现上做空间/可读性修正，而不是重写：修正默认相机策略（Architecture 密度而非全图 fit 缩略图）、顶层 Region 的二维组合布局、Landscape/Region 的强可读摘要、关系线的密度分级与可跟随性、Trace 的有序主路径走廊、Inspector 停靠化与相机/有效视口响应。视觉语言保持安静、结构化、无彩虹配色、无永久发光；语义缩放、Semantic Graph、ELK、React Flow、只读边界与 Agent 维护契约全部保留。以真实浏览器截图作为视觉验收证据，几何生成图不算。
+tasks:
+  primary: canvas-stage, canvas-inspector
+  secondary: []
+product_objects:
+  - id: region
+    user_name: Region
+    purpose: 语义容器（子系统/域），compound 布局的层级单元，带 depth、order、importance
+  - id: object
+    user_name: 架构对象（Service/Agent/Storage/External）
+    purpose: 画布上的节点，携带名称、摘要、状态、重要性、度数、Flow 步骤
+  - id: relationship
+    user_name: 关系（data/control/event/dependency/external）
+    purpose: 对象间有向关系，线型语法而非彩色语法，ELK 语义端口正交路由
+  - id: flow
+    user_name: Flow / Flow Step
+    purpose: 命名系统行为（IOAYN Learning Slice），有序步骤、角色、输入输出、失败模式
+  - id: revision-snapshot
+    user_name: Revision 快照与 Change Overlay
+    purpose: 按 Revision 区间的有效性回放与 PENDING 变更预览
+relationships:
+  - id: region-contains-object
+    source: region
+    target: object
+    type: contains
+    direction: forward
+    meaning: Object 属于一个 Region；Region 可嵌套
+    condition: always
+    importance: primary
+  - id: flow-traverses-object
+    source: flow
+    target: object
+    type: traverses
+    direction: forward
+    meaning: Flow 的有序步骤引用同一批对象，是稳定地图上的透镜；对象间语义关系（object→object）由 relationship 对象承载，为避免自环不在此声明
+    condition: trace mode
+    importance: primary
+  - id: flow-uses-relationship
+    source: flow
+    target: relationship
+    type: uses
+    direction: forward
+    meaning: Flow 的转换沿已声明的关系边发生
+    condition: trace mode
+    importance: supporting
+  - id: revision-pins-object
+    source: revision-snapshot
+    target: object
+    type: pins validity
+    direction: forward
+    meaning: Revision 区间决定当前投影使用哪个对象/关系版本
+    condition: timeline or overlay
+    importance: supporting
+mental_model_hypothesis:
+  summary: derived from existing understanding
+  confidence: medium
+  evidence:
+    - existing_product
+primary_success_definition: the change preserves the existing product model
+open_questions: []

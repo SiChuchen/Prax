@@ -1,0 +1,88 @@
+session_id: ds_20260826125836_0151ac6d
+primary_structure:
+  pattern: PAT-CANVAS-WORKSPACE
+  rationale:
+    - "关系是一等产品对象，任务是理解系统结构与 Flow，Canvas Workspace 的 pattern_contract 直接适用（applies_when: relationships are first-class product objects; preserving context is a success criterion）"
+    - Contextual Inspector 作为互补模式绑定显式选择，reduced workspace area 的代价由相机/有效视口响应吸收，而不是用 absolute 覆盖抵消
+    - 反模式对照明确：decorative-node-map（装饰性节点地图）与 full-page-selection-navigation 正是本次被拒绝的 v1 形态的两个侧面
+  confidence: high
+information_hierarchy:
+  primary:
+    - architecture
+    - Region：强可读摘要（名称、职责、关键对象构成/重要性）与二维组合边界
+    - 关键 Object：屏幕空间可读的标签与类型/状态
+    - 活跃 Relationship / Trace 走廊：入口→有序步骤/转换→结果
+  secondary:
+    - Inspector：停靠工作区面板中的对象/关系/Flow 详情（身份、状态、位置、Overview、Relations、Runtime、Input/Output、Raw 渐进披露）
+    - Flow 面板（Trace 入口列表）与命令栏（模式、搜索、Fit/Layout/Full）
+    - Architecture Timeline 与状态栏（Revision、计数、只读声明）
+density:
+  intent: regular
+  strategy:
+    - 默认相机锚定 Architecture 密度：zoom 不低于标签可读下限，默认视图以顶层 Region 摘要面 + 关键 Object 为内容，不追求全图几何一次放下
+    - 屏幕空间验收单位：节点与标签的最终屏幕尺寸（乘以相机 zoom）满足 13px 有效文本下限，而非布局坐标宽度
+    - 顶层 Region 二维组合（行列网格化），Region 内部保持方向性 Flow 布局
+    - 边密度分级：Architecture 密度下 inter-Region 关系与关键边先行，普通边降噪呈现；Inspect/Focus/Trace 用强调通道保证可跟随
+    - Inspector 停靠时画布为有效视口让位并触发相机重构（refit 到当前关注内容），画布不塌缩成缩略图
+  avoid:
+    - 全图 fit 缩略图式默认视图
+    - 彩虹配色、永久发光、装饰性仪表盘、通用 AI SaaS 卡片
+    - Region 边框占据空间却只提供弱标签
+    - 整体 opacity 泼洒式弱化（保留 v1 分通道 emphasis）
+    - 仅靠色彩承载语义
+major_choices:
+  - id: default-camera-architecture-density
+    choice: 默认相机 = Architecture 密度锚定：以顶层 Region 组合面为适配目标并设 zoom 下限（≥ Architecture 阈值），Browse 模式不等于 Landscape 缩放
+    rationale: 用户直接拒绝的第一问题就是默认 fit 缩略图；P-22 Signal over Chrome 与 H-22 Overview-Filter-Detail 要求 overview 本身可读
+    confidence: high
+    references:
+      - region
+      - object
+  - id: root-region-2d-composition
+    choice: 根层 Region 二维组合：ELK 根容器对顶层 Region 采用网格化行列组合，Region 内部保留方向性（RIGHT/DOWN 语义不变）
+    rationale: 单横条是用户点名的结构问题；P-01 Perceptual Grouping 要求结构先于细节可见
+    confidence: high
+    references:
+      - region
+      - object
+  - id: region-strong-summary
+    choice: Region 强可读摘要：所有密度下保留摘要头（名称 + 职责/角色 + 关键构成计数 + 重要性），Landscape 聚合显示 Region 级信息而非空白
+    rationale: 问题 3/7：Region 占空间却无摘要；H-21 Orientation Invariants 需要稳定锚点
+    confidence: high
+    references:
+      - region
+      - object
+  - id: edge-density-grading
+    choice: 关系线密度分级：Architecture 密度以 Region 间关系与 importance/state 关键边为主层，普通 intra-Region 边降噪；hover/选择增强入射边
+    rationale: 问题 4：线多难跟随；H-13 Structured Density 允许密但要求编组与层级可辨
+    confidence: medium
+    references:
+      - relationship
+      - object
+  - id: trace-ordered-corridor
+    choice: Trace = 稳定地图上的有序走廊：不重排布局，走廊层按步骤序号渲染入口(Entry)与出口(Result)标记、步骤→步骤转换边、序号徽标；相机 fit 走廊并维持可读 zoom
+    rationale: 问题 5：集合高亮 ≠ 主路径；P-19 Preserve Context 要求透镜式而非替换投影
+    confidence: high
+    references:
+      - flow
+      - relationship
+      - object
+  - id: inspector-dock-viewport-response
+    choice: Inspector 停靠化：画布舞台改为 flex 行布局，Inspector 停靠为工作区面板（320–352px 频段），停靠/收起触发有效视口变化与相机 refit（保持当前关注中心）
+    rationale: 问题 6：覆盖式 Inspector 无相机重构；H-19 Contextual Inspector 的 screen area 代价必须由布局响应吸收
+    confidence: high
+    references:
+      - object
+      - flow
+rejected:
+  - option: 保留全图 fitView 默认（v1 形态）
+    reason: 用户以 2026-08-25 截图直接拒绝；标签不可读
+  - option: 把 Browse 默认降为 Landscape 摘要级
+    reason: Landscape 无 Region 聚合摘要时等于丢失内容；且 Browse ≠ Landscape 缩放是共识约束
+  - option: Trace 重排布局为线性泳道
+    reason: 破坏稳定地图与 Orientation Invariants；共识要求 Trace 是稳定地图上的透镜
+  - option: Inspector 保持 absolute 覆盖只加阴影
+    reason: 有效视口不变，画布右侧内容被遮，等于没修
+  - option: 彩虹配色/发光区分关系类型
+    reason: 固定约束禁止；线型语法已建立
+unresolved: []
