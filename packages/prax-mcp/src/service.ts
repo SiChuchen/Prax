@@ -9,6 +9,7 @@ import {
   advanceSession,
   checkOperationAllowed,
   currentGate,
+  deriveContextManifest,
   lifecyclePolicyFor,
   NEXT_TOOL_BY_GATE,
   PraxRuntimeError,
@@ -231,6 +232,7 @@ export class PraxService {
       }
       const updated = advanceSession(session, "intent_lite", now);
       const intent = validation.value!;
+      const manifest = deriveContextManifest({ session: updated, understanding, intentLite: intent });
       const brief = {
         version: "0.1",
         mode_plan: {
@@ -241,11 +243,13 @@ export class PraxService {
       };
       await this.sessions.commit(updated, [
         { key: "intentLite", value: intent },
+        { key: "contextManifest", value: manifest },
         { key: "implementationBrief", value: brief },
       ]);
       return {
         status: "PASS",
         phase: updated.phase,
+        context_manifest: manifest,
         next: nextTool(NEXT_TOOL_BY_GATE[currentGate(updated)]),
       };
     }
@@ -323,6 +327,14 @@ export class PraxService {
       : undefined;
     const frame = frameArtifact ?? this.derivedFrame(understanding, confirmation);
     const context = contextArtifact ?? this.derivedContext(understanding, confirmation, session.design_authorities);
+    const authoritativeUnderstanding = derived
+      ? understanding
+      : (await this.sessions.readArtifact<ExistingUnderstanding>(session, "existingUnderstanding")) ?? undefined;
+    const manifest = deriveContextManifest({
+      session,
+      ...(derived ? {} : { frame, context }),
+      ...(authoritativeUnderstanding !== undefined ? { understanding: authoritativeUnderstanding } : {}),
+    });
     const route = this.router.route(frame, context, input.question);
     const now = this.sessions.nowIso();
     const selectedIds = [
@@ -364,7 +376,10 @@ export class PraxService {
         : {}),
     };
     const priorLog = (await this.sessions.readArtifact<{ events?: unknown[] }>(session, "routingLog")) ?? {};
-    const artifactWrites: Array<{ key: "routingLog" | "productFrame" | "designContext"; value: unknown }> = [
+    const artifactWrites: Array<{
+      key: "routingLog" | "productFrame" | "designContext" | "contextManifest";
+      value: unknown;
+    }> = [
       {
         key: "routingLog",
         value: {
@@ -381,6 +396,7 @@ export class PraxService {
           ],
         },
       },
+      { key: "contextManifest", value: manifest },
     ];
     if (frameArtifact === undefined) {
       artifactWrites.push({ key: "productFrame", value: frame });
@@ -392,6 +408,7 @@ export class PraxService {
     return {
       ...route,
       ...(acceptingScopeGap ? { status: "WARN" as const } : {}),
+      context_manifest: manifest,
       phase: updated.phase,
       next: advances ? nextTool("design_inspect") : nextTool("design_context"),
     };
