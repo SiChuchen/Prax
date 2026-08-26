@@ -10,7 +10,7 @@ loads the authoritative YAML record and gate artifacts from disk.
 |---|---|---|
 | Protocol | MCP 2026-07-28 over stdio, SDK v2 | Ten staged tools only |
 | State | `prax-runtime` local YAML store | Optimistic revision check and atomic rename |
-| Knowledge | 23 fully expanded entries | No list-all/search-everything tool |
+| Knowledge | 23 fully expanded entries | No list-all/search-everything tool; entries are a compiled subset of the versioned `research/upstream/` snapshot, not the whole research asset |
 | Routing | Scope filters plus deterministic scoring | 5 principles, 5 heuristics, 3 patterns, 1 profile |
 | Intent | SDIR `0.1` | Semantic roles and commitments only |
 | Validation | Deterministic, assistive, and empirical checks | External evidence is never fabricated |
@@ -63,6 +63,23 @@ as `frame`/`prepare_implementation`/`validation` map to `framing`/`prepare`/
 behavior. `sdir_delta` payloads that declare `capability_needs` splice a
 `reconcile` gate in before `prepare` at commit time. `design_sdir` validate
 mode remains callable after the SDIR gate as a read-only cross-phase check.
+
+## Concept boundaries (v0.3.1)
+
+- **Relationships live on three separate layers**: Product Relationship
+  (`product-frame`, connects product objects), SDIR Region Relationship
+  (`screen.sdir`, coordinates UI regions), and Implementation Representation
+  (visual/runtime expression of a relationship). Cross-layer references are
+  optional and typed; no universal graph IR; `condition` stays opaque text.
+- **CanonicalClassification is a bounded routing signal**, one input among
+  others to the session Context Manifest; the Manifest is Runtime-owned
+  derived metadata, never an agent-submitted authority.
+- **Validation `kind` stays `deterministic | assistive | empirical`.**
+  Semantic/behavioral/spatial/… are facets/profiles on a separate field.
+- **The design responsibility boundary runs through implementation**: SDIR
+  excludes CSS/JSX detail, but Prax still supervises design fidelity via
+  persisted validation obligations and drift evidence — Prax controls design
+  fidelity, not implementation syntax.
 
 ## Deliberate v0 constraints
 

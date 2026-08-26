@@ -2,18 +2,13 @@
 
 These invariants are product behavior, not prompting suggestions.
 
-1. Product framing precedes design knowledge routing.
-2. User goals, tasks, and product objects outrank backend nouns.
-3. The agent receives only knowledge relevant to the current decision.
-4. Knowledge expands progressively; normal flows stay at L0/L1.
-5. Major structural choices name a Pattern, rationale, and rejected alternative.
-6. Professional-tool density is acceptable only when hierarchy and grouping make it legible.
-7. SDIR records meaning and commitments, never pixels, CSS, components, or frameworks.
-8. Capability gaps remain explicit; the UI is not silently downgraded to fit an API.
-9. Deterministic, assistive, and empirical validation claims remain distinct.
-10. User evidence is submitted by an external actor and is never synthesized as fact.
-11. The filesystem handoff must let another agent resume from `design_session_id` alone.
-12. High floor, soft ceiling: defaults prevent accidental low quality without forbidding justified deviation.
-13. Requirement confirmation precedes every gate: user quote, restatement, and explicit scope boundaries come before any design work.
-14. The posture toward the existing system — authoritative, evidence-only, or absent — determines the lifecycle depth; small changes never pay the full-chain tax.
+The canonical principle text lives in the [Unified Principle Registry](principle-registry.md).
+Constitution-level principles are `PRAX-P-001` through `PRAX-P-014`; phase
+invariants and candidates are tracked there with their own status. This file
+no longer duplicates principle text.
 
+Active constitution IDs:
+
+`PRAX-P-001` `PRAX-P-002` `PRAX-P-003` `PRAX-P-004` `PRAX-P-005` `PRAX-P-006`
+`PRAX-P-007` `PRAX-P-008` `PRAX-P-009` `PRAX-P-010` `PRAX-P-011` `PRAX-P-012`
+`PRAX-P-013` `PRAX-P-014`
