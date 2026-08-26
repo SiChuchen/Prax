@@ -14,6 +14,7 @@ import {
   PraxRuntimeError,
   lifecyclePolicyFor,
   normalizeCompletedGates,
+  validateExistingUnderstanding,
   type DesignSession,
 } from "prax-runtime";
 import { requirementConfirmation } from "./fixtures.js";
@@ -200,5 +201,54 @@ describe("requirement confirmation gate", () => {
     const result = await service.designStart({ requirement: "x", project_root: projectRoot, mode: "greenfield", change_kind: "defect_fix" });
     expect(result.status).toBe("BLOCK");
     expect(result.code).toBe("UNKNOWN_LIFECYCLE_POLICY");
+  });
+});
+
+describe("existing understanding validation", () => {
+  const existingInput = {
+    version: "0.1" as const,
+    current_objects: [{ id: "architecture_node", user_name: "架构节点", purpose: "系统组成部分", evidence_refs: ["app/architecture"] }],
+    current_surfaces: [{ id: "canvas", purpose: "架构画布" }, { id: "settings", purpose: "配置" }],
+    established_patterns: ["PAT-CANVAS-WORKSPACE"],
+    user_habits: ["左侧导航切换"],
+    constraints_and_debt: [],
+    change_targets: ["settings"],
+    design_authorities: ["docs/DESIGN.md"],
+  };
+
+  const reworkInput = {
+    version: "0.1" as const,
+    current_objects: [{ id: "architecture_node", user_name: "架构节点", purpose: "系统组成部分", evidence_refs: ["app/architecture"] }],
+    current_surfaces: [{ id: "canvas", purpose: "架构画布" }],
+    actual_usage: ["从画布进、逐节点排查"],
+    pain_points: ["全局关系一屏太多，聚焦后丢失方位"],
+    must_preserve: ["flow 数据", "canvas"],
+    must_replace: ["architecture_node"],
+    free_to_reconsider: [],
+    migration_notes: ["旧入口保留一个月"],
+    design_authorities: ["docs/DESIGN.md"],
+  };
+
+  it("accepts complete understandings for both modes", () => {
+    expect(validateExistingUnderstanding(existingInput, "existing_product", "modify_surface").status).toBe("PASS");
+    expect(validateExistingUnderstanding(reworkInput, "rework").status).toBe("PASS");
+  });
+
+  it("rejects change targets that do not map to declared surfaces", () => {
+    const bad = { ...existingInput, change_targets: ["billing"] };
+    const result = validateExistingUnderstanding(bad, "existing_product", "modify_surface");
+    expect(result.status).toBe("EXPAND");
+    expect(result.codes).toContain("CHANGE_TARGET_NOT_DECLARED");
+  });
+
+  it("requires pain points and exclusive, covering buckets for rework", () => {
+    const noPain = validateExistingUnderstanding({ ...reworkInput, pain_points: [] }, "rework");
+    expect(noPain.codes).toContain("REWORK_PAIN_POINTS_MISSING");
+
+    const conflicting = validateExistingUnderstanding({ ...reworkInput, free_to_reconsider: ["canvas"] }, "rework");
+    expect(conflicting.codes).toContain("REWORK_BUCKET_CONFLICT");
+
+    const uncovered = validateExistingUnderstanding({ ...reworkInput, must_preserve: [] }, "rework");
+    expect(uncovered.codes).toContain("REWORK_COVERAGE_INCOMPLETE");
   });
 });

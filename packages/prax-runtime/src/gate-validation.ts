@@ -2,14 +2,17 @@ import {
   CapabilityMapSchema,
   DesignContextSchema,
   DesignDecisionsSchema,
+  ExistingUnderstandingSchema,
   ProductFrameSchema,
   ProductObjectOverrideSchema,
   RequirementConfirmationSchema,
   type ArtifactValidation,
   type CapabilityMap,
+  type ChangeKind,
   type DesignContext,
   type DesignDecisions,
   type DesignMode,
+  type ExistingUnderstanding,
   type ProductFrame,
   type RequirementConfirmation,
   zodIssues,
@@ -414,5 +417,89 @@ export function validateCapabilityMap(
     issues,
     warnings,
     value: parsed.data,
+  };
+}
+
+export function validateExistingUnderstanding(
+  input: unknown,
+  mode: DesignMode,
+  changeKind?: ChangeKind,
+): ArtifactValidation<ExistingUnderstanding> {
+  const parsed = ExistingUnderstandingSchema.safeParse(input);
+  if (!parsed.success) {
+    return { status: "RETRY", issues: zodIssues(parsed.error), warnings: [] };
+  }
+  const data = parsed.data;
+  const issues: string[] = [];
+  const codes: string[] = [];
+  const warnings: string[] = [];
+
+  if (data.design_authorities.length === 0) {
+    warnings.push("No external design authorities declared; decisions will be checked only against the built-in pack.");
+  }
+
+  if (mode === "existing_product") {
+    const surfaces = new Set(data.current_surfaces.map((surface) => surface.id));
+    for (const target of data.change_targets) {
+      if (!surfaces.has(target)) {
+        codes.push("CHANGE_TARGET_NOT_DECLARED");
+        issues.push(`change_target '${target}' does not map to any declared current_surfaces entry.`);
+      }
+    }
+    if (data.current_objects.length === 0 || data.current_surfaces.length === 0) {
+      codes.push("UNDERSTANDING_INCOMPLETE");
+      issues.push("existing_product understanding requires current_objects and current_surfaces.");
+    }
+    if (changeKind === "add_surface" && data.change_targets.length > 0) {
+      warnings.push(
+        "add_surface declares change targets although the change adds a new surface; they are recorded as integration neighbors.",
+      );
+    }
+  }
+
+  if (mode === "rework") {
+    if (data.pain_points.length === 0) {
+      codes.push("REWORK_PAIN_POINTS_MISSING");
+      issues.push("rework requires pain_points; no pain means no basis for redesign.");
+    }
+    if (data.actual_usage.length === 0) {
+      codes.push("UNDERSTANDING_INCOMPLETE");
+      issues.push("rework understanding requires actual_usage evidence.");
+    }
+    const buckets: Array<[string, string[]]> = [
+      ["must_preserve", data.must_preserve],
+      ["must_replace", data.must_replace],
+      ["free_to_reconsider", data.free_to_reconsider],
+    ];
+    const placement = new Map<string, string>();
+    for (const [bucket, items] of buckets) {
+      for (const item of items) {
+        const prior = placement.get(item);
+        if (prior !== undefined) {
+          codes.push("REWORK_BUCKET_CONFLICT");
+          issues.push(`'${item}' appears in both ${prior} and ${bucket}; the three buckets must be exclusive.`);
+        }
+        placement.set(item, bucket);
+      }
+    }
+    const inventory = [
+      ...data.current_objects.map((object) => object.id),
+      ...data.current_surfaces.map((surface) => surface.id),
+    ];
+    const uncovered = inventory.filter((item) => !placement.has(item));
+    if (uncovered.length > 0) {
+      codes.push("REWORK_COVERAGE_INCOMPLETE");
+      issues.push(
+        `Every declared object and surface must fall into exactly one bucket; uncovered: ${uncovered.join(", ")}.`,
+      );
+    }
+  }
+
+  return {
+    status: issues.length === 0 ? (warnings.length === 0 ? "PASS" : "WARN") : "EXPAND",
+    issues,
+    warnings,
+    codes,
+    value: data,
   };
 }
