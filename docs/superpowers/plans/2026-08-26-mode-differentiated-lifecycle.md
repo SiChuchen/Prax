@@ -1478,7 +1478,7 @@ if (policy.mode === "rework" && understanding !== undefined) {
 } else if (policy.change_kind === "modify_surface" && deltaArtifact !== undefined) {
   modePlan = { change_sequence: deltaArtifact.changes.map((change) => ({ region: change.region, action: change.action, rationale: change.rationale })), regression_points: deltaArtifact.regression_points };
 }
-// validationPlan 依赖 Task 10 的四参签名——本任务先用现有三参调用，Task 10 再升级
+// validationPlan 依赖 Task 10 的对象输入签名——本任务先用现有三参调用封装，Task 10 再升级
 const implementationBrief = {
   version: "0.1",
   platform_profile: "WEB-DESKTOP",
@@ -1504,7 +1504,7 @@ const implementationBrief = {
 
 **Files:**
 - Modify: `packages/prax-validator/src/contracts.ts`（ValidationPlanSchema.pattern_ref 可选）
-- Modify: `packages/prax-validator/src/validator.ts`（plan 四参 + 轻路径检查集；evaluate 的 sdir/decisions 可选化）
+- Modify: `packages/prax-validator/src/validator.ts`（plan 改对象输入 + 轻路径/delta 检查集；evaluate 的 sdir/sdirDelta/decisions 可选化）
 - Modify: `packages/prax-mcp/src/service.ts`（designValidate 按策略传参；恢复 Task 9 的 validation_requirements）
 - Test: `tests/lifecycle-policy.test.ts`（追加）
 
@@ -1611,7 +1611,7 @@ const LIGHT_CHECKS: Record<"visual_polish" | "defect_fix", ValidationCheck[]> = 
 `evaluate` 输入改 `{ plan, sdir?, sdirDelta?, decisions?, evidence? }`：
 
 - `semantic_conformance` / `state_completeness` 仅当 `plan.checks` 含它们时要求 `sdir` 并运行现有 SDIR 校验
-- `delta_conformance` 用 `validateSdirDelta(sdirDelta)`（`import { validateSdirDelta } from "prax-sdir"`——注意 prax-validator 新增对 prax-sdir 的依赖：validator 包 package.json 的 dependencies 增加 `"prax-sdir": "*"` 并确认 workspace 解析，或改为把 delta 校验函数注入以避免新包依赖。**采用依赖注入**：`PraxValidator` 构造器接受可选 `deltaValidator: (input: unknown) => { status: string }`，service 侧传入 `validateSdirDelta`；validator 单测直接传 lambda，避免包间新依赖）
+- `delta_conformance` 用 `validateSdirDelta(sdirDelta)`：直接 `import { validateSdirDelta } from "prax-sdir"`——prax-validator 的 package.json **已经**依赖 prax-sdir（现有 `SdirEngine` 导入即来自该包），不引入新的包间依赖，也无需注入
 - 其余检查 findings 全部来自证据提交
 
 `service.ts` —— **统一计划入口（修订 M3）**：新增私有 helper，`designValidate` 与 `designPrepareImplementation` 共用：
@@ -1636,7 +1636,7 @@ private async validationPlanFor(session: DesignSession): Promise<ValidationPlan>
 }
 ```
 
-`designValidate` 的 plan 改为 `await this.validationPlanFor(session)`；evaluate 组装时按存在性传 `sdir`/`sdirDelta`/`decisions`，并传入构造时注入的 delta 校验（`PraxValidator` 实例化处：`new PraxValidator({ deltaValidator: validateSdirDelta })`——`validateSdirDelta` 从 `prax-sdir` 导入，service 已依赖 prax-sdir ✓）。`designPrepareImplementation` 的 `validation_requirements` 改为 `(await this.validationPlanFor(session)).checks.map((check) => check.id)`（替换 Task 9 的临时占位）。
+`designValidate` 的 plan 改为 `await this.validationPlanFor(session)`；evaluate 组装时按存在性传 `sdir`/`sdirDelta`/`decisions`。`designPrepareImplementation` 的 `validation_requirements` 改为 `(await this.validationPlanFor(session)).checks.map((check) => check.id)`（替换 Task 9 的临时占位）。
 
 - [ ] **Step 4: 运行确认 + 提交** — 新测试 PASS、`npm test` 全绿 → `git commit -m "feat(validator): assemble validation checks by lifecycle policy"`。
 
