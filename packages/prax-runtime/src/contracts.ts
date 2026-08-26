@@ -199,6 +199,14 @@ export const ExistingUnderstandingSchema = z.object({
   free_to_reconsider: z.array(NonEmptyStringSchema).default([]),
   migration_notes: z.array(NonEmptyStringSchema).default([]),
   design_authorities: z.array(NonEmptyStringSchema).default([]),
+  surface_context: z
+    .object({
+      density: z.enum(["compact", "regular", "spacious"]),
+      user_expertise: z.enum(["novice", "intermediate", "expert", "mixed"]),
+      destructive_actions: z.enum(["none", "low", "medium", "high"]),
+      task_frequency: z.enum(["low", "medium", "high"]),
+    })
+    .optional(),
 });
 export type ExistingUnderstanding = z.infer<typeof ExistingUnderstandingSchema>;
 export type ExistingUnderstandingInput = z.input<typeof ExistingUnderstandingSchema>;

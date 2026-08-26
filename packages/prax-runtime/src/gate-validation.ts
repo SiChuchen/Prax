@@ -467,6 +467,12 @@ export function validateExistingUnderstanding(
       codes.push("UNDERSTANDING_INCOMPLETE");
       issues.push("existing_product understanding requires current_objects and current_surfaces.");
     }
+    if (changeKind === "modify_surface" && data.surface_context === undefined) {
+      codes.push("SURFACE_CONTEXT_REQUIRED");
+      issues.push(
+        "modify_surface requires surface_context (density, user_expertise, destructive_actions, task_frequency); derived routing must not invent defaults.",
+      );
+    }
     if (changeKind === "add_surface" && data.change_targets.length > 0) {
       warnings.push(
         "add_surface declares change targets although the change adds a new surface; they are recorded as integration neighbors.",

@@ -217,6 +217,7 @@ describe("existing understanding validation", () => {
     constraints_and_debt: [],
     change_targets: ["settings"],
     design_authorities: ["docs/DESIGN.md"],
+    surface_context: { density: "regular", user_expertise: "mixed", destructive_actions: "none", task_frequency: "medium" },
   };
 
   const reworkInput = {
@@ -580,5 +581,40 @@ describe("confirmation evidence model", () => {
     const warned = validateRequirementConfirmation(sufficient);
     expect(warned.status).toBe("WARN");
     expect(warned.warnings.join(" ")).toMatch(/self-sufficient/);
+  });
+});
+
+describe("surface context for derived routing", () => {
+  it("requires surface_context on modify_surface understandings", () => {
+    const missing = architectureUnderstanding(["settings"]);
+    delete (missing as { surface_context?: unknown }).surface_context;
+    const result = validateExistingUnderstanding(missing, "existing_product", "modify_surface");
+    expect(result.status).toBe("EXPAND");
+    expect(result.codes).toContain("SURFACE_CONTEXT_REQUIRED");
+    expect(validateExistingUnderstanding(missing, "existing_product", "add_surface").status).toMatch(/PASS|WARN/);
+  });
+
+  it("derives routing context from surface_context instead of defaults", async () => {
+    const dense = architectureUnderstanding(["settings"]);
+    dense.surface_context = { density: "compact", user_expertise: "expert", destructive_actions: "high", task_frequency: "high" };
+    const root = await mkdtemp(join(tmpdir(), "prax-sctx-"));
+    cleanup.push(root);
+    const projectRoot = join(root, "project");
+    await mkdir(projectRoot);
+    const store = new FileSessionStore({ stateRoot: join(root, "state"), idGenerator: () => "ds_sctx" });
+    const service = await PraxService.create({ sessions: store });
+    await service.designStart({
+      requirement: "改设置页", project_root: projectRoot, mode: "existing_product", change_kind: "modify_surface",
+      requirement_confirmation: requirementConfirmation(),
+    });
+    await service.designFrame({ design_session_id: "ds_sctx", existing_understanding: dense });
+    await service.designRoute({ design_session_id: "ds_sctx", question: "如何改" });
+    const persisted = await store.readArtifact(await store.getSession("ds_sctx"), "designContext");
+    expect(persisted).toMatchObject({
+      density_intent: "compact",
+      user: { expertise: "expert" },
+      risk: { destructive_actions: "high" },
+      task: { frequency: "high" },
+    });
   });
 });

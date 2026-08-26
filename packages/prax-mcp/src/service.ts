@@ -428,18 +428,25 @@ export class PraxService {
         "Routing requires product_frame/design_context artifacts or an existing-understanding plus requirement-confirmation pair to derive them.",
       );
     }
+    if (understanding.surface_context === undefined) {
+      throw new PraxRuntimeError(
+        "ROUTING_INPUTS_INCOMPLETE",
+        "Derived routing requires surface_context on the existing understanding; unknown facts must stay unknown, not default to regular/none.",
+      );
+    }
+    const surfaceContext = understanding.surface_context;
     return DesignContextSchema.parse({
-      user: { expertise: "mixed", familiarity: "unknown" },
-      task: { primary: understanding.change_targets.join(", ") || "modify", modes: ["modify"], frequency: "unknown" },
+      user: { expertise: surfaceContext.user_expertise, familiarity: "unknown" },
+      task: { primary: understanding.change_targets.join(", ") || "modify", modes: ["modify"], frequency: surfaceContext.task_frequency },
       domain: {
         type: understanding.current_surfaces.map((surface) => surface.id).join(", ") || "existing product",
         entities: understanding.current_objects.map((object) => object.id),
       },
       information: { volume: "unknown", relationship_complexity: "unknown", change_rate: "low", comparison_need: "unknown" },
       platform: { family: "web", form_factor: "desktop", input: ["pointer", "keyboard"], viewport: "large" },
-      risk: { destructive_actions: "none", error_cost: "medium" },
+      risk: { destructive_actions: surfaceContext.destructive_actions, error_cost: "medium" },
       priorities: ["preserve existing habits", ...authorities.slice(0, 2)],
-      density_intent: "regular",
+      density_intent: surfaceContext.density,
       confidence: { overall: "medium" },
       unknowns: [],
     });

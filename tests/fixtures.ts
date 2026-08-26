@@ -46,6 +46,7 @@ export function architectureUnderstanding(changeTargets: string[] = ["settings"]
     free_to_reconsider: [],
     migration_notes: [],
     design_authorities: ["docs/DESIGN.md"],
+    surface_context: { density: "regular", user_expertise: "mixed", destructive_actions: "none", task_frequency: "medium" },
   };
 }
 
