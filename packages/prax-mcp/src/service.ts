@@ -164,16 +164,31 @@ export class PraxService {
       confidence: route.confidence,
       routed_at: now,
     } as const;
-    const phaseUpdated = route.status === "PASS" ? advanceSession(session, "design_route", now) : touch(session, now);
-    const updated = { ...phaseUpdated, routing_history: [...session.routing_history, routedRecord] };
+    const acceptingScopeGap = route.status !== "PASS" && input.accept_scope_gap !== undefined;
+    const advances = route.status === "PASS" || acceptingScopeGap;
+    const phaseUpdated = advances ? advanceSession(session, "design_route", now) : touch(session, now);
+    const updated = {
+      ...phaseUpdated,
+      routing_history: [...session.routing_history, routedRecord],
+      ...(acceptingScopeGap
+        ? {
+            unresolved: [...session.unresolved, input.accept_scope_gap!.question],
+            warnings: [
+              ...session.warnings,
+              `Routing scope gap accepted: ${input.accept_scope_gap!.rationale}`,
+            ],
+          }
+        : {}),
+    };
     const priorLog = (await this.sessions.readArtifact<{ events?: unknown[] }>(session, "routingLog")) ?? {};
     await this.sessions.commit(updated, [
-      { key: "routingLog", value: { version: "0.1", events: [...(priorLog.events ?? []), { question: input.question, routed_at: now, result: route }] } },
+      { key: "routingLog", value: { version: "0.1", events: [...(priorLog.events ?? []), { question: input.question, routed_at: now, result: route, ...(acceptingScopeGap ? { scope_gap_accepted: input.accept_scope_gap } : {}) }] } },
     ]);
     return {
       ...route,
+      ...(acceptingScopeGap ? { status: "WARN" as const } : {}),
       phase: updated.phase,
-      next: route.status === "PASS" ? nextTool("design_inspect") : nextTool("design_context"),
+      next: advances ? nextTool("design_inspect") : nextTool("design_context"),
     };
   }
 

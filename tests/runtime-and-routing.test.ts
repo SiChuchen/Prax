@@ -11,6 +11,7 @@ import {
   validateDesignDecisions,
   validateProductFrame,
 } from "prax-runtime";
+import { PraxService } from "prax-mcp";
 import { patternSurfaceContract, SdirEngine } from "prax-sdir";
 import {
   architectureContext,
@@ -287,6 +288,67 @@ describe("design decision semantics", () => {
     unknown.major_choices[0].references = ["provider_settings_backend"];
     const unknownResult = validateDesignDecisions(unknown, decisionContext);
     expect(unknownResult.codes).toContain("MAJOR_CHOICE_REFERENCE_UNKNOWN");
+  });
+});
+
+describe("routing escape hatch", () => {
+  it("advances past an unclassifiable domain when the agent records the scope gap", async () => {
+    const root = await mkdtemp(join(tmpdir(), "prax-escape-"));
+    cleanup.push(root);
+    const projectRoot = join(root, "project");
+    await mkdir(projectRoot);
+    const store = new FileSessionStore({ stateRoot: join(root, "state"), idGenerator: () => "ds_escape" });
+    const service = await PraxService.create({ sessions: store });
+
+    const frame = chineseArchitectureFrame();
+    frame.tasks = { primary: "占卜卦象", secondary: [] };
+    frame.product_objects = [{ id: "hexagram", user_name: "卦象", purpose: "占卜结果" }];
+    const context = chineseArchitectureContext();
+    context.task = { primary: "占卜", modes: ["起卦"], frequency: "low" };
+    context.domain = { type: "玄学", entities: ["卦象"] };
+
+    expect((await service.designStart({ requirement: "呈现卦象", project_root: projectRoot, mode: "greenfield" })).status).toBe("PASS");
+    expect((await service.designFrame({ design_session_id: "ds_escape", product_frame: frame })).status).toBe("PASS");
+    expect((await service.designContext({ design_session_id: "ds_escape", design_context: context })).status).toMatch(/PASS|WARN/);
+
+    const blocked = await service.designRoute({ design_session_id: "ds_escape", question: "如何呈现卦象" });
+    expect(blocked.status).toBe("EXPAND");
+
+    const escaped = await service.designRoute({
+      design_session_id: "ds_escape",
+      question: "如何呈现卦象",
+      accept_scope_gap: {
+        question: "The knowledge pack has no coverage for divination domains; proceed with generic structure guidance?",
+        rationale: "The task is genuinely outside the current pack; deferring the design is worse than proceeding on generic guidance.",
+      },
+    });
+    expect(escaped.status).toBe("WARN");
+    expect(escaped.phase).toBe("DECISION");
+    expect(escaped.next).toEqual({ tool: "design_inspect" });
+
+    const session = await store.getSession("ds_escape");
+    expect(session.unresolved).toContain("The knowledge pack has no coverage for divination domains; proceed with generic structure guidance?");
+
+    const generic = (escaped.patterns as Array<{ id: string }>)[0]?.id;
+    expect(generic).toBeDefined();
+    expect((await service.designInspect({
+      design_session_id: "ds_escape",
+      ids: [generic],
+      depth: "L1",
+      purpose: { kind: "compare_alternatives", target_ids: [generic], question: "Confirm the generic structure fits before deciding." },
+    })).status).toBe("PASS");
+    expect((await service.designDecide({
+      design_session_id: "ds_escape",
+      design_decisions: {
+        session_id: "ds_escape",
+        primary_structure: { pattern: generic, rationale: ["generic structure is the best available floor for an uncovered domain"], confidence: "medium" },
+        information_hierarchy: { primary: ["workspace"], secondary: [] },
+        density: { intent: "compact", strategy: ["quiet defaults"], avoid: ["card per entity"] },
+        major_choices: [],
+        rejected: [{ option: "hand-written layout", reason: "no recorded decision trail" }],
+        unresolved: [],
+      },
+    })).status).toMatch(/PASS|WARN/);
   });
 });
 

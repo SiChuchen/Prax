@@ -32,6 +32,13 @@ export const DesignContextInputSchema = z.object({
 export const DesignRouteInputSchema = z.object({
   design_session_id: SessionId,
   question: z.string().trim().min(1),
+  accept_scope_gap: z
+    .object({
+      question: z.string().trim().min(1),
+      rationale: z.string().trim().min(1),
+    })
+    .optional()
+    .describe("Explicitly accept an uncovered domain and proceed on generic guidance; recorded as an unresolved open question."),
 });
 
 export const DisclosurePurposeInputSchema = z.object({
