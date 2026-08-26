@@ -539,10 +539,10 @@ export class PraxService {
     const blocked = operationBlock(session, "design_sdir");
     if (blocked !== undefined) return blocked;
     if (currentGate(session) === "sdir_delta") {
-      if (input.sdir_delta === undefined) {
+      if (input.sdir_delta === undefined || input.mode !== "apply_delta") {
         return {
           status: "RETRY",
-          issues: ["The sdir_delta gate expects a sdir_delta payload."],
+          issues: ["The sdir_delta gate expects mode apply_delta with a sdir_delta payload."],
           next: nextTool("design_sdir"),
         };
       }

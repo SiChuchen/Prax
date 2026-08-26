@@ -91,13 +91,19 @@ export const DesignDecideInputSchema = z.object({
 export const DesignSdirInputSchema = z
   .object({
     design_session_id: SessionId,
-    mode: z.enum(["generate_from_decisions", "validate"]),
+    mode: z.enum(["generate_from_decisions", "validate", "apply_delta"]),
     sdir: SdirSchema.optional(),
     sdir_delta: SdirDeltaSchema.optional(),
   })
   .superRefine((input, context) => {
     if (input.mode === "validate" && input.sdir === undefined) {
       context.addIssue({ code: "custom", path: ["sdir"], message: "sdir is required in validate mode." });
+    }
+    if (input.mode === "apply_delta" && input.sdir_delta === undefined) {
+      context.addIssue({ code: "custom", path: ["sdir_delta"], message: "sdir_delta is required in apply_delta mode." });
+    }
+    if (input.mode !== "apply_delta" && input.sdir_delta !== undefined) {
+      context.addIssue({ code: "custom", path: ["mode"], message: "sdir_delta requires mode apply_delta." });
     }
   });
 

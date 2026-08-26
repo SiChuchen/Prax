@@ -401,7 +401,7 @@ describe("modify_surface path", () => {
     });
     expect(decided.status).toMatch(/PASS|WARN/);
 
-    const delta = await service.designSdir({ design_session_id: "ds_modify", mode: "generate_from_decisions", sdir_delta: sdirDelta() });
+    const delta = await service.designSdir({ design_session_id: "ds_modify", mode: "apply_delta", sdir_delta: sdirDelta() });
     expect(delta.status).toBe("PASS");
     expect(delta.phase).toBe("IMPLEMENTATION_READY");
   });
@@ -430,7 +430,7 @@ describe("modify_surface path", () => {
       },
     });
     const needy = { ...sdirDelta(), capability_needs: ["backend search endpoint"] };
-    const delta = await service.designSdir({ design_session_id: "ds_capneed", mode: "generate_from_decisions", sdir_delta: needy });
+    const delta = await service.designSdir({ design_session_id: "ds_capneed", mode: "apply_delta", sdir_delta: needy });
     expect(delta.status).toBe("PASS");
     expect(delta.phase).toBe("CAPABILITY_RECONCILIATION");
     expect(delta.next).toEqual({ tool: "design_reconcile" });
@@ -528,5 +528,42 @@ describe("requirement scope completeness", () => {
     };
     const accepted = await service.designStart({ design_session_id: "ds_scope", requirement_confirmation: declared });
     expect(accepted.status).toBe("PASS");
+  });
+});
+
+describe("apply_delta mode semantics", () => {
+  it("rejects a delta payload under the generate mode at the sdir_delta gate", async () => {
+    const root = await mkdtemp(join(tmpdir(), "prax-deltamode-"));
+    cleanup.push(root);
+    const projectRoot = join(root, "project");
+    await mkdir(projectRoot);
+    const store = new FileSessionStore({ stateRoot: join(root, "state"), idGenerator: () => "ds_dmode" });
+    const service = await PraxService.create({ sessions: store });
+    await service.designStart({
+      requirement: "改设置页", project_root: projectRoot, mode: "existing_product", change_kind: "modify_surface",
+      requirement_confirmation: requirementConfirmation(),
+    });
+    await service.designFrame({ design_session_id: "ds_dmode", existing_understanding: architectureUnderstanding(["settings"]) });
+    await service.designRoute({ design_session_id: "ds_dmode", question: "如何改" });
+    const session = await store.getSession("ds_dmode");
+    const routedIds = session.routing_history.flatMap((record) => record.selected_ids);
+    const patternId = routedIds.find((id) => id.startsWith("PAT-")) ?? "PAT-SETTINGS-SECTIONS";
+    await service.designInspect({
+      design_session_id: "ds_dmode", ids: [patternId], depth: "L1",
+      purpose: { kind: "compare_alternatives", target_ids: [patternId], question: "确认" },
+    });
+    await service.designDecide({
+      design_session_id: "ds_dmode",
+      design_decisions: {
+        session_id: "ds_dmode",
+        primary_structure: { pattern: patternId, rationale: ["分区"], confidence: "high" },
+        information_hierarchy: { primary: ["settings"], secondary: ["search"] },
+        density: { intent: "regular", strategy: ["分区标题"], avoid: [] },
+        major_choices: [], rejected: [{ option: "长表单", reason: "x" }], unresolved: [],
+      },
+    });
+    const rejected = await service.designSdir({ design_session_id: "ds_dmode", mode: "generate_from_decisions", sdir_delta: sdirDelta() });
+    expect(rejected.status).toBe("RETRY");
+    expect(JSON.stringify(rejected)).toMatch(/apply_delta/);
   });
 });

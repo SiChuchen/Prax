@@ -126,7 +126,7 @@ describe("mode-differentiated lifecycle end to end", () => {
         unresolved: [],
       },
     });
-    await service.designSdir({ design_session_id: "ds_mod", mode: "generate_from_decisions", sdir_delta: sdirDelta() });
+    await service.designSdir({ design_session_id: "ds_mod", mode: "apply_delta", sdir_delta: sdirDelta() });
     const prepared = await service.designPrepareImplementation({ design_session_id: "ds_mod", platform: "web_desktop", framework: "react" });
     const brief = prepared.implementation_brief as { mode_plan: { change_sequence: unknown[] } };
     expect(brief.mode_plan.change_sequence.length).toBeGreaterThan(0);
