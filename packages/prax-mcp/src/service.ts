@@ -107,7 +107,7 @@ export class PraxService {
         next: nextTool("design_frame"),
       };
     }
-    const updated = advanceSession(session, "design_frame", this.sessions.nowIso());
+    const updated = advanceSession(session, "framing", this.sessions.nowIso());
     await this.sessions.commit(updated, [{ key: "productFrame", value: validation.value }]);
     return {
       status: validation.status,
@@ -132,7 +132,7 @@ export class PraxService {
         next: nextTool("design_context"),
       };
     }
-    const updated = advanceSession(session, "design_context", this.sessions.nowIso());
+    const updated = advanceSession(session, "context", this.sessions.nowIso());
     await this.sessions.commit(updated, [{ key: "designContext", value: validation.value }]);
     return {
       status: validation.status,
@@ -166,7 +166,7 @@ export class PraxService {
     } as const;
     const acceptingScopeGap = route.status !== "PASS" && input.accept_scope_gap !== undefined;
     const advances = route.status === "PASS" || acceptingScopeGap;
-    const phaseUpdated = advances ? advanceSession(session, "design_route", now) : touch(session, now);
+    const phaseUpdated = advances ? advanceSession(session, "route", now) : touch(session, now);
     const updated = {
       ...phaseUpdated,
       routing_history: [...session.routing_history, routedRecord],
@@ -256,7 +256,7 @@ export class PraxService {
         next: nextTool("design_inspect"),
       };
     }
-    const updated = advanceSession(session, "design_decide", this.sessions.nowIso());
+    const updated = advanceSession(session, "decide", this.sessions.nowIso());
     await this.sessions.commit(updated, [{ key: "designDecisions", value: validation.value }]);
     return {
       status: validation.status,
@@ -270,19 +270,9 @@ export class PraxService {
 
   public async designSdir(input: DesignSdirInput): Promise<PraxOutput> {
     const session = await this.sessions.getSession(input.design_session_id);
-    const blocked = operationBlock(session, "design_sdir");
-    if (blocked !== undefined) return blocked;
-    const decisions = await this.requireArtifact<DesignDecisions>(session, "designDecisions");
-    const frame = await this.requireArtifact<ProductFrame>(session, "productFrame");
-    const context = await this.requireArtifact<DesignContext>(session, "designContext");
-    if (input.mode === "generate_from_decisions" && session.phase !== "SDIR") {
-      return {
-        status: "BLOCK",
-        code: "GATE_NOT_SATISFIED",
-        message: "generate_from_decisions is only legal in the SDIR phase; regeneration would invalidate downstream artifacts. Use mode validate to check a candidate without advancing.",
-      };
-    }
-    if (input.mode === "validate" && session.phase !== "SDIR") {
+    const sdirDone = session.completed_gates.includes("sdir") || session.completed_gates.includes("sdir_delta");
+    if (input.mode === "validate" && input.sdir !== undefined && sdirDone) {
+      const decisions = await this.requireArtifact<DesignDecisions>(session, "designDecisions");
       const validation = this.sdirEngine.validate(input.sdir, decisions);
       return {
         status: validation.status,
@@ -293,6 +283,11 @@ export class PraxService {
         phase: session.phase,
       };
     }
+    const blocked = operationBlock(session, "design_sdir");
+    if (blocked !== undefined) return blocked;
+    const decisions = await this.requireArtifact<DesignDecisions>(session, "designDecisions");
+    const frame = await this.requireArtifact<ProductFrame>(session, "productFrame");
+    const context = await this.requireArtifact<DesignContext>(session, "designContext");
     const candidate = input.mode === "generate_from_decisions"
       ? this.sdirEngine.generate(frame, context, decisions)
       : input.sdir;
@@ -307,7 +302,7 @@ export class PraxService {
         next: nextTool("design_sdir"),
       };
     }
-    const updated = advanceSession(session, "design_sdir", this.sessions.nowIso());
+    const updated = advanceSession(session, "sdir", this.sessions.nowIso());
     await this.sessions.commit(updated, [{ key: "sdir", value: validation.value }]);
     return {
       status: "PASS",
@@ -333,7 +328,7 @@ export class PraxService {
         next: nextTool("design_reconcile"),
       };
     }
-    const updated = advanceSession(session, "design_reconcile", this.sessions.nowIso());
+    const updated = advanceSession(session, "reconcile", this.sessions.nowIso());
     await this.sessions.commit(updated, [{ key: "capabilityGaps", value: validation.value }]);
     return {
       status: validation.status,
@@ -367,7 +362,7 @@ export class PraxService {
       capability_gaps: capabilityMap.needs.filter((need) => need.status === "gap" || need.status === "blocked"),
       validation_requirements: validationPlan.checks.map((check) => check.id),
     };
-    const updated = advanceSession(session, "design_prepare_implementation", this.sessions.nowIso());
+    const updated = advanceSession(session, "prepare", this.sessions.nowIso());
     await this.sessions.commit(updated, [{ key: "implementationBrief", value: implementationBrief }]);
     return {
       status: "PASS",
@@ -412,12 +407,7 @@ export class PraxService {
     const evaluation = this.validator.evaluate({ plan, sdir, decisions, ...(evidence === undefined ? {} : { evidence }) });
     const now = this.sessions.nowIso();
     const updated = evaluation.status === "PASS"
-      ? {
-          ...touch(session, now),
-          phase: "COMPLETE" as const,
-          completed_gates: session.completed_gates.includes("validation") ? session.completed_gates : [...session.completed_gates, "validation"],
-          current_gate: { name: "complete" },
-        }
+      ? { ...advanceSession(session, "validate", now), phase: "COMPLETE" as const, current_gate: { name: "complete" } }
       : touch(session, now);
     await this.sessions.commit(updated, [
       { key: "validationReport", value: { plan, ...(evidence === undefined ? {} : { evidence }), evaluation } },

@@ -3,6 +3,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
+  advanceSession,
+  checkOperationAllowed,
   DEFAULT_LEGACY_POLICY,
   DesignSessionSchema,
   FileSessionStore,
@@ -11,6 +13,7 @@ import {
   PraxRuntimeError,
   lifecyclePolicyFor,
   normalizeCompletedGates,
+  type DesignSession,
 } from "prax-runtime";
 
 const FULL_TAIL = ["context", "route", "decide", "sdir", "reconcile", "prepare", "validate"];
@@ -94,5 +97,53 @@ describe("session policy persistence", () => {
     });
     expect(legacy.lifecycle_policy).toBeUndefined();
     expect(legacy.design_authorities).toEqual([]);
+  });
+});
+
+function sessionWith(gates: string[], completed: string[], phase: string, mode = "existing_product"): DesignSession {
+  return {
+    id: "ds_sm", project_root: "/tmp/p", mode, phase,
+    created_at: new Date().toISOString(), updated_at: new Date().toISOString(), revision: 1,
+    requirement_ref: "requirement.md", completed_gates: completed, current_gate: { name: "next" },
+    disclosures: [], routing_history: [], artifacts: {}, unresolved: [], warnings: [],
+    design_authorities: [],
+    lifecycle_policy: { version: "1" as const, mode: "existing_product" as const, change_kind: "modify_surface" as const, gates },
+  } as never;
+}
+
+describe("policy-driven state machine", () => {
+  const modify = ["confirm", "understanding", "route", "decide", "sdir_delta", "prepare", "validate"];
+
+  it("allows the operation owning the current gate and blocks others with the next tool", () => {
+    const session = sessionWith(modify, ["confirm"], "UNDERSTANDING");
+    expect(checkOperationAllowed(session, "design_frame")).toBeUndefined();
+    const blocked = checkOperationAllowed(session, "design_decide");
+    expect(blocked?.status).toBe("BLOCK");
+    expect(blocked?.next).toEqual({ tool: "design_frame" });
+  });
+
+  it("advances past a gate onto the next gate's phase", () => {
+    const advanced = advanceSession(sessionWith(modify, ["confirm"], "UNDERSTANDING"), "understanding", "2026-08-26T00:00:00.000Z");
+    expect(advanced.phase).toBe("ROUTING");
+    expect(advanced.completed_gates).toContain("understanding");
+  });
+
+  it("resumes legacy sessions from mid-flow phases via gate alias normalization", () => {
+    for (const [phase, completed, expectedTool] of [
+      ["CONTEXT", ["frame"], "design_context"],
+      ["ROUTING", ["frame", "context"], "design_route"],
+      ["SDIR", ["frame", "context", "route", "decide"], "design_sdir"],
+      ["IMPLEMENTATION_READY", ["frame", "context", "route", "decide", "sdir", "reconcile"], "design_prepare_implementation"],
+      ["VALIDATION", ["frame", "context", "route", "decide", "sdir", "reconcile", "prepare_implementation"], "design_validate"],
+      ["COMPLETE", ["frame", "context", "route", "decide", "sdir", "reconcile", "prepare_implementation", "validation"], "design_validate"],
+    ] as const) {
+      const legacy = sessionWith([], [...completed], phase, "greenfield");
+      (legacy as { lifecycle_policy?: unknown }).lifecycle_policy = undefined;
+      const allowed = ["design_route", "design_context", "design_sdir", "design_prepare_implementation", "design_validate"];
+      const op = allowed.find((candidate) => checkOperationAllowed(legacy, candidate as never) === undefined);
+      expect(op).toBeDefined();
+      const blocked = checkOperationAllowed(legacy, "design_decide");
+      expect(blocked?.next).toEqual({ tool: expectedTool });
+    }
   });
 });
