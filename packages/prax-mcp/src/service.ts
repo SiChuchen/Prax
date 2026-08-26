@@ -12,6 +12,7 @@ import {
   currentGate,
   deriveContextManifest,
   lifecyclePolicyFor,
+  compileContext,
   loadCorrections,
   relevantCorrections,
   NEXT_TOOL_BY_GATE,
@@ -26,6 +27,7 @@ import {
   validateProductFrame,
   validateRequirementConfirmation,
   type CapabilityMap,
+  type ContextManifest,
   type DesignContext,
   type DesignDecisions,
   type DesignOperation,
@@ -250,16 +252,28 @@ export class PraxService {
           surfaces: intent.surfaces,
         },
       };
+      const { compiled, trace } = compileContext({
+        session: updated,
+        ...(understanding === undefined ? {} : { understanding }),
+        intentLite: intent,
+        planRevision: lightPlan.revision,
+        planCheckIds: lightPlan.plan.checks.map((check) => check.id),
+        corrections: await loadCorrections(this.sessions.stateRoot),
+      });
       await this.sessions.commit(updated, [
         { key: "intentLite", value: intent },
         { key: "contextManifest", value: manifest },
         { key: "implementationBrief", value: brief },
+        { key: "compiledContext", value: compiled },
+        { key: "compilationTrace", value: trace },
         ...(lightPlanChanged ? [{ key: "validationPlan" as const, value: lightPlan }] : []),
       ]);
       return {
         status: "PASS",
         phase: updated.phase,
         context_manifest: manifest,
+        compiled_context: compiled,
+        context_compilation_trace: trace,
         next: nextTool(NEXT_TOOL_BY_GATE[currentGate(updated)]),
       };
     }
@@ -764,14 +778,32 @@ export class PraxService {
       validation_requirements: validationPlan.checks.map((check) => check.id),
       ...(modePlan === undefined ? {} : { mode_plan: modePlan }),
     };
+    const frameForCompilation = (await this.sessions.readArtifact<ProductFrame>(session, "productFrame")) ?? undefined;
+    const manifestForCompilation =
+      (await this.sessions.readArtifact<ContextManifest>(session, "contextManifest")) ?? undefined;
+    const { compiled, trace } = compileContext({
+      session,
+      ...(sdirArtifact === undefined ? {} : { sdir: sdirArtifact }),
+      ...(decisions === undefined ? {} : { decisions }),
+      ...(understanding === undefined ? {} : { understanding }),
+      ...(frameForCompilation === undefined ? {} : { frame: frameForCompilation }),
+      ...(manifestForCompilation === undefined ? {} : { manifest: manifestForCompilation }),
+      planRevision: persistedPlan.revision,
+      planCheckIds: persistedPlan.plan.checks.map((check) => check.id),
+      corrections: await loadCorrections(this.sessions.stateRoot),
+    });
     const updated = advanceSession(session, "prepare", this.sessions.nowIso());
     await this.sessions.commit(updated, [
       { key: "implementationBrief", value: implementationBrief },
+      { key: "compiledContext", value: compiled },
+      { key: "compilationTrace", value: trace },
       ...(planChanged ? [{ key: "validationPlan" as const, value: persistedPlan }] : []),
     ]);
     return {
       status: "PASS",
       implementation_brief: implementationBrief,
+      compiled_context: compiled,
+      context_compilation_trace: trace,
       phase: updated.phase,
       next: nextTool("design_validate"),
     };

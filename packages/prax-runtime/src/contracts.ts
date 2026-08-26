@@ -483,6 +483,8 @@ export const ARTIFACT_FILES = {
   sdirDelta: "sdir-delta.yaml",
   contextManifest: "context-manifest.yaml",
   validationPlan: "validation-plan.yaml",
+  compiledContext: "compiled-context.yaml",
+  compilationTrace: "context-compilation-trace.yaml",
 } as const;
 
 export type ArtifactKey = keyof typeof ARTIFACT_FILES;
