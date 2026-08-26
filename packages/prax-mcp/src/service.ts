@@ -628,23 +628,61 @@ export class PraxService {
     const session = await this.sessions.getSession(input.design_session_id);
     const blocked = operationBlock(session, "design_prepare_implementation");
     if (blocked !== undefined) return blocked;
-    const frame = await this.requireArtifact<ProductFrame>(session, "productFrame");
-    const context = await this.requireArtifact<DesignContext>(session, "designContext");
+    const policy = sessionPolicy(session);
     const decisions = await this.requireArtifact<DesignDecisions>(session, "designDecisions");
-    const sdir = SdirSchema.parse(await this.requireArtifact<Sdir>(session, "sdir"));
-    const capabilityMap = await this.requireArtifact<CapabilityMap>(session, "capabilityGaps");
-    const validationPlan = this.validator.plan(frame, context, decisions);
+    const sdirArtifact = (await this.sessions.readArtifact<Sdir>(session, "sdir")) ?? undefined;
+    const deltaArtifact = (await this.sessions.readArtifact<import("prax-sdir").SdirDelta>(session, "sdirDelta")) ?? undefined;
+    const understanding = (await this.sessions.readArtifact<ExistingUnderstanding>(session, "existingUnderstanding")) ?? undefined;
+    const capabilityMap = policy.gates.includes("reconcile")
+      ? await this.requireArtifact<CapabilityMap>(session, "capabilityGaps")
+      : { needs: [] as CapabilityMap["needs"] };
+    const states = sdirArtifact?.screen.required_states ?? ["loading", "empty", "ready", "error"];
+    const validationPlan = await this.validationPlanFor(session);
+
+    let modePlan: Record<string, unknown> | undefined;
+    if (policy.mode === "rework" && understanding !== undefined) {
+      modePlan = {
+        migration_plan: {
+          user_transition: understanding.migration_notes,
+          data: understanding.must_preserve,
+          per_surface: [
+            ...understanding.must_preserve.map((item) => ({ surface: item, treatment: "preserve" })),
+            ...understanding.must_replace.map((item) => ({ surface: item, treatment: "rework" })),
+            ...understanding.free_to_reconsider.map((item) => ({ surface: item, treatment: "rework" })),
+          ],
+        },
+      };
+    } else if (policy.change_kind === "add_surface" && understanding !== undefined) {
+      modePlan = {
+        integration_plan: {
+          alignment_points: understanding.established_patterns,
+          neighbors: understanding.change_targets,
+          implementation_order: understanding.current_surfaces.map((surface) => surface.id),
+        },
+      };
+    } else if (policy.change_kind === "modify_surface" && deltaArtifact !== undefined) {
+      modePlan = {
+        change_sequence: deltaArtifact.changes.map((change) => ({
+          region: change.region,
+          action: change.action,
+          rationale: change.rationale,
+        })),
+        regression_points: deltaArtifact.regression_points,
+      };
+    }
+
     const implementationBrief = {
       version: "0.1",
       platform_profile: "WEB-DESKTOP",
       framework: input.framework,
-      sdir_ref: "screen.sdir.yaml",
+      sdir_ref: sdirArtifact !== undefined ? "screen.sdir.yaml" : "sdir-delta.yaml",
       decision_ref: "design-decisions.yaml",
       approved_patterns: [decisions.primary_structure.pattern],
       approved_component_contracts: this.componentContracts(decisions.primary_structure.pattern),
-      states_required: sdir.screen.required_states,
+      states_required: states,
       capability_gaps: capabilityMap.needs.filter((need) => need.status === "gap" || need.status === "blocked"),
       validation_requirements: validationPlan.checks.map((check) => check.id),
+      ...(modePlan === undefined ? {} : { mode_plan: modePlan }),
     };
     const updated = advanceSession(session, "prepare", this.sessions.nowIso());
     await this.sessions.commit(updated, [{ key: "implementationBrief", value: implementationBrief }]);
@@ -654,6 +692,13 @@ export class PraxService {
       phase: updated.phase,
       next: nextTool("design_validate"),
     };
+  }
+
+  private async validationPlanFor(session: DesignSession): Promise<import("prax-validator").ValidationPlan> {
+    const frame = await this.requireArtifact<ProductFrame>(session, "productFrame");
+    const context = await this.requireArtifact<DesignContext>(session, "designContext");
+    const decisions = await this.requireArtifact<DesignDecisions>(session, "designDecisions");
+    return this.validator.plan(frame, context, decisions);
   }
 
   public async designValidate(input: DesignValidateInput): Promise<PraxOutput> {

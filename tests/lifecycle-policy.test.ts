@@ -17,7 +17,7 @@ import {
   validateExistingUnderstanding,
   type DesignSession,
 } from "prax-runtime";
-import { architectureDecisions, architectureProductFrame, architectureUnderstanding, intentLite, requirementConfirmation, reworkUnderstanding, sdirDelta } from "./fixtures.js";
+import { architectureCapabilities, architectureContext, architectureDecisions, architectureProductFrame, architectureUnderstanding, intentLite, requirementConfirmation, reworkUnderstanding, sdirDelta } from "./fixtures.js";
 import { validateSdirDelta } from "prax-sdir";
 
 const FULL_TAIL = ["context", "route", "decide", "sdir", "reconcile", "prepare", "validate"];
@@ -433,5 +433,35 @@ describe("modify_surface path", () => {
     expect(delta.status).toBe("PASS");
     expect(delta.phase).toBe("CAPABILITY_RECONCILIATION");
     expect(delta.next).toEqual({ tool: "design_reconcile" });
+  });
+});
+
+describe("mode-differentiated implementation brief", () => {
+  it("attaches a migration plan for rework sessions", async () => {
+    const root = await mkdtemp(join(tmpdir(), "prax-brief-"));
+    cleanup.push(root);
+    const projectRoot = join(root, "project");
+    await mkdir(projectRoot);
+    const store = new FileSessionStore({ stateRoot: join(root, "state"), idGenerator: () => "ds_brief" });
+    const service = await PraxService.create({ sessions: store });
+    await service.designStart({ requirement: "重做控制台", project_root: projectRoot, mode: "rework", requirement_confirmation: requirementConfirmation() });
+    await service.designFrame({ design_session_id: "ds_brief", existing_understanding: reworkUnderstanding() });
+    await service.designFrame({ design_session_id: "ds_brief", product_frame: architectureProductFrame() });
+    await service.designContext({ design_session_id: "ds_brief", design_context: architectureContext() });
+    const routed = await service.designRoute({ design_session_id: "ds_brief", question: "选择主工作区模式" });
+    const patternId = (routed.patterns as Array<{ id: string }>)[0].id;
+    await service.designInspect({
+      design_session_id: "ds_brief",
+      ids: [patternId],
+      depth: "L1",
+      purpose: { kind: "compare_alternatives", target_ids: [patternId], question: "确认模式" },
+    });
+    await service.designDecide({ design_session_id: "ds_brief", design_decisions: architectureDecisions("ds_brief") });
+    await service.designSdir({ design_session_id: "ds_brief", mode: "generate_from_decisions" });
+    const prepared = await service.designPrepareImplementation({ design_session_id: "ds_brief", platform: "web_desktop", framework: "react" });
+    expect(prepared.status).toBe("PASS");
+    const brief = prepared.implementation_brief as { mode_plan: { migration_plan: { per_surface: Array<{ treatment: string }> } } };
+    expect(brief.mode_plan.migration_plan.per_surface.length).toBeGreaterThan(0);
+    expect(brief.mode_plan.migration_plan.per_surface.every((entry) => ["preserve", "rework"].includes(entry.treatment))).toBe(true);
   });
 });
