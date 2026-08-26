@@ -26,7 +26,14 @@ export const SdirSchema = z.object({
     density_intent: z.enum(["compact", "regular", "spacious"]),
     regions: z.array(SdirRegionSchema).min(1),
     relationships: z
-      .array(z.object({ source: NonEmpty, target: NonEmpty, type: NonEmpty }))
+      .array(
+        z.object({
+          id: NonEmpty.optional(),
+          source: NonEmpty,
+          target: NonEmpty,
+          type: NonEmpty,
+        }),
+      )
       .default([]),
     interaction_intents: z.array(NonEmpty).min(1),
     required_states: z.array(SdirStateSchema).min(4),

@@ -53,6 +53,7 @@ describe("product-first runtime", () => {
       accepted_by: "human",
     };
     const justified = architectureProductFrame();
+    justified.relationships = [];
     justified.product_objects = [
       { id: "provider_model", user_name: "provider_model", purpose: "backend record", justified_override: override },
       { id: "route_config", user_name: "route_config", purpose: "backend record", justified_override: override },
@@ -305,6 +306,7 @@ describe("routing escape hatch", () => {
     const frame = chineseArchitectureFrame();
     frame.tasks = { primary: "占卜卦象", secondary: [] };
     frame.product_objects = [{ id: "hexagram", user_name: "卦象", purpose: "占卜结果" }];
+    frame.relationships = [];
     const context = chineseArchitectureContext();
     context.task = { primary: "占卜", modes: ["起卦"], frequency: "low" };
     context.domain = { type: "玄学", entities: ["卦象"] };
@@ -442,6 +444,7 @@ describe("canonical context classification", () => {
     const frame = chineseArchitectureFrame();
     frame.tasks = { primary: "占卜卦象", secondary: [] };
     frame.product_objects = [{ id: "hexagram", user_name: "卦象", purpose: "占卜结果" }];
+    frame.relationships = [];
     const context = chineseArchitectureContext();
     context.task = { primary: "占卜", modes: ["起卦"], frequency: "low" };
     context.domain = { type: "玄学", entities: ["卦象"] };
@@ -481,7 +484,7 @@ describe("decision to SDIR mapping", () => {
     const sdir = new SdirEngine().generate(frame, context, decisions);
     expect(sdir.screen.regions.find((region) => region.id === "inspector")?.visibility.condition).toBe("always");
     expect(sdir.screen.relationships).toEqual([
-      { source: "architecture", target: "inspector", type: "persistent_side_by_side" },
+      { id: "region_rel_architecture_inspector", source: "architecture", target: "inspector", type: "persistent_side_by_side" },
     ]);
   });
 
@@ -587,7 +590,7 @@ describe("SDIR referential integrity", () => {
     const sdir = new SdirEngine().generate(frame, context, dataExplorerDecisions("ds_sdir_ref"));
     expect(sdir.screen.regions.map((region) => region.id).sort()).toEqual(["data", "detail"]);
     expect(sdir.screen.relationships).toEqual([
-      { source: "data", target: "detail", type: "selection_drives_contextual_detail" },
+      { id: "region_rel_data_detail", source: "data", target: "detail", type: "selection_drives_contextual_detail" },
     ]);
   });
 

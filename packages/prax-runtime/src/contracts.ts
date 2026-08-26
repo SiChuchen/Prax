@@ -79,6 +79,24 @@ export const ProductObjectOverrideSchema = z.object({
 });
 export type ProductObjectOverride = z.infer<typeof ProductObjectOverrideSchema>;
 
+export const RelationshipDirectionSchema = z.enum(["forward", "bidirectional", "none"]);
+export type RelationshipDirection = z.infer<typeof RelationshipDirectionSchema>;
+
+export const RelationshipImportanceSchema = z.enum(["primary", "supporting"]);
+export type RelationshipImportance = z.infer<typeof RelationshipImportanceSchema>;
+
+export const ProductRelationshipSchema = z.object({
+  id: NonEmptyStringSchema.optional(),
+  source: NonEmptyStringSchema,
+  target: NonEmptyStringSchema,
+  type: NonEmptyStringSchema,
+  direction: RelationshipDirectionSchema.optional(),
+  meaning: NonEmptyStringSchema.optional(),
+  condition: NonEmptyStringSchema.optional(),
+  importance: RelationshipImportanceSchema.optional(),
+});
+export type ProductRelationship = z.infer<typeof ProductRelationshipSchema>;
+
 export const ProductFrameSchema = z.object({
   user: z.object({
     primary_role: NonEmptyStringSchema,
@@ -102,15 +120,7 @@ export const ProductFrameSchema = z.object({
       }),
     )
     .min(1),
-  relationships: z
-    .array(
-      z.object({
-        source: NonEmptyStringSchema,
-        target: NonEmptyStringSchema,
-        type: NonEmptyStringSchema,
-      }),
-    )
-    .default([]),
+  relationships: z.array(ProductRelationshipSchema).default([]),
   mental_model_hypothesis: z.object({
     summary: NonEmptyStringSchema,
     confidence: ConfidenceSchema,
@@ -181,6 +191,19 @@ export const RequirementConfirmationSchema = z.object({
 });
 export type RequirementConfirmation = z.infer<typeof RequirementConfirmationSchema>;
 
+export const CurrentRelationshipSchema = z.object({
+  id: NonEmptyStringSchema.optional(),
+  source: NonEmptyStringSchema,
+  target: NonEmptyStringSchema,
+  type: NonEmptyStringSchema,
+  direction: RelationshipDirectionSchema.optional(),
+  meaning: NonEmptyStringSchema.optional(),
+  condition: NonEmptyStringSchema.optional(),
+  importance: RelationshipImportanceSchema.optional(),
+  evidence_refs: z.array(NonEmptyStringSchema).default([]),
+});
+export type CurrentRelationship = z.infer<typeof CurrentRelationshipSchema>;
+
 export const ExistingUnderstandingSchema = z.object({
   version: z.literal("0.1"),
   current_objects: z
@@ -193,6 +216,7 @@ export const ExistingUnderstandingSchema = z.object({
       }),
     )
     .default([]),
+  current_relationships: z.array(CurrentRelationshipSchema).default([]),
   current_surfaces: z
     .array(
       z.object({

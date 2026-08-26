@@ -157,6 +157,7 @@ export class SdirEngine {
       inspector !== undefined && primarySurface !== undefined && primarySurface.id !== inspector.id
         ? [
             {
+              id: `region_rel_${primarySurface.id}_${inspector.id}`,
               source: primarySurface.id,
               target: inspector.id,
               type: persistentInspector ? "persistent_side_by_side" : "selection_drives_contextual_detail",
@@ -279,5 +280,19 @@ function referentialIssues(sdir: Sdir): SdirIssue[] {
       });
     }
   });
+  const relationshipIdCounts = new Map<string, number>();
+  for (const relationship of sdir.screen.relationships) {
+    if (relationship.id !== undefined) {
+      relationshipIdCounts.set(relationship.id, (relationshipIdCounts.get(relationship.id) ?? 0) + 1);
+    }
+  }
+  for (const [id, count] of relationshipIdCounts) {
+    if (count > 1) {
+      issues.push({
+        code: "SDIR_RELATION_ID_DUPLICATE",
+        message: `Relationship id '${id}' is declared ${count} times; relationship ids must be unique.`,
+      });
+    }
+  }
   return issues;
 }

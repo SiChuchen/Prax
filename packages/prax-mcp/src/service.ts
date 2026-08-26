@@ -416,7 +416,18 @@ export class PraxService {
         user_name: object.user_name,
         purpose: object.purpose,
       })),
-      relationships: [],
+      relationships: understanding.current_relationships.map((relationship) => ({
+        ...(relationship.id !== undefined ? { id: relationship.id } : {}),
+        source: relationship.source,
+        target: relationship.target,
+        type: relationship.type,
+        ...(relationship.direction !== undefined ? { direction: relationship.direction } : {}),
+        ...(relationship.meaning !== undefined ? { meaning: relationship.meaning } : {}),
+        ...(relationship.condition !== undefined ? { condition: relationship.condition } : {}),
+        ...(relationship.importance !== undefined
+          ? { importance: relationship.importance }
+          : { importance: "supporting" as const }),
+      })),
       mental_model_hypothesis: { summary: "derived from existing understanding", confidence: "medium", evidence: ["existing_product"] },
       primary_success_definition: "the change preserves the existing product model",
       open_questions: [],

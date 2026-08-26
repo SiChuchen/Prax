@@ -112,6 +112,72 @@ function productObjectJustified(object: { justified_override?: unknown }): boole
   );
 }
 
+function relationshipSlug(source: string, target: string): string {
+  return `rel_${source}_${target}`.replaceAll(/[^a-zA-Z0-9_]+/g, "_").replaceAll(/_{2,}/g, "_");
+}
+
+interface RelationshipLike {
+  id?: string | undefined;
+  source: string;
+  target: string;
+}
+
+function normalizeRelationshipIds<T extends RelationshipLike>(relationships: T[]): { value: T[]; duplicateIds: string[] } {
+  const seen = new Set<string>();
+  const duplicateIds = new Set<string>();
+  const value = relationships.map((relationship) => {
+    if (relationship.id !== undefined) {
+      if (seen.has(relationship.id)) duplicateIds.add(relationship.id);
+      seen.add(relationship.id);
+      return relationship;
+    }
+    let id = relationshipSlug(relationship.source, relationship.target);
+    let counter = 2;
+    while (seen.has(id)) {
+      id = `${relationshipSlug(relationship.source, relationship.target)}_${counter}`;
+      counter += 1;
+    }
+    seen.add(id);
+    return { ...relationship, id };
+  });
+  return { value, duplicateIds: [...duplicateIds] };
+}
+
+function relationshipIssues<T extends RelationshipLike>(
+  relationships: T[],
+  objectIds: Set<string>,
+  label: string,
+): string[] {
+  const issues: string[] = [];
+  const duplicateIds = new Set<string>();
+  const seen = new Set<string>();
+  for (const relationship of relationships) {
+    if (relationship.id !== undefined) {
+      if (seen.has(relationship.id)) duplicateIds.add(relationship.id);
+      seen.add(relationship.id);
+    }
+    if (!objectIds.has(relationship.source)) {
+      issues.push(
+        `${label} '${relationship.source}' → '${relationship.target}' references unknown source object '${relationship.source}'.`,
+      );
+    }
+    if (!objectIds.has(relationship.target)) {
+      issues.push(
+        `${label} '${relationship.source}' → '${relationship.target}' references unknown target object '${relationship.target}'.`,
+      );
+    }
+    if (relationship.source === relationship.target) {
+      issues.push(
+        `${label} '${relationship.source}' links an object to itself; relationships must connect distinct objects.`,
+      );
+    }
+  }
+  for (const id of duplicateIds) {
+    issues.push(`${label} id '${id}' is declared more than once; relationship ids must be unique.`);
+  }
+  return issues;
+}
+
 export function validateProductFrame(
   input: unknown,
   mode: DesignMode,
@@ -128,6 +194,16 @@ export function validateProductFrame(
 
   const issues: string[] = [];
   const warnings: string[] = [];
+
+  const normalized = normalizeRelationshipIds(parsed.data.relationships);
+  parsed.data.relationships = normalized.value as ProductFrame["relationships"];
+  issues.push(
+    ...relationshipIssues(
+      parsed.data.relationships,
+      new Set(parsed.data.product_objects.map((object) => object.id)),
+      "Relationship",
+    ),
+  );
 
   if (mode === "existing_product" && !hasUnderstanding && parsed.data.existing_product === undefined) {
     issues.push(
@@ -468,6 +544,18 @@ export function validateExistingUnderstanding(
   const issues: string[] = [];
   const codes: string[] = [];
   const warnings: string[] = [];
+
+  const normalizedRelationships = normalizeRelationshipIds(data.current_relationships);
+  data.current_relationships = normalizedRelationships.value as ExistingUnderstanding["current_relationships"];
+  const relationshipFindings = relationshipIssues(
+    data.current_relationships,
+    new Set(data.current_objects.map((object) => object.id)),
+    "current_relationships entry",
+  );
+  for (const finding of relationshipFindings) {
+    codes.push("CURRENT_RELATIONSHIP_INVALID");
+    issues.push(finding);
+  }
 
   if (data.design_authorities.length === 0) {
     warnings.push("No external design authorities declared; decisions will be checked only against the built-in pack.");

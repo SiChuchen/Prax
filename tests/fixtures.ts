@@ -31,6 +31,17 @@ export function architectureUnderstanding(changeTargets: string[] = ["settings"]
       { id: "architecture_node", user_name: "架构节点", purpose: "系统组成部分", evidence_refs: ["app/architecture"] },
       { id: "preference", user_name: "配置项", purpose: "改变产品行为", evidence_refs: ["app/settings"] },
     ],
+    current_relationships: [
+      {
+        id: "rel_current_node_preference",
+        source: "architecture_node",
+        target: "preference",
+        type: "may_configure",
+        direction: "forward",
+        meaning: "selecting a node can surface its configuration entries",
+        evidence_refs: ["app/architecture", "app/settings"],
+      },
+    ],
     current_surfaces: [
       { id: "canvas", purpose: "架构画布", evidence_refs: ["app/architecture"] },
       { id: "settings", purpose: "配置", evidence_refs: ["app/settings"] },
@@ -101,8 +112,24 @@ export function architectureProductFrame(): ProductFrame {
       { id: "group", user_name: "group", purpose: "show a meaningful architecture boundary" },
     ],
     relationships: [
-      { source: "architecture_node", target: "relationship", type: "connected_by" },
-      { source: "flow", target: "architecture_node", type: "passes_through" },
+      {
+        id: "rel_node_relationship",
+        source: "architecture_node",
+        target: "relationship",
+        type: "connected_by",
+        direction: "forward",
+        meaning: "a node participates in relationships that the user can trace",
+        condition: "whenever the graph contains the node",
+        importance: "primary",
+      },
+      {
+        source: "flow",
+        target: "architecture_node",
+        type: "passes_through",
+        direction: "forward",
+        meaning: "a flow visits nodes in a semantically ordered sequence",
+        importance: "supporting",
+      },
     ],
     mental_model_hypothesis: {
       summary: "A spatial system map with contextual inspection",
