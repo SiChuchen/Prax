@@ -164,6 +164,7 @@ describe("mode-differentiated lifecycle end to end", () => {
     await service.designFrame({ design_session_id: "ds_rework", existing_understanding: reworkUnderstanding() });
     await driveStandardFlow(service, "ds_rework", "PAT-CANVAS-WORKSPACE");
     await service.designSdir({ design_session_id: "ds_rework", mode: "generate_from_decisions" });
+    await service.designReconcile({ design_session_id: "ds_rework", capability_map: architectureCapabilities() });
     const prepared = await service.designPrepareImplementation({ design_session_id: "ds_rework", platform: "web_desktop", framework: "react" });
     const brief = prepared.implementation_brief as { mode_plan: { migration_plan: { per_surface: Array<{ treatment: string }> } } };
     expect(brief.mode_plan.migration_plan.per_surface.every((entry) => ["preserve", "rework"].includes(entry.treatment))).toBe(true);

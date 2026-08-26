@@ -2,7 +2,7 @@ import type { ChangeKind, DesignMode, DesignPhase, GateName, LifecyclePolicy } f
 import { PraxRuntimeError } from "./errors.js";
 
 const FULL_TAIL: GateName[] = ["context", "route", "decide", "sdir", "reconcile", "prepare", "validate"];
-const REWORK_TAIL: GateName[] = ["context", "route", "decide", "sdir", "prepare", "validate"];
+const REWORK_TAIL: GateName[] = FULL_TAIL;
 
 export const DEFAULT_LEGACY_POLICY: LifecyclePolicy = {
   version: "1",
