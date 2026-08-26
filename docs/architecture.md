@@ -36,7 +36,12 @@ The project-local directory is the handoff packet:
 ├── screen.sdir.yaml
 ├── capability-gaps.yaml
 ├── implementation-brief.yaml
+├── validation-plan.yaml          # revision-locked, materialized pre-implementation
+├── context-manifest.yaml         # runtime-owned derived routing metadata
+├── compiled-context.yaml         # task-scoped implementation packet
+├── context-compilation-trace.yaml
 └── validation-report.yaml
+.prax/design/corrections.yaml     # project-local correction/regression memory
 ```
 
 `session.yaml` contains revision, phase, gate history, routed IDs, disclosure

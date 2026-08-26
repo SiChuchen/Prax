@@ -1,0 +1,34 @@
+# PRAX-AB-001 — experiment manifest (fill per-run facts at run time)
+id: PRAX-AB-001
+benchmark: benchmarks/architecture-canvas-ab
+status: pending
+created: 2026-08-26
+
+static_inputs:
+  requirement_digest: fill_at_first_run   # sha256 of benchmarks/architecture-canvas-ab/requirement.md
+  benchmark_definition_commit: fill_at_first_run
+
+repository:
+  name: engineering-control-plane
+  bundle: E:\codex-prj\ecp\engineering-control-plane.git.bundle
+  restored_at: E:\codex-prj\ecp\engineering-control-plane
+  base_commit: 2c77838
+  reference_solution_commit: 4f273c9   # post-run review context only
+
+replication_plan:
+  arms: [arm-a-bare, arm-b-prax]
+  runs_per_arm: 3
+  worktree_root: E:\codex-prj\ecp\ab-worktrees
+
+harness:
+  mode: operator-run session capture
+  capture: [session-transcript, operator-events-ndjson, git-diff, screenshots, wall-clock]
+  transcript_export: agent CLI session JSONL/log export or not_observable
+
+locks: prax-lock.yaml
+
+rules:
+  protocol: benchmarks/architecture-canvas-ab/protocol.md
+  rubric: benchmarks/architecture-canvas-ab/rubric.yaml
+  known_limitations: benchmarks/architecture-canvas-ab/known-limitations.md
+  claim_policy: directional signals only; no statistical significance wording

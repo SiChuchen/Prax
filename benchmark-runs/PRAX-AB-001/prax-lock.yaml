@@ -1,0 +1,23 @@
+# PRAX-AB-001 — version lock (fill at first run, keep immutable per replicate set)
+prax_lock:
+  prax_version: 0.1.0
+  runtime_commit: fill_at_first_run        # Prax repo HEAD at experiment start
+  knowledge_release: builtin-pack@runtime_commit
+  upstream_research_release: research-2026-08-26
+
+  benchmark_static_definition_commit: fill_at_first_run
+
+  agent:
+    cli: fill_at_first_run                 # e.g. claude-code / codex
+    cli_version: fill_at_first_run
+    model: fill_at_first_run               # exact id; not_observable if hidden
+
+  environment:
+    node: fill_at_first_run                # node -v
+    os: Windows 10 Pro 10.0.19045
+    browser: fill_at_first_run             # chrome version
+
+  project:
+    repo: engineering-control-plane
+    base_commit: 2c77838
+    package_lock: npm ci (repo package-lock.json)
