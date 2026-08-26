@@ -99,7 +99,7 @@ policy:
 | `existing_product` + `add_surface` | confirm → understanding → frame → context → route → decide → sdir → reconcile → prepare → validate |
 | `existing_product` + `modify_surface` | confirm → understanding → route → decide → sdir_delta → prepare → validate |
 | `existing_product` + `visual_polish` / `defect_fix` | confirm → intent_lite → validate |
-| `rework` | confirm → understanding → frame → context → route → decide → sdir → prepare → validate |
+| `rework` | confirm → understanding → frame → context → route → decide → sdir → reconcile → prepare → validate |
 
 1. `design_start` — creates the session and gates it behind a structured
    requirement confirmation (`user_quote`, `restatement`, boundaries,
@@ -108,9 +108,13 @@ policy:
 2. `design_frame` — payload depends on the current gate:
    `existing_understanding` (existing/rework question sets),
    `product_frame`, or a lightweight `intent_lite` for polish/fix sessions.
+   Light intents declare structured impact flags and are cross-checked
+   against the change text and the existing surfaces — structural work
+   cannot squeeze through a light path (REVIEW with a recommended kind).
 3. `design_context` 4. `design_route` 5. `design_inspect` 6. `design_decide`
-7. `design_sdir` — full SDIR or a semantic `sdir_delta` for modify sessions
-   (which can declare `capability_needs` to pull the reconcile gate back in).
+7. `design_sdir` — full SDIR (`generate_from_decisions` / `validate`) or a
+   semantic `sdir_delta` via `apply_delta` for modify sessions (which can
+   declare `capability_needs` to pull the reconcile gate back in).
 8. `design_reconcile` 9. `design_prepare_implementation` (mode-specific
    integration/change/migration plan) 10. `design_validate` (policy-assembled
    check set).

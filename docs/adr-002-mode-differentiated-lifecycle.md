@@ -52,10 +52,30 @@ run the original full chain with unchanged behavior.
 - Light paths replace — not extend — the universal check set, because
   semantic_conformance assumes an SDIR artifact.
 
+## Amendments (architect review, 2026-08-26)
+
+1. **Rework keeps reconcile** — capability reconciliation runs after SDIR:
+  the backend cannot hijack the redesign, but implementation gaps must
+  surface before the migration plan (constitution #8). Supersedes the
+  original spec table and the v1 plan's deviation note.
+2. **Confirmation is evidence, not a boolean** — `confirmation {status,
+  evidence[]}` replaces `confirmed_with_user`; `pending_user_confirmation`
+  blocks, `requirement_is_sufficient` advances with an auditable warning.
+3. **Derived routing never invents facts** — `surface_context` (density,
+  expertise, destructive actions, frequency) is required for
+  modify_surface; unknowns stay unknown.
+4. **Deltas use `apply_delta`** — the design_sdir mode enum is
+  generate_from_decisions | validate | apply_delta.
+5. **`scope_complete`** replaces boilerplate out_of_scope entries.
+6. **Change impact classification guards the light paths** — impact flags,
+  structural-vocabulary scanning, surface membership checks, and
+  delta-surface checks return REVIEW with a recommended kind when the
+  declared change kind understates the work.
+
 ## Consequences
 
-- New `design_start` callers must supply a requirement confirmation (breaking,
-  intended).
+- New `design_start` callers must supply an evidenced requirement
+  confirmation (breaking, intended).
 - Pre-policy YAML sessions resume unchanged; post-policy sessions are
   auditable per gate.
 - Adding a mode or change kind means editing the policy table plus tests, not
