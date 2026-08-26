@@ -1,0 +1,21 @@
+version: 0.1
+gaps:
+  - id: gap-mcp-anyof-schema
+    observed_in: [run-02, run-04]
+    classification: tooling_gap   # client-facing schema ergonomics, not Prax semantics
+    finding: >-
+      design_start's client-facing input schema is z.union([strictObject,
+      strictObject]) which serializes to a top-level anyOf with
+      additionalProperties:false per branch. Strict MCP client validators
+      reject mixed or partially-formed payloads, so tool-call parameters
+      never reach the server. run-02 lost repeated attempts to this; run-04
+      hit the same wall. Both arms completed the Prax flow via direct stdio
+      JSON-RPC against the same prax-mcp binary (semantics unchanged).
+    fix: >-
+      Flatten design_start's client schema to one permissive object (all
+      fields optional, no additionalProperties:false at the client layer);
+      keep branch discrimination and validation server-side (logic already
+      exists). Audit design_frame's superRefine for the same problem.
+      Tool names and semantics unchanged (PRAX-P-024 intact).
+    status: fix_deferred_until_after_run_06
+    fix_commit: pending
