@@ -1,0 +1,39 @@
+run:
+  id: PRAX-AB-001-run-01-A
+  arm: arm-a-bare
+  agent_cli: fill_by_operator        # which CLI/model ran this session
+  started_at: fill_by_operator
+  ended_at: fill_by_operator
+
+result:
+  implementation_completed: true     # uncommitted working-tree changes present
+  final_validation: pending_review
+  changed_files: 13
+  diff_stat: "702 insertions(+), 86 deletions(-)"
+  tests_touched: tests/canvas-engine.test.mjs (+170)
+
+process:
+  wall_clock_seconds: fill_by_operator
+  model_usage: not_observable
+  tool_calls: not_observable
+  prax_calls: 0
+  human_clarifications: fill_by_operator   # count from your session memory
+  first_pass_at: fill_by_operator
+  first_pass_validation_failures: fill_by_operator
+  post_first_pass_repair_rounds: fill_by_operator
+
+contamination_check:
+  prax_dir_absent: true
+  prax_env_absent: true
+  base_commit_verified: 2c77838
+
+evidence:
+  screenshots: 7   # 01 small browse … 07 hover relationship preview
+  screenshots_note: >
+    Names map to the six readability contracts: architecture-default density
+    (01-03), docked inspector (04), ordered trace corridor (05), landscape
+    region summaries (06), relationship follow preview (07).
+
+open_questions:
+  - wall-clock and clarification counts needed from operator
+  - session transcript export pending (execution/session-transcript.json)

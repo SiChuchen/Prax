@@ -8,8 +8,9 @@ review session (checklist at the end).
 ## 0. Preconditions (verified 2026-08-26)
 
 - [x] Prax repo at `E:\codex-prj\Prax\Prax` — build green, tests green, `prax` CLI linked
-- [x] ecp restored at `E:\codex-prj\ecp\engineering-control-plane` (branch
-      `handoff/ecp-offline-continuation-20260825`, `npm ci` done, build passes)
+- [x] ecp repo at `E:\codex-prj\ecp` (moved 2026-08-26 during run-01; branch
+      `handoff/ecp-offline-continuation-20260825`, now carries 7 backend-hardening
+      commits — A/B worktrees stay isolated because they are cut from `2c77838`)
 - [ ] `prax-lock.yaml` filled in (`runtime_commit`, agent cli/model, node -v, chrome)
 - [ ] `experiment-manifest.yaml` filled (requirement digest, definition commit)
 
