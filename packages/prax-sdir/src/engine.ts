@@ -3,8 +3,8 @@ import { zodIssues } from "prax-runtime";
 import { SdirSchema, type Sdir, type SdirIssue, type SdirValidation } from "./contracts.js";
 import { patternSurfaceContract } from "./surfaces.js";
 
-const FORBIDDEN_KEY = /(^|_)(width|height|padding|margin|display|grid|flex|color|font|radius|shadow|css|class|classname|component|framework|tailwind|pixel|px)($|_)/i;
-const FORBIDDEN_VALUE = /(\d+(?:\.\d+)?px\b|display\s*:\s*(?:flex|grid)|grid-template|rounded-(?:sm|md|lg|xl)|(?:Radix|Vue|React|Compose)[A-Z]\w*)/i;
+export const FORBIDDEN_KEY = /(^|_)(width|height|padding|margin|display|grid|flex|color|font|radius|shadow|css|class|classname|component|framework|tailwind|pixel|px)($|_)/i;
+export const FORBIDDEN_VALUE = /(\d+(?:\.\d+)?px\b|display\s*:\s*(?:flex|grid)|grid-template|rounded-(?:sm|md|lg|xl)|(?:Radix|Vue|React|Compose)[A-Z]\w*)/i;
 const KNOWN_ROLES = new Set([
   "dominant_workspace",
   "contextual_inspector",
@@ -27,7 +27,7 @@ const KNOWN_INTENTS = new Set([
   "keyboard_equivalent",
 ]);
 
-function renderLeakIssues(value: unknown, path = "sdir"): string[] {
+export function renderLeakIssues(value: unknown, path = "sdir"): string[] {
   if (Array.isArray(value)) {
     return value.flatMap((item, index) => renderLeakIssues(item, `${path}.${index}`));
   }

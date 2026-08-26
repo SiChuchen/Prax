@@ -18,6 +18,7 @@ import {
   type DesignSession,
 } from "prax-runtime";
 import { architectureProductFrame, intentLite, requirementConfirmation, reworkUnderstanding } from "./fixtures.js";
+import { validateSdirDelta } from "prax-sdir";
 
 const FULL_TAIL = ["context", "route", "decide", "sdir", "reconcile", "prepare", "validate"];
 const REWORK_TAIL = ["context", "route", "decide", "sdir", "prepare", "validate"];
@@ -293,5 +294,54 @@ describe("design frame payload dispatch", () => {
     const result = await service.designFrame({ design_session_id: "ds_frame", product_frame: architectureProductFrame() });
     expect(result.status).toBe("EXPAND");
     expect(JSON.stringify(result)).toMatch(/existing_understanding/);
+  });
+});
+
+describe("sdir delta", () => {
+  const delta = {
+    version: "0.1",
+    surface: "settings",
+    base_regions: [
+      { id: "settings_navigation", role: "primary_navigation", importance: "supporting" },
+      { id: "settings", role: "configuration_sections", importance: "primary" },
+    ],
+    changes: [
+      { region: "settings", action: "modify", fields: { importance: "dominant" }, rationale: "配置成为主要任务" },
+      { region: "search", action: "add", role: "supporting_toolbar", rationale: "长列表需要检索" },
+    ],
+    preserved: ["settings_navigation"],
+    regression_points: ["键盘路径", "保存态可见性"],
+    capability_needs: [],
+  };
+
+  it("accepts a well-formed delta", () => {
+    expect(validateSdirDelta(delta).status).toBe("PASS");
+  });
+
+  it("rejects changes targeting regions outside base ∪ adds", () => {
+    const bad = structuredClone(delta);
+    bad.changes[0].region = "ghost";
+    const result = validateSdirDelta(bad);
+    expect(result.status).toBe("RETRY");
+    expect(result.semantic_issues.map((issue: { code: string }) => issue.code)).toContain("SDIR_RELATION_REGION_NOT_FOUND");
+  });
+
+  it("rejects duplicate adds", () => {
+    const dup = structuredClone(delta);
+    dup.changes.push({ region: "search", action: "add", role: "supporting_toolbar", rationale: "重复添加" });
+    expect(validateSdirDelta(dup).semantic_issues.map((issue: { code: string }) => issue.code)).toContain("SDIR_REGION_ID_DUPLICATE");
+  });
+
+  it("rejects render-level leakage at any depth", () => {
+    const bad = structuredClone(delta);
+    bad.changes[0].fields = { layout: { width: "320px" } };
+    const result = validateSdirDelta(bad);
+    expect(result.semantic_issues.map((issue: { code: string }) => issue.code)).toContain("SDIR_RENDER_LEVEL_LEAK");
+  });
+
+  it("validates preserved references", () => {
+    const bad = structuredClone(delta);
+    bad.preserved = ["ghost_surface"];
+    expect(validateSdirDelta(bad).semantic_issues.map((issue: { code: string }) => issue.code)).toContain("SDIR_RELATION_REGION_NOT_FOUND");
   });
 });

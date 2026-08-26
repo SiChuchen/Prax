@@ -71,3 +71,38 @@ export interface SdirValidation {
   value?: Sdir;
 }
 
+
+export const SdirDeltaChangeSchema = z.object({
+  region: NonEmpty,
+  action: z.enum(["add", "modify", "remove", "preserve_explicit"]),
+  role: NonEmpty.optional(),
+  fields: z.record(z.string(), z.unknown()).default({}),
+  rationale: NonEmpty,
+});
+export type SdirDeltaChange = z.infer<typeof SdirDeltaChangeSchema>;
+
+export const SdirDeltaSchema = z.object({
+  version: z.literal("0.1"),
+  surface: NonEmpty,
+  base_regions: z
+    .array(
+      z.object({
+        id: NonEmpty,
+        role: NonEmpty,
+        importance: z.enum(["dominant", "primary", "supporting", "contextual"]),
+      }),
+    )
+    .min(1),
+  changes: z.array(SdirDeltaChangeSchema).min(1),
+  preserved: z.array(NonEmpty).default([]),
+  regression_points: z.array(NonEmpty).min(1),
+  capability_needs: z.array(NonEmpty).default([]),
+});
+export type SdirDelta = z.infer<typeof SdirDeltaSchema>;
+export interface SdirDeltaValidation {
+  status: "PASS" | "RETRY";
+  schema_errors: string[];
+  semantic_errors: string[];
+  semantic_issues: SdirIssue[];
+  value?: SdirDelta;
+}
