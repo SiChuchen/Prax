@@ -211,6 +211,14 @@ export const ExistingUnderstandingSchema = z.object({
 export type ExistingUnderstanding = z.infer<typeof ExistingUnderstandingSchema>;
 export type ExistingUnderstandingInput = z.input<typeof ExistingUnderstandingSchema>;
 
+export const IntentImpactSchema = z.object({
+  changes_product_objects: z.boolean().default(false),
+  changes_region_structure: z.boolean().default(false),
+  changes_interaction_model: z.boolean().default(false),
+  changes_state_model: z.boolean().default(false),
+  adds_capability: z.boolean().default(false),
+});
+
 export const IntentLiteSchema = z.object({
   version: z.literal("0.1"),
   kind: z.enum(["visual_polish", "defect_fix"]),
@@ -220,6 +228,7 @@ export const IntentLiteSchema = z.object({
   basis: NonEmptyStringSchema,
   evidence_refs: z.array(NonEmptyStringSchema).min(1),
   regression_points: z.array(NonEmptyStringSchema).min(1),
+  impact: IntentImpactSchema,
 });
 export type IntentLite = z.infer<typeof IntentLiteSchema>;
 

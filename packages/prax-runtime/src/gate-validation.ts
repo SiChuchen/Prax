@@ -20,6 +20,7 @@ import {
   zodIssues,
 } from "./contracts.js";
 import { classifyDesignContext } from "./classification.js";
+import { classifyIntentImpact } from "./change-impact.js";
 
 export function validateRequirementConfirmation(input: unknown): ArtifactValidation<RequirementConfirmation> {
   const parsed = RequirementConfirmationSchema.safeParse(input);
@@ -530,6 +531,7 @@ export function validateExistingUnderstanding(
 export function validateIntentLite(
   input: unknown,
   expectedKind: ChangeKind,
+  understanding?: ExistingUnderstanding | undefined,
 ): ArtifactValidation<IntentLite> {
   const parsed = IntentLiteSchema.safeParse(input);
   if (!parsed.success) {
@@ -541,7 +543,16 @@ export function validateIntentLite(
     codes.push("INTENT_KIND_MISMATCH");
     issues.push(`intent_lite.kind '${parsed.data.kind}' does not match the session's change_kind '${expectedKind}'.`);
   }
-  return { status: issues.length === 0 ? "PASS" : "EXPAND", issues, warnings: [], codes, value: parsed.data };
+  const impactFindings = classifyIntentImpact(parsed.data, expectedKind, understanding);
+  for (const finding of impactFindings) {
+    codes.push(finding.code);
+    issues.push(finding.message);
+  }
+  const structuralMismatch = impactFindings.some(
+    (finding) => finding.code === "LIFECYCLE_KIND_MISMATCH" || finding.code === "SURFACE_NOT_DECLARED",
+  );
+  const status = structuralMismatch ? "REVIEW" : issues.length === 0 ? "PASS" : "EXPAND";
+  return { status, issues, warnings: [], codes, value: parsed.data };
 }
 
 export function frameUnderstandingAlignment(

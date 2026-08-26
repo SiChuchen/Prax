@@ -15,6 +15,7 @@ import {
   lifecyclePolicyFor,
   normalizeCompletedGates,
   validateExistingUnderstanding,
+  validateIntentLite,
   validateRequirementConfirmation,
   type DesignSession,
 } from "prax-runtime";
@@ -616,5 +617,83 @@ describe("surface context for derived routing", () => {
       risk: { destructive_actions: "high" },
       task: { frequency: "high" },
     });
+  });
+});
+
+describe("change impact classification", () => {
+  it("rejects structural work declared as visual_polish via impact flags", () => {
+    const restructuring = intentLite("visual_polish");
+    restructuring.change = "把设置页从单列表单重组为左侧导航加多分区";
+    restructuring.impact.changes_region_structure = true;
+    const result = validateIntentLite(restructuring, "visual_polish");
+    expect(result.status).toBe("REVIEW");
+    expect(result.codes).toContain("LIFECYCLE_KIND_MISMATCH");
+    expect(result.issues.join(" ")).toMatch(/modify_surface/);
+  });
+
+  it("rejects structural vocabulary in a change declared as a defect fix", () => {
+    const sneaky = intentLite("defect_fix");
+    sneaky.change = "修复焦点丢失：重组页面布局，新增左侧导航区域";
+    const result = validateIntentLite(sneaky, "defect_fix");
+    expect(result.status).toBe("REVIEW");
+    expect(result.codes).toContain("LIFECYCLE_KIND_MISMATCH");
+  });
+
+  it("flags product-object impact as rework", () => {
+    const remodel = intentLite("visual_polish");
+    remodel.impact.changes_product_objects = true;
+    const result = validateIntentLite(remodel, "visual_polish");
+    expect(result.status).toBe("REVIEW");
+    expect(result.issues.join(" ")).toMatch(/rework/);
+  });
+
+  it("rejects light intents naming surfaces absent from the understanding", () => {
+    const unknownSurface = intentLite("visual_polish");
+    unknownSurface.surfaces = ["billing"];
+    const result = validateIntentLite(unknownSurface, "visual_polish", architectureUnderstanding(["settings"]));
+    expect(result.status).toBe("REVIEW");
+    expect(result.codes).toContain("SURFACE_NOT_DECLARED");
+  });
+
+  it("accepts a genuinely light intent", () => {
+    const polish = intentLite("visual_polish");
+    polish.change = "字阶 token 降一级，间距收紧";
+    const result = validateIntentLite(polish, "visual_polish");
+    expect(result.status).toBe("PASS");
+  });
+
+  it("rejects a modify delta targeting a surface outside the understanding", async () => {
+    const root = await mkdtemp(join(tmpdir(), "prax-imp-"));
+    cleanup.push(root);
+    const projectRoot = join(root, "project");
+    await mkdir(projectRoot);
+    const store = new FileSessionStore({ stateRoot: join(root, "state"), idGenerator: () => "ds_imp" });
+    const service = await PraxService.create({ sessions: store });
+    await service.designStart({
+      requirement: "改设置页", project_root: projectRoot, mode: "existing_product", change_kind: "modify_surface",
+      requirement_confirmation: requirementConfirmation(),
+    });
+    await service.designFrame({ design_session_id: "ds_imp", existing_understanding: architectureUnderstanding(["settings"]) });
+    await service.designRoute({ design_session_id: "ds_imp", question: "如何改" });
+    const session = await store.getSession("ds_imp");
+    const patternId = session.routing_history.flatMap((record) => record.selected_ids).find((id) => id.startsWith("PAT-")) ?? "PAT-SETTINGS-SECTIONS";
+    await service.designInspect({
+      design_session_id: "ds_imp", ids: [patternId], depth: "L1",
+      purpose: { kind: "compare_alternatives", target_ids: [patternId], question: "确认" },
+    });
+    await service.designDecide({
+      design_session_id: "ds_imp",
+      design_decisions: {
+        session_id: "ds_imp",
+        primary_structure: { pattern: patternId, rationale: ["分区"], confidence: "high" },
+        information_hierarchy: { primary: ["settings"], secondary: ["search"] },
+        density: { intent: "regular", strategy: ["分区标题"], avoid: [] },
+        major_choices: [], rejected: [{ option: "长表单", reason: "x" }], unresolved: [],
+      },
+    });
+    const newSurface = { ...sdirDelta(), surface: "brand_new_workspace" };
+    const rejected = await service.designSdir({ design_session_id: "ds_imp", mode: "apply_delta", sdir_delta: newSurface });
+    expect(rejected.status).toBe("REVIEW");
+    expect(rejected.code).toBe("LIFECYCLE_KIND_MISMATCH");
   });
 });

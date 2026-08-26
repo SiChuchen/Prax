@@ -217,7 +217,9 @@ export class PraxService {
         };
       }
       const expectedKind = session.lifecycle_policy?.change_kind === "defect_fix" ? "defect_fix" : "visual_polish";
-      const validation = validateIntentLite(input.intent_lite, expectedKind);
+      const understanding =
+        (await this.sessions.readArtifact<ExistingUnderstanding>(session, "existingUnderstanding")) ?? undefined;
+      const validation = validateIntentLite(input.intent_lite, expectedKind, understanding);
       if (validation.status !== "PASS") {
         return {
           status: validation.status,
@@ -561,6 +563,21 @@ export class PraxService {
           semantic_errors: validation.semantic_errors,
           semantic_issues: validation.semantic_issues,
           warnings: [],
+          next: nextTool("design_sdir"),
+        };
+      }
+      const gateUnderstanding =
+        (await this.sessions.readArtifact<ExistingUnderstanding>(session, "existingUnderstanding")) ?? undefined;
+      if (
+        gateUnderstanding !== undefined &&
+        !gateUnderstanding.current_surfaces.some((surface) => surface.id === validation.value!.surface)
+      ) {
+        return {
+          status: "REVIEW",
+          code: "LIFECYCLE_KIND_MISMATCH",
+          issues: [
+            `sdir_delta targets surface '${validation.value!.surface}' which is not in the existing understanding; building a new surface is add_surface work, and changing the product model is rework. Restart the session with the matching change_kind.`,
+          ],
           next: nextTool("design_sdir"),
         };
       }

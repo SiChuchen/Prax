@@ -79,6 +79,13 @@ export function intentLite(kind: "visual_polish" | "defect_fix"): IntentLite {
     basis: "审查发现登录标题层级与全站不一致",
     evidence_refs: ["docs/DESIGN.md#typography"],
     regression_points: ["对比度", "焦点可见性", "键盘路径"],
+    impact: {
+      changes_product_objects: false,
+      changes_region_structure: false,
+      changes_interaction_model: false,
+      changes_state_model: false,
+      adds_capability: false,
+    },
   };
 }
 

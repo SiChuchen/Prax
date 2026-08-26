@@ -1,4 +1,5 @@
 export * from "./artifact-store.js";
+export * from "./change-impact.js";
 export * from "./classification.js";
 export * from "./contracts.js";
 export * from "./errors.js";
