@@ -362,13 +362,15 @@ describe("policy-driven state machine", () => {
   it("resumes legacy sessions from mid-flow phases via gate alias normalization", () => {
     for (const [phase, completed, expectedTool] of [
       ["CONTEXT", ["frame"], "design_context"],
+      ["ROUTING", ["frame"], "design_route"],
       ["SDIR", ["frame", "context", "route", "decide"], "design_sdir"],
       ["IMPLEMENTATION_READY", ["frame", "context", "route", "decide", "sdir", "reconcile"], "design_prepare_implementation"],
       ["VALIDATION", ["frame", "context", "route", "decide", "sdir", "reconcile", "prepare_implementation"], "design_validate"],
+      ["COMPLETE", ["frame", "context", "route", "decide", "sdir", "reconcile", "prepare_implementation", "validation"], "design_validate"],
     ] as const) {
       const legacy = sessionWith([], [...completed], phase, "greenfield");
       (legacy as { lifecycle_policy?: unknown }).lifecycle_policy = undefined;
-      const allowed = ["design_context", "design_sdir", "design_prepare_implementation", "design_validate"];
+      const allowed = ["design_route", "design_context", "design_sdir", "design_prepare_implementation", "design_validate"];
       const op = allowed.find((candidate) => checkOperationAllowed(legacy, candidate as never) === undefined);
       expect(op).toBeDefined();
       const blocked = checkOperationAllowed(legacy, "design_decide");
@@ -581,7 +583,7 @@ export function validateRequirementConfirmation(input: unknown): ArtifactValidat
 `schemas.ts`（判别 union，修订③）：
 
 ```ts
-const CreateSessionInput = z.object({
+const CreateSessionInput = z.strictObject({
   requirement: z.string().trim().min(1),
   project_root: z.string().trim().min(1),
   mode: DesignModeSchema,
@@ -590,7 +592,7 @@ const CreateSessionInput = z.object({
   project_id: z.string().trim().min(1).optional(),
   requirement_confirmation: RequirementConfirmationSchema.optional(),
 });
-const ResumeConfirmationInput = z.object({
+const ResumeConfirmationInput = z.strictObject({
   design_session_id: SessionId,
   requirement_confirmation: RequirementConfirmationSchema,
 });
@@ -598,7 +600,7 @@ export const DesignStartInputSchema = z.union([ResumeConfirmationInput, CreateSe
 export type DesignStartInput = z.infer<typeof DesignStartInputSchema>;
 ```
 
-（`RequirementConfirmationSchema`、`DesignModeSchema`、`ChangeKindSchema` 从 `prax-runtime` 导入；union 先匹配 resume——CreateSessionInput 无 design_session_id 必填项，两者不重叠时顺序安全。）
+（`RequirementConfirmationSchema`、`DesignModeSchema`、`ChangeKindSchema` 从 `prax-runtime` 导入。两支均用 `z.strictObject`：resume 支拒绝 create 字段、create 支拒绝 `design_session_id`——混合输入会在两支都失败并给出明确 schema 错误，杜绝"被静默解释为 resume"的歧义。MCP SDK 2.0 对 union 生成 `anyOf` + 根级 `type: object`，兼容。）
 
 `service.ts` 的 `designStart`：
 
@@ -899,7 +901,7 @@ describe("design frame payload dispatch", () => {
     const result = await service.designFrame({ design_session_id: "ds_frame", intent_lite: intentLite("visual_polish") });
     expect(result.status).toBe("PASS");
     expect(result.phase).toBe("VALIDATION");
-    const brief = await store.readArtifact(sessionLike(store), "implementationBrief");
+    const brief = await store.readArtifact(await sessionLike(store), "implementationBrief");
     expect(JSON.stringify(brief)).toMatch(/change_list/);
   });
 
@@ -1335,13 +1337,14 @@ if (currentGate(session) === "sdir_delta") {
   if (validation.status !== "PASS") {
     return { status: validation.status, schema_errors: validation.schema_errors, semantic_errors: validation.semantic_errors, semantic_issues: validation.semantic_issues, warnings: [], next: nextTool("design_sdir") };
   }
-  let updated = advanceSession(session, "sdir_delta", this.sessions.nowIso());
-  if (validation.value!.capability_needs.length > 0 && !sessionPolicy(session).gates.includes("reconcile")) {
-    // 按需 reconcile（修订⑪）：声明了能力需求的 delta 动态插入 reconcile 门禁
-    const gates = [...sessionPolicy(session).gates];
+  // 按需 reconcile（修订⑪）：先改策略再 advance，保证 phase/current_gate 与新序列一致
+  let policy = sessionPolicy(session);
+  if (validation.value!.capability_needs.length > 0 && !policy.gates.includes("reconcile")) {
+    const gates = [...policy.gates];
     gates.splice(gates.indexOf("prepare"), 0, "reconcile");
-    updated = { ...updated, lifecycle_policy: { ...sessionPolicy(session), gates } };
+    policy = { ...policy, gates };
   }
+  const updated = advanceSession({ ...session, lifecycle_policy: policy }, "sdir_delta", this.sessions.nowIso());
   await this.sessions.commit(updated, [{ key: "sdirDelta", value: validation.value }]);
   return { status: "PASS", sdir_delta: validation.value, phase: updated.phase, next: nextTool(NEXT_TOOL_BY_GATE[currentGate(updated)]) };
 }
@@ -1355,7 +1358,7 @@ const contextArtifact = await this.sessions.readArtifact<DesignContext>(session,
 const understanding = await this.sessions.readArtifact<ExistingUnderstanding>(session, "existingUnderstanding");
 const confirmation = await this.sessions.readArtifact<RequirementConfirmation>(session, "requirementConfirmation");
 const frame = frameArtifact ?? this.derivedFrame(understanding, confirmation);
-const context = contextArtifact ?? this.derivedContext(understanding, confirmation);
+const context = contextArtifact ?? this.derivedContext(understanding, confirmation, session.design_authorities);
 const derived = frameArtifact === undefined || contextArtifact === undefined;
 ```
 
@@ -1378,7 +1381,7 @@ private derivedFrame(understanding: ExistingUnderstanding | undefined, confirmat
   });
 }
 
-private derivedContext(understanding: ExistingUnderstanding, confirmation: RequirementConfirmation): DesignContext {
+private derivedContext(understanding: ExistingUnderstanding, confirmation: RequirementConfirmation, authorities: string[]): DesignContext {
   return DesignContextSchema.parse({
     user: { expertise: "mixed", familiarity: "unknown" },
     task: { primary: understanding.change_targets.join(", ") || "modify", modes: ["modify"], frequency: "unknown" },
@@ -1389,7 +1392,7 @@ private derivedContext(understanding: ExistingUnderstanding, confirmation: Requi
     information: { volume: "unknown", relationship_complexity: "unknown", change_rate: "low", comparison_need: "unknown" },
     platform: { family: "web", form_factor: "desktop", input: ["pointer", "keyboard"], viewport: "large" },
     risk: { destructive_actions: "none", error_cost: "medium" },
-    priorities: ["preserve existing habits", ...understanding.design_authorities.slice(0, 1)],
+    priorities: ["preserve existing habits", ...authorities.slice(0, 2)],
     density_intent: "regular",
     confidence: { overall: "medium" },
     unknowns: [],
@@ -1486,12 +1489,12 @@ const implementationBrief = {
   approved_component_contracts: this.componentContracts(decisions.primary_structure.pattern),
   states_required: states,
   capability_gaps: capabilityMap.needs.filter((need) => need.status === "gap" || need.status === "blocked"),
-  validation_requirements: [],   // Task 10 填充
+  validation_requirements: (await this.validationPlanFor(session)).checks.map((check) => check.id),
   ...(modePlan === undefined ? {} : { mode_plan: modePlan }),
 };
 ```
 
-（`SdirDelta` 从 `prax-sdir` 以 `import type` 引入；`validation_requirements` 本任务临时为空数组，Task 10 恢复为 plan.checks 映射。）
+（`SdirDelta` 从 `prax-sdir` 以 `import type` 引入；`validationPlanFor` 为本任务新增的私有 helper——Task 9 阶段先实现为对现有三参 `this.validator.plan(frame, context, decisions)` 的薄封装（从 artifact 读取三个输入），Task 10 将其升级为上面的策略化对象输入版本，`designValidate` 同步切换，保证两处计划始终同源（修订 M3）。）
 
 - [ ] **Step 4: 运行确认 + 提交** — 新测试 PASS、`npm test` 全绿 → `git commit -m "feat(mcp): assemble mode-specific execution plans"`。
 
@@ -1510,19 +1513,31 @@ const implementationBrief = {
 ```ts
 describe("policy-aware validation plans", () => {
   const validator = new PraxValidator();
+  const base = { frame: architectureProductFrame(), context: architectureContext(), decisions: architectureDecisions("x") };
 
   it("adds existing-product and rework checks", () => {
-    const ids = (policyContext: { mode: string; change_kind?: string }) =>
-      validator.plan(architectureProductFrame(), architectureContext(), architectureDecisions("x"), policyContext as never)
-        .checks.map((check: { id: string }) => check.id);
+    const ids = (policyContext: Record<string, unknown>) =>
+      validator.plan({ ...base, policyContext: policyContext as never }).checks.map((check: { id: string }) => check.id);
     expect(ids({ mode: "existing_product", change_kind: "add_surface" })).toContain("untouched_surface_regression");
     expect(ids({ mode: "rework" })).toContain("fresh_derivation_check");
     expect(ids({ mode: "rework" })).toContain("migration_readiness");
     expect(ids({ mode: "greenfield" })).toContain("requirement_alignment");
   });
 
-  it("uses light-path checks instead of the universal set", () => {
-    const plan = validator.plan(architectureProductFrame(), architectureContext(), architectureDecisions("x"), { mode: "existing_product", change_kind: "visual_polish" } as never);
+  it("uses delta-aware checks for modify_surface instead of full-SDIR checks", () => {
+    const plan = validator.plan({ ...base, policyContext: { mode: "existing_product", change_kind: "modify_surface" } as never });
+    const ids = plan.checks.map((check: { id: string }) => check.id);
+    expect(ids).toContain("delta_conformance");
+    expect(ids).toContain("untouched_surface_regression");
+    expect(ids).not.toContain("semantic_conformance");
+    expect(ids).not.toContain("state_completeness");
+  });
+
+  it("uses light-path checks without requiring frame or decisions", () => {
+    const plan = validator.plan({
+      policyContext: { mode: "existing_product", change_kind: "visual_polish" } as never,
+      intentLite: intentLite("visual_polish"),
+    });
     const ids = plan.checks.map((check: { id: string }) => check.id);
     expect(ids).toContain("hierarchy_preserved");
     expect(ids).toContain("readability");
@@ -1532,13 +1547,25 @@ describe("policy-aware validation plans", () => {
 });
 ```
 
+（测试文件 import 追加 `intentLite` from fixtures。）
+
 - [ ] **Step 2: 运行确认失败。**
 
 - [ ] **Step 3: 实现**
 
 `validator/contracts.ts`：`ValidationPlanSchema` 的 `pattern_ref` 改 `z.string().min(1).optional()`。
 
-`validator.ts`：
+`validator.ts` —— `plan` 改为**对象输入**（修订 B3），`evaluate` 增加 `sdirDelta` 分支（修订 B4）：
+
+```ts
+export interface ValidationPlanInput {
+  policyContext?: { mode: DesignMode; change_kind?: ChangeKind; authorities?: string[] };
+  frame?: ProductFrame;
+  context?: DesignContext;
+  decisions?: DesignDecisions;
+  intentLite?: IntentLite;
+}
+```
 
 ```ts
 const REQUIREMENT_CHECK: ValidationCheck = {
@@ -1548,28 +1575,68 @@ const REQUIREMENT_CHECK: ValidationCheck = {
 const EXISTING_CHECKS: ValidationCheck[] = [
   { id: "untouched_surface_regression", label: "Untouched surface regression", kind: "empirical", requirement: "Surfaces outside the declared change targets behave exactly as before.", evidence_required: true },
   { id: "pattern_consistency", label: "Pattern consistency", kind: "assistive", requirement: "The change follows the established patterns recorded in the existing-product understanding.", evidence_required: true },
-  { id: "authority_consistency", label: "Design authority consistency", kind: "assistive", requirement: "The result stays consistent with the declared design authorities.", evidence_required: true },
+  { id: "authority_consistency", label: "Design authority consistency", kind: "assistive", requirement: `The result stays consistent with the declared design authorities.`, evidence_required: true },
 ];
 const REWORK_CHECKS: ValidationCheck[] = [
   { id: "fresh_derivation_check", label: "Fresh derivation", kind: "assistive", requirement: "Product objects derive from user tasks, not from copying the legacy structure.", evidence_required: true },
   { id: "migration_readiness", label: "Migration readiness", kind: "empirical", requirement: "The migration plan covers every must_preserve item.", evidence_required: true },
 ];
+const DELTA_CHECKS: ValidationCheck[] = [
+  { id: "delta_conformance", label: "Delta conformance", kind: "deterministic", requirement: "The sdir_delta passes referential and render-leak validation.", evidence_required: false },
+  ...EXISTING_CHECKS,
+  REQUIREMENT_CHECK,
+];
 const LIGHT_CHECKS: Record<"visual_polish" | "defect_fix", ValidationCheck[]> = {
   visual_polish: [
     { id: "hierarchy_preserved", label: "Hierarchy preserved", kind: "assistive", requirement: "The visual change does not alter the surface's information hierarchy.", evidence_required: true },
     { id: "readability", label: "Readability", kind: "empirical", requirement: "Contrast and type-scale evidence shows text remains readable.", evidence_required: true },
-    { id: "requirement_alignment", ...REQUIREMENT_CHECK },
+    REQUIREMENT_CHECK,
   ],
   defect_fix: [
     { id: "regression_check", label: "Regression check", kind: "empirical", requirement: "The fix resolves the reported defect without behavior change elsewhere.", evidence_required: true },
-    { id: "requirement_alignment", ...REQUIREMENT_CHECK },
+    REQUIREMENT_CHECK,
   ],
 };
 ```
 
-`plan(frame, context, decisions, policyContext?: { mode: DesignMode; change_kind?: ChangeKind })`：无 policyContext → 现有行为（通用 + pattern + risk + `requirement_alignment` 追加进通用集）；light → 仅 `LIGHT_CHECKS[kind]`，不设 pattern_ref；existing 非轻 → 通用 + pattern + risk + EXISTING_CHECKS；rework → 通用 + pattern + risk + REWORK_CHECKS。`evaluate` 输入改 `{ plan, sdir?, decisions?, evidence? }`：仅当 `plan.checks` 含 `semantic_conformance` 或 `state_completeness` 时要求 sdir 并运行 SDIR 校验；否则 findings 全部来自证据提交。
+`plan(input: ValidationPlanInput)` 装配规则：
 
-`service.ts` 的 `designValidate`：plan/evaluate 传入 `{ mode: session.mode, ...(sessionPolicy(session).change_kind === undefined ? {} : { change_kind: sessionPolicy(session).change_kind }) }`；sdir 读取改 optional（`readArtifact(session, "sdir")`），decisions 读取仅当存在（轻路径跳过）；同时把 Task 9 遗留的 `validation_requirements: []` 恢复为 `validationPlan.checks.map((check) => check.id)`。
+- 无 `policyContext` → 通用 + pattern + risk + REQUIREMENT_CHECK（`pattern_ref` 取 `decisions.primary_structure.pattern`）
+- `change_kind` ∈ light → 仅 `LIGHT_CHECKS[kind]`，无 `pattern_ref`，不需要 frame/context/decisions
+- `change_kind === "modify_surface"` → `DELTA_CHECKS`，`pattern_ref` 取 decisions 的 pattern，不需要完整 SDIR 检查
+- `mode === "rework"` → 通用 + pattern + risk + REWORK_CHECKS + REQUIREMENT_CHECK
+- 其余 existing → 通用 + pattern + risk + EXISTING_CHECKS + REQUIREMENT_CHECK
+- `authority_consistency` 的 requirement 文案动态拼入 `policyContext.authorities` 列表（如 `...authorities: docs/DESIGN.md, design/tokens.yaml.`），无 authorities 时保留通用文案——保证权威真实进入计划（修订 M2）
+
+`evaluate` 输入改 `{ plan, sdir?, sdirDelta?, decisions?, evidence? }`：
+
+- `semantic_conformance` / `state_completeness` 仅当 `plan.checks` 含它们时要求 `sdir` 并运行现有 SDIR 校验
+- `delta_conformance` 用 `validateSdirDelta(sdirDelta)`（`import { validateSdirDelta } from "prax-sdir"`——注意 prax-validator 新增对 prax-sdir 的依赖：validator 包 package.json 的 dependencies 增加 `"prax-sdir": "*"` 并确认 workspace 解析，或改为把 delta 校验函数注入以避免新包依赖。**采用依赖注入**：`PraxValidator` 构造器接受可选 `deltaValidator: (input: unknown) => { status: string }`，service 侧传入 `validateSdirDelta`；validator 单测直接传 lambda，避免包间新依赖）
+- 其余检查 findings 全部来自证据提交
+
+`service.ts` —— **统一计划入口（修订 M3）**：新增私有 helper，`designValidate` 与 `designPrepareImplementation` 共用：
+
+```ts
+private async validationPlanFor(session: DesignSession): Promise<ValidationPlan> {
+  const policy = sessionPolicy(session);
+  const understanding = await this.sessions.readArtifact<ExistingUnderstanding>(session, "existingUnderstanding");
+  const authorities = [...new Set([...session.design_authorities, ...(understanding?.design_authorities ?? [])])];
+  const policyContext = {
+    mode: session.mode,
+    ...(policy.change_kind === undefined ? {} : { change_kind: policy.change_kind }),
+    authorities,
+  };
+  return this.validator.plan({
+    policyContext,
+    frame: await this.sessions.readArtifact(session, "productFrame") ?? undefined,
+    context: await this.sessions.readArtifact(session, "designContext") ?? undefined,
+    decisions: await this.sessions.readArtifact(session, "designDecisions") ?? undefined,
+    intentLite: await this.sessions.readArtifact(session, "intentLite") ?? undefined,
+  });
+}
+```
+
+`designValidate` 的 plan 改为 `await this.validationPlanFor(session)`；evaluate 组装时按存在性传 `sdir`/`sdirDelta`/`decisions`，并传入构造时注入的 delta 校验（`PraxValidator` 实例化处：`new PraxValidator({ deltaValidator: validateSdirDelta })`——`validateSdirDelta` 从 `prax-sdir` 导入，service 已依赖 prax-sdir ✓）。`designPrepareImplementation` 的 `validation_requirements` 改为 `(await this.validationPlanFor(session)).checks.map((check) => check.id)`（替换 Task 9 的临时占位）。
 
 - [ ] **Step 4: 运行确认 + 提交** — 新测试 PASS、`npm test` 全绿 → `git commit -m "feat(validator): assemble validation checks by lifecycle policy"`。
 
