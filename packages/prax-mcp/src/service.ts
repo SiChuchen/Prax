@@ -275,6 +275,24 @@ export class PraxService {
     const decisions = await this.requireArtifact<DesignDecisions>(session, "designDecisions");
     const frame = await this.requireArtifact<ProductFrame>(session, "productFrame");
     const context = await this.requireArtifact<DesignContext>(session, "designContext");
+    if (input.mode === "generate_from_decisions" && session.phase !== "SDIR") {
+      return {
+        status: "BLOCK",
+        code: "GATE_NOT_SATISFIED",
+        message: "generate_from_decisions is only legal in the SDIR phase; regeneration would invalidate downstream artifacts. Use mode validate to check a candidate without advancing.",
+      };
+    }
+    if (input.mode === "validate" && session.phase !== "SDIR") {
+      const validation = this.sdirEngine.validate(input.sdir, decisions);
+      return {
+        status: validation.status,
+        schema_errors: validation.schema_errors,
+        semantic_errors: validation.semantic_errors,
+        semantic_issues: validation.semantic_issues,
+        warnings: validation.warnings,
+        phase: session.phase,
+      };
+    }
     const candidate = input.mode === "generate_from_decisions"
       ? this.sdirEngine.generate(frame, context, decisions)
       : input.sdir;

@@ -114,6 +114,14 @@ function applyHierarchy(
     if (region !== undefined) {
       used.add(region.id);
       ordered.push(withImportance(region, primary.includes(surface)));
+    } else {
+      ordered.push({
+        id: surface,
+        role: `experimental:${surface}`,
+        importance: primary.includes(surface) ? "primary" : "supporting",
+        visibility: { condition: "always" },
+        behavior_intent: [],
+      });
     }
   }
   for (const region of skeleton) {

@@ -14,6 +14,7 @@ import {
 import { PraxService } from "prax-mcp";
 import { patternSurfaceContract, SdirEngine } from "prax-sdir";
 import {
+  architectureCapabilities,
   architectureContext,
   architectureDecisions,
   architectureProductFrame,
@@ -513,6 +514,67 @@ describe("decision to SDIR mapping", () => {
     expect(sdir.screen.regions.map((region) => region.id)).toEqual(["settings", "settings_navigation"]);
     expect(sdir.screen.unresolved).toEqual([]);
     expect(sdir.screen.rejected_alternatives).toEqual([]);
+  });
+
+  it("materializes hierarchy surfaces beyond the skeleton as experimental regions", () => {
+    const decisions = architectureDecisions("ds_map");
+    decisions.information_hierarchy = {
+      primary: ["architecture"],
+      secondary: ["navigation", "inspector", "toolbar", "activity_stream"],
+    };
+    const sdir = new SdirEngine().generate(frame, context, decisions);
+    const region = sdir.screen.regions.find((item) => item.id === "activity_stream");
+    expect(region?.role).toBe("experimental:activity_stream");
+    expect(region?.importance).toBe("supporting");
+    expect(new SdirEngine().validate(sdir, decisions).status).toBe("PASS");
+  });
+
+  it("re-validates a candidate SDIR after the session has advanced, without state changes", async () => {
+    const root = await mkdtemp(join(tmpdir(), "prax-resdir-"));
+    cleanup.push(root);
+    const projectRoot = join(root, "project");
+    await mkdir(projectRoot);
+    const store = new FileSessionStore({ stateRoot: join(root, "state"), idGenerator: () => "ds_revalidate" });
+    const service = await PraxService.create({ sessions: store });
+    await service.designStart({ requirement: "Build an Architecture Canvas.", project_root: projectRoot, mode: "greenfield" });
+    await service.designFrame({ design_session_id: "ds_revalidate", product_frame: architectureProductFrame() });
+    await service.designContext({ design_session_id: "ds_revalidate", design_context: architectureContext() });
+    await service.designRoute({ design_session_id: "ds_revalidate", question: "Choose the primary workspace pattern" });
+    await service.designInspect({
+      design_session_id: "ds_revalidate",
+      ids: ["PAT-CANVAS-WORKSPACE"],
+      depth: "L1",
+      purpose: { kind: "compare_alternatives", target_ids: ["PAT-CANVAS-WORKSPACE"], question: "Confirm the canvas pattern fits" },
+    });
+    await service.designDecide({ design_session_id: "ds_revalidate", design_decisions: architectureDecisions("ds_revalidate") });
+    await service.designSdir({ design_session_id: "ds_revalidate", mode: "generate_from_decisions" });
+    await service.designReconcile({ design_session_id: "ds_revalidate", capability_map: architectureCapabilities() });
+
+    const inspection = await service.inspectSession("ds_revalidate");
+    expect((inspection.session as { phase: string }).phase).toBe("IMPLEMENTATION_READY");
+    const persisted = await store.readArtifact<{ screen: { regions: unknown[] } }>(inspection.session as never, "sdir");
+
+    const enriched = structuredClone(persisted);
+    enriched.screen.regions.push({
+      id: "history_panel",
+      role: "experimental:history_panel",
+      importance: "supporting",
+      visibility: { condition: "task_driven" },
+      behavior_intent: [],
+    });
+    const validated = await service.designSdir({ design_session_id: "ds_revalidate", mode: "validate", sdir: enriched });
+    expect(validated.status).toBe("PASS");
+    expect(validated.phase).toBe("IMPLEMENTATION_READY");
+
+    const corrupted = structuredClone(persisted);
+    corrupted.screen.relationships = [{ source: "ghost", target: "phantom", type: "selection_drives_contextual_detail" }];
+    const rejected = await service.designSdir({ design_session_id: "ds_revalidate", mode: "validate", sdir: corrupted });
+    expect(rejected.status).toBe("RETRY");
+    expect((rejected.semantic_issues as Array<{ code: string }>).map((issue) => issue.code)).toContain("SDIR_RELATION_REGION_NOT_FOUND");
+
+    const unchanged = await store.readArtifact<{ screen: { regions: unknown[] } }>(inspection.session as never, "sdir");
+    expect(unchanged.screen.regions.length).toBe(persisted.screen.regions.length);
+    expect((await store.getSession("ds_revalidate")).phase).toBe("IMPLEMENTATION_READY");
   });
 });
 

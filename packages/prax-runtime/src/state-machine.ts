@@ -20,7 +20,7 @@ const ALLOWED_PHASES: Record<DesignOperation, readonly DesignPhase[]> = {
   design_route: ["ROUTING", "DECISION"],
   design_inspect: ["DECISION"],
   design_decide: ["DECISION"],
-  design_sdir: ["SDIR"],
+  design_sdir: ["SDIR", "CAPABILITY_RECONCILIATION", "IMPLEMENTATION_READY", "VALIDATION", "COMPLETE"],
   design_reconcile: ["CAPABILITY_RECONCILIATION"],
   design_prepare_implementation: ["IMPLEMENTATION_READY"],
   design_validate: ["VALIDATION", "COMPLETE"],
