@@ -16,8 +16,11 @@ export function requirementConfirmation(): RequirementConfirmation {
     restatement: "工程师用户需要在保留全局上下文的前提下检视与追踪架构关系；成功标准是选中即聚焦、清除即还原。",
     boundaries: { in_scope: ["architecture canvas workspace"], out_of_scope: ["settings pages", "data explorer"] },
     open_questions: [],
-    confirmed_with_user: true,
-    confirmed_at: "2026-08-26T00:00:00.000Z",
+    confirmation: {
+      status: "explicit_user_confirmation",
+      evidence: [{ type: "conversation_message", ref: "user message confirming the canvas requirement" }],
+      confirmed_at: "2026-08-26T00:00:00.000Z",
+    },
   };
 }
 

@@ -44,6 +44,20 @@ export function validateRequirementConfirmation(input: unknown): ArtifactValidat
   if (parsed.data.open_questions.length > 0) {
     warnings.push(`${parsed.data.open_questions.length} requirement question(s) remain recorded.`);
   }
+  if (parsed.data.confirmation.status === "pending_user_confirmation") {
+    return {
+      status: "BLOCK",
+      issues: ["The requirement is not confirmed yet; ask the user, then resubmit with explicit_user_confirmation evidence."],
+      warnings,
+      codes: ["CONFIRMATION_PENDING"],
+      value: parsed.data,
+    };
+  }
+  if (parsed.data.confirmation.status === "requirement_is_sufficient") {
+    warnings.push(
+      "Confirmation relies on the task brief being self-sufficient rather than an explicit user reply; keep the evidence reference auditable.",
+    );
+  }
   return {
     status: issues.length === 0 ? (warnings.length === 0 ? "PASS" : "WARN") : "EXPAND",
     issues,

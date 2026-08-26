@@ -15,6 +15,7 @@ import {
   lifecyclePolicyFor,
   normalizeCompletedGates,
   validateExistingUnderstanding,
+  validateRequirementConfirmation,
   type DesignSession,
 } from "prax-runtime";
 import { architectureCapabilities, architectureContext, architectureDecisions, architectureProductFrame, architectureUnderstanding, intentLite, requirementConfirmation, reworkUnderstanding, sdirDelta } from "./fixtures.js";
@@ -565,5 +566,19 @@ describe("apply_delta mode semantics", () => {
     const rejected = await service.designSdir({ design_session_id: "ds_dmode", mode: "generate_from_decisions", sdir_delta: sdirDelta() });
     expect(rejected.status).toBe("RETRY");
     expect(JSON.stringify(rejected)).toMatch(/apply_delta/);
+  });
+});
+
+describe("confirmation evidence model", () => {
+  it("blocks a pending confirmation and warns on brief-sufficient confirmations", () => {
+    const pending = { ...requirementConfirmation(), confirmation: { status: "pending_user_confirmation" as const, evidence: [{ type: "task_brief" as const, ref: "brief" }], confirmed_at: "2026-08-26T00:00:00.000Z" } };
+    const blocked = validateRequirementConfirmation(pending);
+    expect(blocked.status).toBe("BLOCK");
+    expect(blocked.codes).toContain("CONFIRMATION_PENDING");
+
+    const sufficient = { ...requirementConfirmation(), confirmation: { status: "requirement_is_sufficient" as const, evidence: [{ type: "task_brief" as const, ref: "docs/task.md" }], confirmed_at: "2026-08-26T00:00:00.000Z" } };
+    const warned = validateRequirementConfirmation(sufficient);
+    expect(warned.status).toBe("WARN");
+    expect(warned.warnings.join(" ")).toMatch(/self-sufficient/);
   });
 });
