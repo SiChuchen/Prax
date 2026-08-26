@@ -1,0 +1,41 @@
+# Environment policy — PRAX-AB-001 (identical for both arms)
+
+machine:
+  host: single local Windows workstation (all runs, both arms)
+  node: ">=22.13.0 (record exact `node -v` per run)"
+  package_manager: npm ci (repo package-lock.json is authoritative)
+
+repository:
+  source: E:\codex-prj\ecp\engineering-control-plane (cloned from
+    engineering-control-plane.git.bundle, verified 2026-08-26)
+  base_commit: 2c77838
+  worktrees: E:\codex-prj\ecp\ab-worktrees\<run-id>-<arm>
+  install: npm ci once per worktree
+
+runtime:
+  dev_server: npm run dev (Vinext/Vite local)
+  browser: local Chrome, default window size; no remote/browser-farm use
+  database: none required for canvas work; do not apply migrations, do not
+    touch D1 state
+
+agent:
+  cli: same agent CLI for both arms (record name + version)
+  model: same model id for both arms (record exact; `not_observable` if the CLI
+    hides it)
+  permissions: same tool allowlist; file access limited to the run worktree
+  network: allowed for npm ci only; no deployment APIs, no remote ECP writes
+
+prax:
+  arm_a: no prax binaries, MCP, config, or state anywhere in scope
+  arm_b: local Prax build (record prax commit + build digest in prax-lock.yaml);
+    session state kept inside the worktree's .prax/
+
+budget:
+  wall_clock_cap_minutes: 120
+  token_cap: not enforced; record usage or not_observable
+
+forbidden:
+  - any remote deployment or ECP Change publication
+  - revealing commit 4f273c9 or its diff to either arm
+  - reusing a session or worktree across runs
+  - giving one arm information the other arm cannot obtain

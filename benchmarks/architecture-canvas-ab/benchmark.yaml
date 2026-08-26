@@ -1,0 +1,60 @@
+id: PRAX-AB-001
+name: architecture-canvas-readability-ab
+version: 0.1.0
+status: defined
+spec: docs/Prax_Context_Evolution_and_Benchmark_Spec_v0.3.1.md#13
+
+task:
+  kind: modify_surface
+  domain: professional_workspace / canvas_workspace / graph_exploration
+  summary: Correct Architecture Canvas readability (screen-space sizes, 2D Region
+    composition, architecture-level default density, docked Inspector + camera
+    recomposition, ordered Trace corridor) on the existing ECP canvas.
+  requirement: requirement.md
+  reference_solution:
+    commit: 4f273c9
+    note: >-
+      Corrective implementation written by the original developer from the same
+      requirement. Used ONLY for post-run review context and failure
+      attribution. Must never be shown to either arm before or during a run.
+
+repository:
+  name: engineering-control-plane
+  restore: E:\codex-prj\ecp\engineering-control-plane (cloned from
+    engineering-control-plane.git.bundle)
+  base_commit: 2c77838   # "Build Canvas Engine v1" — canvas WITH the readability problems
+  deployed_base_commit: 4f273c9   # reference solution, NOT the A/B base
+  stack: [next.js-vinext, vite, react-flow, elk, typescript, tailwind]
+
+arms:
+  - id: arm-a-bare
+    label: Bare Agent
+    receives: [requirement.md, repository at base commit, normal dev tools]
+    denied: [prax-mcp, ".prax/", prax knowledge routing, prax compiled context,
+      prax validation plan, artifacts from any prax-arm run]
+  - id: arm-b-prax
+    label: Prax Agent
+    receives: [requirement.md, repository at base commit, prax MCP server]
+    flow: [requirement-confirmation, existing-understanding, product framing,
+      relationship-aware context, scoped design knowledge, decisions,
+      sdir-delta, persisted validation plan, task-scoped compiled context,
+      post-implementation validation]
+
+replication:
+  independent_runs_per_arm: 3
+  unit: clean git worktree + fresh agent session per run
+
+hypotheses: [H1-relationship-fidelity, H2-context-compilation,
+  H3-validation-before-implementation]
+
+review:
+  rubric: rubric.yaml
+  blinding: protocol.md#blinding
+  evidence_levels: [L0_fixture_protocol, L1_single_run_diagnostic,
+    L2_replicated_implementation]
+
+claim_policy:
+  forbidden_words: [significantly better, statistically significant]
+  minimum_claim: directional signal observed in N replicated runs
+
+run_evidence_root: benchmark-runs/PRAX-AB-001

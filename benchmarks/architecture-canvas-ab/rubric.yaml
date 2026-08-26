@@ -1,0 +1,91 @@
+# Unified Evaluation Rubric v0.2 — PRAX-AB-001
+# Outcome labels: PASS | PASS_WITH_REVIEW | INCONCLUSIVE | FAIL | NOT_APPLICABLE
+# R1–R7 scored blinded on outcome only. R8 recorded from process evidence.
+# R9 excluded from this benchmark (belongs to PRAX-MEM-001).
+
+outcome_rubrics:
+
+  R1_product_model_alignment:
+    question: Does the corrected canvas stay organized around user comprehension
+      objects (Regions, Objects, Relationships, Flows) rather than backend
+      render details?
+    checks:
+      - framing follows the six spatial/readability contracts, not a restyle
+      - no feature driven purely by implementation convenience of the renderer
+
+  R2_primary_task_clarity:
+    question: Does the default view communicate "open canvas → read
+      architecture" as the dominant task?
+    checks:
+      - default density is Architecture-level; labels readable without zoom
+      - secondary chrome (inspector, overlays) does not compete with the map
+
+  R3_context_preservation:
+    question: Do Browse/Inspect/Focus/Trace keep user context continuous?
+    checks:
+      - selection survives pan/zoom
+      - docked inspector recomputes camera instead of occluding content
+      - focus/trace exit returns to the prior stable view
+
+  R4_hierarchy_and_density:
+    question: Is the professional density structured and legible?
+    checks:
+      - 2D Region composition, not a horizontal strip
+      - canvas content occupies most of the effective viewport
+      - no minimap effect; no over-whitespaced dilution
+
+  R5_state_completeness:
+    question: Are canvas states handled explicitly?
+    checks:
+      - empty/loading/error/no-result for graph data
+      - landscape/trace/inspect mode transitions without dead ends
+
+  R6_decision_traceability:
+    question: Are structural choices recorded with rationale and rejected
+      alternatives?
+    checks:
+      - major choices (density policy, inspector docking, trace corridor)
+        have explicit rationale
+      - deviations from the fixed decisions are recorded, none silent
+
+  R7_relationship_correctness:
+    question: Are architecture relationships implemented faithfully and
+      readably?
+    checks:
+      - relationship source/target and direction preserved
+      - no meaningless visual connections introduced
+      - trace exposes an ordered main path (entry → steps → outcome)
+      - relationship grammar does not depend on rainbow colors
+
+  R8_validation_readiness:
+    question: Did the agent know what to prove before/while coding?
+    checks:
+      - pre-implementation validation intent exists (Arm B: persisted plan)
+      - deterministic checks executable (tests)
+      - empirical claims (real browser screenshots) actually produced
+      - first-pass failure count and post-first-pass repair rounds recorded
+
+process_metrics:
+
+  P1_product_questions_before_coding:
+    record: [product/user questions, backend/implementation questions,
+      materially-useful count]
+    note: more questions is not inherently better
+
+  P2_backend_driven_ui_leakage:
+    record: [render-detail-driven product changes, silent UX downgrades,
+      internal-term leakage into user-facing model]
+
+  P3_revision_rounds:
+    record: [deterministic repair rounds, human semantic corrections,
+      visual polish rounds, regression repairs]
+
+  P4_context_efficiency:
+    record: [exposed context items, referenced/useful items, irrelevant
+      leakage, context missing that later caused failure]
+    note: applies to Arm B compiled context; for Arm A record what the agent
+      chose to read
+
+excluded:
+  R9_correction_recurrence: belongs to PRAX-MEM-001 cross-session memory
+    benchmark, not this single-task A/B
