@@ -53,6 +53,17 @@ contains only the session location and update timestamp.
 - L2 and L3 requests require decision- or evidence-specific reasons.
 - SDIR recursively rejects known render keys and render values.
 
+## Lifecycle policies
+
+Sessions carry a `lifecycle_policy` snapshot (version 1) expanded from
+`(mode, change_kind)` at `design_start`. The state machine resolves the current
+gate from the policy plus normalized `completed_gates` (legacy gate names such
+as `frame`/`prepare_implementation`/`validation` map to `framing`/`prepare`/
+`validate`), so pre-policy sessions resume with their original full-chain
+behavior. `sdir_delta` payloads that declare `capability_needs` splice a
+`reconcile` gate in before `prepare` at commit time. `design_sdir` validate
+mode remains callable after the SDIR gate as a read-only cross-phase check.
+
 ## Deliberate v0 constraints
 
 `prax-web`, remote persistence, vector retrieval, knowledge administration,

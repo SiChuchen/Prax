@@ -83,6 +83,7 @@ function productObjectJustified(object: { justified_override?: unknown }): boole
 export function validateProductFrame(
   input: unknown,
   mode: DesignMode,
+  hasUnderstanding = false,
 ): ArtifactValidation<ProductFrame> {
   const parsed = ProductFrameSchema.safeParse(input);
   if (!parsed.success) {
@@ -96,9 +97,9 @@ export function validateProductFrame(
   const issues: string[] = [];
   const warnings: string[] = [];
 
-  if (mode === "existing_product" && parsed.data.existing_product === undefined) {
+  if (mode === "existing_product" && !hasUnderstanding && parsed.data.existing_product === undefined) {
     issues.push(
-      "existing_product mode requires stable concepts, patterns, pain points, constraints and legacy debt.",
+      "existing_product mode requires stable concepts, patterns, pain points, constraints and legacy debt (or a prior existing-understanding gate).",
     );
   }
 

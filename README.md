@@ -89,20 +89,36 @@ During repository development, use `npm run prax -- <command>` after building.
 
 ## MCP workflow
 
-1. `design_start`
-2. `design_frame`
-3. `design_context`
-4. `design_route`
-5. `design_inspect`
-6. `design_decide`
-7. `design_sdir`
-8. `design_reconcile`
-9. `design_prepare_implementation`
-10. `design_validate`
+Ten tools, three lifecycle depths. `design_start` declares the posture toward
+the existing system and the change kind, which expands into a per-session gate
+policy:
 
-Tool order is enforced by the runtime. Calls after `design_start` require an
-explicit `design_session_id`, so a second agent can resume without replaying a
-chat transcript.
+| mode + change_kind | gates |
+|---|---|
+| `greenfield` | confirm → frame → context → route → decide → sdir → reconcile → prepare → validate |
+| `existing_product` + `add_surface` | confirm → understanding → frame → context → route → decide → sdir → reconcile → prepare → validate |
+| `existing_product` + `modify_surface` | confirm → understanding → route → decide → sdir_delta → prepare → validate |
+| `existing_product` + `visual_polish` / `defect_fix` | confirm → intent_lite → validate |
+| `rework` | confirm → understanding → frame → context → route → decide → sdir → prepare → validate |
+
+1. `design_start` — creates the session and gates it behind a structured
+   requirement confirmation (`user_quote`, `restatement`, boundaries,
+   `confirmed_with_user`); the confirmation may be submitted inline or via a
+   resume call.
+2. `design_frame` — payload depends on the current gate:
+   `existing_understanding` (existing/rework question sets),
+   `product_frame`, or a lightweight `intent_lite` for polish/fix sessions.
+3. `design_context` 4. `design_route` 5. `design_inspect` 6. `design_decide`
+7. `design_sdir` — full SDIR or a semantic `sdir_delta` for modify sessions
+   (which can declare `capability_needs` to pull the reconcile gate back in).
+8. `design_reconcile` 9. `design_prepare_implementation` (mode-specific
+   integration/change/migration plan) 10. `design_validate` (policy-assembled
+   check set).
+
+Tool order is enforced by the per-session gate policy. Calls after
+`design_start` require an explicit `design_session_id`, so a second agent can
+resume without replaying a chat transcript. Sessions created before lifecycle
+policies keep the original full-chain behavior.
 
 ## v0 boundaries
 

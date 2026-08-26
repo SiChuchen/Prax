@@ -255,7 +255,8 @@ export class PraxService {
         next: nextTool("design_frame"),
       };
     }
-    const validation = validateProductFrame(input.product_frame, session.mode);
+    const hasUnderstanding = (await this.sessions.readArtifact(session, "existingUnderstanding")) !== undefined;
+    const validation = validateProductFrame(input.product_frame, session.mode, hasUnderstanding);
     if (validation.status !== "PASS" && validation.status !== "WARN") {
       return {
         status: validation.status,
