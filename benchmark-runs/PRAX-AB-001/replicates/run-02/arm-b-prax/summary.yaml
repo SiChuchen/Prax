@@ -1,7 +1,7 @@
 run:
   id: PRAX-AB-001-run-02-B
   arm: arm-b-prax
-  agent_cli: fill_by_operator
+  agent_cli: claude-code (glm-5.3)
   started_at: fill_by_operator
   ended_at: fill_by_operator
   commit: 114daa3   # single commit on ab/run-02-arm-b, clean tree
@@ -23,12 +23,18 @@ prax_flow:
     product-frame, design-context, routing-log, design-decisions, sdir-delta,
     implementation-brief, validation-plan, validation-report, context-manifest,
     compiled-context, context-compilation-trace]
-  prax_calls: fill_by_operator
+  prax_calls: 14   # mcp__prax__design_* invocations (several failed param deliveries; flow completed via stdio JSON-RPC through Bash)
 
 process:
   wall_clock_seconds: 3609   # 1h00m09s, operator-reported
-  model_usage: not_observable
-  tool_calls: not_observable
+  model_usage:
+    input_tokens: 827776
+    output_tokens: 352294
+    cache_read_input_tokens: 89971712
+  assistant_turns: 539
+  tool_calls: 309
+  file_edits: 62
+  browser_verification: playwright (19 evaluate / 8 screenshot / 9 navigate / 16 wait)
   human_clarifications: 0   # operator: agent asked no questions
   first_pass_at: not_recorded_by_operator
   first_pass_validation_failures: 0    # per operator report (5/5 first pass)

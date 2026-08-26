@@ -1,7 +1,7 @@
 run:
   id: PRAX-AB-001-run-01-A
   arm: arm-a-bare
-  agent_cli: fill_by_operator        # which CLI/model ran this session
+  agent_cli: claude-code (glm-5.3)        # which CLI/model ran this session
   started_at: fill_by_operator
   ended_at: fill_by_operator
 
@@ -14,8 +14,14 @@ result:
 
 process:
   wall_clock_seconds: 2572   # 42m52s, operator-reported
-  model_usage: not_observable
-  tool_calls: not_observable
+  model_usage:
+    input_tokens: 604320
+    output_tokens: 323219
+    cache_read_input_tokens: 60758080
+  assistant_turns: 426
+  tool_calls: 247
+  file_edits: 76
+  browser_verification: playwright (29 evaluate / 20 screenshot / 8 navigate / 8 click) + 11 image analyses
   prax_calls: 0
   human_clarifications: 0   # operator: agent asked no questions
   first_pass_at: not_recorded_by_operator
