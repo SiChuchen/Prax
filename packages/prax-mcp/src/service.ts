@@ -260,7 +260,7 @@ export class PraxService {
       const updated = advanceSession(session, "intent_lite", now);
       const intent = validation.value!;
       const manifest = deriveContextManifest({ session: updated, understanding, intentLite: intent });
-      const { value: lightPlan, changed: lightPlanChanged } = await this.resolveValidationPlan(updated);
+      const { value: lightPlan, changed: lightPlanChanged } = await this.resolveValidationPlan(updated, intent);
       const brief = {
         version: "0.1",
         validation_plan_ref: {
@@ -831,7 +831,10 @@ export class PraxService {
     };
   }
 
-  private async resolveValidationPlan(session: DesignSession): Promise<{
+  private async resolveValidationPlan(
+    session: DesignSession,
+    intentLiteOverride?: IntentLite,
+  ): Promise<{
     value: PersistedValidationPlan;
     changed: boolean;
   }> {
@@ -840,7 +843,7 @@ export class PraxService {
     const frame = (await this.sessions.readArtifact<ProductFrame>(session, "productFrame")) ?? undefined;
     const context = (await this.sessions.readArtifact<DesignContext>(session, "designContext")) ?? undefined;
     const decisions = (await this.sessions.readArtifact<DesignDecisions>(session, "designDecisions")) ?? undefined;
-    const intentLite = (await this.sessions.readArtifact<IntentLite>(session, "intentLite")) ?? undefined;
+    const intentLite = intentLiteOverride ?? (await this.sessions.readArtifact<IntentLite>(session, "intentLite")) ?? undefined;
 
     const digests: Record<string, string> = {};
     if (frame !== undefined) digests.product_frame = contentDigest(frame);
@@ -988,7 +991,12 @@ export class PraxService {
       ...(finalMissing.length > evaluation.missing_evidence.length ? { missing_evidence: finalMissing } : {}),
       ...(regressionObligations.length === 0 ? {} : { correction_regressions: regressionObligations }),
       ...(planChanged
-        ? { warnings: [`Validation plan upstream artifacts changed; plan re-derived as revision ${persistedPlan.revision}.`] }
+        ? {
+            warnings: [
+              ...(evaluation.warnings ?? []),
+              `Validation plan upstream artifacts changed; plan re-derived as revision ${persistedPlan.revision}.`,
+            ],
+          }
         : {}),
       phase: updated.phase,
       ...(evaluation.status === "PASS" && finalMissing.length === 0 ? {} : { next: nextTool("design_validate") }),

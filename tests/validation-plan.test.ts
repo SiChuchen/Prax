@@ -137,3 +137,60 @@ describe("persisted pre-implementation validation plan", () => {
     expect(planArtifact?.plan.checks.map((check) => check.id)).toContain("readability");
   });
 });
+
+describe("empirical evidence artifact obligations (finding-01)", () => {
+  it("warns when an empirical pass rests on self-attestation without artifact_refs", async () => {
+    const { service } = await startSession("ds_vp_art", "existing_product", "visual_polish");
+    await service.designFrame({
+      design_session_id: "ds_vp_art",
+      existing_understanding: architectureUnderstanding(["settings"]),
+    });
+    await service.designFrame({ design_session_id: "ds_vp_art", intent_lite: intentLite("visual_polish") });
+
+    const evaluation = await service.designValidate({
+      design_session_id: "ds_vp_art",
+      evidence: {
+        submitted_by: "agent",
+        collected_at: "2026-08-27T00:00:00.000Z",
+        items: [
+          { check_id: "readability", outcome: "pass", source: "agent check", notes: "looks readable" },
+          { check_id: "hierarchy_preserved", outcome: "pass", source: "agent check", notes: "unchanged" },
+          { check_id: "requirement_alignment", outcome: "pass", source: "agent check", notes: "matches" },
+        ],
+      },
+    });
+    const warnings = (evaluation.warnings as string[] | undefined) ?? [];
+    expect(warnings.join(" ")).toMatch(/'readability' passed on agent self-attestation/);
+    expect(warnings.join(" ")).not.toMatch(/hierarchy_preserved/);
+  });
+
+  it("stays quiet when empirical evidence cites concrete artifacts", async () => {
+    const { service } = await startSession("ds_vp_ref", "existing_product", "visual_polish");
+    await service.designFrame({
+      design_session_id: "ds_vp_ref",
+      existing_understanding: architectureUnderstanding(["settings"]),
+    });
+    await service.designFrame({ design_session_id: "ds_vp_ref", intent_lite: intentLite("visual_polish") });
+
+    const evaluation = await service.designValidate({
+      design_session_id: "ds_vp_ref",
+      evidence: {
+        submitted_by: "agent",
+        collected_at: "2026-08-27T00:00:00.000Z",
+        items: [
+          {
+            check_id: "readability",
+            outcome: "pass",
+            source: "playwright measurement",
+            notes: "13.2px measured",
+            artifact_refs: ["run-evidence/screenshots/readability.png", "run-evidence/measurements.txt"],
+          },
+          { check_id: "hierarchy_preserved", outcome: "pass", source: "agent check", notes: "unchanged" },
+          { check_id: "requirement_alignment", outcome: "pass", source: "agent check", notes: "matches" },
+        ],
+      },
+    });
+    const warnings = (evaluation.warnings as string[] | undefined) ?? [];
+    expect(warnings).toEqual([]);
+  });
+});

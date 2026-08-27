@@ -278,6 +278,19 @@ export class PraxValidator {
             ? "WARN"
             : "PASS";
 
-    return { status, checks: input.plan.checks, findings, missing_evidence: missingEvidence };
+    const warnings = input.plan.checks
+      .filter(
+        (check) =>
+          check.kind === "empirical" &&
+          check.evidence_required &&
+          provided.get(check.id)?.outcome === "pass" &&
+          (provided.get(check.id)?.artifact_refs?.length ?? 0) === 0,
+      )
+      .map(
+        (check) =>
+          `check '${check.id}' passed on agent self-attestation without artifact_refs; cite concrete artifacts (screenshots, run logs) so the claim is verifiable (PRAX-AB-001 finding-01)`,
+      );
+
+    return { status, checks: input.plan.checks, findings, missing_evidence: missingEvidence, warnings };
   }
 }

@@ -47,6 +47,10 @@ export const ValidationEvidenceItemSchema = z.object({
   outcome: z.enum(["pass", "fail", "inconclusive"]),
   source: NonEmpty,
   notes: NonEmpty,
+  artifact_refs: z.array(NonEmpty).default([]).describe(
+    "Concrete artifacts backing an empirical claim (screenshot paths, run logs). " +
+    "Empty means self-attestation, which is not independently verifiable.",
+  ),
 });
 
 export const ValidationEvidenceSchema = z.object({
@@ -69,5 +73,6 @@ export interface ValidationEvaluation {
   checks: ValidationCheck[];
   findings: ValidationFinding[];
   missing_evidence: string[];
+  warnings: string[];
 }
 
