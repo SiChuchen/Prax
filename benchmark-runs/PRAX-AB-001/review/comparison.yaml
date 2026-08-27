@@ -1,0 +1,68 @@
+version: 0.1
+benchmark: PRAX-AB-001
+unblinded_at: 2026-08-27
+reviewers: [reviewer-1 (original patches), reviewer-2 (corrected review-patches)]
+blinding: fresh-context sessions; sealed map in blinding-map.yaml; 67% exact
+  label agreement, all divergences one-notch stricter by reviewer-2, identical
+  strongest/weakest picks (inter-rater direction: consistent)
+
+mapping:
+  impl-1: run-06/arm-b-prax
+  impl-2: run-03/arm-a-bare
+  impl-3: run-02/arm-b-prax
+  impl-4: run-01/arm-a-bare
+  impl-5: run-05/arm-a-bare
+  impl-6: run-04/arm-b-prax
+
+outcome_labels:
+  note: >-
+    R6 blind scoring structurally under-credits the Prax arm: its rationale
+    lives in .prax artifacts (correctly excluded from blind bundles) rather
+    than in-repo docs. Post-unblind, all three Prax runs have complete
+    decision/validation records; one Bare run (run-03) self-authored a
+    decision document in-repo.
+  arm-a-bare:
+    run-01: { r1: PASS, r2: "R1-R4 PASS; R5-R7 PASS_WITH_REVIEW" }
+    run-03: { r1: "R1-R5,R7 PASS; R6 PASS_WITH_REVIEW", r2: "R3,R6,R7 PASS; rest PASS_WITH_REVIEW" }
+    run-05: { r1: "R1-R4,R7 PASS; R5,R6 PASS_WITH_REVIEW", r2: "R3,R7 PASS; rest PASS_WITH_REVIEW" }
+  arm-b-prax:
+    run-02: strongest per both reviewers (gutter orthogonal bridging, complete states, ordered corridor)
+    run-06: solid per both reviewers (camera floor + dual dock translate tests)
+    run-04: weakest per both reviewers; R5 FAIL in both (UNHANDLED SCRIPT ERROR
+      popup captured inside its own landscape screenshot)
+
+outcome_claim: >-
+  No directional outcome-quality difference between arms is observable at this
+  rubric granularity with n=3: both arms sit mostly at PASS/PASS_WITH_REVIEW,
+  and the Prax arm contains both the strongest (run-02) and weakest (run-04)
+  implementations. Evidence level: L0 for label tables; the cross-arm outcome
+  comparison itself stays INCONCLUSIVE at n=3.
+
+cost_directional_signals:   # observed in 3/3 runs per arm, no significance wording
+  arm_median:
+    wall_clock_seconds: { a: 2572, b: 3609, b_vs_a: "+41%" }
+    input_tokens: { a: 798424, b: 858434, b_vs_a: "+7.5%" }
+    output_tokens: { a: 300231, b: 352294, b_vs_a: "+9%" }
+    assistant_turns: { a: 426, b: 539, b_vs_a: "+27%" }
+    tool_calls: { a: 245, b: 309, b_vs_a: "+26%" }
+  within_arm_spread_warning: >-
+    Bare-arm wall-clock spread (2554..4477, +75%) exceeds the between-arm
+    median gap; input tokens spread 604k..2132k (3.5x). Model-service
+    stochasticity dominates single-pair cost comparisons; token medians are
+    near parity between arms.
+  workflow_harm_signals: none observed   # no full-chain tax on light paths was
+    exercised here; no artifact-maintenance time sink reported
+
+process_metrics:
+  P1_product_questions_before_coding: 0 in both arms (requirement snapshot was
+    self-sufficient); Prax gates substitute structured self-confirmation
+  P2_backend_driven_ui_leakage: none flagged by either reviewer (R1 PASS 6/6)
+  P3_revision_rounds: partially not observable (first-pass timestamps not
+    recorded); run-02 had 1 deterministic repair round caught by its own
+    frozen 13px-floor test
+  P4_context_efficiency: Prax compiled-context traces show scoped inclusion +
+    exclusion reasons, no leakage; Bare arm self-selected reading (one bare
+    run consumed and rewrote the optimistic v1 review doc)
+
+prax_flow_reliability: 3/3 arm-b runs completed all 8 gates to COMPLETE/PASS
+  despite the mcp anyOf transport defect (stdio fallback); mechanism held.

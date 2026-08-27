@@ -1,0 +1,65 @@
+reviewer: reviewer-2
+rubric_version: v0.2
+scores:
+  impl-1:
+    R1: { label: PASS, evidence: "改动全部围绕产品对象：layout.ts composeTopLevelRegions 顶层 Region 网格组合、projection.ts Region 摘要（criticalCount/highCount/keyObjectNames）、flowSequence 排序 + ▶/■ entry/exit 徽章、syntheticCorridorRoute 跨组走廊，非纯渲染翻新" }
+    R2: { label: PASS_WITH_REVIEW, evidence: "01-browse-complex-default.png 标签大而可读，labelCompensation 有 13px 屏幕底线测试（interaction.ts）；但同图顶部 Region 头与节点/摘要文字互相重叠（Ingress Service for Rev 压住 Architecture Observati），03-trace-corridor-complex.png 节点名截断（Identity Se / Execution S）" }
+    R3: { label: PASS_WITH_REVIEW, evidence: "inspector.tsx/CSS 改为 flex 真停靠（挤占画布而非覆盖），inspectorDockShift 半坞宽平移有专项测试；但 diff 中无 focus/trace 退出后的相机还原，04-relationship-lens-complex.png 画布只剩两个端点、周边上下文清空" }
+    R4: { label: PASS_WITH_REVIEW, evidence: "二维组合有测试（≥2 行、aspect 0.3–3.6、成员不重叠、块内对象不出界）；但 01/04 截图内容只占视口小部分、留白稀释严重（R4 明确反对的过度稀释），小图 05 呈三列结构尚可" }
+    R5: { label: PASS_WITH_REVIEW, evidence: "canvas-layouting 改为全幅居中覆盖层、layout error 横幅 role=status 移入 canvas-map；diff 未显式处理 empty 态" }
+    R6: { label: PASS_WITH_REVIEW, evidence: "测试名与断言即 rationale（\"compose two-dimensionally instead of one strip\"、\"meet the 13px screen-space floor\"、\"must be a synthetic corridor route\"）；无设计文档、无被拒备选记录" }
+    R7: { label: PASS, evidence: "方向保真（markerEnd/markerColor 保留，04 截图 Inspector 以 FROM Policy Provider 006 → TO Execution Service 007 显式方向）；跨组关系经 gap 走廊正交重排而非造假线（synthetic 路由 + 正交/不穿盒测试）；Trace 边带 flowSequence+payload、单色系+虚线语法非彩虹" }
+  impl-2:
+    R1: { label: PASS, evidence: "topLevelUnitIndex 单元划分 + packUnits 装箱、Region 摘要（summaryNames）、traceOrder/mainPathRelationshipIds、ARCHITECTURE_EDGE_BUDGET 密度策略，均以 Region/Object/Relationship/Flow 语义组织" }
+    R2: { label: PASS_WITH_REVIEW, evidence: "objectLabelScale/regionLabelScale 有屏幕底线测试（≥10.5/11.5px）、节点名在 01/02/03 截图清晰；但 Region 居中标题放大后与摘要行文字重影（02/03/06 多处 Domain N 头部互相叠压），Inspector 字段标签重叠（Importance/Technology）" }
+    R3: { label: PASS, evidence: "336px grid 真停靠 + dockPanViewport 最小平移使选中保持可见且 zoom 不变（04-inspector-docked-camera-held.png 与专项测试，含 \"already-visible nodes must not move the camera\"）；Escape 退出；开坞/关坞对称" }
+    R4: { label: PASS_WITH_REVIEW, evidence: "装箱测试（≥2 行、hull aspect 0.55–2.6、不重叠）；但默认 0.55 缩放地板使 02/03 成\"窗口\"——40/100 对象只见 7~12 个、单元内间距过大导致大面积空白，小图 01 仍是全宽横条堆叠（与二维组合契约相悖的观感）" }
+    R5: { label: PASS_WITH_REVIEW, evidence: "layouting/error 覆盖层移入 canvas-map-area（error 带 role=status）；empty 态未在 diff 中显式处理" }
+    R6: { label: PASS, evidence: "docs/Canvas_Engine_v1_Review.md 契约→实现表含实测数字（12.7px 标签、pan −146px、zoom 恒 0.55、ELK 4.2s→0.6s），fixture 改动理由（拒绝 round-robin striping）、\"straight indication line … without fake geometry\" 为显式被拒备选，另附证据脚本与截图清单" }
+    R7: { label: PASS_WITH_REVIEW, evidence: "主路径按序列链 consecutive steps（测试断言 mainPath 覆盖 ordered.length−2）、入口/结果标记、无彩虹色；但 architecture 密度以边预算 48 直接隐藏低重要性关系（含非跨单元真实边），关系信息完整性弱于渐隐方案；cross-unit 边交 SmartEdge 无造假" }
+  impl-3:
+    R1: { label: PASS, evidence: "composeTopLevelBlocks 按块比例算列数的真二维组合、Region 头带类型构成（typeCounts）+ 关键对象清单、专用 CorridorEdge 走廊、关系\"分级退后\"而非删除——全部围绕 Region/Object/Relationship/Flow" }
+    R2: { label: PASS_WITH_REVIEW, evidence: "screenSpaceLabelScale 有 12px 屏幕底线测试；2560px 截图 01/02 显示小/复杂图三列~五列结构、节点名+摘要可读；但 05-browse-landscape-region-summaries.png 中 Region 标题与摘要行文字越界互叠（summary white-space:nowrap + 放大溢出区域边界）" }
+    R3: { label: PASS, evidence: "最强：停靠切换按模式重算相机（trace→fit 流节点、inspect/focus→fit 选中、否则重算含 336px 坞的有效视口，docked viewport 有测试）；\"trace must be a lens: reopening the same graph keeps the stable map\" 布局稳定测试；Escape/最小化平移保持上下文" }
+    R4: { label: PASS, evidence: "六包中视觉密度最好：01/02 截图为紧凑二维网格、留白最少；测试断言行+列同时 ≥2、aspect 0.45–3、块不重叠；bridgeAcrossGutters 沿 gutter 中线正交跨块；关系渐隐（intra-region opacity .34）兼顾密度与信息" }
+    R5: { label: PASS_WITH_REVIEW, evidence: "layouting 居中覆盖层、error role=status、窄视口回退为浮动 Inspector；empty 态仍未显式处理" }
+    R6: { label: PASS_WITH_REVIEW, evidence: "测试名/asserts 携带意图（\"trace must be a lens\"、\"relationship density is graded\"、\"must stay viewport-shaped\"）；但无设计文档、无实测数字、无被拒备选" }
+    R7: { label: PASS, evidence: "CorridorEdge 只连相邻停靠点，data.order 严格递增、fromSequence<toSequence（测试），入口绿/结果棕端点徽章；interRegion 标志有专项测试；不删边只分级退后；配色仍单色系，无意义连线为零（corridor 线是真实 Flow 转移的有序可视化）" }
+  impl-4:
+    R1: { label: PASS, evidence: "packTopLevelRegions 顶层装箱、regionReadingSummary（子树计数+内外链数+关键对象）、traceCorridor 图推导 entry/exit、hover preview——均围绕用户可理解对象" }
+    R2: { label: PASS_WITH_REVIEW, evidence: "13px 屏幕底线 + 节点卡屏幕宽 ≥120 测试（interaction.ts labelCompensationScale）；02/03 截图 medium/complex 默认全图可读；但 01-small 默认被 maxZoom 1.05 钳成窄条窗口且区域头被裁，06-landscape 摘要文字与节点卡重叠" }
+    R3: { label: PASS_WITH_REVIEW, evidence: "grid 停靠 + centerOnSelection（点选居中、开坞重居中、保 zoom）；hover 预览不切模式有测试（含 trace 不被污染）；但开坞响应是\"重新居中\"而非边界数学，无测试，亦无退出还原" }
+    R4: { label: PASS_WITH_REVIEW, evidence: "装箱测试最细（同行共享顶边、small/large 必须 >1 行、幂等、aspect 0.35–3.2）；但 01 窄条窗口两侧大片空白、06-landscape 只有 6 个节点+横穿空场的长正交线，稀释明显" }
+    R5: { label: PASS_WITH_REVIEW, evidence: "loading/error 沿用基线未动、未显式 empty 态；新增 hover/selected/preview 状态语法（有测试）" }
+    R6: { label: PASS_WITH_REVIEW, evidence: "关键函数 doc 注释带 rationale（\"the topmost Region level … a person reads as the parts of the system\"、\"Trace is a lens over the stable map\"、MIN_MEANINGFUL_TEXT_PX \"screen-space floor\"）；无独立文档、无被拒备选、无实测数字" }
+    R7: { label: PASS_WITH_REVIEW, evidence: "走廊 entry=无入边/exit=无出边图推导、每个转移必须带 payload（测试）、跨区边交 SmartEdge + routedSides 按相对几何选把手（无造假线）；但 corridorTransitionBetween 双向匹配可能把反向关系标为转移，方向语义有轻微失真风险" }
+  impl-5:
+    R1: { label: PASS, evidence: "Region 摘要（类型构成 \"32 Service · 11 Agent…\" + 待证据/attention 计数）、TraceCorridor 底栏组件、选中关系\"安静而非抹除\"（muted 全体）、纯 Region 层行组合——全部是产品对象语义" }
+    R2: { label: PASS_WITH_REVIEW, evidence: "zoom 阈值重调（floor 0.8 落在 architecture 带内）+ 13px 底线测试；01 截图标签大而清晰、\"待证据/attention\" 语义浮出是加分项；但 05-browse-medium-default.png 窗口右/下大面积空白，03/04 中 Region 头在交界处文字互叠" }
+    R3: { label: PASS, evidence: "唯一同时响应 Inspector 与 Trace 走廊两个坞的相机（dockViewportShift 有测试且断言关坞精确还原）；走廊点击按当前密度平移（注释 \"instead of zooming out\"）；corridor current 项 scrollIntoView；Escape 退出" }
+    R4: { label: PASS_WITH_REVIEW, evidence: "纯层行组合测试（≥3 子区域必须 ≥2 行、aspect ≤3.5）；01-complex 默认观感结构良好；但 05 medium 默认窗口水平方向近 2/3 空白，coverage 测试用 max 维度判定偏宽松" }
+    R5: { label: PASS_WITH_REVIEW, evidence: "loading/error 移入 flow-surface 保留；Region 摘要浮出 attention/critical 计数是状态完整性加分；empty 态未显式处理" }
+    R6: { label: PASS_WITH_REVIEW, evidence: "注释 rationale 优秀且含被拒解释（\"most of the viewport is content — not 'all geometry fits at once'\"、\"pan, never a zoom-out: Browse density must survive docking\"、\"quiet … instead of competing\"）；无独立文档、无实测数字" }
+    R7: { label: PASS, evidence: "deriveTraceCorridor 转移必须 ride 真实关系（测试断言 transition.relationshipId 非空且相邻序列差 1）、方向保真（fromStepId/toStepId 元数据或 flowIds+source→target）；跨单元边交 SmartEdge 且测试限定\"只有跨单元才允许回退\"；无彩虹色" }
+  impl-6:
+    R1: { label: PASS, evidence: "layoutRegionSubtree 递归分域 + packRegionGrid 全 k 搜索装箱、Region 子树计数+关键对象摘要、deriveTraceCorridor 走链、Inspector/FlowLens 双 grid 坐列——围绕产品对象组织" }
+    R2: { label: PASS_WITH_REVIEW, evidence: "READABILITY 常量化（\"measured in SCREEN space, not pre-fit world-space\"）+ 13px 底线与节点卡 170/232 推导有测试；browse-medium/inspector 截图标签可读；但 browse-architecture-density-medium.png 窗口内看不到任何 Region 头（结构感缺失）、全量关系渲染使长连线淹没结构" }
+    R3: { label: PASS_WITH_REVIEW, evidence: "Inspector+FlowLens 双坞 grid 列、dockViewportShift 左右坞半宽平移有测试；trace-strip 有序可点、节点入口/结果徽章；但 trace 停靠不触发相机响应（仅 reading-key 上移），且 onKeyDown 正是证据中崩溃的路径——Escape 退出链路在真实浏览器中可被打断" }
+    R4: { label: PASS_WITH_REVIEW, evidence: "packRegionGrid 确定性/2D 偏好/顶层不重叠均有测试；但 browse-medium 默认窗口只见区域内部+密集跨区长边，二维组合未在默认证据中体现；landscape-region-summaries.png 因崩溃未能提供该契约项的证据" }
+    R5: { label: FAIL, evidence: "自有证据截图 landscape-region-summaries.png 捕获未处理运行时错误覆盖层：\"Unhandled Script Error · TypeError: target.matches is not a function — onKeyDown (app/architecture/architecture-canvas.tsx:819)\"——键盘路径缺 Element 防御（其余包已在 diff 中加 target instanceof Element 防御），核心视图在真实使用中崩溃" }
+    R6: { label: PASS_WITH_REVIEW, evidence: "camera.ts 注释带推导（zoom floor 0.75 由 objectMinScreenWidth/minObjectWorldWidth 推出、\"off-screen geometry is preferred over an unreadable thumbnail\" 为显式取舍）；无独立文档、无被拒备选清单" }
+    R7: { label: PASS_WITH_REVIEW, evidence: "走廊转移必须使用声明 Flow 关系（测试）、每 Flow 恰好一个 entry/exit 标记（测试）、确定性走链+防环；无彩虹色；但 transitionRelationshipId 按双向端点匹配、corridorRole 未校验边实际方向，方向保真弱于 impl-5 的元数据匹配" }
+overall_impression:
+  strongest: impl-3  # 唯一同时做到：默认视图真二维且密度专业（截图 01/02）、块间 gutter 桥接正交路由、专用 CorridorEdge 有序走廊、按模式重算的停靠相机，且关键行为全部有测试（含 trace 透镜布局稳定）
+  weakest: impl-6   # 自有证据截图捕获未处理运行时崩溃（onKeyDown TypeError），landscape 摘要契约项因此无证据；默认视图窗口内 Region 结构不可见、全量边渲染造成线缆噪声
+notes: >-
+  评审严格基于各包 review-patch.diff 与 screenshots/（均已逐张查看；PNG 实际分辨率 1600×900 至 2560×1257，
+  查看时的缩小不影响可读性结论）。(1) 文字重叠（Region 标题 × 摘要行、Inspector 字段标签）在 impl-1/2/3/4/5
+  的截图中不同程度存在，根因多为 label-scale transform 放大后溢出原布局盒，属共性缺陷而非单一包问题。(2) 六包
+  均未在 diff 中显式处理 empty 状态，故 R5 最高只给 PASS_WITH_REVIEW。(3) 未防御的 `target?.matches` 键盘
+  模式在 impl-1/4/6 的 diff 中同样存在（未修），但只有 impl-6 的证据截图实际触发了崩溃——按证据纪律仅对
+  impl-6 记 FAIL。(4) "默认窗口 vs 全图"是六包的根本分歧：impl-2/3/5/6 选择缩放下限保可读、允许地图溢出视口
+  （截图呈现为局部窗口），impl-4 的 medium/complex 默认接近全图；各包对契约 4（内容占视口大部分）的自证测试
+  口径不一（impl-3 用行列覆盖、impl-5 用 max 维度 ≥0.7），横向可比性有限。(5) impl-3 截图分辨率最高且其
+  landscape 摘要、走廊、密度在截图层面最接近需求原话的诉求；impl-2 的文档自证（含实测与被拒备选）为六包最佳，
+  若 R6 权重更高其总排名会上移。

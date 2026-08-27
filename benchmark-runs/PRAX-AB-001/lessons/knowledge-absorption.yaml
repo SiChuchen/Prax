@@ -1,0 +1,26 @@
+version: 0.1
+benchmark_id: PRAX-AB-001
+absorbed_at: 2026-08-27
+
+findings:
+  - id: ka-01
+    classification: tooling_gap
+    existing_knowledge_refs: []   # upstream research has no MCP-schema guidance; correct to stay local
+    action: record_only
+    target_scope: prax-mcp client schema (project)
+    promotion: none
+  - id: ka-02
+    classification: validation_gap
+    existing_knowledge_refs: [PRAX-P-009, PRAX-P-010]   # claim-kind separation; external evidence boundary
+    action: refine_scope
+    target_scope: validation evidence obligations (project)
+    promotion: none   # candidate for design change, not knowledge rule
+  - id: ka-03
+    classification: project_local_recipe_candidate
+    existing_knowledge_refs: [PAT-CANVAS-WORKSPACE]
+    action: collect_more_evidence
+    target_scope: architecture-canvas readability recipe
+    promotion: pending_second_case
+
+conflicts: []
+new_general_rules: []

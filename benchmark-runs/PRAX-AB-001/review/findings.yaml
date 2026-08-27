@@ -1,0 +1,81 @@
+version: 0.1
+findings:
+
+  - id: finding-01
+    severity: high
+    where: run-04 (arm-b, impl-6)
+    what: >-
+      Landscape screenshot contains an UNHANDLED SCRIPT ERROR popup, yet the
+      same run's design_validate evidence (submitted_by: agent) claims all six
+      contracts hold, citing "real browser Playwright verification +
+      screenshots". Final validation returned PASS 5/5.
+    attribution: Validation Gap (primary) + Implementation Failure (the error itself)
+    no_cot_check: >-
+      Based on artifacts only: the validation-report's own evidence refs point
+      at the screenshot that contradicts the claim. No private reasoning
+      inferred.
+    gate_input: F
+    action: >-
+      Empirical evidence needs artifact-level obligations: evidence items for
+      empirical checks should reference concrete artifacts (screenshot paths,
+      run logs), and browser-evidence checks should include a cheap runtime
+      error detector (console/dialog) — assistive, not a new gate.
+
+  - id: finding-02
+    severity: medium
+    where: runs 02/04/06 (arm-b)
+    what: >-
+      design_start MCP tool params rejected at client-side validation
+      (anyOf + strict objects); runs completed via operator/agent-driven
+      stdio JSON-RPC against the same server. run-02 lost ~12 failed attempts;
+      run-04 ~12; run-06 followed the instructed fallback after 1 attempt.
+    attribution: Capability / Asset Mismatch (tooling gap, pre-registered
+      as known-limitation #1 family)
+    action: gap-mcp-anyof-schema fix (tracked task #14); fixed schema shipped
+      after the benchmark to keep the lock intact.
+
+  - id: finding-03
+    severity: medium
+    where: review process itself
+    what: >-
+      Original blind bundles omitted untracked new files for uncommitted-run
+      diffs (2 files in impl-2, 1 in impl-4) and rendered a NUL-containing
+      source file as binary. Discovered post-lock; corrected via
+      review-patch.diff and re-scored by reviewer-2.
+    attribution: Process Overhead (packager error, benchmark-side)
+    action: >-
+      Future packaging must use `git add -N` + `--text` + evidence-file
+      exclusion at capture time. Reviewer-1 scores kept locked with
+      disclosure in blinded-scores-1-lock.md.
+
+  - id: finding-04
+    severity: low
+    where: run-02 (arm-b, strongest impl)
+    what: >-
+      Its frozen 13px text-floor test caught one violation during the run and
+      forced a fix before commit — the only observed instance of a
+      validation-before-code check changing implementation behavior mid-run.
+    attribution: positive signal for pre-implementation validation plan (H3),
+      single occurrence
+    action: keep_provisional validation-plan primitive; record as directional
+      evidence, n=1.
+
+  - id: finding-05
+    severity: low
+    where: all six runs
+    what: zero human clarifications in both arms; requirement snapshot was
+      self-sufficient, including the fixed constraints.
+    attribution: Requirement quality, not arm difference
+    action: none; task was well-specified, which compresses the space where
+      Prax's product-question discipline could show value. Second case should
+      pick a task with genuine requirement ambiguity.
+
+  - id: finding-06
+    severity: info
+    where: run-05 (arm-a)
+    what: >-
+      3x input-token / 1.75x wall-clock inflation with identical turn and
+      tool counts — bare-arm run-to-run stochasticity.
+    attribution: model-service variance (external to both arms)
+    action: cost comparisons must use medians across replicates and be
+      reported with spread; never single pairs.

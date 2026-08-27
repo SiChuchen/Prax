@@ -19,3 +19,29 @@ gaps:
       Tool names and semantics unchanged (PRAX-P-024 intact).
     status: fix_deferred_until_after_run_06
     fix_commit: pending
+  - id: gap-empirical-evidence-attestation
+    observed_in: [run-04]
+    classification: validation_gap
+    finding: >-
+      design_validate accepts agent-submitted empirical evidence at face
+      value. In run-04 the agent attested "all six contracts hold" citing its
+      own screenshots, one of which contains an UNHANDLED SCRIPT ERROR popup;
+      validation returned PASS 5/5.
+    fix: >-
+      Empirical checks should require evidence items that reference concrete
+      artifacts (screenshot/run-log paths), and browser-evidence checks should
+      include a cheap runtime-error detection step (console/dialog). Assistive
+      severity; no new lifecycle gate.
+    status: candidate_for_phase8_scope_decision
+    references: [finding-01 in review/findings.yaml, Gate F in review/gates.md]
+  - id: gap-benchmark-packaging
+    observed_in: [review process]
+    classification: process_overhead   # benchmark-side, not runtime
+    finding: >-
+      Uncommitted-run diffs omitted untracked new files; NUL-containing
+      source rendered binary; committed screenshots noised the patch.
+    fix: >-
+      Capture with `git add -N -- . ':(exclude)run-evidence'` +
+      `git diff --text` from the start. Already applied to the six bundles as
+      review-patch.diff; reviewer-2 scored from corrected patches.
+    status: fixed_for_this_benchmark
