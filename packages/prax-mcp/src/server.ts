@@ -4,13 +4,13 @@ import { PraxRuntimeError } from "prax-runtime";
 import {
   DesignContextInputSchema,
   DesignDecideInputSchema,
+  DesignStartClientSchema,
   DesignFrameInputSchema,
   DesignInspectInputSchema,
   DesignPrepareImplementationInputSchema,
   DesignReconcileInputSchema,
   DesignRouteInputSchema,
   DesignSdirInputSchema,
-  DesignStartInputSchema,
   DesignValidateInputSchema,
 } from "./schemas.js";
 import { PraxService, type PraxOutput } from "./service.js";
@@ -45,7 +45,7 @@ export function createPraxMcpServer(service: PraxService): McpServer {
   server.registerTool("design_start", {
     title: "Start product-first design session",
     description: "Create a persisted Prax Design Session. Returns no design knowledge.",
-    inputSchema: DesignStartInputSchema,
+    inputSchema: DesignStartClientSchema,
   }, (input) => invoke(() => service.designStart(input)));
 
   server.registerTool("design_frame", {

@@ -57,7 +57,7 @@ import type {
   DesignReconcileInput,
   DesignRouteInput,
   DesignSdirInput,
-  DesignStartInput,
+  DesignStartClientInput,
   DesignValidateInput,
 } from "./schemas.js";
 
@@ -100,8 +100,15 @@ export class PraxService {
     return new PraxService({ knowledge: await loadBuiltInKnowledgeStore(), ...options });
   }
 
-  public async designStart(input: DesignStartInput): Promise<PraxOutput> {
-    if ("design_session_id" in input) {
+  public async designStart(input: DesignStartClientInput): Promise<PraxOutput> {
+    if (input.design_session_id !== undefined && input.requirement_confirmation === undefined && input.requirement === undefined) {
+      return {
+        status: "RETRY",
+        issues: ["Resuming requires requirement_confirmation alongside design_session_id."],
+        next: nextTool("design_start"),
+      };
+    }
+    if (input.design_session_id !== undefined) {
       const session = await this.sessions.getSession(input.design_session_id);
       if (currentGate(session) !== "confirm") {
         return {
@@ -130,9 +137,23 @@ export class PraxService {
       };
     }
 
+    const { requirement, project_root, mode, change_kind, project_id, design_authorities, requirement_confirmation } = input;
+    if (requirement === undefined || project_root === undefined || mode === undefined) {
+      const missing = [
+        ...(requirement === undefined ? ["requirement"] : []),
+        ...(project_root === undefined ? ["project_root"] : []),
+        ...(mode === undefined ? ["mode"] : []),
+      ];
+      return {
+        status: "EXPAND",
+        issues: [`Creating a session requires: ${missing.join(", ")}.`],
+        next: nextTool("design_start"),
+      };
+    }
+
     let policy;
     try {
-      policy = lifecyclePolicyFor(input.mode, input.change_kind);
+      policy = lifecyclePolicyFor(mode, change_kind);
     } catch (error) {
       if (error instanceof PraxRuntimeError) {
         return { status: "BLOCK", code: error.code, message: error.message };
@@ -140,14 +161,14 @@ export class PraxService {
       throw error;
     }
     const session = await this.sessions.createSession({
-      projectRoot: input.project_root,
-      requirement: input.requirement,
-      mode: input.mode,
-      ...(input.project_id === undefined ? {} : { projectId: input.project_id }),
+      projectRoot: project_root,
+      requirement,
+      mode,
+      ...(project_id === undefined ? {} : { projectId: project_id }),
       lifecyclePolicy: policy,
-      designAuthorities: input.design_authorities,
+      ...(design_authorities === undefined ? {} : { designAuthorities: design_authorities }),
     });
-    if (input.requirement_confirmation === undefined) {
+    if (requirement_confirmation === undefined) {
       return {
         status: "PASS",
         design_session_id: session.id,
@@ -156,7 +177,7 @@ export class PraxService {
         required: ["user_quote", "restatement", "boundaries", "confirmation.status", "confirmation.evidence"],
       };
     }
-    const validation = validateRequirementConfirmation(input.requirement_confirmation);
+    const validation = validateRequirementConfirmation(requirement_confirmation);
     if (validation.status !== "PASS" && validation.status !== "WARN") {
       return {
         status: validation.status,

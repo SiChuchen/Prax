@@ -33,6 +33,26 @@ const ResumeConfirmationInput = z.strictObject({
 
 export const DesignStartInputSchema = z.union([ResumeConfirmationInput, CreateSessionInput]);
 
+// Client-facing shape: a single permissive object. The z.union above serializes
+// to a top-level anyOf with additionalProperties:false per branch, which strict
+// MCP client validators reject (PRAX-AB-001 gap-mcp-anyof-schema). Branch
+// discrimination and validation stay server-side.
+export const DesignStartClientSchema = z.object({
+  design_session_id: SessionId.optional().describe(
+    "Existing design_session_id to resume at the requirement-confirmation gate; omit to create a new session.",
+  ),
+  requirement_confirmation: RequirementConfirmationSchema.optional(),
+  requirement: z.string().trim().min(1).optional().describe("Required when creating a session: the user requirement text."),
+  project_root: z.string().trim().min(1).optional().describe("Required when creating a session: absolute project root path."),
+  mode: DesignModeSchema.optional().describe("Required when creating a session."),
+  change_kind: ChangeKindSchema.optional().describe("Required for existing_product sessions."),
+  design_authorities: z
+    .array(z.string().trim().min(1))
+    .optional()
+    .describe("Documents whose constraints outrank generic guidance."),
+  project_id: z.string().trim().min(1).optional(),
+});
+
 export const DesignFrameInputSchema = z
   .object({
     design_session_id: SessionId,
@@ -125,6 +145,7 @@ export const DesignValidateInputSchema = z.object({
 });
 
 export type DesignStartInput = z.infer<typeof DesignStartInputSchema>;
+export type DesignStartClientInput = z.input<typeof DesignStartClientSchema>;
 export type DesignFrameInput = z.infer<typeof DesignFrameInputSchema>;
 export type DesignContextInput = z.infer<typeof DesignContextInputSchema>;
 export type DesignRouteInput = z.infer<typeof DesignRouteInputSchema>;
