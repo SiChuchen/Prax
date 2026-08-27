@@ -1,0 +1,47 @@
+version: "0.1"
+platform_profile: WEB-DESKTOP
+framework: react
+sdir_ref: sdir-delta.yaml
+decision_ref: design-decisions.yaml
+approved_patterns:
+  - PAT-CANVAS-WORKSPACE
+approved_component_contracts:
+  - ARCHITECTURE-CANVAS
+  - CONTEXTUAL-INSPECTOR
+  - CANVAS-TOOLBAR
+  - STATE-FEEDBACK
+states_required:
+  - loading
+  - empty
+  - ready
+  - error
+capability_gaps: []
+validation_plan_ref:
+  artifact: validation-plan.yaml
+  revision: 1
+validation_requirements:
+  - delta_conformance
+  - untouched_surface_regression
+  - pattern_consistency
+  - authority_consistency
+  - requirement_alignment
+mode_plan:
+  change_sequence:
+    - region: canvas-stage
+      action: modify
+      rationale: "Direct rejection: default view was an oversized thumbnail; structure, not color, must fix readability."
+    - region: inspector-panel
+      action: modify
+      rationale: "Agreed direction: Inspector is a docked workspace panel and the camera/effective viewport must respond to it."
+    - region: canvas-reading-key
+      action: modify
+      rationale: Trace corridor needs a legible legend entry without adding chrome.
+    - region: canvas-commandbar
+      action: preserve_explicit
+      rationale: Stable user concept; only the Fit contract changes.
+  regression_points:
+    - Search still finds and selects objects; selection still opens the Inspector with the same bindings
+    - Revision timeline, pending Change overlay and read-only boundary unchanged
+    - Fixture budgets, Semantic Graph validation, ELK geometry audits and emphasis invariants keep passing
+    - Dragging still writes only the local canvas layout; Layout reset still recomputes deterministic ELK geometry
+    - Minimap and Controls remain available; zooming into Component/Operational densities still restores all Objects

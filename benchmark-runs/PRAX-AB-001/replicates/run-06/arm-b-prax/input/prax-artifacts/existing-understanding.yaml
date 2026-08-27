@@ -1,0 +1,172 @@
+version: "0.1"
+current_objects:
+  - id: camera-fitview
+    user_name: 默认相机（fitView）
+    purpose: Fits every node into the viewport once per layout identity; no minimum readable zoom floor
+    evidence_refs:
+      - app/architecture/architecture-canvas.tsx:231-241
+  - id: semantic-zoom
+    user_name: 语义缩放
+    purpose: Discrete Landscape/Architecture/Component/Operational densities derived from zoom; Landscape withholds non-key Objects
+    evidence_refs:
+      - app/architecture/interaction.ts:41-46
+      - app/architecture/interaction.ts:187-199
+  - id: elk-compound-layout
+    user_name: ELK 复合布局
+    purpose: One ELK Layered pass over nested Regions with global RIGHT orientation, semantic ports and orthogonal routes; deterministic and incrementally stabilized
+    evidence_refs:
+      - app/architecture/layout.ts:301-473
+  - id: region-frame
+    user_name: Region 框
+    purpose: Rectangular Region primitive with name and object count header; no strong summary
+    evidence_refs:
+      - app/architecture/region-node.tsx
+  - id: object-node
+    user_name: Object 节点
+    purpose: Object card with type row, label with zoom compensation, summary and metadata by density
+    evidence_refs:
+      - app/architecture/architecture-node.tsx
+  - id: relationship-edge
+    user_name: 关系线
+    purpose: Orthogonal ELK route with SmartEdge fallback; line-pattern type grammar; emphasis by interaction mode
+    evidence_refs:
+      - app/architecture/architecture-edge.tsx
+  - id: inspector-panel
+    user_name: Inspector 面板
+    purpose: Progressive-disclosure detail panel for Object/Relationship/Flow; currently an absolute overlay on the canvas right edge
+    evidence_refs:
+      - app/architecture/inspector.tsx
+      - app/globals.css:1029-1030
+  - id: trace-lens
+    user_name: Trace 透镜
+    purpose: Flow selection that emphasizes participating objects/relationships with packet animation and per-step badges
+    evidence_refs:
+      - app/architecture/interaction.ts:140-161
+      - app/architecture/flow-panel.tsx
+  - id: canvas-shell
+    user_name: 画布外壳
+    purpose: "Workspace shell: nav rail, context bar, command bar, stage, status bar"
+    evidence_refs:
+      - app/projects/[projectId]/project-architecture.tsx
+      - app/globals.css:789-920
+  - id: local-layout-persistence
+    user_name: 本地布局缓存
+    purpose: localStorage full CanvasLayout cache keyed by graph fingerprint only
+    evidence_refs:
+      - app/architecture/architecture-canvas.tsx:64-84
+current_relationships:
+  - id: camera-drives-density
+    source: camera-fitview
+    target: semantic-zoom
+    type: drives
+    direction: forward
+    meaning: Resulting zoom selects the semantic density level
+    importance: primary
+    evidence_refs: []
+  - id: layout-feeds-camera
+    source: elk-compound-layout
+    target: camera-fitview
+    type: feeds
+    direction: forward
+    meaning: Layout geometry bounds and node set determine what fitView shows
+    importance: primary
+    evidence_refs: []
+  - id: density-gates-objects
+    source: semantic-zoom
+    target: object-node
+    type: gates
+    direction: forward
+    meaning: Density level decides visible Objects and detail
+    importance: primary
+    evidence_refs: []
+  - id: inspector-overlays-stage
+    source: inspector-panel
+    target: camera-fitview
+    type: ignores
+    direction: forward
+    meaning: Inspector opens as overlay; camera and effective viewport do not respond
+    importance: primary
+    evidence_refs: []
+  - id: trace-uses-map
+    source: trace-lens
+    target: elk-compound-layout
+    type: lenses
+    direction: forward
+    meaning: Trace is emphasis over the stable map geometry
+    importance: supporting
+    evidence_refs: []
+current_surfaces:
+  - id: app.architecture.browse
+    purpose: "Default canvas surface: full map, search, fit/layout/fullscreen actions, reading key"
+    evidence_refs:
+      - app/architecture/architecture-canvas.tsx:349-424
+      - app/architecture-fixtures/fixture-workbench.tsx
+  - id: app.architecture.inspect
+    purpose: "Selection surface: object/relationship selection drives Inspector overlay on the same stage"
+    evidence_refs:
+      - app/architecture/architecture-canvas.tsx:259-275
+      - app/architecture/inspector.tsx
+  - id: app.architecture.focus
+    purpose: "Focus surface: selected object with direct and two-hop context emphasis"
+    evidence_refs:
+      - app/architecture/interaction.ts:112-138
+  - id: app.architecture.trace
+    purpose: "Trace surface: Flow lens panel, flow emphasis, packet animation, per-step badges and auto-fit of flow objects"
+    evidence_refs:
+      - app/architecture/architecture-canvas.tsx:259-267
+      - app/architecture/flow-panel.tsx
+  - id: app.architecture-fixtures
+    purpose: Client-only stress workbench mounting the canvas on fixture graphs (Small/Medium/Large/Complex)
+    evidence_refs:
+      - app/architecture-fixtures/page.tsx
+      - app/architecture-fixtures/fixture-workbench.tsx
+established_patterns:
+  - "Read model derivation before projection: deriveCanvasView -> projectSemanticGraph"
+  - Versioned full-layout persistence in localStorage per project+revision+fingerprint
+  - Emphasis vocabulary (primary/related/context/normal/muted, suppressed) instead of opacity hacks
+user_habits:
+  - Operators open the canvas to orient before reading code or Registry rows
+  - Users expect a map they can pan; they reject having to zoom in before reading names
+constraints_and_debt:
+  - npm run dev is broken on this machine (cloudflare vite plugin workerd runner); browser QA needs the temporary no-cloudflare vite config path
+  - Layout cache key lacks a layout-version component; layout algorithm changes require a key bump
+  - Cloud browser previously blocked preview URLs; screenshots must be produced from a real local browser
+change_targets:
+  - app.architecture.browse
+  - app.architecture.inspect
+  - app.architecture.trace
+actual_usage:
+  - Canvas v1 shipped at Registry r50; operator reviewed delivered screenshots and rejected readability on 2026-08-25
+pain_points:
+  - "Default view reads as one oversized thumbnail: labels unreadable without zooming"
+  - Top-level Regions form one long horizontal strip
+  - Landscape hides Objects with no meaningful Region summary
+  - Relationship lines are many and hard to follow
+  - Trace highlights a set, not an ordered main path
+  - Inspector overlays the canvas; no camera reframing
+  - Region borders occupy space without strong readable summaries
+must_preserve:
+  - Semantic Graph / ELK / React Flow foundation and module boundaries
+  - Public Canvas data shapes, fixture budgets and Agent maintenance contract
+  - Read-only Human Web; drag writes local layout only
+  - "Quiet structural visual language: line-pattern relationship grammar, no rainbow color semantics, no permanent glow"
+  - Revision timeline, pending Change overlay, search, Minimap/Controls
+must_replace:
+  - Full-graph unconditional default fitView without a readable-zoom floor
+  - Single-axis top-level Region composition (one long strip)
+  - Inspector as overlay that ignores the effective viewport
+free_to_reconsider:
+  - Semantic zoom thresholds and what Architecture density withholds
+  - Root-level layout arrangement and orientation policy inside ELK or as a post-pass
+  - Default zoom, fit padding, maxZoom/minZoom values
+  - Layout cache key versioning
+  - Region header content and summary density
+migration_notes:
+  - Layout cache key must be version-bumped when layout geometry code changes so stale local geometry never shadows new composition
+  - Existing tests (fixture budgets, ELK geometry audits, emphasis invariants) must keep passing; new invariants are additive
+design_authorities: []
+surface_context:
+  density: regular
+  user_expertise: expert
+  destructive_actions: none
+  task_frequency: medium

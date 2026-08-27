@@ -1,0 +1,80 @@
+version: "0.1"
+session_id: ds_20260827025314_87e4102b
+task:
+  surfaces:
+    - app.architecture.browse
+    - app.architecture.inspect
+    - app.architecture.trace
+  primary: app.architecture.browse, app.architecture.inspect, app.architecture.trace
+product_relationships:
+  - id: camera-drives-density
+    source: camera-fitview
+    target: semantic-zoom
+    type: drives
+    direction: forward
+    meaning: Resulting zoom selects the semantic density level
+    importance: primary
+  - id: layout-feeds-camera
+    source: elk-compound-layout
+    target: camera-fitview
+    type: feeds
+    direction: forward
+    meaning: Layout geometry bounds and node set determine what fitView shows
+    importance: primary
+  - id: density-gates-objects
+    source: semantic-zoom
+    target: object-node
+    type: gates
+    direction: forward
+    meaning: Density level decides visible Objects and detail
+    importance: primary
+  - id: inspector-overlays-stage
+    source: inspector-panel
+    target: camera-fitview
+    type: ignores
+    direction: forward
+    meaning: Inspector opens as overlay; camera and effective viewport do not respond
+    importance: primary
+  - id: trace-uses-map
+    source: trace-lens
+    target: elk-compound-layout
+    type: lenses
+    direction: forward
+    meaning: Trace is emphasis over the stable map geometry
+    importance: supporting
+region_relationships: []
+decisions:
+  primary_structure: PAT-CANVAS-WORKSPACE
+  density_intent: regular
+  major_choice_ids:
+    - camera-architecture-floor
+    - root-region-grid-composition
+    - docked-inspector-viewport
+    - ordered-trace-corridor
+    - region-summary-rollup
+    - layout-cache-version-bump
+must_preserve:
+  - Semantic Graph / ELK / React Flow foundation and module boundaries
+  - Public Canvas data shapes, fixture budgets and Agent maintenance contract
+  - Read-only Human Web; drag writes local layout only
+  - "Quiet structural visual language: line-pattern relationship grammar, no rainbow color semantics, no permanent glow"
+  - Revision timeline, pending Change overlay, search, Minimap/Controls
+regression_points:
+  - Semantic Graph / ELK / React Flow foundation and module boundaries
+  - Public Canvas data shapes, fixture budgets and Agent maintenance contract
+  - Read-only Human Web; drag writes local layout only
+  - "Quiet structural visual language: line-pattern relationship grammar, no rainbow color semantics, no permanent glow"
+  - Revision timeline, pending Change overlay, search, Minimap/Controls
+unresolved:
+  - exact-architecture-zoom-floor
+  - grid-target-aspect
+corrections: []
+validation:
+  plan_revision: 1
+  check_ids:
+    - delta_conformance
+    - untouched_surface_regression
+    - pattern_consistency
+    - authority_consistency
+    - requirement_alignment
+  regression_check_ids: []

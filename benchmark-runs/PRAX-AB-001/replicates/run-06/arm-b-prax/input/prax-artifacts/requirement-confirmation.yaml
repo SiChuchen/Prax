@@ -1,0 +1,25 @@
+version: "0.1"
+user_quote:
+  - 画布上线条繁多混乱，结果不是人类可读的。默认视图就像一个超大的缩略图
+  - 1. 默认 fit 把对象标签压到不可读的尺寸；2. 顶层 Region 排成一条长横条；3. Landscape 隐藏对象却没有提供有意义的 Region 摘要；4. 关系线多且难以跟随；5. Trace 只高亮一个集合，没有形成可读的有序主路径；6. Inspector 覆盖在画布上，没有相机重构；7. Region 边框占据空间却没有提供强可读的摘要。仅改颜色无法修复结构问题。
+  - 可读的屏幕空间节点尺寸——验收单位是屏幕空间尺寸，不是相机 fit 前的节点内部布局宽度
+  - 操作者打开画布后，应当：不先缩放就能读 Region 和关键 Object 标签；在不丢失全局上下文的情况下跟随两个对象间的一条关系；运行 Trace 能看到从入口到结果的有序主路径；Inspector 停靠时画布不塌缩成缩略图。
+restatement: "Make the existing Architecture Canvas (ECP Human Web, app/architecture/) actually human-readable at first open in a real browser, by fixing structure rather than colors. Six agreed spatial/readability contracts must hold: (1) readable screen-space node sizes, measured on screen after camera fit, not internal layout width; (2) top-level Regions composed in two dimensions, not one long horizontal strip; (3) default view stays at Architecture density where Region and key Object labels are readable, instead of dropping to Landscape immediately; (4) canvas content occupies most of the effective viewport without requiring all geometry to fit at once; (5) Inspector becomes a docked workspace panel and the camera/effective viewport respond to it (Browse mode is not Landscape zoom); (6) Trace is a lens over a stable map showing an ordered corridor: entry, ordered steps, transitions, outcome. Retain Semantic Graph / ELK / React Flow foundations, no rainbow color semantics, quiet structured tool, read-only Human Web, compatible public Canvas data shapes and Agent maintenance boundary."
+boundaries:
+  in_scope:
+    - app/architecture/ implementation changes for the six spatial/readability contracts
+    - "related styles and tests: geometry/layout invariants, camera/viewport behavior, Trace ordering, Inspector viewport interaction"
+    - real browser screenshot evidence saved under run-evidence/screenshots/
+  out_of_scope:
+    - backend, D1, protocol, deployment, ECP Change publishing
+    - Runtime Overlay new data sources
+    - rewriting the Semantic Graph model or Agent maintenance contract
+    - any deployment or remote writes
+  scope_complete: true
+open_questions: []
+confirmation:
+  status: explicit_user_confirmation
+  evidence:
+    - type: conversation_message
+      ref: "用户在 2026-08-27 会话中直接下达的 REQUIREMENT: Architecture Canvas 可读性修正（含已共识的修正方向与验收框架）"
+  confirmed_at: 2026-08-27T02:52:21Z

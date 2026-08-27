@@ -1,0 +1,80 @@
+needs:
+  - id: architecture-density-default-camera
+    product_action: Default and Fit cameras clamp to a minimum readable zoom inside the Architecture band; oversized maps pan instead of shrinking
+    required_experience:
+      - Region and key Object labels readable at first open without zooming
+    capabilities:
+      - "@xyflow/react fitView minZoom/maxZoom"
+      - existing interaction.zoom state feeding semanticZoomLevel
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Read-model change plus fitView options; no backend or library replacement.
+  - id: root-region-grid-composition
+    product_action: Top-level Regions compose in a two-dimensional near-square grid while Region interiors keep ELK geometry
+    required_experience:
+      - Fitted map approaches viewport aspect instead of one long horizontal strip
+    capabilities:
+      - ELK compound layout output
+      - deterministic post-pass over regionRects/objectRects
+      - SmartEdge obstacle-avoiding reroute for cross-region relationships
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: Grid packing runs after ELK; cross-region routes drop to SmartEdge which already exists for drags; geometry audits extended accordingly.
+  - id: region-rollup-summaries
+    product_action: Region headers show object/critical counts and key object names whenever Objects are withheld
+    required_experience:
+      - Region borders carry strong readable summaries at Landscape and Architecture densities
+    capabilities:
+      - semanticGraph index objectsByRegionId
+      - importance vocabulary
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Pure projection/data enrichment of RegionNode.
+  - id: docked-inspector-camera-compensation
+    product_action: Inspector docks as a workspace column; camera translation compensates the narrower effective viewport
+    required_experience:
+      - Canvas does not collapse into a thumbnail when Inspector opens; inspected content stays centered
+    capabilities:
+      - ReactFlowInstance setViewport
+      - stage CSS grid
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: CSS grid dock plus viewport translate by half the dock width; density unchanged.
+  - id: ordered-trace-corridor
+    product_action: Trace renders numbered steps, entry/exit markers and transition payloads over the stable map
+    required_experience:
+      - Operator reads an ordered main path from entry to outcome
+    capabilities:
+      - SemanticFlow steps with sequence/role/inputs/outputs
+      - flowTransition payload projection
+      - existing edge label renderer and step badges
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Projection enrichment only; Flow is data, not paint.
+  - id: layout-cache-version-bump
+    product_action: Local layout persistence key carries a layout version so new geometry code never loads stale local layouts
+    required_experience:
+      - Corrections visible immediately for returning operators
+    capabilities:
+      - localStorage persistence layer
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Key format change only; no data shape change.
+  - id: real-browser-evidence
+    product_action: Capture screenshots of default Architecture-density Browse, docked Inspector state and Trace corridor from a real local browser
+    required_experience:
+      - Visual claims backed by real browser evidence, not generated geometry
+    capabilities:
+      - temporary no-cloudflare vite config (npm run dev is broken on this machine)
+      - Playwright/Chrome MCP
+      - local /architecture-fixtures page
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: Known local workaround; screenshots land in run-evidence/screenshots/.

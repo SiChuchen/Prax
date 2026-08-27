@@ -1,0 +1,71 @@
+version: "0.1"
+surface: app.architecture.browse
+impact:
+  changes_product_objects: false
+  changes_region_structure: true
+  changes_interaction_model: false
+  changes_state_model: false
+  adds_capability: false
+base_regions:
+  - id: canvas-stage
+    role: dominant map viewport rendering the fitted Semantic Graph
+    importance: dominant
+  - id: canvas-commandbar
+    role: mode switch, search and fit/layout/fullscreen actions
+    importance: supporting
+  - id: inspector-panel
+    role: detail panel overlaid absolutely on the canvas right edge
+    importance: supporting
+  - id: flow-lens
+    role: floating Flow selection list
+    importance: contextual
+  - id: canvas-statusbar
+    role: mode, counts, layout time and revision status
+    importance: contextual
+  - id: canvas-reading-key
+    role: map legend and read-only reminder
+    importance: contextual
+changes:
+  - region: canvas-stage
+    action: modify
+    role: dominant stable map that opens at Architecture density with a readable-zoom floor and two-dimensional Region composition
+    fields:
+      behavior_intent: "Default camera clamps fit to the Architecture band so Region and key Object labels are readable without zooming; content beyond one viewport is reachable by pan, never by shrinking labels. Top-level Regions compose as a near-square grid; Region interiors keep ELK geometry. Region summaries (counts plus key object names) stay readable whenever Objects are withheld. Trace renders as an ordered corridor over this same map: numbered steps, entry/exit markers, transition payloads."
+    rationale: "Direct rejection: default view was an oversized thumbnail; structure, not color, must fix readability."
+  - region: inspector-panel
+    action: modify
+    role: docked workspace column that reflects canvas selection
+    fields:
+      visibility: docked column beside the map inside the stage grid; collapses to zero width when no selection
+      behavior_intent: Opening the dock narrows the effective viewport; camera translation compensates so inspected content stays centered and semantic density does not drop. Browse never equals Landscape zoom.
+      note: Inspector docks on app.architecture.inspect the same way; binding and progressive-disclosure sections unchanged.
+    rationale: "Agreed direction: Inspector is a docked workspace panel and the camera/effective viewport must respond to it."
+  - region: canvas-reading-key
+    action: modify
+    role: map legend including the Trace corridor key when Trace is active
+    fields:
+      behavior_intent: Explain ordered-corridor reading (entry, numbered steps, outcome) while keeping the quiet read-only reminder.
+    rationale: Trace corridor needs a legible legend entry without adding chrome.
+  - region: canvas-commandbar
+    action: preserve_explicit
+    role: mode switch, search and fit/layout/fullscreen actions
+    fields:
+      note: Fit action now respects the same Architecture readable floor as the default camera.
+    rationale: Stable user concept; only the Fit contract changes.
+preserved:
+  - canvas-commandbar
+  - flow-lens
+  - canvas-statusbar
+  - canvas-reading-key
+regression_points:
+  - Search still finds and selects objects; selection still opens the Inspector with the same bindings
+  - Revision timeline, pending Change overlay and read-only boundary unchanged
+  - Fixture budgets, Semantic Graph validation, ELK geometry audits and emphasis invariants keep passing
+  - Dragging still writes only the local canvas layout; Layout reset still recomputes deterministic ELK geometry
+  - Minimap and Controls remain available; zooming into Component/Operational densities still restores all Objects
+capability_needs:
+  - Architecture-density default camera with readable-zoom floor
+  - Two-dimensional top-level Region composition post-pass
+  - Region roll-up summaries
+  - Docked Inspector with camera compensation
+  - Ordered Trace corridor rendering

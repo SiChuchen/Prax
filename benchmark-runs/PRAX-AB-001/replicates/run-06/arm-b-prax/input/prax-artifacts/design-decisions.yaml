@@ -1,0 +1,93 @@
+session_id: ds_20260827025314_87e4102b
+primary_structure:
+  pattern: PAT-CANVAS-WORKSPACE
+  rationale:
+    - "Spatial relationships are the task: the canvas stays the dominant workspace while command bar, Flow panel, Inspector and status bar stay subordinate and contextual."
+    - "Overview and trace must coexist: Trace is a lens with an ordered corridor over the stable map, not a second canvas."
+    - "PAT-LIST-DETAIL-INSPECTOR is kept as the subordinate inspector arrangement: a docked panel that reflects canvas selection without replacing the workspace."
+    - Existing product already has this shape structurally; the fix is spatial/readability contracts, not a new interaction model.
+  confidence: high
+information_hierarchy:
+  primary:
+    - architecture
+    - region-summary
+    - trace-corridor
+  secondary:
+    - inspector-panel
+    - semantic-zoom
+    - relationship-edge
+density:
+  intent: regular
+  strategy:
+    - "Default camera opens at Architecture density with a readable-zoom floor: fit is clamped so Region and key Object labels stay legible without prior zooming; not all geometry must fit at once"
+    - Architecture density withholds low-importance Objects behind readable Region summaries instead of rendering unreadable miniatures
+    - Top-level Regions compose in two dimensions (near-square grid) so the fitted map approaches viewport aspect instead of one long strip
+    - "Screen-space node size is the acceptance unit: label compensation targets a readable on-screen scale after camera fit"
+    - Inspector docks as a workspace column; the effective viewport and camera respond to it (Browse mode is not Landscape zoom)
+  avoid:
+    - Rainbow color semantics and permanent glow
+    - Generic AI SaaS cards, dashboard chrome and marketing decoration
+    - Opacity-only muting that leaves unreadable miniature text on screen
+major_choices:
+  - id: camera-architecture-floor
+    choice: "Replace unconditional full-graph fitView with an architecture-density fit: clamp the default fit to a minimum readable zoom (Architecture band) and let oversized maps pan instead of shrinking; key Objects remain identifiable because Architecture density keeps critical/high and emphasized Objects"
+    rationale: The acceptance unit is screen-space readability; fitting 100 objects at zoom 0.2 produces the rejected oversized-thumbnail result. The requirement explicitly allows canvas content to exceed one viewport.
+    confidence: high
+    references:
+      - camera-fitview
+      - semantic-zoom
+  - id: root-region-grid-composition
+    choice: Compose top-level Regions into a two-dimensional near-square arrangement (deterministic post-pass over ELK output, region interiors untouched, cross-region routes re-routed by the existing SmartEdge fallback)
+    rationale: ELK Layered is single-axis; the root strip is a structural cause of unreadable default zoom. Two-dimensional composition brings the fitted map closer to the viewport aspect ratio and is required by the agreed direction.
+    confidence: high
+    references:
+      - elk-compound-layout
+      - region-frame
+  - id: docked-inspector-viewport
+    choice: Dock the Inspector as a workspace column beside the canvas and compensate the camera translation so the inspected content stays centered in the effective viewport; density does not drop when it opens
+    rationale: The agreed direction makes the Inspector a docked panel whose effective viewport the camera must respect; the overlay today hides map area with no reframing.
+    confidence: high
+    references:
+      - inspector-panel
+      - camera-fitview
+  - id: ordered-trace-corridor
+    choice: "Trace stays a lens over the stable map but renders an ordered corridor: numbered steps along the main path, entry/exit role markers, per-transition payloads on active edges, and a corridor summary of trigger and outcome"
+    rationale: Highlighting a set is not a readable path; the operator must read entry to outcome in order while the map stays put.
+    confidence: high
+    references:
+      - trace-lens
+      - relationship-edge
+  - id: region-summary-rollup
+    choice: Give Region headers a strong readable summary (object/critical counts and key object names) that remains legible whenever Objects are withheld at Landscape/Architecture densities
+    rationale: Withholding objects without a meaningful Region summary was an explicit rejection point; Region borders must carry their weight in space.
+    confidence: high
+    references:
+      - region-frame
+      - semantic-zoom
+  - id: layout-cache-version-bump
+    choice: Bump the local layout persistence key with a layout version component so new composition code never loads stale geometry
+    rationale: The cache key currently has no layout-version component; changing composition without a bump would shadow the fix with old persisted geometry.
+    confidence: high
+    references:
+      - local-layout-persistence
+rejected:
+  - option: Dashboard-style stat cards and decorative panels around the canvas
+    reason: Violates the quiet structural tool constraint and Signal over Chrome; readability comes from map structure, not chrome.
+  - option: Rainbow or per-type color coding for relationships
+    reason: Relationship grammar must not depend on color; line patterns carry type.
+  - option: Refitting or re-laying-out the map when the Inspector opens
+    reason: Browse mode must not equal Landscape zoom; the map stays put and only camera translation compensates the narrower effective viewport.
+  - option: Rendering Trace on a separate projected canvas
+    reason: Trace is a lens over the stable map; a separate canvas destroys global context and reuses nothing.
+  - option: Rewriting the Semantic Graph model or Agent maintenance contract
+    reason: Out of scope by fixed constraint; the renderer- independent boundary stays.
+unresolved:
+  - id: exact-architecture-zoom-floor
+    impact: low
+    affects:
+      - app.architecture.browse
+      - app.architecture.inspect
+  - id: grid-target-aspect
+    impact: low
+    affects:
+      - app.architecture.browse

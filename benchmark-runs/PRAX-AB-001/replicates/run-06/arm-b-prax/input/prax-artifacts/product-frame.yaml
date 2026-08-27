@@ -1,0 +1,83 @@
+user:
+  primary_role: existing product user
+  expertise: mixed
+  familiarity: unknown
+goal:
+  primary: "Make the existing Architecture Canvas (ECP Human Web, app/architecture/) actually human-readable at first open in a real browser, by fixing structure rather than colors. Six agreed spatial/readability contracts must hold: (1) readable screen-space node sizes, measured on screen after camera fit, not internal layout width; (2) top-level Regions composed in two dimensions, not one long horizontal strip; (3) default view stays at Architecture density where Region and key Object labels are readable, instead of dropping to Landscape immediately; (4) canvas content occupies most of the effective viewport without requiring all geometry to fit at once; (5) Inspector becomes a docked workspace panel and the camera/effective viewport respond to it (Browse mode is not Landscape zoom); (6) Trace is a lens over a stable map showing an ordered corridor: entry, ordered steps, transitions, outcome. Retain Semantic Graph / ELK / React Flow foundations, no rainbow color semantics, quiet structured tool, read-only Human Web, compatible public Canvas data shapes and Agent maintenance boundary."
+tasks:
+  primary: app.architecture.browse, app.architecture.inspect, app.architecture.trace
+  secondary: []
+product_objects:
+  - id: camera-fitview
+    user_name: 默认相机（fitView）
+    purpose: Fits every node into the viewport once per layout identity; no minimum readable zoom floor
+  - id: semantic-zoom
+    user_name: 语义缩放
+    purpose: Discrete Landscape/Architecture/Component/Operational densities derived from zoom; Landscape withholds non-key Objects
+  - id: elk-compound-layout
+    user_name: ELK 复合布局
+    purpose: One ELK Layered pass over nested Regions with global RIGHT orientation, semantic ports and orthogonal routes; deterministic and incrementally stabilized
+  - id: region-frame
+    user_name: Region 框
+    purpose: Rectangular Region primitive with name and object count header; no strong summary
+  - id: object-node
+    user_name: Object 节点
+    purpose: Object card with type row, label with zoom compensation, summary and metadata by density
+  - id: relationship-edge
+    user_name: 关系线
+    purpose: Orthogonal ELK route with SmartEdge fallback; line-pattern type grammar; emphasis by interaction mode
+  - id: inspector-panel
+    user_name: Inspector 面板
+    purpose: Progressive-disclosure detail panel for Object/Relationship/Flow; currently an absolute overlay on the canvas right edge
+  - id: trace-lens
+    user_name: Trace 透镜
+    purpose: Flow selection that emphasizes participating objects/relationships with packet animation and per-step badges
+  - id: canvas-shell
+    user_name: 画布外壳
+    purpose: "Workspace shell: nav rail, context bar, command bar, stage, status bar"
+  - id: local-layout-persistence
+    user_name: 本地布局缓存
+    purpose: localStorage full CanvasLayout cache keyed by graph fingerprint only
+relationships:
+  - id: camera-drives-density
+    source: camera-fitview
+    target: semantic-zoom
+    type: drives
+    direction: forward
+    meaning: Resulting zoom selects the semantic density level
+    importance: primary
+  - id: layout-feeds-camera
+    source: elk-compound-layout
+    target: camera-fitview
+    type: feeds
+    direction: forward
+    meaning: Layout geometry bounds and node set determine what fitView shows
+    importance: primary
+  - id: density-gates-objects
+    source: semantic-zoom
+    target: object-node
+    type: gates
+    direction: forward
+    meaning: Density level decides visible Objects and detail
+    importance: primary
+  - id: inspector-overlays-stage
+    source: inspector-panel
+    target: camera-fitview
+    type: ignores
+    direction: forward
+    meaning: Inspector opens as overlay; camera and effective viewport do not respond
+    importance: primary
+  - id: trace-uses-map
+    source: trace-lens
+    target: elk-compound-layout
+    type: lenses
+    direction: forward
+    meaning: Trace is emphasis over the stable map geometry
+    importance: supporting
+mental_model_hypothesis:
+  summary: derived from existing understanding
+  confidence: medium
+  evidence:
+    - existing_product
+primary_success_definition: the change preserves the existing product model
+open_questions: []

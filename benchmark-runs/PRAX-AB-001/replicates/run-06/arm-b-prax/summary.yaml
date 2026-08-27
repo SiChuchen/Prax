@@ -1,0 +1,52 @@
+run:
+  id: PRAX-AB-001-run-06-B
+  arm: arm-b-prax
+  agent_cli: claude-code (glm-5.3)
+  session: d5b22048-24af-4d3f-b5fa-c83cbc906863
+  commit: 8b11f5e   # single commit on ab/run-06-arm-b
+  started_at: 2026-08-27T02:49:46Z
+  ended_at: 2026-08-27T04:08:38Z
+
+result:
+  implementation_completed: true
+  final_validation: PASS   # validation-report: phase COMPLETE, 5 findings, 0 missing evidence
+  changed_files: 13
+  diff_stat: "577 insertions(+), 72 deletions(-)"
+  tests_touched: tests/canvas-engine.test.mjs (+138)
+
+prax_flow:
+  design_session_id: ds_20260827025314_87e4102b
+  gates_completed: [confirm, understanding, route, decide, sdir_delta,
+    reconcile, prepare, validate]
+  artifacts_persisted: 16 files (input/prax-artifacts/)
+
+process:
+  wall_clock_seconds: 4689   # 1h18m09s, operator-reported (transcript span 78m52s)
+  model_usage:
+    input_tokens: 858434
+    output_tokens: 406607
+    cache_read_input_tokens: 100259136
+  assistant_turns: 583
+  tool_calls: 327
+  file_edits: 93
+  browser_verification: playwright screenshots (5)
+  prax_calls: 1   # single design_start MCP attempt, then stdio per the fallback instruction
+  human_clarifications: 0
+  first_pass_at: not_recorded_by_operator
+  first_pass_validation_failures: not_recorded
+  post_first_pass_repair_rounds: not_recorded
+
+process_observations:
+  - >-
+    Followed the run-06 prompt's channel instruction: one design_start MCP
+    attempt only, remainder via stdio JSON-RPC (gap-mcp-anyof-schema third
+    occurrence, now with instructed fallback so almost no wasted retries).
+
+contamination_check:
+  base_commit_verified: 2c77838
+  arm_a_isolation: intact
+
+evidence:
+  screenshots: 5   # complex default browse, inspector docked, trace corridor,
+                   # relationship lens, small default browse
+  prax_artifacts: input/prax-artifacts/
