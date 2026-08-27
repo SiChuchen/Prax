@@ -1,4 +1,4 @@
-import type { ChangeKind, DesignContext, DesignDecisions, DesignMode, IntentLite, ProductFrame } from "prax-runtime";
+import type { ChangeKind, DesignContext, DesignDecisions, DesignMode, IntentLite, ProductFrame, RealizationMode, RepresentationArtifact, RepresentationReview } from "prax-runtime";
 import { SdirEngine, validateSdirDelta, type Sdir } from "prax-sdir";
 import type { SdirDelta } from "prax-sdir";
 import {
@@ -38,6 +38,11 @@ const REWORK_CHECKS: ValidationCheck[] = [
   { id: "migration_readiness", label: "Migration readiness", kind: "empirical", requirement: "The migration plan covers every must_preserve item.", evidence_required: true },
 ];
 
+const REPRESENTATION_CHECKS: ValidationCheck[] = [
+  { id: "design_representation_coverage", label: "Design representation coverage", kind: "deterministic", requirement: "Every SDIR region maps to at least one approved representation frame and the approved SDIR digest still matches.", evidence_required: false },
+  { id: "representation_runtime_drift", label: "Representation runtime drift", kind: "empirical", requirement: "Runtime snapshot evidence compares against the approved representation snapshot (two artifact_refs: approved then runtime).", evidence_required: true },
+];
+
 const DELTA_CONFORMANCE_CHECK: ValidationCheck = {
   id: "delta_conformance",
   label: "Delta conformance",
@@ -70,6 +75,7 @@ export interface ValidationPlanInput {
   context?: DesignContext | undefined;
   decisions?: DesignDecisions | undefined;
   intentLite?: IntentLite | undefined;
+  realizationMode?: RealizationMode | undefined;
 }
 
 const PATTERN_CHECKS: Record<string, ValidationCheck[]> = {
@@ -112,6 +118,8 @@ const CHECK_PROFILE: Record<string, { profile: string; facet: string }> = {
   settings_grouping: { profile: "semantic_integrity", facet: "semantic" },
   safe_change: { profile: "state_coverage", facet: "behavioral" },
   destructive_recovery: { profile: "runtime_degradation", facet: "behavioral" },
+  design_representation_coverage: { profile: "representation_integrity", facet: "semantic" },
+  representation_runtime_drift: { profile: "representation_integrity", facet: "visual" },
 };
 
 function withProfiles(checks: ValidationCheck[]): ValidationCheck[] {
@@ -168,7 +176,14 @@ export class PraxValidator {
     return ValidationPlanSchema.parse({
       version: "0.1",
       ...(input.decisions === undefined ? {} : { pattern_ref: input.decisions.primary_structure.pattern }),
-      checks: [...UNIVERSAL_CHECKS, ...patternChecks, ...riskChecks, ...existingChecks, REQUIREMENT_CHECK],
+      checks: [
+        ...UNIVERSAL_CHECKS,
+        ...patternChecks,
+        ...riskChecks,
+        ...(input.realizationMode === "figma_first" ? REPRESENTATION_CHECKS : []),
+        ...existingChecks,
+        REQUIREMENT_CHECK,
+      ],
     });
   }
 
@@ -199,6 +214,9 @@ export class PraxValidator {
     sdirDelta?: SdirDelta | undefined;
     decisions?: DesignDecisions | undefined;
     evidence?: ValidationEvidence;
+    representationArtifact?: RepresentationArtifact | undefined;
+    representationReview?: RepresentationReview | undefined;
+    sdirDigest?: string | undefined;
   }): ValidationEvaluation {
     const provided = new Map(input.evidence?.items.map((item) => [item.check_id, item]) ?? []);
     const findings: ValidationFinding[] = [];
@@ -237,11 +255,53 @@ export class PraxValidator {
       });
     }
 
+    if (checkIds.has("design_representation_coverage")) {
+      const artifact = input.representationArtifact;
+      let failure: string | undefined;
+      if (artifact === undefined) {
+        failure = "representation artifact is missing.";
+      } else if (artifact.status !== "approved") {
+        failure = `representation artifact status is '${artifact.status}', not approved.`;
+      } else if (input.representationReview === undefined || input.representationReview.status !== "approved") {
+        failure = "no approved representation review backs the artifact.";
+      } else if (input.sdirDigest === undefined) {
+        failure = "the current SDIR digest is unavailable.";
+      } else if (input.sdirDigest !== artifact.semantic_refs.sdir_digest) {
+        failure = "the SDIR digest changed after representation approval.";
+      } else if (artifact.realization.refs === null) {
+        failure = "the approved representation artifact carries no provider refs.";
+      } else {
+        const unmapped = artifact.semantic_refs.regions.filter(
+          (region) => !artifact.realization.refs!.frames.some((frame) => frame.sdir_region === region),
+        );
+        if (unmapped.length > 0) {
+          failure = `sdir regions without an approved frame: ${unmapped.join(", ")}.`;
+        } else if (input.sdir?.screen.regions !== undefined) {
+          const drifted = input.sdir.screen.regions.filter(
+            (region) => !artifact.semantic_refs.regions.includes(region.id),
+          );
+          if (drifted.length > 0) {
+            failure = `SDIR regions missing from the approved artifact: ${drifted.map((region) => region.id).join(", ")}.`;
+          }
+        }
+      }
+      findings.push({
+        check_id: "design_representation_coverage",
+        kind: "deterministic",
+        outcome: failure === undefined ? "pass" : "fail",
+        message:
+          failure ??
+          input.plan.checks.find((candidate) => candidate.id === "design_representation_coverage")!.requirement,
+        source: "prax-validator",
+      });
+    }
+
     for (const check of input.plan.checks) {
       if (
         check.id === "semantic_conformance" ||
         check.id === "state_completeness" ||
-        check.id === "delta_conformance"
+        check.id === "delta_conformance" ||
+        check.id === "design_representation_coverage"
       ) {
         continue;
       }
@@ -257,8 +317,23 @@ export class PraxValidator {
       }
     }
 
+    const driftEvidence = provided.get("representation_runtime_drift");
+    const driftInsufficient =
+      driftEvidence !== undefined && (driftEvidence.artifact_refs?.length ?? 0) < 2;
+    if (driftInsufficient) {
+      const finding = findings.find((candidate) => candidate.check_id === "representation_runtime_drift");
+      if (finding !== undefined) {
+        finding.outcome = "inconclusive";
+        finding.message = `${finding.message}; two artifact_refs are required (approved snapshot, runtime snapshot).`;
+      }
+    }
+
     const missingEvidence = input.plan.checks
-      .filter((check) => check.evidence_required && !provided.has(check.id))
+      .filter(
+        (check) =>
+          (check.evidence_required && !provided.has(check.id)) ||
+          (check.id === "representation_runtime_drift" && driftInsufficient),
+      )
       .map((check) => check.id);
     const deterministicFailure = findings.some(
       (finding) => finding.kind === "deterministic" && finding.outcome === "fail",
