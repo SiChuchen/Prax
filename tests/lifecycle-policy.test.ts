@@ -50,6 +50,15 @@ describe("lifecycle policy", () => {
     expect(DEFAULT_LEGACY_POLICY.gates).toEqual(["framing", ...FULL_TAIL]);
   });
 
+  it("creates v2 policies and maps the realize gate", () => {
+    expect(lifecyclePolicyFor("greenfield").version).toBe("2");
+    expect(lifecyclePolicyFor("rework").version).toBe("2");
+    expect(lifecyclePolicyFor("existing_product", "modify_surface").version).toBe("2");
+    expect(DEFAULT_LEGACY_POLICY.version).toBe("1");
+    expect(GATE_PHASE.realize).toBe("REALIZATION");
+    expect(NEXT_TOOL_BY_GATE.realize).toBe("design_realize");
+  });
+
   it("maps every gate to a phase and a next tool", () => {
     expect(GATE_PHASE.confirm).toBe("REQUIREMENT_CONFIRMATION");
     expect(GATE_PHASE.understanding).toBe("UNDERSTANDING");

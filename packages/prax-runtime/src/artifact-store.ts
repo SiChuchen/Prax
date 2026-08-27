@@ -20,6 +20,9 @@ import {
   ExistingUnderstandingSchema,
   IntentLiteSchema,
   ProductFrameSchema,
+  RealizationDecisionSchema,
+  RepresentationArtifactSchema,
+  RepresentationReviewSchema,
   RequirementConfirmationSchema,
   zodIssues,
   type ArtifactKey,
@@ -52,6 +55,9 @@ const ARTIFACT_SCHEMAS: Partial<Record<ArtifactKey, z.ZodType>> = {
   requirementConfirmation: RequirementConfirmationSchema,
   existingUnderstanding: ExistingUnderstandingSchema,
   intentLite: IntentLiteSchema,
+  realizationDecision: RealizationDecisionSchema,
+  representationArtifact: RepresentationArtifactSchema,
+  representationReview: RepresentationReviewSchema,
 };
 
 const LOCK_STALE_MS = 30_000;

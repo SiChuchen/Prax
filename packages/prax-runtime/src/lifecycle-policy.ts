@@ -21,6 +21,7 @@ export const GATE_PHASE: Record<GateName, DesignPhase> = {
   sdir: "SDIR",
   sdir_delta: "SDIR",
   reconcile: "CAPABILITY_RECONCILIATION",
+  realize: "REALIZATION",
   prepare: "IMPLEMENTATION_READY",
   validate: "VALIDATION",
 };
@@ -36,6 +37,7 @@ export const NEXT_TOOL_BY_GATE: Record<GateName, string> = {
   sdir: "design_sdir",
   sdir_delta: "design_sdir",
   reconcile: "design_reconcile",
+  realize: "design_realize",
   prepare: "design_prepare_implementation",
   validate: "design_validate",
 };
@@ -58,7 +60,7 @@ export function lifecyclePolicyFor(mode: DesignMode, changeKind?: ChangeKind): L
         `change_kind ${changeKind} is not valid for greenfield sessions.`,
       );
     }
-    return { version: "1", mode, gates: ["confirm", "framing", ...FULL_TAIL] };
+    return { version: "2", mode, gates: ["confirm", "framing", ...FULL_TAIL] };
   }
   if (mode === "existing_product") {
     if (changeKind === undefined) {
@@ -73,10 +75,10 @@ export function lifecyclePolicyFor(mode: DesignMode, changeKind?: ChangeKind): L
       visual_polish: ["confirm", "understanding", "intent_lite", "validate"],
       defect_fix: ["confirm", "understanding", "intent_lite", "validate"],
     };
-    return { version: "1", mode, change_kind: changeKind, gates: gatesByKind[changeKind] };
+    return { version: "2", mode, change_kind: changeKind, gates: gatesByKind[changeKind] };
   }
   return {
-    version: "1",
+    version: "2",
     mode,
     ...(changeKind === undefined ? {} : { change_kind: changeKind }),
     gates: ["confirm", "understanding", "framing", ...REWORK_TAIL],

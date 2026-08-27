@@ -23,6 +23,7 @@ export const DesignPhaseSchema = z.enum([
   "DECISION",
   "SDIR",
   "CAPABILITY_RECONCILIATION",
+  "REALIZATION",
   "IMPLEMENTATION_READY",
   "VALIDATION",
   "COMPLETE",
@@ -49,17 +50,28 @@ export const GateNameSchema = z.enum([
   "sdir",
   "sdir_delta",
   "reconcile",
+  "realize",
   "prepare",
   "validate",
 ]);
 export type GateName = z.infer<typeof GateNameSchema>;
 
-export const LifecyclePolicySchema = z.object({
+const LifecyclePolicyV1Schema = z.object({
   version: z.literal("1"),
   mode: DesignModeSchema,
   change_kind: ChangeKindSchema.optional(),
   gates: z.array(GateNameSchema).min(1),
 });
+
+export const LifecyclePolicyV2Schema = z.object({
+  version: z.literal("2"),
+  mode: DesignModeSchema,
+  change_kind: ChangeKindSchema.optional(),
+  gates: z.array(GateNameSchema).min(1),
+});
+export type LifecyclePolicyV2 = z.infer<typeof LifecyclePolicyV2Schema>;
+
+export const LifecyclePolicySchema = z.discriminatedUnion("version", [LifecyclePolicyV1Schema, LifecyclePolicyV2Schema]);
 export type LifecyclePolicy = z.infer<typeof LifecyclePolicySchema>;
 
 export const DisclosureDepthSchema = z.enum(["L0", "L1", "L2", "L3"]);
@@ -410,6 +422,121 @@ export const CapabilityMapSchema = z.object({
 });
 export type CapabilityMap = z.infer<typeof CapabilityMapSchema>;
 
+export const RealizationModeSchema = z.enum(["direct_code", "figma_first"]);
+export type RealizationMode = z.infer<typeof RealizationModeSchema>;
+
+export const ProviderFrameRefSchema = z.object({
+  node_id: NonEmptyStringSchema,
+  name: NonEmptyStringSchema,
+  sdir_region: NonEmptyStringSchema,
+});
+export type ProviderFrameRef = z.infer<typeof ProviderFrameRefSchema>;
+
+export const ProviderRefsSchema = z.object({
+  file_key: NonEmptyStringSchema,
+  frames: z.array(ProviderFrameRefSchema).min(1),
+});
+export type ProviderRefs = z.infer<typeof ProviderRefsSchema>;
+
+export const RealizationConditionSchema = z.object({
+  id: NonEmptyStringSchema,
+  holds: z.boolean(),
+  basis: NonEmptyStringSchema,
+});
+export type RealizationCondition = z.infer<typeof RealizationConditionSchema>;
+
+export const RealizationDecisionSchema = z.object({
+  version: z.literal("0.1"),
+  realization_mode: RealizationModeSchema,
+  provider: NonEmptyStringSchema.optional(),
+  provider_contract_version: NonEmptyStringSchema.optional(),
+  conditions: z.array(RealizationConditionSchema).min(1),
+  proposed_at: z.string().datetime(),
+  supersedes: z
+    .object({ prior_mode: RealizationModeSchema, reason: NonEmptyStringSchema })
+    .optional(),
+  overridden: z.boolean().default(false),
+  override_reason: NonEmptyStringSchema.optional(),
+});
+export type RealizationDecision = z.infer<typeof RealizationDecisionSchema>;
+
+export const RepresentationStatusSchema = z.enum([
+  "pending_generation",
+  "under_review",
+  "revision_requested",
+  "approved",
+  "abandoned",
+]);
+
+export const RepresentationArtifactSchema = z.object({
+  version: z.literal("0.1"),
+  id: NonEmptyStringSchema,
+  representation: z.object({ role: z.literal("primary") }),
+  semantic_refs: z.object({
+    sdir_ref: z.literal("screen.sdir.yaml"),
+    sdir_digest: NonEmptyStringSchema,
+    regions: z.array(NonEmptyStringSchema).min(1),
+  }),
+  realization: z.object({
+    provider: NonEmptyStringSchema,
+    provider_contract_version: NonEmptyStringSchema,
+    refs: ProviderRefsSchema.nullable(),
+  }),
+  status: RepresentationStatusSchema,
+  validation: z.array(NonEmptyStringSchema),
+});
+export type RepresentationArtifact = z.infer<typeof RepresentationArtifactSchema>;
+
+export const ScreenshotEvidenceSchema = z.object({
+  type: z.literal("screenshot"),
+  ref: NonEmptyStringSchema,
+  sha256: NonEmptyStringSchema,
+  collected_at: z.string().datetime(),
+});
+
+export const HumanDecisionEvidenceSchema = z.object({
+  type: z.literal("human_decision"),
+  actor_type: z.literal("human"),
+  actor_ref: NonEmptyStringSchema,
+  source_type: NonEmptyStringSchema,
+  source_ref: NonEmptyStringSchema,
+  quote: NonEmptyStringSchema,
+  confirmed_at: z.string().datetime(),
+});
+
+export const RepresentationReviewEvidenceSchema = z.discriminatedUnion("type", [
+  ScreenshotEvidenceSchema,
+  HumanDecisionEvidenceSchema,
+]);
+export type RepresentationReviewEvidence = z.infer<typeof RepresentationReviewEvidenceSchema>;
+
+export const RepresentationReviewRecordSchema = z.object({
+  round: z.number().int().positive(),
+  status: z.enum(["approved", "rejected"]),
+  provider_refs_verified: z.object({
+    file_key: NonEmptyStringSchema,
+    frame_node_ids: z.array(NonEmptyStringSchema).min(1),
+  }),
+  feedback: z
+    .object({
+      text: NonEmptyStringSchema,
+      region_annotations: z
+        .array(z.object({ sdir_region: NonEmptyStringSchema, note: NonEmptyStringSchema }))
+        .default([]),
+    })
+    .optional(),
+  evidence: z.array(RepresentationReviewEvidenceSchema).min(1),
+  decided_at: z.string().datetime(),
+  sdir_digest_at_review: NonEmptyStringSchema,
+});
+export type RepresentationReviewRecord = z.infer<typeof RepresentationReviewRecordSchema>;
+
+export const RepresentationReviewSchema = RepresentationReviewRecordSchema.extend({
+  version: z.literal("0.1"),
+  history: z.array(RepresentationReviewRecordSchema).default([]),
+});
+export type RepresentationReview = z.infer<typeof RepresentationReviewSchema>;
+
 export const DisclosureRecordSchema = z.object({
   knowledge_id: NonEmptyStringSchema,
   depth: DisclosureDepthSchema,
@@ -485,6 +612,9 @@ export const ARTIFACT_FILES = {
   validationPlan: "validation-plan.yaml",
   compiledContext: "compiled-context.yaml",
   compilationTrace: "context-compilation-trace.yaml",
+  realizationDecision: "realization-decision.yaml",
+  representationArtifact: "representation-artifact.yaml",
+  representationReview: "representation-review.yaml",
 } as const;
 
 export type ArtifactKey = keyof typeof ARTIFACT_FILES;
