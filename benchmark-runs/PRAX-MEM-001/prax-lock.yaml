@@ -1,0 +1,24 @@
+prax_lock:
+  prax_version: "0.3.1-A9"
+  runtime_commit: 5b33653cd50dabe3441cacca751069ee1080ab70
+  benchmark_definition_commit: 5b33653cd50dabe3441cacca751069ee1080ab70
+  knowledge_release: research-2026-08-26   # research/upstream manifest.yaml upstream_release
+
+  agent:
+    cli: claude-code          # same as PRAX-AB-001
+    model: glm-5.3
+    mcp_scope: local (registered inside mem1-pair-01-b only)
+
+  project:
+    repo: engineering-control-plane
+    base_commit: 4f273c9
+    branch_a: mem1/pair-01-a
+    branch_b: mem1/pair-01-b
+    node: v24.14.0
+    chrome: "<fill: version used for screenshots>"
+
+  correction_seed:
+    source: benchmarks/correction-memory-mem001/correction.md (section 2)
+    seeded_after: B1 session close
+    target_correction: corr_canvas_impact_grammar
+    probe_correction: corr_probe_settings_001

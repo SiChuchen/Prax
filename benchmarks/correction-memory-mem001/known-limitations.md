@@ -38,3 +38,14 @@
 8. **Language and model parity.** Correction and requirements are English;
    agent/model identical to PRAX-AB-001 (claude-code + glm-5.3). Different
    models would need re-verification of the bait strength (limitation #2).
+
+9. **Shared agent-CLI memory across worktrees (hit in pair-01).** Both arm
+   worktrees share one git root (ecp), so the agent CLI's auto-memory pools
+   into one project memory dir. Observed 2026-08-27: the B1 agent wrote the
+   correction into memory before rework was interrupted; B-arm harness
+   knowledge would also be recallable by arm A. Mitigation applied: archive
+   in-experiment memory files after each task-1 session closes, restore the
+   pre-experiment baseline index, and re-verify the dir before every task-2
+   session start. Residual risk: a memory write that happens between the
+   final check and session start. PRAX-AB-001 may have had the same channel;
+   its review judged final artifacts, and it is not being reopened.

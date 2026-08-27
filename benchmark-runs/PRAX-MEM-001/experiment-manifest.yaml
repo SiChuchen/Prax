@@ -1,0 +1,25 @@
+experiment: PRAX-MEM-001
+pair: 01
+definition_commit: 5b33653cd50dabe3441cacca751069ee1080ab70
+created: 2026-08-27
+
+frozen_inputs:
+  task1_requirement:
+    path: benchmarks/correction-memory-mem001/task1-requirement.md
+    sha256: 9abd8f8c3f82eef02862b5a1dc1727d45641dd0ac0435c49e0405cf452f78950
+  task2_requirement:
+    path: benchmarks/correction-memory-mem001/task2-requirement.md
+    sha256: aa2c7590f2cc1b38a4e7ccad87f9536e12ba5b3f839e857c5e9d25863c6fb77a
+  correction:
+    path: benchmarks/correction-memory-mem001/correction.md
+    sha256: 1a3901a6af809b3549dcef663f6677c5e824ea4676956dcfeccb82b18b38d870
+
+sessions:
+  - {id: A1, arm: bare,  task: 1, worktree: mem1-pair-01-a, status: pending}
+  - {id: B1, arm: prax,  task: 1, worktree: mem1-pair-01-b, status: pending}
+  - {id: A2, arm: bare,  task: 2, worktree: mem1-pair-01-a, status: pending}
+  - {id: B2, arm: prax,  task: 2, worktree: mem1-pair-01-b, status: pending}
+
+operator_notes: >-
+  Execution order A1→B1→(correction+seed)→A2→B2. Fresh conversation per
+  session. 90 min budget each. Log events.ndjson per task dir.
