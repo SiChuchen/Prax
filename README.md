@@ -89,7 +89,7 @@ During repository development, use `npm run prax -- <command>` after building.
 
 ## MCP workflow
 
-Ten tools, three lifecycle depths. `design_start` declares the posture toward
+Eleven tools, three lifecycle depths. `design_start` declares the posture toward
 the existing system and the change kind, which expands into a per-session gate
 policy:
 
@@ -115,8 +115,11 @@ policy:
 7. `design_sdir` — full SDIR (`generate_from_decisions` / `validate`) or a
    semantic `sdir_delta` via `apply_delta` for modify sessions (which can
    declare `capability_needs` to pull the reconcile gate back in).
-8. `design_reconcile` 9. `design_prepare_implementation` (mode-specific
-   integration/change/migration plan) 10. `design_validate` (policy-assembled
+8. `design_reconcile` 9. `design_realize` — full-SDIR sessions must record a
+   realization decision before prepare: `direct_code` (explicit, audited) or
+   `figma_first` (provider refs + draft + human review through the spliced
+   `realize` gate). 10. `design_prepare_implementation` (mode-specific
+   integration/change/migration plan) 11. `design_validate` (policy-assembled
    check set).
 
 Tool order is enforced by the per-session gate policy. Calls after

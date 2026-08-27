@@ -8,7 +8,7 @@ loads the authoritative YAML record and gate artifacts from disk.
 
 | Plane | v0 implementation | Boundary |
 |---|---|---|
-| Protocol | MCP 2026-07-28 over stdio, SDK v2 | Ten staged tools only |
+| Protocol | MCP 2026-07-28 over stdio, SDK v2 | Eleven staged tools (`design_realize` added by ADR-003) |
 | State | `prax-runtime` local YAML store | Optimistic revision check and atomic rename |
 | Knowledge | 23 fully expanded entries | No list-all/search-everything tool; entries are a compiled subset of the versioned `research/upstream/` snapshot, not the whole research asset |
 | Routing | Scope filters plus deterministic scoring | 5 principles, 5 heuristics, 3 patterns, 1 profile |
@@ -35,6 +35,9 @@ The project-local directory is the handoff packet:
 ├── design-decisions.yaml
 ├── screen.sdir.yaml
 ├── capability-gaps.yaml
+├── realization-decision.yaml
+├── representation-artifact.yaml    # figma_first only; SDIR-digest bound
+├── representation-review.yaml      # human review rounds, append-only history
 ├── implementation-brief.yaml
 ├── validation-plan.yaml          # revision-locked, materialized pre-implementation
 ├── context-manifest.yaml         # runtime-owned derived routing metadata
@@ -68,6 +71,10 @@ as `frame`/`prepare_implementation`/`validation` map to `framing`/`prepare`/
 behavior. `sdir_delta` payloads that declare `capability_needs` splice a
 `reconcile` gate in before `prepare` at commit time. `design_sdir` validate
 mode remains callable after the SDIR gate as a read-only cross-phase check.
+Policy v2 sessions with a full SDIR gate splice a `realize` gate between
+reconcile and prepare when figma_first is proposed; prepare rejects v2
+full-SDIR sessions without a recorded realization decision
+(`REALIZATION_REQUIRED`).
 
 ## Concept boundaries (v0.3.1)
 
@@ -85,6 +92,11 @@ mode remains callable after the SDIR gate as a read-only cross-phase check.
   excludes CSS/JSX detail, but Prax still supervises design fidelity via
   persisted validation obligations and drift evidence — Prax controls design
   fidelity, not implementation syntax.
+- **Figma is a Representation Surface**: the authority chain is Design
+  Contract → Representation Artifact → provider refs; the runtime never
+  connects to Figma (agents drive the provider MCP), and same-node edits
+  after approval are a documented residual risk covered by
+  `representation_runtime_drift` evidence.
 
 ## Deliberate v0 constraints
 
