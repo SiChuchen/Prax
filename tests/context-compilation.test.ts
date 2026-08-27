@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { stringify } from "yaml";
 import { afterEach, describe, expect, it } from "vitest";
-import { FileSessionStore, type CompiledContext, type CompilationTrace, type Correction } from "prax-runtime";
+import { FileSessionStore, compileContext, type CompiledContext, type CompilationTrace, type Correction, type DesignSession } from "prax-runtime";
 import { PraxService } from "prax-mcp";
 import {
   architectureCapabilities,
@@ -178,5 +178,37 @@ describe("task-scoped context compilation", () => {
     expect(strip(first.prepared.compiled_context as CompiledContext)).toBe(
       strip(second.prepared.compiled_context as CompiledContext),
     );
+  });
+
+  it("compiles the approved representation mapping for implementing agents", () => {
+    const session: DesignSession = {
+      id: "ds_repr", project_root: "/tmp/p", mode: "greenfield", phase: "IMPLEMENTATION_READY",
+      created_at: "2026-08-28T00:00:00.000Z", updated_at: "2026-08-28T00:00:00.000Z", revision: 3,
+      requirement_ref: "requirement.md", completed_gates: ["confirm", "framing", "context", "route", "decide", "sdir", "reconcile", "realize"],
+      current_gate: { name: "prepare" }, disclosures: [], routing_history: [], artifacts: {},
+      unresolved: [], warnings: [], design_authorities: [],
+    };
+    const { compiled, trace } = compileContext({
+      session,
+      planRevision: 1,
+      planCheckIds: ["design_representation_coverage"],
+      corrections: [],
+      representation: {
+        provider: "figma",
+        file_key: "fk",
+        approved_anchor: { round: 2, sdir_digest: "digest-1", screenshot_digests: [{ ref: "rep-evidence/round-2/hero.png", sha256: "abc" }] },
+        region_frames: [
+          { region: "hero", node_id: "n1", name: "Hero" },
+          { region: "cta", node_id: "n2", name: "CTA" },
+        ],
+      },
+    });
+    expect(compiled.representation).toMatchObject({
+      provider: "figma",
+      file_key: "fk",
+      approved_anchor: { round: 2, sdir_digest: "digest-1" },
+    });
+    expect(compiled.representation?.region_frames).toHaveLength(2);
+    expect(JSON.stringify(trace.selected)).toContain("representation");
   });
 });

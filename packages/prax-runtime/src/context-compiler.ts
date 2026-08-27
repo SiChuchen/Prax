@@ -58,6 +58,18 @@ export const CompiledContextSchema = z.object({
   corrections: z
     .array(z.object({ id: NonEmpty, check_id: NonEmpty, intended: NonEmpty }))
     .default([]),
+  representation: z
+    .object({
+      provider: NonEmpty,
+      file_key: NonEmpty,
+      approved_anchor: z.object({
+        round: z.number().int().positive(),
+        sdir_digest: NonEmpty,
+        screenshot_digests: z.array(z.object({ ref: NonEmpty, sha256: NonEmpty })).default([]),
+      }),
+      region_frames: z.array(z.object({ region: NonEmpty, node_id: NonEmpty, name: NonEmpty })).min(1),
+    })
+    .optional(),
   validation: z.object({
     plan_revision: z.number().int().positive(),
     check_ids: z.array(NonEmpty),
@@ -83,6 +95,12 @@ export interface CompileContextInput {
   sdir?: SdirLike | undefined;
   intentLite?: IntentLite | undefined;
   manifest?: ContextManifest | undefined;
+  representation?: {
+    provider: string;
+    file_key: string;
+    approved_anchor: { round: number; sdir_digest: string; screenshot_digests: Array<{ ref: string; sha256: string }> };
+    region_frames: Array<{ region: string; node_id: string; name: string }>;
+  } | undefined;
   planRevision: number;
   planCheckIds: readonly string[];
   corrections: readonly Correction[];
@@ -92,7 +110,7 @@ export function compileContext(input: CompileContextInput): {
   compiled: CompiledContext;
   trace: CompilationTrace;
 } {
-  const { session, frame, understanding, decisions, sdir, intentLite, manifest } = input;
+  const { session, frame, understanding, decisions, sdir, intentLite, manifest, representation } = input;
 
   const surfaces = [
     ...new Set([
@@ -181,6 +199,7 @@ export function compileContext(input: CompileContextInput): {
       check_id: correction.regression.check_id,
       intended: correction.intended.statement,
     })),
+    ...(representation === undefined ? {} : { representation }),
     validation: {
       plan_revision: input.planRevision,
       check_ids: [...input.planCheckIds],
@@ -201,6 +220,9 @@ export function compileContext(input: CompileContextInput): {
       { ref: "decisions.primary_structure", reason: decisions === undefined ? [] : [decisions.primary_structure.pattern] },
       { ref: "unresolved", reason: unresolved },
       { ref: "corrections", reason: relevant.map((correction) => correction.id) },
+      ...(representation === undefined
+        ? []
+        : [{ ref: "representation", reason: representation.region_frames.map((frame) => `${frame.region}->${frame.node_id}`) }]),
       { ref: `validation-plan@${input.planRevision}`, reason: [...input.planCheckIds] },
     ],
     excluded: [
