@@ -9,6 +9,8 @@ import {
   ExistingUnderstandingSchema,
   IntentLiteSchema,
   ProductFrameSchema,
+  ProviderRefsSchema,
+  RealizationModeSchema,
   RequirementConfirmationSchema,
 } from "prax-runtime";
 import { SdirDeltaSchema, SdirSchema } from "prax-sdir";
@@ -144,6 +146,57 @@ export const DesignValidateInputSchema = z.object({
   evidence: ValidationEvidenceSchema.optional(),
 });
 
+const RealizeEvidenceItem = z.object({
+  type: z.enum(["screenshot", "human_decision"]),
+  ref: z.string().trim().min(1).optional(),
+  actor_ref: z.string().trim().min(1).optional(),
+  source_type: z.string().trim().min(1).optional(),
+  source_ref: z.string().trim().min(1).optional(),
+  quote: z.string().trim().min(1).optional(),
+});
+
+export const DesignRealizeInputSchema = z
+  .object({
+    design_session_id: SessionId,
+    mode: z.enum(["propose", "submit_draft", "submit_review"]),
+    realization_mode: RealizationModeSchema.optional(),
+    provider: z.string().trim().min(1).optional(),
+    conditions: z
+      .array(z.object({ id: z.string().trim().min(1), holds: z.boolean(), basis: z.string().trim().min(1) }))
+      .optional(),
+    reason: z.string().trim().min(1).optional().describe("Required when re-proposing a different mode."),
+    override: z.boolean().optional(),
+    override_reason: z.string().trim().min(1).optional(),
+    provider_refs: ProviderRefsSchema.optional(),
+    status: z.enum(["approved", "rejected"]).optional(),
+    provider_refs_verified: z
+      .object({ file_key: z.string().trim().min(1), frame_node_ids: z.array(z.string().trim().min(1)).min(1) })
+      .optional(),
+    feedback: z
+      .object({
+        text: z.string().trim().min(1).optional(),
+        region_annotations: z
+          .array(z.object({ sdir_region: z.string().trim().min(1), note: z.string().trim().min(1) }))
+          .optional(),
+      })
+      .optional(),
+    evidence: z.array(RealizeEvidenceItem).min(1).optional(),
+  })
+  .superRefine((input, ctx) => {
+    if (input.mode === "propose" && (input.realization_mode === undefined || input.conditions === undefined)) {
+      ctx.addIssue({ code: "custom", path: ["realization_mode"], message: "propose requires realization_mode and conditions." });
+    }
+    if (input.mode === "submit_draft" && input.provider_refs === undefined) {
+      ctx.addIssue({ code: "custom", path: ["provider_refs"], message: "submit_draft requires provider_refs." });
+    }
+    if (
+      input.mode === "submit_review" &&
+      (input.status === undefined || input.provider_refs_verified === undefined || input.evidence === undefined)
+    ) {
+      ctx.addIssue({ code: "custom", path: ["status"], message: "submit_review requires status, provider_refs_verified, and evidence." });
+    }
+  });
+
 export type DesignStartInput = z.infer<typeof DesignStartInputSchema>;
 export type DesignStartClientInput = z.input<typeof DesignStartClientSchema>;
 export type DesignFrameInput = z.infer<typeof DesignFrameInputSchema>;
@@ -155,4 +208,5 @@ export type DesignSdirInput = z.infer<typeof DesignSdirInputSchema>;
 export type DesignReconcileInput = z.infer<typeof DesignReconcileInputSchema>;
 export type DesignPrepareImplementationInput = z.infer<typeof DesignPrepareImplementationInputSchema>;
 export type DesignValidateInput = z.infer<typeof DesignValidateInputSchema>;
+export type DesignRealizeInput = z.infer<typeof DesignRealizeInputSchema>;
 

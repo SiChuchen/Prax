@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { toJSONSchema } from "zod";
 import { afterEach, describe, expect, it } from "vitest";
 import { FileSessionStore } from "prax-runtime";
-import { PraxService, DesignStartClientSchema } from "prax-mcp";
+import { PraxService, DesignStartClientSchema, DesignRealizeInputSchema } from "prax-mcp";
 import { requirementConfirmation } from "./fixtures.js";
 
 const cleanup: string[] = [];
@@ -70,5 +70,36 @@ describe("server-side branch validation", () => {
     const resumed = await service.designStart({ design_session_id: sessionId } as never);
     expect(resumed.status).toBe("RETRY");
     expect(JSON.stringify(resumed.issues)).toMatch(/requirement_confirmation/);
+  });
+});
+
+describe("client-facing design_realize schema (flat, no anyOf)", () => {
+  it("serializes to a single flat object schema", () => {
+    const json = toJSONSchema(DesignRealizeInputSchema, { target: "draft-2020-12", io: "input" });
+    expect(json.type).toBe("object");
+    expect((json as { anyOf?: unknown }).anyOf).toBeUndefined();
+    expect((json as { additionalProperties?: unknown }).additionalProperties).toBeUndefined();
+  });
+
+  it("accepts propose and review payloads without nested unions", () => {
+    const propose = DesignRealizeInputSchema.safeParse({
+      design_session_id: "ds_x",
+      mode: "propose",
+      realization_mode: "figma_first",
+      provider: "figma",
+      conditions: [{ id: "greenfield", holds: true, basis: "greenfield session" }],
+    });
+    expect(propose.success).toBe(true);
+    const review = DesignRealizeInputSchema.safeParse({
+      design_session_id: "ds_x",
+      mode: "submit_review",
+      status: "approved",
+      provider_refs_verified: { file_key: "fk", frame_node_ids: ["n1"] },
+      evidence: [
+        { type: "screenshot", ref: "rep-evidence/round-1/hero.png" },
+        { type: "human_decision", actor_ref: "user:x", source_type: "conversation", source_ref: "m1", quote: "approved" },
+      ],
+    });
+    expect(review.success).toBe(true);
   });
 });
