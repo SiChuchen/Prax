@@ -1,0 +1,54 @@
+run:
+  id: PRAX-AB-001-run-05-A
+  arm: arm-a-bare
+  agent_cli: claude-code (glm-5.3)
+  session: e2ea75e5-1818-462c-84ea-914357031b52
+  commit: 711e2e4   # single commit on ab/run-05-arm-a
+  started_at: 2026-08-27T01:24:02Z
+  ended_at: 2026-08-27T02:38:49Z
+
+result:
+  implementation_completed: true
+  final_validation: agent-verified   # bare arm runs its own checks; review scores it
+  changed_files: 18
+  diff_stat: "878 insertions(+), 85 deletions(-)"
+  tests_touched: tests/canvas-readability.test.mjs (new, +189)
+
+process:
+  wall_clock_seconds: 4477   # 1h14m37s, operator-reported (transcript span 74m47s)
+  model_usage:
+    input_tokens: 2131626
+    output_tokens: 545987
+    cache_read_input_tokens: 73150848
+  assistant_turns: 435
+  tool_calls: 245
+  file_edits: 64
+  browser_verification: playwright (31 evaluate / 14 screenshot / 15 navigate) + 10 image analyses
+  prax_calls: 0
+  human_clarifications: 0
+  first_pass_at: not_recorded_by_operator
+  first_pass_validation_failures: not_recorded
+  post_first_pass_repair_rounds: not_recorded
+
+process_observations:
+  - >-
+    Turn count and tool-call count match runs 01/03 almost exactly, but token
+    usage is ~3x input / ~1.7x output. Same task, same agent, same model:
+    verbosity variance is real run-to-run stochasticity in the BARE arm —
+    useful evidence that cost variance is not Prax-specific.
+  - >-
+    Environment events (pre-session): npm ci failed on registry ECONNRESET
+    (mass network failure window); node_modules copied byte-identical from
+    sibling worktree run-04 (same commit, same lockfile), verified via
+    `npx vinext build`. CRLF checkout environment (core.autocrlf=true) is
+    identical across all runs and both arms.
+
+contamination_check:
+  prax_dir_absent: true
+  prax_env_absent: true
+  base_commit_verified: 2c77838
+
+evidence:
+  screenshots: 5   # complex default browse, inspector docked, trace corridor,
+                   # relationship lens, medium default browse
+  transcript: execution/session-transcript.jsonl
