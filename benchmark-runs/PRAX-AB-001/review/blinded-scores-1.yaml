@@ -1,0 +1,156 @@
+reviewer: reviewer-1
+rubric_version: v0.2
+scores:
+  impl-1:
+    R1:
+      label: PASS
+      evidence: "改动围绕用户可理解对象：layout.ts composeTopLevelRegions 二维组合顶层 Region、region-node keyObjectNames 摘要、trace-corridor-bar 入口→步骤→结果条、inspectorDockShift；tests/canvas-engine.test.mjs 六条契约逐条编码为断言"
+    R2:
+      label: PASS
+      evidence: "interaction.ts labelCompensation 以 13px 屏幕空间文字下限为契约（测试 'Compensated 15px labels must meet the 13px screen-space floor'）；01-browse-complex-default.png Region/对象名（Domain 3 - Control Plane、Identity Service 00）不放大可读，画布占视口约 90%，chrome 克制"
+    R3:
+      label: PASS
+      evidence: "globals.css 将 Inspector 从绝对定位覆盖改为 flex 停靠列（width 0→336px 过渡），architecture-canvas.tsx inspectorDockShift 在开合时平移相机半个停靠宽（170ms 动画）；fitOpeningFrame/fitReadableMap 复用同一取景契约，localStorage 布局键随 LAYOUT_ALGORITHM_VERSION=2 版本化保稳定"
+    R4:
+      label: PASS
+      evidence: "TARGET_ASPECT=1.6 列数公式 + 测试 'top-level Regions compose two-dimensionally instead of one strip'（distinctRows≥2、纵横比 0.3–3.6）；ARCHITECTURE_FULL_MAP_BUDGET=24 之下全图、之上以 Region 摘要收编非关键对象；02/03 截图为专业密度无缩略图感"
+    R5:
+      label: PASS
+      evidence: "canvas-layouting 全屏 ELK 加载态、canvas-layout-error role=status 错误态均移入 canvas-map 且 z-index 分层；Inspector 无绑定时 aria-hidden；04-relationship-lens 面板展示 suppressed/normal/active 全套状态"
+    R6:
+      label: PASS_WITH_REVIEW
+      evidence: "决策依据主要编码在常量与测试断言文案中（如 'composed map aspect must approach the viewport instead of a long strip'），.gitignore 留有 design evidence tooling 注释，但无 docs/ADR 记录被拒备选（如为何选合成走廊而非渲染器路由）"
+    R7:
+      label: PASS
+      evidence: "layout.ts syntheticCorridorRoute 为跨组合成员关系重算同 id 正交路由（sourceSide right/bottom→targetSide left/top 保向），测试断言每条关系必有 ELK 或 synthetic 路由且正交避障；trace 边携带 flowSequence+payload 有序主路径；配色单灰+线型区分无彩虹"
+  impl-2:
+    R1:
+      label: PASS
+      evidence: "以顶层单元（Region 单元）为产品对象重构：layout.ts topLevelUnitIndex/每单元独立 ELK + packUnits 行打包；projection.ts traceOrder 走廊与 summaryNames Region 摘要；docs/Canvas_Engine_v1_Review.md 以六契约对照表组织全部改动"
+    R2:
+      label: PASS
+      evidence: "readability 契约：默认 fitView minZoom=0.55（不再落入 Landscape），01/02 截图 Region 名与对象名（Ingress Service 001 等）不放大可读；docs 记录实测 12.7px 对象标签、Region 标签 12–13.6px"
+    R3:
+      label: PASS
+      evidence: "globals.css canvas-stage 改 grid + 336px 停靠列，architecture-canvas.tsx dockPanViewport 以 inspectorFocusRect（对象/关系包围盒）最小平移保持选中可见且 zoom 不变，docs 记录实测 pan −146px/zoom 恒 0.55；04-inspector-docked-camera-held.png 佐证"
+    R4:
+      label: PASS
+      evidence: "packUnits 按 MAP_ASPECT_TARGET≈1.7 行打包、稀疏单元 DOWN 方向重跑（代码注释说明防长条）；06-landscape-region-summaries.png 显示摘要行 'Context Provider Evidence Service 029 +12' 补偿隐藏对象；docs 记录 Large 布局 4.2s→0.6s"
+    R5:
+      label: PASS_WITH_REVIEW
+      evidence: "diff 中 canvas-layouting/canvas-layout-error role=status 俱在；但 interaction.ts 在 patch 中为二进制差异不可读，其状态派生逻辑无法核验，且 changed-files 列出的 readability.ts 与 tests/canvas-readability.test.mjs 两个新文件 hunk 未出现在 git-diff.patch 中"
+    R6:
+      label: PASS
+      evidence: "docs/Canvas_Engine_v1_Review.md 新增 'Readability correction (2026-08-26)'：契约→实现对照表、跨单元关系改走 SmartEdge 的取舍、fixture 现实性说明（拒绝 round-robin 条带化并给理由）、性能副作用与 20/20 测试证据，是六份中唯一的正式决策文档"
+    R7:
+      label: PASS_WITH_REVIEW
+      evidence: "关系 id/source/target 与箭头保持不变、跨单元边显式弃 ELK 路由交给 SmartEdge（测试改为仅断言 intra-unit 正交避障）；但 visibleRelationshipIds 将默认普通边预算压到 48/26（docs：Medium 默认仅 12/70 条边），默认视图牺牲了大部分关系可见性，属需评审的密度取舍"
+  impl-3:
+    R1:
+      label: PASS
+      evidence: "新增 camera.ts/corridor-edge.tsx 皆以产品语义命名：corridorStops 入口→结果有序停靠、composeTopLevelBlocks 组合块、region-node typeCounts 构成摘要（'11 Service' 见 02 截图）；测试 'trace must be a lens: reopening the same graph keeps the stable map' 直接表达产品不变量"
+    R2:
+      label: PASS
+      evidence: "camera.ts ARCHITECTURE_ZOOM_FLOOR=0.55/CEILING=1 的 architectureDensityViewport 居中取景；screenSpaceLabelScale 以 13px 基准字号×缩放补偿（测试 12px 屏幕下限）；01/02 截图标签与 Region 摘要不放大可读，画布约 85–90% 视口"
+    R3:
+      label: PASS
+      evidence: "Inspector 改 flex-basis 0↔336px 停靠（窄屏回退 overlay 有响应式分支）；停靠 effect 按模式重取景（trace→流程节点 fit、inspect/focus→选中节点、browse→架构相机）；03 截图选中节点白框+关联边高亮联动"
+    R4:
+      label: PASS
+      evidence: "ROOT_COMPOSITION 列数 2–5/纵横比 1.5 网格打包 + 残留对象块；测试断言 ≥5 块必多行、纵横比 0.45–3；02-browse-architecture-density-complex.png 呈 5 列×多行 2D 网格与关键对象+摘要密度"
+    R5:
+      label: PASS
+      evidence: "状态处理最完整：canvas-layouting/layoutError role=status、03 截图 Inspector 空关系显式文案 'No declared relationships.'、region-node 'no objects' 空态、05 截图 Landscape 'no objects' 摘要态"
+    R6:
+      label: PASS_WITH_REVIEW
+      evidence: "关键决策有命名常量与测试断言依据（如 camera floor、aspect 0.45–3），代码中仅少量行内注释，无 docs/ADR 说明被拒备选（如为何自建 gutter 桥接而非渲染器路由）"
+    R7:
+      label: PASS
+      evidence: "唯一不弃路由的实现：bridgeAcrossGutters 为跨块关系重算正交桥接（前缀/后缀平移保留原 ELK 端口方向），interRegion 标记有专门测试；corridor 边为独立虚线语法叠加在稳定地图上（入口/结果徽章颜色区分）；无彩虹。评审点：corridor 边与底层关系边可能同时渲染形成双线，建议核对"
+  impl-4:
+    R1:
+      label: PASS
+      evidence: "interaction.ts traceCorridor 基于 Flow nextStepIds 图（'Parallel branches keep their own transitions'）、regionReadingSummary 含 internal/crossRegion 链路预算、hover preview 以用户任务（跟关系）为中心；docstring 均以产品语义书写"
+    R2:
+      label: PASS
+      evidence: "ARCHITECTURE_ZOOM_FLOOR=0.56 + MIN_MEANINGFUL_TEXT_PX=13（测试 'Default view labels must stay ≥ 13px on screen'）+ 最小对象屏幕宽 232×0.56≥120 测试；01/02/03 截图小/中/复杂三种规模标签全部不放大可读，画布 ~90%"
+    R3:
+      label: PASS
+      evidence: "select → centerOnSelection 按选择类型定中心（对象/关系标签点/中点）保持当前 zoom；Inspector 停靠打开时 effect 重定位选中项；hover 预览有测试保证不切换 Browse 模式（'Hover must not switch the canvas mode'）；07 截图展示悬停高亮+关系名浮现"
+    R4:
+      label: PASS
+      evidence: "packTopLevelRegions 行打包 aspect 1.55，测试断言不重叠、同行顶边对齐、small/large 必多行、纵横比 0.35–3.2、打包幂等；密度策略为全对象保留+缩放下限（02/03 截图全部 40/64 对象仍可读）"
+    R5:
+      label: PASS_WITH_REVIEW
+      evidence: "canvas-layouting/layoutError 保留于 canvas-stage，region-node 有 'No key objects declared' 空态；但 diff 未新增 Inspector 空关系/错误态处理（inspector.tsx 仅改走廊步骤），关系为 0 时的表现无法从证据确认（04 截图对象有关系）"
+    R6:
+      label: PASS_WITH_REVIEW
+      evidence: "interaction.ts/layout.ts 关键处有 docstring 级 rationale（zoom floor、packing、routedSides 几何取边、trace-as-lens、Region 摘要），测试文案承载契约语言；无 docs/被拒备选记录"
+    R7:
+      label: PASS_WITH_REVIEW
+      evidence: "跨顶层 Region 关系弃 ELK 路由交 SmartEdge（测试 'must defer to the obstacle-aware renderer'），routedSides 按几何选 source/target handle 并有注释说明；走廊 transition 优先绑定真实 relationship（synthetic 仅作 id 兜底不产生假边）；但跨区几何正确性只由渲染器保证、无方向性专门断言"
+  impl-5:
+    R1:
+      label: PASS
+      evidence: "camera.ts/interaction.ts/trace-corridor.tsx 全部围绕用户对象：deriveTraceCorridor（入口/结果/交接 payload）、summarizeRegions（typeCounts+待证据计数+跨 Region 关系数）、'TRACE CORRIDOR Intent to Verified Change' 走廊条见 03 截图"
+    R2:
+      label: PASS
+      evidence: "最激进的密度策略：ARCHITECTURE_ZOOM_FLOOR=0.8 且地图允许溢出视口，primaryRegionAnchor 保证首屏落在主 Region 头部+摘要；viewportCoverage 测试要求内容占视口 ≥0.7；readableLabelScale 13.5px 目标（多档 zoom 测试）；01 截图摘要 '32 Service·11 Agent·11 Storage·10 External 4 待证据' 一眼可读"
+    R3:
+      label: PASS
+      evidence: "停靠响应最完整：dockViewportShift 同时响应 Inspector（右 336px）与走廊条（底部实测高度）且测试 'docking must pan, not zoom out'；走廊内选步骤在稳定地图上按当前 zoom 平移（代码注释 'walking the ordered path pans the stable map'）；关系 inspect 态其余边 muted 有测试"
+    R4:
+      label: PASS
+      evidence: "composeRegionRows 对每个 ≥3 子级的纯 Region 层递归行打包（权重均衡），测试断言任一 ≥3 子级层必多行、顶层纵横比 ≤3.5；region-summary 在 landscape/architecture 两档常显（typeCounts+关键对象+跨区关系数）"
+    R5:
+      label: PASS_WITH_REVIEW
+      evidence: "canvas-layouting/layoutError 保留并移入 canvas-flow-surface；summarizeRegions 有零值兜底对象、01 截图显示 '0 objects·6 regions' 摘要态；但除基线外未新增显式错误/空关系态，Inspector 空关系表现无证据"
+    R6:
+      label: PASS_WITH_REVIEW
+      evidence: "camera.ts/layout.ts/trace-corridor.tsx 每个关键函数带 rationale 注释（'off-screen geometry is preferred over an unreadable thumbnail'、'docking must pan, not zoom out' 等），取舍意图清晰；但无 docs/被拒备选记录，数值（0.8、0.7 覆盖率）未说明推导"
+    R7:
+      label: PASS
+      evidence: "默认不删边仅改 emphasis（选中关系其余 muted、trace 上下文边 muted 有测试）；compositionUnits 测试保证只有跨单元关系才允许落到 SmartEdge；走廊 transition 必须骑在真实关系上（测试 'transition must ride a relationship'）；FROM/TO 关系面板见 04 截图，无彩虹"
+  impl-6:
+    R1:
+      label: PASS
+      evidence: "改动集中于产品语义对象：deriveTraceCorridor 取最长确定性主路径（入口步→最低序后继→结果）、trace-strip '入口 → 有序步骤 → 结果' 信息条、region-node subtreeObjectCount+keyObjectNames 子树摘要"
+    R2:
+      label: PASS_WITH_REVIEW
+      evidence: "camera.ts READABILITY（13px 标签屏幕下限、对象最小屏幕宽 170px）+ DEFAULT_ZOOM_FLOOR=0.75 + frameTopRegions 以顶层 Region 取景（测试含多档 zoom 屏幕字号断言）；browse-architecture-density-medium.png 标签可读；但证据集最小（无 complex/small 默认视图截图），且截图 01 中 Region 摘要文字呈现疑似异常（视觉分析读到 'Confirmed 10'/'Confirmed e 016' 等非摘要格式字串）"
+    R3:
+      label: PASS_WITH_REVIEW
+      evidence: "dockViewportShift 同时响应左 flowLens(316) 与右 Inspector(336) 停靠并测试半宽平移；canvas-stage 三列 grid 停靠；但 trace-strip 为绝对定位浮层（bottom:12px 覆盖画布）而非停靠，无相机响应，与 Inspector 停靠处理不一致"
+    R4:
+      label: PASS
+      evidence: "packRegionGrid 对行列数 k 做 aspect+fill 打分寻优，layoutRegionSubtree 对 ≥3 兄弟层递归拆分；测试断言兄弟层必多行、纵横比 ≤4.5、确定性、顶层不重叠；01 截图为 2D 网格全对象专业密度"
+    R5:
+      label: FAIL
+      evidence: "landscape-region-summaries.png 中出现 'UNHANDLED SCRIPT ERROR' 黑底红题错误弹窗遮挡画布——官方证据截图捕获到未处理运行时错误，说明至少 Landscape 状态错误未被应用内错误处理吸收（diff 中仅有基线 canvas-layouting/layoutError）；无法确认错误来源，但该状态在交付证据中即处于损坏态"
+    R6:
+      label: PASS_WITH_REVIEW
+      evidence: "camera.ts/layout.ts 有常量注释 rationale（GRID_SPLIT_MIN_SIBLINGS、'off-screen geometry is preferred over an unreadable thumbnail'）与走廊走法注释（'Deterministic; cycles stop before revisiting'）；无 docs/被拒备选，且交付证据中未解释 landscape 错误"
+    R7:
+      label: PASS_WITH_REVIEW
+      evidence: "走廊转换强制使用已声明 Flow 关系（测试 'Corridor transitions must use declared Flow relationships'）且同 Region 内关系必须保留 ELK 路由（测试 'inside one Region must receive an ELK route'）；sourceHandle 回退到 relationship.layoutHints 端口侧保方向；但跨 scope 关系弃路由交渲染器，且 landscape 状态的脚本错误使该缩放档的关系渲染稳定性存疑"
+overall_impression:
+  strongest: impl-3
+  weakest: impl-6
+notes: >-
+  评审方法说明：截图均为真实浏览器截图并逐张查看（本环境经图像分析通道获取内容描述，非像素级直读），
+  diff 逐份通读；所有截图共同呈安静深色专业工具风格，无彩虹配色、无营销装饰、无永久发光，符合固定约束。
+
+  关键观察：
+  (1) impl-2 的 git-diff.patch 不完整——changed-files.txt 列出的 app/architecture/readability.ts 与
+  tests/canvas-readability.test.mjs 两个新文件无对应 hunk，且 interaction.ts 显示为二进制差异不可读；
+  其相机/标签/边预算核心逻辑仅能凭 docs 描述与导入引用间接核验（已在其 R5/R7 体现）。
+  (2) impl-6 的 landscape-region-summaries.png 捕获到 UNHANDLED SCRIPT ERROR 错误弹窗，且其证据集最少
+  （无 complex/small 默认视图截图），R5 判 FAIL 的直接依据即该截图。
+  (3) 密度哲学分两派：impl-1/2/3 以 Region 摘要收编非关键对象，impl-4/6 保留全对象、以缩放下限保证可读，
+  impl-5 采用 0.8 高缩放下限+允许地图溢出+主 Region 锚定首屏；三派均满足"屏幕空间可读"契约，未据以扣分。
+  (4) 跨 Region 关系处理分两派：impl-1/3 保留并重算 ELK 风格正交路由，impl-2/4/5/6 弃路由交给 SmartEdge
+  渲染器避障；后者均削弱了 diff 内可验证的正交/避障测试断言，已在各自 R7 体现。
+  (5) 视觉分析对个别截图的布局判读存在噪声（如 impl-1 复杂图默认视图被判为单行横条，与其自身
+  "compose two-dimensionally" 测试断言矛盾），评分以 diff+测试为主证据、截图为佐证。
+  (6) impl-2 修改了 fixtures.ts（对象按 Region 连续分块替代轮询条带）并在 docs 中说明理由且保留困难用例；
+  此为基准数据分布调整而非数据形状变更，特此披露。

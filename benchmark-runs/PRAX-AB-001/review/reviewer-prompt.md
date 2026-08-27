@@ -8,7 +8,8 @@
 
 - `impl-1/` … `impl-6/`，每个包含：
   - `screenshots/` —— 真实浏览器截图（**必须逐张 Read 查看**）
-  - `git-diff.patch` —— 相对同一基线的完整代码改动
+  - `review-patch.diff` —— 相对同一基线的完整代码改动（**以这份为准**；见 PACKAGING-NOTE.md）
+  - `git-diff.patch` —— 原始审计留档（有已知打包缺陷，评分勿用）
   - `changed-files.txt` —— 变更文件清单
 
 **纪律**：你只知道 impl-1…impl-6。禁止读取以下任何内容：

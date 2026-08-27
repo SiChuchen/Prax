@@ -1,0 +1,1284 @@
+diff --git a/app/architecture/architecture-canvas.tsx b/app/architecture/architecture-canvas.tsx
+index 94cc854..9a5bb4b 100644
+--- a/app/architecture/architecture-canvas.tsx
++++ b/app/architecture/architecture-canvas.tsx
+@@ -8,7 +8,7 @@ import FlowPanel from "./flow-panel";
+ import { atRevision } from "./flow-projection";
+ import Inspector from "./inspector";
+ import { bindInspector } from "./inspector-binding";
+-import { deriveCanvasView, type CanvasInteractionState, type CanvasSelection } from "./interaction";
++import { ARCHITECTURE_ZOOM_FLOOR, deriveCanvasView, type CanvasInteractionState, type CanvasSelection } from "./interaction";
+ import { layoutSemanticGraph, type CanvasLayout } from "./layout";
+ import { projectSemanticGraph, type CanvasNode, type CanvasObjectNode, type CanvasRelationshipEdge } from "./projection";
+ import { adaptArchitectureToSemanticGraph } from "./semantic-adapter";
+@@ -234,7 +234,7 @@ export default function ArchitectureCanvas({
+     const layoutIdentity = layout ? `${storageKey}:${layout.fingerprint}` : "";
+     if (layoutIdentity && fittedLayoutRef.current !== layoutIdentity) {
+       fittedLayoutRef.current = layoutIdentity;
+-      const timer = window.setTimeout(() => instanceRef.current?.fitView({ padding: 0.16, duration: 360, maxZoom: 1.05 }), 40);
++      const timer = window.setTimeout(() => instanceRef.current?.fitView({ padding: 0.16, duration: 360, maxZoom: 1.05, minZoom: ARCHITECTURE_ZOOM_FLOOR }), 40);
+       return () => window.clearTimeout(timer);
+     }
+     return undefined;
+@@ -256,15 +256,45 @@ export default function ArchitectureCanvas({
+     return undefined;
+   }, [graph, interaction.activeFlowId, interaction.selection]);
+ 
+-  const select = useCallback((selection: CanvasSelection) => {
+-    if (selection?.kind === "flow") {
++  const centerOnSelection = useCallback((selection: CanvasSelection) => {
++    const instance = instanceRef.current;
++    if (!instance || !selection) return;
++    if (selection.kind === "flow") {
+       const flowObjectIds = new Set(graph.flows.find((flow) => flow.id === selection.id)?.objectIds ?? []);
+-      window.setTimeout(() => {
+-        const instance = instanceRef.current;
+-        const targetNodes = instance?.getNodes().filter((node) => flowObjectIds.has(node.id)) ?? [];
+-        if (targetNodes.length > 0) void instance?.fitView({ nodes: targetNodes, padding: .38, duration: 420, maxZoom: 1.08 });
+-      }, 80);
++      const targetNodes = instance.getNodes().filter((node) => flowObjectIds.has(node.id));
++      // Trace is an explicit intent: the whole corridor from entry to result
++      // must fit in one view even below the default Architecture floor; the
++      // corridor badges and transition labels compensate to stay readable.
++      if (targetNodes.length > 0) void instance.fitView({ nodes: targetNodes, padding: .2, duration: 420, maxZoom: 1.08 });
++      return;
++    }
++    const zoom = instance.getZoom();
++    if (selection.kind === "object") {
++      const node = instance.getNodes().find((candidate) => candidate.id === selection.id);
++      if (!node) return;
++      void instance.setCenter(node.position.x + (node.measured?.width ?? 250) / 2, node.position.y + (node.measured?.height ?? 130) / 2, { zoom, duration: 300 });
++      return;
++    }
++    const relationship = graph.relationships.find((candidate) => candidate.id === selection.id);
++    if (!relationship) return;
++    const labelPoint = layout?.relationshipRoutes[relationship.id]?.labelPoint;
++    if (labelPoint) {
++      void instance.setCenter(labelPoint.x, labelPoint.y, { zoom, duration: 300 });
++      return;
++    }
++    const source = layout?.objectRects[relationship.sourceObjectId];
++    const target = layout?.objectRects[relationship.targetObjectId];
++    if (source && target) {
++      void instance.setCenter(
++        (source.x + source.width / 2 + target.x + target.width / 2) / 2,
++        (source.y + source.height / 2 + target.y + target.height / 2) / 2,
++        { zoom, duration: 300 },
++      );
+     }
++  }, [graph.flows, graph.relationships, layout]);
++
++  const select = useCallback((selection: CanvasSelection) => {
++    if (selection) window.setTimeout(() => centerOnSelection(selection), 140);
+     setInteraction((current) => {
+       if (!selection) return { ...current, mode: "browse", selection: null, activeFlowId: null };
+       if (selection.kind === "flow") return { ...current, mode: "trace", selection, activeFlowId: selection.id };
+@@ -272,7 +302,7 @@ export default function ArchitectureCanvas({
+       if (current.mode === "focus" && selection.kind === "object") return { ...current, selection, activeFlowId: null };
+       return { ...current, mode: "inspect", selection, activeFlowId: null };
+     });
+-  }, [graph.flows]);
++  }, [centerOnSelection]);
+ 
+   const focusObject = useCallback((objectId: string) => {
+     const focusIds = new Set([objectId]);
+@@ -283,11 +313,21 @@ export default function ArchitectureCanvas({
+     window.setTimeout(() => {
+       const instance = instanceRef.current;
+       const targetNodes = instance?.getNodes().filter((node) => focusIds.has(node.id)) ?? [];
+-      if (targetNodes.length > 0) void instance?.fitView({ nodes: targetNodes, padding: .48, duration: 380, maxZoom: 1.15 });
++      if (targetNodes.length > 0) void instance?.fitView({ nodes: targetNodes, padding: .48, duration: 380, maxZoom: 1.15, minZoom: ARCHITECTURE_ZOOM_FLOOR });
+     }, 80);
+     setInteraction((current) => ({ ...current, mode: "focus", selection: { kind: "object", id: objectId }, activeFlowId: null }));
+   }, [graph.relationships]);
+ 
++  const dockedRef = useRef(false);
++  useEffect(() => {
++    const docked = Boolean(inspectorBinding);
++    const opened = docked && !dockedRef.current;
++    dockedRef.current = docked;
++    if (!opened) return undefined;
++    const timer = window.setTimeout(() => centerOnSelection(interaction.selection), 160);
++    return () => window.clearTimeout(timer);
++  }, [centerOnSelection, inspectorBinding, interaction.selection]);
++
+   useEffect(() => {
+     const onKeyDown = (event: KeyboardEvent) => {
+       const target = event.target as HTMLElement | null;
+@@ -365,7 +405,7 @@ export default function ArchitectureCanvas({
+         </div>
+         <div className="canvas-command-actions">
+           {detail && isCurrentRevision && pendingEntities.length > 0 && <button className={showPending ? "active" : ""} onClick={() => setShowPending((value) => !value)} type="button">Change Overlay <b>{pendingEntities.length}</b></button>}
+-          <button onClick={() => instanceRef.current?.fitView({ padding: 0.16, duration: 300, maxZoom: 1.05 })} type="button">Fit</button>
++          <button onClick={() => instanceRef.current?.fitView({ padding: 0.16, duration: 300, maxZoom: 1.05, minZoom: ARCHITECTURE_ZOOM_FLOOR })} type="button">Fit</button>
+           <button onClick={resetLayout} type="button">Layout</button>
+           <button onClick={() => void toggleFullscreen()} type="button">Full</button>
+         </div>
+@@ -385,16 +425,19 @@ export default function ArchitectureCanvas({
+         </div>
+       )}
+ 
+-      <div className="canvas-stage">
++      <div className={`canvas-stage${inspectorBinding ? " inspector-docked" : ""}`}>
+         <ArchitectureCanvasKernel
+           edges={edges}
+           mode={interaction.mode}
++          fitViewOptions={{ padding: 0.16, maxZoom: 1.05, minZoom: ARCHITECTURE_ZOOM_FLOOR }}
+           nodes={nodes}
+           onEdgeClick={(edge) => select({ kind: "relationship", id: edge.id })}
+           onEdgesChange={onEdgesChange}
+           onInit={(instance) => { instanceRef.current = instance; }}
+           onNodeClick={(node) => select({ kind: "object", id: node.id })}
+           onNodeDragStop={handleNodeDragStop}
++          onNodeMouseEnter={(node) => setInteraction((current) => current.hoveredObjectId === node.id ? current : { ...current, hoveredObjectId: node.id })}
++          onNodeMouseLeave={() => setInteraction((current) => current.hoveredObjectId ? { ...current, hoveredObjectId: null } : current)}
+           onNodesChange={onNodesChange}
+           onPaneClick={handlePaneClick}
+           onViewportChange={(viewport) => setInteraction((current) => Math.abs(current.zoom - viewport.zoom) < 0.015 ? current : { ...current, zoom: viewport.zoom })}
+diff --git a/app/architecture/architecture-edge.tsx b/app/architecture/architecture-edge.tsx
+index c734d82..9ca3ef0 100644
+--- a/app/architecture/architecture-edge.tsx
++++ b/app/architecture/architecture-edge.tsx
+@@ -8,6 +8,8 @@ import {
+   type EdgeProps,
+ } from "@xyflow/react";
+ import { useSmartEdgePath } from "@tisoap/react-flow-smart-edge";
++import { useState } from "react";
++import { labelCompensationScale } from "./interaction";
+ import type { RelationshipEdgeData } from "./types";
+ 
+ export type ArchitectureFlowEdge = Edge<RelationshipEdgeData, "relationship">;
+@@ -71,12 +73,17 @@ export default function RelationshipEdge(props: EdgeProps<ArchitectureFlowEdge>)
+   const labelY = props.data?.route?.labelPoint?.y ?? (smart.route?.kind === "routed" ? smart.route.edgeCenterY : fallback[2]);
+   const relationship = props.data?.relationship;
+   const emphasis = props.data?.emphasis ?? "normal";
+-  const showLabel = emphasis === "active" || props.selected || props.data?.zoomLevel === "operational";
++  const [hovered, setHovered] = useState(false);
++  const showLabel = emphasis === "active" || emphasis === "preview" || props.selected || hovered || props.data?.zoomLevel === "operational";
+   const label = props.data?.flowPayload || relationship?.label || relationship?.relationshipType;
+   const animate = emphasis === "active" && Boolean(props.data?.activeFlowName);
+ 
+   return (
+-    <g className={`relationship-edge type-${relationship?.relationshipType ?? "dependency"} emphasis-${emphasis} ${props.selected ? "is-selected" : ""}`}>
++    <g
++      className={`relationship-edge type-${relationship?.relationshipType ?? "dependency"} emphasis-${emphasis} ${props.selected ? "is-selected" : ""}`}
++      onMouseLeave={() => setHovered(false)}
++      onMouseOver={() => setHovered(true)}
++    >
+       <BaseEdge
+         id={props.id}
+         interactionWidth={22}
+@@ -93,11 +100,13 @@ export default function RelationshipEdge(props: EdgeProps<ArchitectureFlowEdge>)
+         <EdgeLabelRenderer>
+           <div
+             className={`relationship-label nodrag nopan ${emphasis === "active" ? "active" : ""}`}
+-            style={{ transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)` }}
++            style={{ transform: `translate(${labelX}px,${labelY}px) scale(${labelCompensationScale(props.data?.zoom ?? 1, 13, 3.4)})` }}
+             title={relationship?.summary || relationship?.label}
+           >
+-            {props.data?.flowSequence !== undefined && <b>{props.data.flowSequence}</b>}
+-            <span>{label}</span>
++            <span className="relationship-label-inner">
++              {props.data?.flowSequence !== undefined && <b>{props.data.flowSequence}</b>}
++              <span>{label}</span>
++            </span>
+           </div>
+         </EdgeLabelRenderer>
+       )}
+diff --git a/app/architecture/architecture-node.tsx b/app/architecture/architecture-node.tsx
+index 18a64ca..baf9c3d 100644
+--- a/app/architecture/architecture-node.tsx
++++ b/app/architecture/architecture-node.tsx
+@@ -2,6 +2,7 @@
+ 
+ import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
+ import type { CSSProperties } from "react";
++import { labelCompensationScale } from "./interaction";
+ import type { SemanticObjectType } from "./semantic-graph";
+ import type { ObjectNodeData } from "./types";
+ 
+@@ -39,23 +40,36 @@ export default function ObjectNode({ data, selected }: NodeProps<ArchitectureFlo
+   const showState = zoomLevel !== "landscape";
+   const showSummary = zoomLevel === "component" || zoomLevel === "operational";
+   const showMetadata = zoomLevel === "operational";
+-  const labelScale = zoomLevel === "landscape"
+-    ? Math.min(4.5, Math.max(1, 0.78 / Math.max(zoom, 0.16)))
+-    : zoomLevel === "architecture"
+-      ? Math.min(2.2, Math.max(1, 0.78 / Math.max(zoom, 0.42)))
+-      : 1;
++  const labelScale = zoomLevel === "landscape" || zoomLevel === "architecture"
++    ? labelCompensationScale(zoom, 15, zoomLevel === "landscape" ? 4.5 : 2.2)
++    : 1;
++  const chipScale = labelCompensationScale(zoom, 13, 4.5);
+   const technology = String(object.metadata.technology ?? "");
+ 
+   return (
+     <article
+       aria-label={`${TYPE_COPY[object.objectType]} ${object.name}，${object.state.label}`}
+       className={`object-node type-${object.objectType} emphasis-${emphasis} zoom-${zoomLevel} ${selected ? "is-selected" : ""}`}
+-      style={{ "--label-scale": labelScale } as CSSProperties}
++      style={{ "--label-scale": labelScale, "--chip-scale": chipScale } as CSSProperties}
+     >
+       {(["left", "right", "top", "bottom"] as const).flatMap((side) => [
+         <Handle className="semantic-port" id={`target-${side}`} key={`target-${side}`} position={POSITION[side]} type="target" />,
+         <Handle className="semantic-port" id={`source-${side}`} key={`source-${side}`} position={POSITION[side]} type="source" />,
+       ])}
++      {flowSteps.length > 0 && (
++        <div className="object-flow-steps" aria-label="Trace corridor steps">
++          {flowSteps.slice(0, 3).map((step) => (
++            <span
++              className={step.isEntry ? "role-entry" : step.isExit ? "role-exit" : ""}
++              key={`${step.sequence}:${step.title}`}
++              title={`${step.role} · ${step.title}`}
++            >
++              <b>{step.sequence}</b>{step.isEntry ? "Entry" : step.isExit ? "Result" : step.title}
++            </span>
++          ))}
++          {flowSteps.length > 3 && <em>+{flowSteps.length - 3}</em>}
++        </div>
++      )}
+       <div className="object-surface">
+         <header className="object-type-row">
+           <span className="object-type-icon"><ObjectTypeIcon type={object.objectType} /></span>
+@@ -70,12 +84,6 @@ export default function ObjectNode({ data, selected }: NodeProps<ArchitectureFlo
+             <span>{incomingCount} in · {outgoingCount} out</span>
+           </footer>
+         )}
+-        {flowSteps.length > 0 && (
+-          <div className="object-flow-steps" aria-label="Flow steps">
+-            {flowSteps.slice(0, 3).map((step) => <span key={`${step.sequence}:${step.title}`} title={`${step.role} · ${step.title}`}><b>{step.sequence}</b>{step.title}</span>)}
+-            {flowSteps.length > 3 && <em>+{flowSteps.length - 3}</em>}
+-          </div>
+-        )}
+       </div>
+     </article>
+   );
+diff --git a/app/architecture/canvas-kernel.tsx b/app/architecture/canvas-kernel.tsx
+index f52cd26..3df1553 100644
+--- a/app/architecture/canvas-kernel.tsx
++++ b/app/architecture/canvas-kernel.tsx
+@@ -7,6 +7,7 @@ import {
+   MiniMap,
+   ReactFlow,
+   type EdgeChange,
++  type FitViewOptions,
+   type Node,
+   type NodeChange,
+   type ReactFlowInstance,
+@@ -28,10 +29,13 @@ type CanvasKernelProps = {
+   nodes: CanvasNode[];
+   edges: CanvasRelationshipEdge[];
+   mode: CanvasMode;
++  fitViewOptions?: FitViewOptions;
+   onNodesChange: (changes: NodeChange<CanvasNode>[]) => void;
+   onEdgesChange: (changes: EdgeChange<CanvasRelationshipEdge>[]) => void;
+   onInit: (instance: ReactFlowInstance<CanvasNode, CanvasRelationshipEdge>) => void;
+   onNodeClick: (node: CanvasObjectNode) => void;
++  onNodeMouseEnter?: (node: CanvasObjectNode) => void;
++  onNodeMouseLeave?: (node: CanvasObjectNode) => void;
+   onEdgeClick: (edge: CanvasRelationshipEdge) => void;
+   onNodeDragStop: (node: CanvasObjectNode) => void;
+   onPaneClick: () => void;
+@@ -43,10 +47,13 @@ export default function ArchitectureCanvasKernel({
+   nodes,
+   edges,
+   mode,
++  fitViewOptions,
+   onNodesChange,
+   onEdgesChange,
+   onInit,
+   onNodeClick,
++  onNodeMouseEnter,
++  onNodeMouseLeave,
+   onEdgeClick,
+   onNodeDragStop,
+   onPaneClick,
+@@ -55,7 +62,7 @@ export default function ArchitectureCanvasKernel({
+ }: CanvasKernelProps) {
+   return (
+     <SmartEdgeProvider
+-      nodes={nodes as Node[]}
++      nodes={nodes.filter((node) => node.type === "object") as Node[]}
+       options={{
+         preset: "smoothstep",
+         routeOnlyWhenBlocked: false,
+@@ -73,6 +80,7 @@ export default function ArchitectureCanvasKernel({
+         elementsSelectable
+         elevateEdgesOnSelect
+         fitView
++        fitViewOptions={fitViewOptions}
+         maxZoom={1.85}
+         minZoom={0.16}
+         nodeTypes={nodeTypes}
+@@ -84,6 +92,8 @@ export default function ArchitectureCanvasKernel({
+         onInit={onInit}
+         onMoveEnd={(_, viewport) => onViewportChange(viewport)}
+         onNodeClick={(_, node) => { if (node.type === "object") onNodeClick(node as CanvasObjectNode); }}
++        onNodeMouseEnter={(_, node) => { if (node.type === "object") onNodeMouseEnter?.(node as CanvasObjectNode); }}
++        onNodeMouseLeave={(_, node) => { if (node.type === "object") onNodeMouseLeave?.(node as CanvasObjectNode); }}
+         onNodeDragStop={(_, node) => { if (node.type === "object") onNodeDragStop(node as CanvasObjectNode); }}
+         onNodesChange={onNodesChange}
+         onPaneClick={onPaneClick}
+diff --git a/app/architecture/inspector-binding.ts b/app/architecture/inspector-binding.ts
+index bbbb2a8..5e56bef 100644
+--- a/app/architecture/inspector-binding.ts
++++ b/app/architecture/inspector-binding.ts
+@@ -7,7 +7,7 @@ import {
+   type SemanticRelationship,
+   type SemanticState,
+ } from "./semantic-graph";
+-import type { CanvasSelection } from "./interaction";
++import { traceCorridor, type TraceCorridor, type CanvasSelection } from "./interaction";
+ 
+ type InspectorBase = {
+   id: string;
+@@ -41,6 +41,7 @@ export type FlowInspectorBinding = InspectorBase & {
+   flow: SemanticFlow;
+   objects: SemanticObject[];
+   relationships: SemanticRelationship[];
++  corridor: TraceCorridor;
+ };
+ 
+ export type InspectorBinding = ObjectInspectorBinding | RelationshipInspectorBinding | FlowInspectorBinding;
+@@ -109,5 +110,6 @@ export function bindInspector(graph: SemanticGraph, selection: CanvasSelection):
+     flow,
+     objects,
+     relationships,
++    corridor: traceCorridor(graph, flow.id)!,
+   };
+ }
+diff --git a/app/architecture/inspector.tsx b/app/architecture/inspector.tsx
+index 982e127..447ea29 100644
+--- a/app/architecture/inspector.tsx
++++ b/app/architecture/inspector.tsx
+@@ -118,10 +118,14 @@ export default function Inspector({
+             <summary>Runtime &amp; Activity</summary>
+             {binding.kind === "flow" ? (
+               <ol className="inspector-flow-steps">
+-                {binding.flow.steps.map((step) => (
++                {binding.corridor.steps.map((step) => (
+                   <li key={step.id}>
+                     <b>{step.sequence}</b>
+-                    <div><strong>{step.title}</strong><span>{step.action || step.role}</span></div>
++                    <div>
++                      <strong>{step.title}</strong>
++                      <span>{step.action || step.role}</span>
++                      {(step.isEntry || step.isExit) && <em className={step.isEntry ? "role-entry" : "role-exit"}>{step.isEntry ? "入口 Entry" : "结果 Result"}</em>}
++                    </div>
+                   </li>
+                 ))}
+               </ol>
+diff --git a/app/architecture/interaction.ts b/app/architecture/interaction.ts
+index fafc761..ac60dc2 100644
+--- a/app/architecture/interaction.ts
++++ b/app/architecture/interaction.ts
+@@ -1,9 +1,23 @@
+-import { indexSemanticGraph, type SemanticGraph } from "./semantic-graph";
++import { indexSemanticGraph, type SemanticFlowStep, type SemanticGraph } from "./semantic-graph";
+ 
+ export type CanvasMode = "browse" | "inspect" | "focus" | "trace";
+ 
+ export type SemanticZoomLevel = "landscape" | "architecture" | "component" | "operational";
+ 
++/**
++ * The default camera never drops below this zoom: the first view must stay at
++ * Architecture density with readable Region and key Object labels instead of
++ * fitting every piece of geometry into a thumbnail.
++ */
++export const ARCHITECTURE_ZOOM_FLOOR = 0.56;
++
++/** Screen-space floor for any text a person is expected to read. */
++export const MIN_MEANINGFUL_TEXT_PX = 13;
++
++export function labelCompensationScale(zoom: number, basePx: number, maxScale = 4.5) {
++  return Math.min(maxScale, Math.max(1, MIN_MEANINGFUL_TEXT_PX / (basePx * Math.max(zoom, 0.08))));
++}
++
+ export type CanvasSelection =
+   | { kind: "object"; id: string }
+   | { kind: "relationship"; id: string }
+@@ -12,7 +26,7 @@ export type CanvasSelection =
+ 
+ export type ObjectEmphasis = "primary" | "related" | "context" | "normal" | "muted";
+ 
+-export type RelationshipEmphasis = "active" | "related" | "normal" | "muted" | "suppressed";
++export type RelationshipEmphasis = "active" | "preview" | "related" | "normal" | "muted" | "suppressed";
+ 
+ export type RegionEmphasis = "active" | "normal" | "muted";
+ 
+@@ -22,6 +36,7 @@ export type CanvasInteractionState = {
+   activeFlowId: string | null;
+   zoom: number;
+   searchQuery: string;
++  hoveredObjectId?: string | null;
+ };
+ 
+ export type CanvasViewModel = {
+@@ -160,6 +175,18 @@ export function deriveCanvasView(graph: SemanticGraph, interaction: CanvasIntera
+     }
+   }
+ 
++  const hoveredObjectId = interaction.hoveredObjectId ?? null;
++  if (hoveredObjectId && (interaction.mode === "browse" || interaction.mode === "inspect")) {
++    for (const relationship of graph.relationships) {
++      const isSource: boolean = relationship.sourceObjectId === hoveredObjectId;
++      const isTarget: boolean = relationship.targetObjectId === hoveredObjectId;
++      if (!isSource && !isTarget) continue;
++      if (relationshipEmphasis.get(relationship.id) === "normal") relationshipEmphasis.set(relationship.id, "preview");
++      const adjacentId: string = isSource ? relationship.targetObjectId : relationship.sourceObjectId;
++      if (adjacentId !== hoveredObjectId && objectEmphasis.get(adjacentId) === "normal") objectEmphasis.set(adjacentId, "related");
++    }
++  }
++
+   const activeRegionIds = new Set<string>();
+   for (const object of graph.objects) {
+     const emphasis = objectEmphasis.get(object.id);
+@@ -197,3 +224,119 @@ export function visibleObjectIds(graph: SemanticGraph, view: CanvasViewModel) {
+     })
+     .map((object) => object.id));
+ }
++
++export type TraceCorridorTransition = {
++  relationshipId: string;
++  fromStepId: string;
++  toStepId: string;
++  fromObjectId: string;
++  toObjectId: string;
++  sequence: number;
++  payload: string;
++  detail: string;
++};
++
++export type TraceCorridorStep = SemanticFlowStep & { isEntry: boolean; isExit: boolean };
++
++export type TraceCorridor = {
++  flowId: string;
++  steps: TraceCorridorStep[];
++  transitions: TraceCorridorTransition[];
++};
++
++function transitionKey(fromObjectId: string, toObjectId: string) {
++  return `${fromObjectId}→${toObjectId}`;
++}
++
++/**
++ * Trace is a lens over the stable map: the corridor is the ordered main path
++ * from the entry step to the exit step, with the payload handed over at each
++ * transition. Parallel branches keep their own transitions.
++ */
++export function traceCorridor(graph: SemanticGraph, flowId: string | null | undefined): TraceCorridor | null {
++  const flow = graph.flows.find((candidate) => candidate.id === flowId);
++  if (!flow) return null;
++  const steps = [...flow.steps].sort((left, right) => left.sequence - right.sequence || left.id.localeCompare(right.id));
++  const stepById = new Map(steps.map((step) => [step.id, step]));
++  const referencedStepIds = new Set<string>();
++  for (const step of steps) for (const nextStepId of step.nextStepIds) referencedStepIds.add(nextStepId);
++  const ordered: TraceCorridorStep[] = steps.map((step) => ({
++    ...step,
++    isEntry: !referencedStepIds.has(step.id),
++    isExit: step.nextStepIds.length === 0,
++  }));
++  const transitions: TraceCorridorTransition[] = [];
++  for (const step of ordered) {
++    for (const nextStepId of step.nextStepIds) {
++      const next = stepById.get(nextStepId);
++      if (!next) continue;
++      const relationship = graph.relationships.find((candidate) =>
++        candidate.sourceObjectId === step.objectId && candidate.targetObjectId === next.objectId)
++        ?? graph.relationships.find((candidate) =>
++          candidate.sourceObjectId === next.objectId && candidate.targetObjectId === step.objectId);
++      transitions.push({
++        relationshipId: relationship?.id ?? `synthetic:${transitionKey(step.objectId, next.objectId)}`,
++        fromStepId: step.id,
++        toStepId: next.id,
++        fromObjectId: step.objectId,
++        toObjectId: next.objectId,
++        sequence: step.sequence,
++        payload: step.outputs.length > 0 ? step.outputs.join(" + ") : next.inputs.join(" + "),
++        detail: `${step.title} → ${next.title}`,
++      });
++    }
++  }
++  return { flowId: flow.id, steps: ordered, transitions };
++}
++
++export function corridorTransitionBetween(corridor: TraceCorridor, sourceObjectId: string, targetObjectId: string) {
++  return corridor.transitions.find((transition) =>
++    (transition.fromObjectId === sourceObjectId && transition.toObjectId === targetObjectId)
++    || (transition.fromObjectId === targetObjectId && transition.toObjectId === sourceObjectId)) ?? null;
++}
++
++export type RegionReadingSummary = {
++  objectCount: number;
++  internalLinkCount: number;
++  crossRegionLinkCount: number;
++  keyObjectNames: string[];
++};
++
++/**
++ * Landscape hides Objects, so the Region itself must carry a readable summary:
++ * how much lives inside, how connected it is, and which key objects matter.
++ */
++export function regionReadingSummary(graph: SemanticGraph, regionId: string, keyObjectLimit = 3): RegionReadingSummary {
++  const index = indexSemanticGraph(graph);
++  const subtreeRegionIds = new Set<string>([regionId]);
++  const queue = [regionId];
++  while (queue.length > 0) {
++    const current = queue.shift()!;
++    for (const child of index.childRegionsByRegionId.get(current) ?? []) {
++      if (!subtreeRegionIds.has(child.id)) {
++        subtreeRegionIds.add(child.id);
++        queue.push(child.id);
++      }
++    }
++  }
++  const subtreeObjectIds = new Set(graph.objects.filter((object) => subtreeRegionIds.has(object.regionId)).map((object) => object.id));
++  let internalLinkCount = 0;
++  let crossRegionLinkCount = 0;
++  for (const relationship of graph.relationships) {
++    const sourceInside = subtreeObjectIds.has(relationship.sourceObjectId);
++    const targetInside = subtreeObjectIds.has(relationship.targetObjectId);
++    if (sourceInside && targetInside) internalLinkCount += 1;
++    else if (sourceInside || targetInside) crossRegionLinkCount += 1;
++  }
++  const keyObjectNames = graph.objects
++    .filter((object) => subtreeObjectIds.has(object.id) && (object.importance.level === "critical" || object.importance.level === "high"))
++    .sort((left, right) => right.importance.score - left.importance.score || left.id.localeCompare(right.id))
++    .slice(0, keyObjectLimit)
++    .map((object) => object.name);
++  return {
++    objectCount: subtreeObjectIds.size,
++    internalLinkCount,
++    crossRegionLinkCount,
++    keyObjectNames,
++  };
++}
+diff --git a/app/architecture/layout.ts b/app/architecture/layout.ts
+index 8137001..ee76b8b 100644
+--- a/app/architecture/layout.ts
++++ b/app/architecture/layout.ts
+@@ -122,6 +122,199 @@ function stabilizeIncrementalLayout(graph: SemanticGraph, previous: CanvasLayout
+   return { ...next, width, height, objectRects, regionRects, relationshipRoutes };
+ }
+ 
++const PACKING = { aspect: 1.55, columnGap: 68, rowGap: 76, margin: 42, containerPadding: { top: 92, side: 30, bottom: 30 } };
++
++export type RegionPackingResult = {
++  layout: CanvasLayout;
++  topLevelRegionCount: number;
++  rowCount: number;
++};
++
++/**
++ * The topmost Region level that actually has siblings is the level a person
++ * reads as "the parts of the system": the roots, or the children when a single
++ * root wraps everything.
++ */
++export function topLevelRegionIds(graph: SemanticGraph): string[] {
++  const childrenOf = new Map<string | null, SemanticRegion[]>();
++  for (const region of graph.regions) {
++    childrenOf.set(region.parentRegionId ?? null, [...(childrenOf.get(region.parentRegionId ?? null) ?? []), region]);
++  }
++  let candidates = childrenOf.get(null) ?? [];
++  while (candidates.length === 1) {
++    const children = childrenOf.get(candidates[0].id) ?? [];
++    if (children.length >= 2) candidates = children;
++    else break;
++  }
++  return candidates.map((region) => region.id);
++}
++
++/**
++ * ELK lays sibling Regions out along one axis, so a Region chain becomes a long
++ * strip. Packing re-composes the topmost sibling level into rows around a
++ * viewport-like aspect ratio while every Region subtree keeps its internal ELK
++ * geometry. Relationships between objects of the same packed Region keep their
++ * orthogonal ELK route (shifted); cross-Region relationships drop their route
++ * so the renderer's obstacle-aware router can follow the packed map.
++ */
++export function packTopLevelRegions(
++  graph: SemanticGraph,
++  layout: CanvasLayout,
++  options: { targetAspect?: number } = {},
++): RegionPackingResult {
++  const aspect = options.targetAspect ?? PACKING.aspect;
++  const regionById = new Map(graph.regions.map((region) => [region.id, region]));
++  const objectById = new Map(graph.objects.map((object) => [object.id, object]));
++  const childrenOf = new Map<string | null, SemanticRegion[]>();
++  for (const region of graph.regions) {
++    childrenOf.set(region.parentRegionId ?? null, [...(childrenOf.get(region.parentRegionId ?? null) ?? []), region]);
++  }
++  let candidates: SemanticRegion[] = childrenOf.get(null) ?? [];
++  let containerId: string | null = null;
++  while (candidates.length === 1) {
++    const children = childrenOf.get(candidates[0].id) ?? [];
++    if (children.length >= 2) {
++      containerId = candidates[0].id;
++      candidates = children;
++    } else break;
++  }
++  const candidateIds = new Set(candidates.map((region) => region.id));
++  if (candidateIds.size <= 1) {
++    return { layout, topLevelRegionCount: candidateIds.size, rowCount: 1 };
++  }
++
++  const topLevel = candidates
++    .map((region) => ({ region, rect: layout.regionRects[region.id] }))
++    .filter((entry): entry is { region: SemanticRegion; rect: RegionLayoutRect } => Boolean(entry.rect));
++
++  const ordered = topLevel
++    .sort((left, right) => left.rect.y - right.rect.y || left.rect.x - right.rect.x || left.region.id.localeCompare(right.region.id));
++
++  const totalArea = ordered.reduce(
++    (sum, entry) => sum + (entry.rect.width + PACKING.columnGap) * (entry.rect.height + PACKING.rowGap),
++    0,
++  );
++  const widestRegion = Math.max(...ordered.map((entry) => entry.rect.width));
++  const targetWidth = Math.max(widestRegion, Math.round(Math.sqrt(totalArea * aspect)));
++
++  const containerRect = containerId ? layout.regionRects[containerId] : undefined;
++  const origin = containerRect
++    ? { x: containerRect.x + PACKING.containerPadding.side, y: containerRect.y + PACKING.containerPadding.top }
++    : { x: PACKING.margin, y: PACKING.margin };
++
++  const placements = new Map<string, { x: number; y: number }>();
++  let cursorX = origin.x;
++  let rowTop = origin.y;
++  let rowHeight = 0;
++  let rowCount = 1;
++  for (const entry of ordered) {
++    if (cursorX > origin.x && cursorX + entry.rect.width > origin.x + targetWidth) {
++      rowTop += rowHeight + PACKING.rowGap;
++      cursorX = origin.x;
++      rowHeight = 0;
++      rowCount += 1;
++    }
++    placements.set(entry.region.id, { x: cursorX, y: rowTop });
++    cursorX += entry.rect.width + PACKING.columnGap;
++    rowHeight = Math.max(rowHeight, entry.rect.height);
++  }
++
++  const packedAncestorId = new Map<string, string>();
++  for (const region of graph.regions) {
++    let cursor = region;
++    const seen = new Set<string>([region.id]);
++    while (cursor.parentRegionId) {
++      const parent = regionById.get(cursor.parentRegionId);
++      if (!parent || seen.has(parent.id)) break;
++      seen.add(parent.id);
++      if (candidateIds.has(parent.id)) {
++        packedAncestorId.set(region.id, parent.id);
++        break;
++      }
++      cursor = parent;
++    }
++  }
++
++  const deltaByPackedRegion = new Map<string, { x: number; y: number }>();
++  for (const entry of ordered) {
++    const placement = placements.get(entry.region.id)!;
++    deltaByPackedRegion.set(entry.region.id, {
++      x: placement.x - entry.rect.x,
++      y: placement.y - entry.rect.y,
++    });
++  }
++  const deltaForRegion = (regionId: string) => {
++    const ancestorId = candidateIds.has(regionId) ? regionId : packedAncestorId.get(regionId);
++    return ancestorId ? deltaByPackedRegion.get(ancestorId) : undefined;
++  };
++  const shiftRect = <T extends LayoutRect>(rect: T, delta: { x: number; y: number } | undefined): T =>
++    delta ? { ...rect, x: rect.x + delta.x, y: rect.y + delta.y } : rect;
++
++  const objectRects: Record<string, LayoutRect> = {};
++  for (const object of graph.objects) {
++    const rect = layout.objectRects[object.id];
++    if (!rect) continue;
++    objectRects[object.id] = shiftRect(rect, deltaForRegion(object.regionId));
++  }
++
++  const regionRects: Record<string, RegionLayoutRect> = {};
++  for (const region of graph.regions) {
++    const rect = layout.regionRects[region.id];
++    if (!rect) continue;
++    regionRects[region.id] = shiftRect(rect, deltaForRegion(region.id));
++  }
++
++  let containerCursor = containerId;
++  while (containerCursor) {
++    const container = regionRects[containerCursor];
++    const contentRects = [
++      ...(childrenOf.get(containerCursor) ?? []).map((child) => regionRects[child.id]),
++      ...graph.objects.filter((object) => object.regionId === containerCursor).map((object) => objectRects[object.id]),
++    ].filter((rect): rect is LayoutRect => Boolean(rect));
++    if (container && contentRects.length > 0) {
++      const left = Math.min(...contentRects.map((rect) => rect.x));
++      const top = Math.min(...contentRects.map((rect) => rect.y));
++      const right = Math.max(...contentRects.map((rect) => rect.x + rect.width));
++      const bottom = Math.max(...contentRects.map((rect) => rect.y + rect.height));
++      regionRects[containerCursor] = {
++        ...container,
++        x: left - PACKING.containerPadding.side,
++        y: top - PACKING.containerPadding.top,
++        width: right - left + PACKING.containerPadding.side * 2,
++        height: bottom - top + PACKING.containerPadding.top + PACKING.containerPadding.bottom,
++      };
++    }
++    containerCursor = regionById.get(containerCursor)?.parentRegionId ?? null;
++  }
++
++  const relationshipRoutes: Record<string, RelationshipRoute> = {};
++  for (const relationship of graph.relationships) {
++    const route = layout.relationshipRoutes[relationship.id];
++    if (!route) continue;
++    const sourceRegionId = objectById.get(relationship.sourceObjectId)?.regionId;
++    const targetRegionId = objectById.get(relationship.targetObjectId)?.regionId;
++    const sourceDelta = sourceRegionId ? deltaForRegion(sourceRegionId) : undefined;
++    const targetDelta = targetRegionId ? deltaForRegion(targetRegionId) : undefined;
++    if (!sourceDelta || !targetDelta || sourceDelta.x !== targetDelta.x || sourceDelta.y !== targetDelta.y) continue;
++    relationshipRoutes[relationship.id] = {
++      ...route,
++      points: route.points.map((point) => ({ x: point.x + sourceDelta.x, y: point.y + sourceDelta.y })),
++      labelPoint: route.labelPoint
++        ? { x: route.labelPoint.x + sourceDelta.x, y: route.labelPoint.y + sourceDelta.y }
++        : undefined,
++    };
++  }
++
++  const allRects = [...Object.values(objectRects), ...Object.values(regionRects)];
++  const width = Math.max(PACKING.margin * 2, ...allRects.map((rect) => rect.x + rect.width + PACKING.margin));
++  const height = Math.max(PACKING.margin * 2, ...allRects.map((rect) => rect.y + rect.height + PACKING.margin));
++  return {
++    layout: { ...layout, width, height, objectRects, regionRects, relationshipRoutes },
++    topLevelRegionCount: ordered.length,
++    rowCount,
++  };
++}
++
+ type ElkPoint = { x?: number; y?: number };
+ 
+ type ElkPort = {
+@@ -303,7 +496,7 @@ function regionOptions(orientation: LayoutOrientation, depth: number) {
+     "elk.algorithm": "layered",
+     "elk.direction": orientation,
+     "elk.edgeRouting": "ORTHOGONAL",
+-    "elk.padding": `[top=${depth === 0 ? 54 : 46},left=26,bottom=26,right=26]`,
++    "elk.padding": `[top=${depth === 0 ? 86 : 46},left=26,bottom=26,right=26]`,
+     "elk.spacing.nodeNode": depth === 0 ? "34" : "28",
+     "elk.layered.spacing.nodeNodeBetweenLayers": depth === 0 ? "82" : "68",
+     "elk.layered.spacing.edgeNodeBetweenLayers": "30",
+@@ -469,7 +662,8 @@ export async function layoutSemanticGraph(
+     regionRects,
+     relationshipRoutes,
+   };
+-  return options.previousLayout ? stabilizeIncrementalLayout(graph, options.previousLayout, result) : result;
++  const packed = packTopLevelRegions(graph, result);
++  return options.previousLayout ? stabilizeIncrementalLayout(graph, options.previousLayout, packed.layout) : packed.layout;
+ }
+ 
+ export function measureLayoutStability(previous: CanvasLayout, next: CanvasLayout) {
+diff --git a/app/architecture/projection.ts b/app/architecture/projection.ts
+index e326131..0187afc 100644
+--- a/app/architecture/projection.ts
++++ b/app/architecture/projection.ts
+@@ -1,7 +1,13 @@
+ import { MarkerType, type Edge, type Node } from "@xyflow/react";
+-import { visibleObjectIds, type CanvasViewModel } from "./interaction";
++import {
++  corridorTransitionBetween,
++  regionReadingSummary,
++  traceCorridor,
++  visibleObjectIds,
++  type CanvasViewModel,
++} from "./interaction";
+ import type { CanvasLayout } from "./layout";
+-import { indexSemanticGraph, type SemanticFlowStep, type SemanticGraph } from "./semantic-graph";
++import { indexSemanticGraph, type SemanticGraph } from "./semantic-graph";
+ import type { ObjectNodeData, RegionNodeData, RelationshipEdgeData } from "./types";
+ 
+ export type CanvasObjectNode = Node<ObjectNodeData, "object">;
+@@ -13,20 +19,24 @@ function handleId(side: "left" | "right" | "top" | "bottom", role: "source" | "t
+   return `${role}-${side}`;
+ }
+ 
+-function flowTransition(
+-  steps: SemanticFlowStep[],
++/**
++ * Routes dropped by Region packing are re-routed by the obstacle-aware edge
++ * renderer; picking handles from the relative geometry keeps those routes
++ * reading vertically between packed Region rows and horizontally inside rows.
++ */
++function routedSides(
++  layout: CanvasLayout,
+   sourceObjectId: string,
+   targetObjectId: string,
++  fallback: { sourceSide: "left" | "right" | "top" | "bottom"; targetSide: "left" | "right" | "top" | "bottom" },
+ ) {
+-  const stepById = new Map(steps.map((step) => [step.id, step]));
+-  for (const step of steps) {
+-    if (step.objectId !== sourceObjectId) continue;
+-    const next = step.nextStepIds.map((id) => stepById.get(id)).find((candidate) => candidate?.objectId === targetObjectId);
+-    if (!next) continue;
+-    const payload = step.outputs.length > 0 ? step.outputs.join(" + ") : next.inputs.join(" + ");
+-    return { sequence: step.sequence, payload, detail: `${step.title} → ${next.title}` };
+-  }
+-  return null;
++  const source = layout.objectRects[sourceObjectId];
++  const target = layout.objectRects[targetObjectId];
++  if (!source || !target) return fallback;
++  const dx = target.x + target.width / 2 - (source.x + source.width / 2);
++  const dy = target.y + target.height / 2 - (source.y + source.height / 2);
++  if (Math.abs(dy) > Math.abs(dx)) return { sourceSide: dy > 0 ? "bottom" : "top", targetSide: dy > 0 ? "top" : "bottom" } as const;
++  return { sourceSide: dx > 0 ? "right" : "left", targetSide: dx > 0 ? "left" : "right" } as const;
+ }
+ 
+ export function projectSemanticGraph(
+@@ -36,11 +46,12 @@ export function projectSemanticGraph(
+ ): { nodes: CanvasNode[]; edges: CanvasRelationshipEdge[] } {
+   const index = indexSemanticGraph(graph);
+   const visibleIds = visibleObjectIds(graph, view);
+-  const activeFlow = view.activeFlowId ? index.flowById.get(view.activeFlowId) : undefined;
++  const corridor = traceCorridor(graph, view.activeFlowId);
+   const regionNodes = graph.regions
+     .map<CanvasRegionNode | null>((region) => {
+       const rect = layout.regionRects[region.id];
+       if (!rect) return null;
++      const summary = regionReadingSummary(graph, region.id);
+       return {
+         id: region.id,
+         type: "region",
+@@ -49,8 +60,10 @@ export function projectSemanticGraph(
+           region,
+           emphasis: view.regionEmphasis.get(region.id) ?? "normal",
+           zoomLevel: view.zoomLevel,
+-          objectCount: index.objectsByRegionId.get(region.id)?.length ?? 0,
++          zoom: view.zoom,
++          objectCount: summary.objectCount,
+           childRegionCount: index.childRegionsByRegionId.get(region.id)?.length ?? 0,
++          summary,
+           depth: rect.depth,
+         },
+         draggable: false,
+@@ -78,9 +91,9 @@ export function projectSemanticGraph(
+           zoom: view.zoom,
+           incomingCount: index.incomingByObjectId.get(object.id)?.length ?? 0,
+           outgoingCount: index.outgoingByObjectId.get(object.id)?.length ?? 0,
+-          flowSteps: (activeFlow?.steps ?? [])
++          flowSteps: (corridor?.steps ?? [])
+             .filter((step) => step.objectId === object.id)
+-            .map((step) => ({ sequence: step.sequence, role: step.role, title: step.title })),
++            .map((step) => ({ sequence: step.sequence, role: step.role, title: step.title, isEntry: step.isEntry, isExit: step.isExit })),
+         },
+         draggable: true,
+         selectable: true,
+@@ -96,9 +109,12 @@ export function projectSemanticGraph(
+     .map<CanvasRelationshipEdge>((relationship) => {
+     const route = layout.relationshipRoutes[relationship.id];
+     const emphasis = view.relationshipEmphasis.get(relationship.id) ?? "normal";
+-    const transition = activeFlow ? flowTransition(activeFlow.steps, relationship.sourceObjectId, relationship.targetObjectId) : null;
++    const transition = corridor ? corridorTransitionBetween(corridor, relationship.sourceObjectId, relationship.targetObjectId) : null;
+     const active = emphasis === "active";
+     const renderedRoute = view.mode === "trace" && active ? undefined : route;
++    const sides = route?.points.length
++      ? { sourceSide: route.sourceSide, targetSide: route.targetSide }
++      : routedSides(layout, relationship.sourceObjectId, relationship.targetObjectId, { sourceSide: "right", targetSide: "left" });
+     const markerColor = active
+       ? "#e8f4ee"
+       : emphasis === "suppressed"
+@@ -112,15 +128,16 @@ export function projectSemanticGraph(
+       id: relationship.id,
+       source: relationship.sourceObjectId,
+       target: relationship.targetObjectId,
+-      sourceHandle: handleId(route?.sourceSide ?? "right", "source"),
+-      targetHandle: handleId(route?.targetSide ?? "left", "target"),
++      sourceHandle: handleId(sides.sourceSide, "source"),
++      targetHandle: handleId(sides.targetSide, "target"),
+       type: "relationship",
+       data: {
+         relationship,
+         route: renderedRoute,
+         emphasis,
+         zoomLevel: view.zoomLevel,
+-        activeFlowName: activeFlow?.name,
++        zoom: view.zoom,
++        activeFlowName: view.activeFlowId ? graph.flows.find((flow) => flow.id === view.activeFlowId)?.name : undefined,
+         flowSequence: transition?.sequence,
+         flowPayload: transition?.payload,
+       },
+diff --git a/app/architecture/region-node.tsx b/app/architecture/region-node.tsx
+index 3b3ed91..bc37bc1 100644
+--- a/app/architecture/region-node.tsx
++++ b/app/architecture/region-node.tsx
+@@ -1,21 +1,33 @@
+ "use client";
+ 
++import type { CSSProperties } from "react";
+ import type { Node, NodeProps } from "@xyflow/react";
++import { labelCompensationScale } from "./interaction";
+ import type { RegionNodeData } from "./types";
+ 
+ export type ArchitectureRegionNode = Node<RegionNodeData, "region">;
+ 
+ export default function RegionNode({ data }: NodeProps<ArchitectureRegionNode>) {
+-  const { region, emphasis, zoomLevel, objectCount, childRegionCount, depth } = data;
++  const { region, emphasis, zoomLevel, zoom, objectCount, childRegionCount, summary, depth } = data;
++  const labelScale = labelCompensationScale(zoom, depth === 0 ? 17 : 15, depth === 0 ? 4.5 : 3.2);
++  const keyLine = summary.keyObjectNames.length > 0
++    ? summary.keyObjectNames.join(" · ")
++    : "No key objects declared";
+   return (
+     <section
+-      aria-label={`Region ${region.name}`}
++      aria-label={`Region ${region.name}，${objectCount} objects`}
+       className={`canvas-region depth-${Math.min(depth, 3)} emphasis-${emphasis} zoom-${zoomLevel}`}
++      style={{ "--label-scale": labelScale } as CSSProperties}
+     >
+       <header>
+-        <span>Region</span>
+-        <strong>{region.name}</strong>
+-        {zoomLevel !== "landscape" && <small>{objectCount} objects{childRegionCount > 0 ? ` · ${childRegionCount} regions` : ""}</small>}
++        <div className="canvas-region-title">
++          <span>Region</span>
++          <strong>{region.name}</strong>
++          <small>{objectCount} objects{childRegionCount > 0 ? ` · ${childRegionCount} regions` : ""} · {summary.crossRegionLinkCount} links</small>
++        </div>
++        {zoomLevel === "landscape" && (
++          <p className="canvas-region-keys" title={keyLine}>{keyLine}</p>
++        )}
+       </header>
+     </section>
+   );
+diff --git a/app/architecture/types.ts b/app/architecture/types.ts
+index d5a91e8..939c6f1 100644
+--- a/app/architecture/types.ts
++++ b/app/architecture/types.ts
+@@ -1,4 +1,4 @@
+-import type { ObjectEmphasis, RegionEmphasis, RelationshipEmphasis, SemanticZoomLevel } from "./interaction";
++import type { ObjectEmphasis, RegionEmphasis, RelationshipEmphasis, RegionReadingSummary, SemanticZoomLevel } from "./interaction";
+ import type { RelationshipRoute } from "./layout";
+ import type { SemanticObject, SemanticRegion, SemanticRelationship } from "./semantic-graph";
+ 
+@@ -105,6 +105,7 @@ export type RelationshipEdgeData = Record<string, unknown> & {
+   route?: RelationshipRoute;
+   emphasis: RelationshipEmphasis;
+   zoomLevel: SemanticZoomLevel;
++  zoom: number;
+   activeFlowName?: string;
+   flowSequence?: number;
+   flowPayload?: string;
+@@ -136,15 +137,17 @@ export type ObjectNodeData = Record<string, unknown> & {
+   zoom: number;
+   incomingCount: number;
+   outgoingCount: number;
+-  flowSteps: Array<{ sequence: number; role: string; title: string }>;
++  flowSteps: Array<{ sequence: number; role: string; title: string; isEntry: boolean; isExit: boolean }>;
+ };
+ 
+ export type RegionNodeData = Record<string, unknown> & {
+   region: SemanticRegion;
+   emphasis: RegionEmphasis;
+   zoomLevel: SemanticZoomLevel;
++  zoom: number;
+   objectCount: number;
+   childRegionCount: number;
++  summary: RegionReadingSummary;
+   depth: number;
+ };
+ 
+diff --git a/app/globals.css b/app/globals.css
+index 261e228..70f6cc4 100644
+--- a/app/globals.css
++++ b/app/globals.css
+@@ -958,10 +958,11 @@ button:focus-visible, select:focus-visible, a:focus-visible {
+ .object-summary { color: var(--map-text-soft); display: -webkit-box; font-size: .8125rem; line-height: 1.45; margin-top: 7px; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+ .object-node.emphasis-muted .object-summary { color: #66777c; }
+ .object-metadata { align-items: center; bottom: 9px; color: var(--map-text-muted); display: flex; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8125rem; justify-content: space-between; left: 15px; position: absolute; right: 15px; }
+-.object-flow-steps { align-items: center; display: flex; gap: 4px; left: 13px; position: absolute; right: 13px; top: -11px; }
+-.object-flow-steps span { align-items: center; background: #182a2c; border: 1px solid rgba(155,210,193,.5); color: var(--map-focus-strong); display: flex; font-size: .8125rem; gap: 4px; max-width: 94px; overflow: hidden; padding: 2px 5px; text-overflow: ellipsis; white-space: nowrap; }
+-.object-flow-steps b { color: var(--map-focus); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
++.object-flow-steps { align-items: center; display: flex; gap: 5px; left: 12px; position: absolute; top: -13px; transform: scale(var(--chip-scale, 1)); transform-origin: left bottom; }
++.object-flow-steps span { align-items: baseline; background: #16302f; border: 1px solid rgba(155,210,193,.5); color: var(--map-focus-strong); display: inline-flex; font-size: .8125rem; gap: 6px; max-width: 220px; overflow: hidden; padding: 3px 8px; text-overflow: ellipsis; white-space: nowrap; }
++.object-flow-steps b { color: var(--map-focus); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .875rem; }
+ .object-flow-steps em { color: var(--map-focus); font-size: .8125rem; font-style: normal; }
++.object-flow-steps .role-entry, .object-flow-steps .role-exit { background: rgba(155,210,193,.16); border-color: var(--map-focus-strong); color: #dff2ec; }
+ .semantic-port { background: var(--map-focus) !important; border: 0 !important; height: 6px !important; opacity: 0; transition: opacity 100ms ease; width: 6px !important; }
+ .object-node:hover .semantic-port, .object-node.is-selected .semantic-port { opacity: .28; }
+ .object-node.zoom-landscape .object-type-row, .object-node.zoom-landscape .object-summary, .object-node.zoom-landscape .object-metadata { visibility: hidden; }
+@@ -973,26 +974,32 @@ button:focus-visible, select:focus-visible, a:focus-visible {
+ .canvas-region.depth-2, .canvas-region.depth-3 { background: transparent; border-color: rgba(159,179,184,.08); }
+ .canvas-region.emphasis-active { border-color: rgba(155,210,193,.24); }
+ .canvas-region.emphasis-muted { border-color: rgba(159,179,184,.055); }
+-.canvas-region > header { align-items: baseline; color: var(--map-text-muted); display: flex; gap: 9px; left: 14px; position: absolute; top: 11px; }
+-.canvas-region > header span { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8125rem; letter-spacing: .08em; text-transform: uppercase; }
+-.canvas-region > header strong { color: #9eadb0; font-size: .8125rem; font-weight: 620; }
+-.canvas-region > header small { font-size: .8125rem; }
+-.canvas-region.zoom-landscape > header span, .canvas-region.zoom-landscape > header small { display: none; }
++.canvas-region > header { display: grid; gap: 5px; left: 16px; position: absolute; right: 16px; top: 13px; }
++.canvas-region-title { align-items: baseline; display: flex; flex-wrap: wrap; gap: 4px 10px; min-width: 0; }
++.canvas-region-title span { color: var(--map-text-muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8125rem; letter-spacing: .08em; text-transform: uppercase; }
++.canvas-region-title strong { color: #b7c6c9; font-size: .9375rem; font-weight: 720; letter-spacing: -.005em; overflow: hidden; text-overflow: ellipsis; transform: scale(var(--label-scale, 1)); transform-origin: left center; white-space: nowrap; }
++.canvas-region.depth-0 > header .canvas-region-title strong { font-size: 1.0625rem; }
++.canvas-region-title small { color: var(--map-text-muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8125rem; }
++.canvas-region-keys { color: #8ea0a4; font-size: .8125rem; line-height: 1.4; margin: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; transform: scale(var(--label-scale, 1)); transform-origin: left top; white-space: nowrap; }
++.canvas-region.zoom-landscape > header .canvas-region-title span { display: none; }
+ .canvas-region.emphasis-muted > header strong { color: #69787c; }
+ 
+-.relationship-edge .react-flow__edge-path { fill: none; stroke: #72858a; stroke-linecap: square; stroke-linejoin: round; stroke-width: 1.25; }
++.relationship-edge .react-flow__edge-path { fill: none; stroke: #74878c; stroke-linecap: square; stroke-linejoin: round; stroke-width: 1.4; }
+ .relationship-edge.type-control .react-flow__edge-path { stroke-dasharray: 8 4; }
+ .relationship-edge.type-event .react-flow__edge-path { stroke-dasharray: 2 5; stroke-linecap: round; }
+ .relationship-edge.type-dependency .react-flow__edge-path { stroke: #66767b; stroke-dasharray: 5 4; }
+ .relationship-edge.type-external .react-flow__edge-path { stroke: #898f91; stroke-dasharray: 10 3 2 3; }
+-.relationship-edge.emphasis-related .react-flow__edge-path { stroke: #7ea79f; stroke-width: 1.45; }
++.relationship-edge.emphasis-related .react-flow__edge-path { stroke: #7ea79f; stroke-width: 1.7; }
++.relationship-edge.emphasis-preview .react-flow__edge-path { stroke: #c4e4da; stroke-width: 2.2; }
++.relationship-edge:hover .react-flow__edge-path { stroke: #9fc3ba; }
+ .relationship-edge.emphasis-active .react-flow__edge-path, .relationship-edge.is-selected .react-flow__edge-path { stroke: var(--map-focus-strong); stroke-width: 2.35; }
+ .relationship-edge.emphasis-muted .react-flow__edge-path { stroke: #46555a; stroke-width: .9; }
+ .relationship-edge.emphasis-suppressed .react-flow__edge-path { opacity: .07; stroke-width: .8; }
+-.relationship-label { background: rgba(12,18,21,.96); border: 1px solid var(--map-line-strong); color: var(--map-text-soft); display: flex; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8125rem; gap: 5px; max-width: 170px; padding: 2px 5px; pointer-events: all; position: absolute; }
++.relationship-label { background: rgba(12,18,21,.96); border: 1px solid var(--map-line-strong); color: var(--map-text-soft); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8125rem; padding: 2px 5px; pointer-events: all; position: absolute; }
+ .relationship-label.active { border-color: rgba(155,210,193,.55); color: var(--map-focus-strong); }
+ .relationship-label b { color: var(--map-focus); }
+-.relationship-label span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
++.relationship-label-inner { display: flex; gap: 5px; max-width: 190px; transform: translate(-50%, -50%); }
++.relationship-label-inner > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+ .flow-packet { fill: var(--map-focus-strong); filter: none; pointer-events: none; }
+ 
+ .canvas-shell .architecture-controls { border: 1px solid var(--map-line) !important; border-radius: 2px !important; box-shadow: none !important; }
+@@ -1026,8 +1033,10 @@ button:focus-visible, select:focus-visible, a:focus-visible {
+ .flow-lens-list > button > b { color: var(--map-focus); font-size: .8125rem; font-weight: 650; }
+ .flow-lens-empty { border-top: 1px solid var(--map-line); color: var(--map-text-muted); font-size: .8125rem; padding: 14px 2px; }
+ 
+-.canvas-inspector { background: rgba(15,22,26,.985); border-left: 1px solid var(--map-line-strong); bottom: 0; color: var(--map-text); overflow-y: auto; position: absolute; right: 0; top: 0; transform: translateX(101%); transition: transform 170ms ease; width: 336px; z-index: 24; }
+-.canvas-inspector.open { transform: translateX(0); }
++.canvas-stage.inspector-docked { display: grid; grid-template-columns: minmax(0,1fr) 336px; }
++.canvas-stage.inspector-docked > .architecture-canvas-kernel { height: 100%; min-width: 0; }
++.canvas-stage:not(.inspector-docked) .canvas-inspector { display: none; }
++.canvas-inspector { background: rgba(15,22,26,.985); border-left: 1px solid var(--map-line-strong); color: var(--map-text); min-height: 0; overflow-y: auto; position: relative; width: 336px; z-index: 24; }
+ .inspector-heading { align-items: flex-start; border-bottom: 1px solid var(--map-line); display: flex; justify-content: space-between; padding: 15px 15px 13px; }
+ .inspector-heading > div { display: grid; min-width: 0; }
+ .inspector-heading small { color: var(--map-focus); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8125rem; letter-spacing: .08em; text-transform: uppercase; }
+@@ -1071,6 +1080,7 @@ button:focus-visible, select:focus-visible, a:focus-visible {
+ .inspector-flow-steps li > div { display: grid; }
+ .inspector-flow-steps strong { color: var(--map-text-soft); font-size: .8125rem; }
+ .inspector-flow-steps span { color: var(--map-text-muted); font-size: .8125rem; }
++.inspector-flow-steps em { border: 1px solid rgba(155,210,193,.45); color: var(--map-focus); display: inline-block; font-size: .8125rem; font-style: normal; margin-top: 3px; padding: 0 5px; }
+ .canvas-inspector pre { background: #0b1114; border: 1px solid var(--map-line); color: #8fa0a4; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8125rem; line-height: 1.55; max-height: 300px; overflow: auto; padding: 8px; white-space: pre-wrap; }
+ 
+ .canvas-shell .canvas-statusbar { background: #0d1418; border-color: var(--map-line); color: var(--map-text-muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8125rem; min-height: 30px; padding: 4px 10px; }
+@@ -1081,11 +1091,10 @@ button:focus-visible, select:focus-visible, a:focus-visible {
+   .canvas-commandbar { gap: 5px; grid-template-columns: auto minmax(120px,1fr) auto; }
+   .canvas-command-actions button:nth-last-child(n+3) { display: none; }
+   .canvas-reading-key { display: none; }
+-  .canvas-inspector { width: min(336px,88vw); }
++  .canvas-stage.inspector-docked { grid-template-columns: minmax(0,1fr) min(336px,88vw); }
+   .canvas-statusbar span:nth-child(2), .canvas-statusbar span:nth-child(3) { display: none; }
+ }
+ 
+ @media (prefers-reduced-motion: reduce) {
+-  .canvas-inspector { transition: none; }
+   .flow-packet { display: none; }
+ }
+diff --git a/tests/canvas-engine.test.mjs b/tests/canvas-engine.test.mjs
+index d8f9e6d..cc57267 100644
+--- a/tests/canvas-engine.test.mjs
++++ b/tests/canvas-engine.test.mjs
+@@ -11,12 +11,42 @@ const {
+   MEDIUM_CANVAS_FIXTURE,
+   SMALL_CANVAS_FIXTURE,
+ } = await import("../app/architecture/fixtures.ts");
+-const { deriveCanvasView, semanticZoomLevel, visibleObjectIds } = await import("../app/architecture/interaction.ts");
++const {
++  ARCHITECTURE_ZOOM_FLOOR,
++  MIN_MEANINGFUL_TEXT_PX,
++  corridorTransitionBetween,
++  deriveCanvasView,
++  labelCompensationScale,
++  regionReadingSummary,
++  semanticZoomLevel,
++  traceCorridor,
++  visibleObjectIds,
++} = await import("../app/architecture/interaction.ts");
+ const { bindInspector } = await import("../app/architecture/inspector-binding.ts");
+-const { layoutSemanticGraph, measureLayoutStability } = await import("../app/architecture/layout.ts");
++const { layoutSemanticGraph, measureLayoutStability, packTopLevelRegions, topLevelRegionIds } = await import("../app/architecture/layout.ts");
+ const { adaptArchitectureToSemanticGraph } = await import("../app/architecture/semantic-adapter.ts");
+ const { validateSemanticGraph } = await import("../app/architecture/semantic-graph.ts");
+ 
++function packedAncestorRegionId(graph, regionId) {
++  const topLevel = new Set(topLevelRegionIds(graph));
++  const regionById = new Map(graph.regions.map((region) => [region.id, region]));
++  let cursor = regionById.get(regionId);
++  const seen = new Set();
++  while (cursor && !topLevel.has(cursor.id) && cursor.parentRegionId && !seen.has(cursor.id)) {
++    seen.add(cursor.id);
++    cursor = regionById.get(cursor.parentRegionId);
++  }
++  return cursor?.id ?? null;
++}
++
++function crossesTopLevelRegion(graph, relationship) {
++  const regionById = new Map(graph.regions.map((region) => [region.id, region]));
++  const objectById = new Map(graph.objects.map((object) => [object.id, object]));
++  const sourceRegionId = regionById.get(objectById.get(relationship.sourceObjectId)?.regionId ?? "")?.id;
++  const targetRegionId = regionById.get(objectById.get(relationship.targetObjectId)?.regionId ?? "")?.id;
++  return packedAncestorRegionId(graph, sourceRegionId) !== packedAncestorRegionId(graph, targetRegionId);
++}
++
+ function overlap(left, right, padding = 0) {
+   return left.x < right.x + right.width + padding
+     && left.x + left.width + padding > right.x
+@@ -181,7 +211,6 @@ test("ELK compound layout is deterministic, non-overlapping and obstacle-safe",
+     durations[name] = layout.durationMs;
+     assert.equal(Object.keys(layout.objectRects).length, graph.objects.length, `${name} must lay out every Object`);
+     assert.equal(Object.keys(layout.regionRects).length, graph.regions.length, `${name} must lay out every Region`);
+-    assert.equal(Object.keys(layout.relationshipRoutes).length, graph.relationships.length, `${name} must route every Relationship`);
+ 
+     const rects = Object.values(layout.objectRects);
+     for (let leftIndex = 0; leftIndex < rects.length; leftIndex += 1) {
+@@ -192,7 +221,12 @@ test("ELK compound layout is deterministic, non-overlapping and obstacle-safe",
+ 
+     for (const relationship of graph.relationships) {
+       const route = layout.relationshipRoutes[relationship.id];
+-      assert.ok(route.points.length >= 2, `${name}: ${relationship.id} needs a usable route`);
++      const crossTopLevel = crossesTopLevelRegion(graph, relationship);
++      if (crossTopLevel) {
++        assert.equal(route, undefined, `${name}: cross-Region ${relationship.id} must defer to the obstacle-aware renderer`);
++        continue;
++      }
++      assert.ok(route && route.points.length >= 2, `${name}: ${relationship.id} needs a usable route`);
+       for (let pointIndex = 0; pointIndex < route.points.length - 1; pointIndex += 1) {
+         const start = route.points[pointIndex];
+         const end = route.points[pointIndex + 1];
+@@ -238,3 +272,131 @@ test("fixture performance envelope covers the acceptance scales", async () => {
+   console.info("Canvas Engine layout envelope", results);
+   assert.deepEqual(results.map((result) => result.objects), [15, 40, 100]);
+ });
++
++test("top-level Regions compose two-dimensionally instead of one strip", { timeout: 60_000 }, async () => {
++  for (const [name, graph] of Object.entries(CANVAS_FIXTURES)) {
++    const layout = await layoutSemanticGraph(graph);
++    const topLevelRects = topLevelRegionIds(graph)
++      .map((regionId) => layout.regionRects[regionId])
++      .filter(Boolean);
++    assert.ok(topLevelRects.length >= 2, `${name} fixture exercises multiple top-level Regions`);
++
++    for (let leftIndex = 0; leftIndex < topLevelRects.length; leftIndex += 1) {
++      for (let rightIndex = leftIndex + 1; rightIndex < topLevelRects.length; rightIndex += 1) {
++        assert.equal(overlap(topLevelRects[leftIndex], topLevelRects[rightIndex], 8), false, `${name}: packed Regions must not overlap`);
++      }
++    }
++
++    const rowTops = [...new Set(topLevelRects.map((rect) => Math.round(rect.y / 10)))].sort((left, right) => left - right);
++    for (const rowTop of rowTops) {
++      const row = topLevelRects.filter((rect) => Math.round(rect.y / 10) === rowTop);
++      const uniqueTops = new Set(row.map((rect) => rect.y));
++      assert.equal(uniqueTops.size, 1, `${name}: Regions in one row must share a top edge`);
++    }
++    if (name === "small" || name === "large") {
++      assert.ok(rowTops.length >= 2, `${name}: a multi-Region map must wrap into more than one row, received ${rowTops.length}`);
++    }
++    const aspect = layout.width / layout.height;
++    assert.ok(aspect > .35 && aspect < 3.2, `${name}: packed map aspect should stay viewport-like, received ${aspect.toFixed(2)}`);
++  }
++
++  const packedOnce = await layoutSemanticGraph(SMALL_CANVAS_FIXTURE);
++  const packedTwice = packTopLevelRegions(SMALL_CANVAS_FIXTURE, packedOnce);
++  assert.ok(packedTwice.rowCount >= 2, "Small fixture should pack into multiple rows");
++  assert.equal(packedTwice.topLevelRegionCount, topLevelRegionIds(SMALL_CANVAS_FIXTURE).length);
++  assert.deepEqual(packedTwice.layout.objectRects, packedOnce.objectRects, "Packing must be idempotent for an already packed map");
++});
++
++test("default camera holds Architecture density with readable screen-space text", () => {
++  assert.ok(ARCHITECTURE_ZOOM_FLOOR >= .5, "The default fit must not fall below a readable zoom floor");
++  assert.equal(semanticZoomLevel(ARCHITECTURE_ZOOM_FLOOR), "architecture", "The default fit must land in the Architecture density band");
++  const minimumObjectWidth = 232;
++  assert.ok(minimumObjectWidth * ARCHITECTURE_ZOOM_FLOOR >= 120, "Objects must stay a readable screen-space size at the default camera");
++  const labelPx = 15;
++  const defaultScreenText = labelCompensationScale(ARCHITECTURE_ZOOM_FLOOR, labelPx) * labelPx * ARCHITECTURE_ZOOM_FLOOR;
++  assert.ok(defaultScreenText + .01 >= MIN_MEANINGFUL_TEXT_PX, `Default view labels must stay ≥ ${MIN_MEANINGFUL_TEXT_PX}px on screen, received ${defaultScreenText.toFixed(1)}`);
++  assert.equal(labelCompensationScale(1.2, labelPx), 1, "Zoomed-in labels need no compensation");
++  assert.ok(labelCompensationScale(.1, labelPx) <= 4.5, "Compensation must stay bounded on extreme zoom-out");
++  assert.equal(semanticZoomLevel(.3), "landscape");
++  assert.equal(semanticZoomLevel(1.4), "operational");
++});
++
++test("Trace renders an ordered corridor from entry to result", () => {
++  const flow = COMPLEX_CANVAS_FIXTURE.flows[0];
++  const corridor = traceCorridor(COMPLEX_CANVAS_FIXTURE, flow.id);
++  assert.ok(corridor, "A named Flow must produce a corridor");
++  assert.deepEqual(corridor.steps.map((step) => step.sequence), [...corridor.steps.keys()].map((index) => index + 1), "Corridor steps must be sequence-ordered");
++  assert.equal(corridor.steps[0].isEntry, true, "The first corridor step is the entry");
++  assert.equal(corridor.steps.at(-1).isExit, true, "The last corridor step is the result");
++  assert.ok(corridor.steps.filter((step) => step.isEntry).length >= 1);
++  assert.equal(corridor.transitions.length, corridor.steps.length - 1, "A linear Flow has one transition per consecutive step pair");
++  for (const transition of corridor.transitions) {
++    assert.ok(transition.payload.length > 0, "Every transition must name what it hands over");
++    assert.ok(transition.relationshipId.length > 0);
++  }
++  const forward = corridorTransitionBetween(corridor, corridor.transitions[0].fromObjectId, corridor.transitions[0].toObjectId);
++  assert.equal(forward?.relationshipId, corridor.transitions[0].relationshipId);
++  const reverse = corridorTransitionBetween(corridor, corridor.transitions[0].toObjectId, corridor.transitions[0].fromObjectId);
++  assert.equal(reverse?.relationshipId, corridor.transitions[0].relationshipId, "Corridor transitions are direction-agnostic lookups");
++  const isolated = COMPLEX_CANVAS_FIXTURE.objects.find((object) => !COMPLEX_CANVAS_FIXTURE.relationships.some((relationship) =>
++    relationship.sourceObjectId === object.id || relationship.targetObjectId === object.id));
++  assert.ok(isolated, "Complex fixture keeps an isolated object");
++  assert.equal(corridorTransitionBetween(corridor, corridor.steps[0].objectId, isolated.id), null, "Unrelated pairs have no corridor transition");
++  assert.equal(traceCorridor(COMPLEX_CANVAS_FIXTURE, "missing-flow"), null);
++});
++
++test("Region reading summaries stay meaningful when Landscape hides objects", () => {
++  const topRegions = topLevelRegionIds(MEDIUM_CANVAS_FIXTURE)
++    .map((regionId) => MEDIUM_CANVAS_FIXTURE.regions.find((region) => region.id === regionId))
++    .filter(Boolean);
++  const withKeys = topRegions.filter((region) => regionReadingSummary(MEDIUM_CANVAS_FIXTURE, region.id).keyObjectNames.length > 0);
++  assert.ok(withKeys.length > 0, "At least one top-level Region must surface key object names");
++  for (const region of topRegions) {
++    const summary = regionReadingSummary(MEDIUM_CANVAS_FIXTURE, region.id);
++    const descendantRegionIds = new Set(MEDIUM_CANVAS_FIXTURE.regions
++      .filter((candidate) => packedAncestorRegionId(MEDIUM_CANVAS_FIXTURE, candidate.id) === region.id)
++      .map((candidate) => candidate.id));
++    const expectedObjects = MEDIUM_CANVAS_FIXTURE.objects.filter((object) => descendantRegionIds.has(object.regionId)).length;
++    assert.equal(summary.objectCount, expectedObjects, "Region summaries must count the whole subtree");
++    const importantNames = new Set(MEDIUM_CANVAS_FIXTURE.objects
++      .filter((object) => descendantRegionIds.has(object.regionId) && (object.importance.level === "critical" || object.importance.level === "high"))
++      .map((object) => object.name));
++    for (const name of summary.keyObjectNames) assert.ok(importantNames.has(name), "Key object names must come from important objects in the subtree");
++    assert.ok(summary.keyObjectNames.length <= 3, "Key object lists stay bounded");
++  }
++  const totals = topRegions.reduce((accumulator, region) => {
++    const summary = regionReadingSummary(MEDIUM_CANVAS_FIXTURE, region.id);
++    return { internal: accumulator.internal + summary.internalLinkCount, cross: accumulator.cross + summary.crossRegionLinkCount };
++  }, { internal: 0, cross: 0 });
++  assert.equal(totals.internal + totals.cross / 2, MEDIUM_CANVAS_FIXTURE.relationships.length, "Link counts must partition the relationship budget");
++});
++
++test("hovering previews relationships without leaving Browse mode", () => {
++  const hub = SMALL_CANVAS_FIXTURE.objects[0];
++  const incident = SMALL_CANVAS_FIXTURE.relationships.filter((relationship) =>
++    relationship.sourceObjectId === hub.id || relationship.targetObjectId === hub.id);
++  assert.ok(incident.length > 0, "The hub object must have relationships to preview");
++  const view = deriveCanvasView(SMALL_CANVAS_FIXTURE, {
++    mode: "browse",
++    selection: null,
++    activeFlowId: null,
++    zoom: .7,
++    searchQuery: "",
++    hoveredObjectId: hub.id,
++  });
++  for (const relationship of incident) assert.equal(view.relationshipEmphasis.get(relationship.id), "preview", "Incident relationships must be previewed on hover");
++  const unrelated = SMALL_CANVAS_FIXTURE.relationships.find((relationship) => !incident.includes(relationship));
++  assert.equal(view.relationshipEmphasis.get(unrelated.id), "normal", "Unrelated relationships must stay untouched");
++  assert.equal(view.mode, "browse", "Hover must not switch the canvas mode");
++
++  const flow = SMALL_CANVAS_FIXTURE.flows[0];
++  const traceView = deriveCanvasView(SMALL_CANVAS_FIXTURE, {
++    mode: "trace",
++    selection: { kind: "flow", id: flow.id },
++    activeFlowId: flow.id,
++    zoom: .9,
++    searchQuery: "",
++    hoveredObjectId: SMALL_CANVAS_FIXTURE.objects[0].id,
++  });
++  assert.ok([...traceView.relationshipEmphasis.values()].every((emphasis) => emphasis !== "preview"), "Trace keeps its own emphasis grammar");
++});
