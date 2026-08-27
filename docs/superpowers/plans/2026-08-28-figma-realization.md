@@ -86,7 +86,7 @@ describe("realization contracts", () => {
       version: "0.1",
       round: 1,
       status: "rejected",
-      figma_refs_verified: { file_key: "fk", frame_node_ids: ["n1"] },
+      provider_refs_verified: { file_key: "fk", frame_node_ids: ["n1"] },
       feedback: { text: "hero too weak", region_annotations: [{ sdir_region: "hero", note: "contrast" }] },
       evidence: [{ type: "human_decision", actor_type: "human", actor_ref: "user:x", source_type: "conversation", source_ref: "msg-1", quote: "redo", confirmed_at: "2026-08-28T00:00:00.000Z" }],
       decided_at: "2026-08-28T00:00:00.000Z",
@@ -133,18 +133,18 @@ Append after `CapabilityMapSchema`:
 export const RealizationModeSchema = z.enum(["direct_code", "figma_first"]);
 export type RealizationMode = z.infer<typeof RealizationModeSchema>;
 
-export const FigmaFrameRefSchema = z.object({
+export const ProviderFrameRefSchema = z.object({
   node_id: NonEmptyStringSchema,
   name: NonEmptyStringSchema,
   sdir_region: NonEmptyStringSchema,
 });
-export type FigmaFrameRef = z.infer<typeof FigmaFrameRefSchema>;
+export type ProviderFrameRef = z.infer<typeof ProviderFrameRefSchema>;
 
-export const FigmaRefsSchema = z.object({
+export const ProviderRefsSchema = z.object({
   file_key: NonEmptyStringSchema,
-  frames: z.array(FigmaFrameRefSchema).min(1),
+  frames: z.array(ProviderFrameRefSchema).min(1),
 });
-export type FigmaRefs = z.infer<typeof FigmaRefsSchema>;
+export type ProviderRefs = z.infer<typeof ProviderRefsSchema>;
 
 export const RealizationConditionSchema = z.object({
   id: NonEmptyStringSchema,
@@ -188,7 +188,7 @@ export const RepresentationArtifactSchema = z.object({
   realization: z.object({
     provider: NonEmptyStringSchema,
     provider_contract_version: NonEmptyStringSchema,
-    refs: FigmaRefsSchema.nullable(),
+    refs: ProviderRefsSchema.nullable(),
   }),
   status: RepresentationStatusSchema,
   validation: z.array(NonEmptyStringSchema),
@@ -221,7 +221,7 @@ export type RepresentationReviewEvidence = z.infer<typeof RepresentationReviewEv
 export const RepresentationReviewRecordSchema = z.object({
   round: z.number().int().positive(),
   status: z.enum(["approved", "rejected"]),
-  figma_refs_verified: z.object({
+  provider_refs_verified: z.object({
     file_key: NonEmptyStringSchema,
     frame_node_ids: z.array(NonEmptyStringSchema).min(1),
   }),
@@ -304,7 +304,6 @@ Expected: FAIL — `version` is `"1"` and `GATE_PHASE.realize` undefined.
 
 - [ ] **Step 3: Implement** in `packages/prax-runtime/src/lifecycle-policy.ts`:
 
-- Import type: change `LifecyclePolicy` import to also `LifecyclePolicyV2` from `./contracts.js`.
 - `GATE_PHASE`: add `realize: "REALIZATION",` after the `reconcile` line.
 - `NEXT_TOOL_BY_GATE`: add `realize: "design_realize",` after the `reconcile` line.
 - In `lifecyclePolicyFor`, change every returned policy to `version: "2"`. The three return statements become:
@@ -600,13 +599,13 @@ describe("validateReview", () => {
     await run(root);
   }
 
-  it("retries when figma_refs_verified does not match the artifact refs", async () => {
+  it("retries when provider_refs_verified does not match the artifact refs", async () => {
     await withEvidenceRoot(async (root) => {
       const artifact = artifactFor("under_review", approvedRefs);
       const result = await validateReview(
         {
           status: "approved",
-          figma_refs_verified: { file_key: "other", frame_node_ids: ["n1"] },
+          provider_refs_verified: { file_key: "other", frame_node_ids: ["n1"] },
           evidence: [{ type: "human_decision", actor_ref: "user:x", source_type: "conversation", source_ref: "m1", quote: "ok" }],
         },
         artifact,
@@ -621,7 +620,7 @@ describe("validateReview", () => {
     await withEvidenceRoot(async (root) => {
       const artifact = artifactFor("under_review", approvedRefs);
       const rejectedNoFeedback = await validateReview(
-        { status: "rejected", figma_refs_verified: { file_key: "fk", frame_node_ids: ["n1", "n2", "n3"] }, evidence: [{ type: "human_decision", actor_ref: "u", source_type: "conversation", source_ref: "m", quote: "no" }] },
+        { status: "rejected", provider_refs_verified: { file_key: "fk", frame_node_ids: ["n1", "n2", "n3"] }, evidence: [{ type: "human_decision", actor_ref: "u", source_type: "conversation", source_ref: "m", quote: "no" }] },
         artifact,
         { sessionDirectory: root, now: NOW },
       );
@@ -629,7 +628,7 @@ describe("validateReview", () => {
       const approvedNoScreenshot = await validateReview(
         {
           status: "approved",
-          figma_refs_verified: { file_key: "fk", frame_node_ids: ["n1", "n2", "n3"] },
+          provider_refs_verified: { file_key: "fk", frame_node_ids: ["n1", "n2", "n3"] },
           feedback: { text: "ok" },
           evidence: [{ type: "human_decision", actor_ref: "u", source_type: "conversation", source_ref: "m", quote: "approved" }],
         },
@@ -647,7 +646,7 @@ describe("validateReview", () => {
       const result = await validateReview(
         {
           status: "approved",
-          figma_refs_verified: { file_key: "fk", frame_node_ids: ["n1", "n2", "n3"] },
+          provider_refs_verified: { file_key: "fk", frame_node_ids: ["n1", "n2", "n3"] },
           feedback: { text: "approved after hero fix" },
           evidence: [
             { type: "screenshot", ref: "rep-evidence/round-1/hero.png" },
@@ -918,7 +917,7 @@ export async function verifyEvidenceFile(sessionDirectory: string, ref: string):
 
 export interface ReviewSubmissionInput {
   status: "approved" | "rejected";
-  figma_refs_verified: { file_key: string; frame_node_ids: string[] };
+  provider_refs_verified: { file_key: string; frame_node_ids: string[] };
   feedback?: { text: string; region_annotations?: Array<{ sdir_region: string; note: string }> } | undefined;
   evidence: Array<
     | { type: "screenshot"; ref: string }
@@ -929,18 +928,18 @@ export interface ReviewSubmissionInput {
 export async function validateReview(
   submission: ReviewSubmissionInput,
   artifact: RepresentationArtifact,
-  options: { sessionDirectory: string; now: string },
+  options: { sessionDirectory: string; now: string; expectedRound?: number },
 ): Promise<RealizationValidation<RepresentationReviewRecord>> {
   const refs = artifact.realization.refs;
   if (refs === null) {
     return { status: "BLOCK", issues: ["the artifact carries no draft refs; submit_draft first."], warnings: [], codes: ["REALIZATION_WINDOW_INVALID"] };
   }
-  const verifiedIds = [...submission.figma_refs_verified.frame_node_ids].sort();
+  const verifiedIds = [...submission.provider_refs_verified.frame_node_ids].sort();
   const artifactIds = refs.frames.map((frame) => frame.node_id).sort();
-  if (submission.figma_refs_verified.file_key !== refs.file_key || verifiedIds.join() !== artifactIds.join()) {
+  if (submission.provider_refs_verified.file_key !== refs.file_key || verifiedIds.join() !== artifactIds.join()) {
     return {
       status: "RETRY",
-      issues: ["figma_refs_verified must match the artifact refs exactly (same file_key and node id set)."],
+      issues: ["provider_refs_verified must match the artifact refs exactly (same file_key and node id set)."],
       warnings: [],
       codes: ["REALIZATION_REVIEW_REFS_MISMATCH"],
     };
@@ -954,8 +953,14 @@ export async function validateReview(
   const evidence: RepresentationReviewEvidence[] = [];
   let screenshots = 0;
   let human = 0;
+  const roundPrefix = `rep-evidence/round-${options.expectedRound ?? 1}/`;
   for (const item of submission.evidence) {
     if (item.type === "screenshot") {
+      if (!item.ref.startsWith(roundPrefix)) {
+        issues.push(`screenshot evidence must come from the current review round directory (${roundPrefix}): ${item.ref}`);
+        codes.push("REALIZATION_EVIDENCE_INVALID");
+        continue;
+      }
       const verified = await verifyEvidenceFile(options.sessionDirectory, item.ref);
       if (!verified.ok) {
         issues.push(verified.error);
@@ -997,7 +1002,7 @@ export async function validateReview(
   const value: RepresentationReviewRecord = {
     round: 0,
     status: submission.status,
-    figma_refs_verified: submission.figma_refs_verified,
+    provider_refs_verified: submission.provider_refs_verified,
     ...(submission.feedback === undefined
       ? {}
       : { feedback: { text: submission.feedback.text, region_annotations: submission.feedback.region_annotations ?? [] } }),
@@ -1105,15 +1110,28 @@ describe("representation checks in the plan", () => {
 
 describe("deterministic representation coverage evaluator (fail-closed)", () => {
   const validator = new PraxValidator();
+  const approvedReview = {
+    version: "0.1" as const,
+    round: 1,
+    status: "approved" as const,
+    provider_refs_verified: { file_key: "fk", frame_node_ids: ["n1", "n2"] },
+    feedback: { text: "ok", region_annotations: [] },
+    evidence: [{ type: "human_decision" as const, actor_type: "human" as const, actor_ref: "u", source_type: "conversation", source_ref: "m", quote: "ok", confirmed_at: "2026-08-28T00:00:00.000Z" }],
+    decided_at: "2026-08-28T00:00:00.000Z",
+    sdir_digest_at_review: "digest-1",
+    history: [],
+  };
 
-  function evaluateWith(art: RepresentationArtifact | undefined, sdirDigest: string | undefined) {
+  function evaluateWith(art: RepresentationArtifact | undefined, sdirDigest: string | undefined, review: unknown = approvedReview) {
     const plan = validator.plan({ policyContext: { mode: "greenfield" }, realizationMode: "figma_first" });
-    return validator.evaluate({ plan, representationArtifact: art, sdirDigest });
+    return validator.evaluate({ plan, representationArtifact: art, representationReview: review as never, sdirDigest });
   }
 
-  it("fails closed when the artifact is missing, unapproved, drifted, or uncovered", () => {
+  it("fails closed when the artifact is missing, unapproved, unreviewed, drifted, or uncovered", () => {
     expect(evaluateWith(undefined, "digest-1").status).toBe("BLOCK");
     expect(evaluateWith(artifact({ status: "revision_requested" }), "digest-1").status).toBe("BLOCK");
+    expect(evaluateWith(artifact(), "digest-1", undefined).status).toBe("BLOCK");
+    expect(evaluateWith(artifact(), undefined).status).toBe("BLOCK");
     expect(evaluateWith(artifact(), "different-digest").status).toBe("BLOCK");
     expect(
       evaluateWith(
@@ -1129,6 +1147,14 @@ describe("deterministic representation coverage evaluator (fail-closed)", () => 
     ).toBe("BLOCK");
   });
 
+  it("produces a finding for every deterministic check in the plan (no silent passes)", () => {
+    const plan = validator.plan({ policyContext: { mode: "greenfield" }, realizationMode: "figma_first", decisions: architectureDecisions("ds_x") });
+    const evaluation = validator.evaluate({ plan, representationArtifact: artifact(), representationReview: approvedReview, sdirDigest: "digest-1" });
+    const deterministicIds = plan.checks.filter((check) => check.kind === "deterministic").map((check) => check.id);
+    const findingIds = evaluation.findings.filter((finding) => finding.kind === "deterministic").map((finding) => finding.check_id);
+    expect(deterministicIds.every((id) => findingIds.includes(id))).toBe(true);
+  });
+
   it("passes when approved and fully covered, and the drift check demands two artifact_refs", () => {
     const evaluation = evaluateWith(artifact(), "digest-1");
     const coverage = evaluation.findings.find((finding) => finding.check_id === "design_representation_coverage");
@@ -1139,6 +1165,7 @@ describe("deterministic representation coverage evaluator (fail-closed)", () => 
     const withDriftOneRef = validator.evaluate({
       plan: validator.plan({ policyContext: { mode: "greenfield" }, realizationMode: "figma_first" }),
       representationArtifact: artifact(),
+      representationReview: approvedReview,
       sdirDigest: "digest-1",
       evidence: {
         submitted_by: "agent",
@@ -1177,10 +1204,10 @@ const REPRESENTATION_CHECKS: ValidationCheck[] = [
   representation_runtime_drift: { profile: "representation_integrity", facet: "visual" },
 ```
 
-3d. `ValidationPlanInput` gains:
+3d. `ValidationPlanInput` gains (extend the `prax-runtime` type import with `RealizationMode`):
 
 ```ts
-  realizationMode?: "figma_first" | undefined;
+  realizationMode?: RealizationMode | undefined;
 ```
 
 3e. In `assemblePlan`, only the final full-chain return appends the checks (light and modify branches never carry realization). Change the final return's `checks` array to:
@@ -1196,10 +1223,11 @@ const REPRESENTATION_CHECKS: ValidationCheck[] = [
       ],
 ```
 
-3f. `evaluate` input type gains:
+3f. `evaluate` input type gains (extend the `prax-runtime` type import with `RepresentationReview`):
 
 ```ts
     representationArtifact?: RepresentationArtifact | undefined;
+    representationReview?: RepresentationReview | undefined;
     sdirDigest?: string | undefined;
 ```
 
@@ -1213,7 +1241,11 @@ const REPRESENTATION_CHECKS: ValidationCheck[] = [
         failure = "representation artifact is missing.";
       } else if (artifact.status !== "approved") {
         failure = `representation artifact status is '${artifact.status}', not approved.`;
-      } else if (input.sdirDigest !== undefined && input.sdirDigest !== artifact.semantic_refs.sdir_digest) {
+      } else if (input.representationReview === undefined || input.representationReview.status !== "approved") {
+        failure = "no approved representation review backs the artifact.";
+      } else if (input.sdirDigest === undefined) {
+        failure = "the current SDIR digest is unavailable.";
+      } else if (input.sdirDigest !== artifact.semantic_refs.sdir_digest) {
         failure = "the SDIR digest changed after representation approval.";
       } else if (artifact.realization.refs === null) {
         failure = "the approved representation artifact carries no provider refs.";
@@ -1223,6 +1255,13 @@ const REPRESENTATION_CHECKS: ValidationCheck[] = [
         );
         if (unmapped.length > 0) {
           failure = `sdir regions without an approved frame: ${unmapped.join(", ")}.`;
+        } else if (input.sdir?.screen.regions !== undefined) {
+          const drifted = input.sdir.screen.regions.filter(
+            (region) => !artifact.semantic_refs.regions.includes(region.id),
+          );
+          if (drifted.length > 0) {
+            failure = `SDIR regions missing from the approved artifact: ${drifted.map((region) => region.id).join(", ")}.`;
+          }
         }
       }
       findings.push({
@@ -1286,19 +1325,26 @@ git commit -m "feat(validator): representation drift checks with fail-closed det
 - Modify: `packages/prax-runtime/src/context-compiler.ts`
 - Test: `tests/context-compilation.test.ts` (append one `it`)
 
-- [ ] **Step 1: Write the failing test** — append inside the compilation describe in `tests/context-compilation.test.ts`:
+- [ ] **Step 1: Write the failing test** — append inside the compilation describe in `tests/context-compilation.test.ts` (that file has no session factory; inline the minimal session literal):
 
 ```ts
   it("compiles the approved representation mapping for implementing agents", () => {
+    const session: DesignSession = {
+      id: "ds_repr", project_root: "/tmp/p", mode: "greenfield", phase: "IMPLEMENTATION_READY",
+      created_at: "2026-08-28T00:00:00.000Z", updated_at: "2026-08-28T00:00:00.000Z", revision: 3,
+      requirement_ref: "requirement.md", completed_gates: ["confirm", "framing", "context", "route", "decide", "sdir", "reconcile", "realize"],
+      current_gate: { name: "prepare" }, disclosures: [], routing_history: [], artifacts: {},
+      unresolved: [], warnings: [], design_authorities: [],
+    };
     const { compiled, trace } = compileContext({
-      session: baseSession(),
+      session,
       planRevision: 1,
       planCheckIds: ["design_representation_coverage"],
       corrections: [],
       representation: {
         provider: "figma",
         file_key: "fk",
-        approved_anchor: { round: 2, sdir_digest: "digest-1" },
+        approved_anchor: { round: 2, sdir_digest: "digest-1", screenshot_digests: [{ ref: "rep-evidence/round-2/hero.png", sha256: "abc" }] },
         region_frames: [
           { region: "hero", node_id: "n1", name: "Hero" },
           { region: "cta", node_id: "n2", name: "CTA" },
@@ -1315,7 +1361,7 @@ git commit -m "feat(validator): representation drift checks with fail-closed det
   });
 ```
 
-Note: `baseSession()` is the local session factory already used by that file; reuse its existing name (check the file and use the same helper the other tests use — if it is named differently, e.g. inline objects, copy the minimal session object from an existing test in the same file).
+Add `compileContext` and `type DesignSession` to that file's `prax-runtime` import if not already present.
 
 - [ ] **Step 2: Run test to verify it fails**
 
@@ -1331,7 +1377,11 @@ Add to `CompiledContextSchema` (after `corrections`):
     .object({
       provider: NonEmpty,
       file_key: NonEmpty,
-      approved_anchor: z.object({ round: z.number().int().positive(), sdir_digest: NonEmpty }),
+      approved_anchor: z.object({
+        round: z.number().int().positive(),
+        sdir_digest: NonEmpty,
+        screenshot_digests: z.array(z.object({ ref: NonEmpty, sha256: NonEmpty })).default([]),
+      }),
       region_frames: z.array(z.object({ region: NonEmpty, node_id: NonEmpty, name: NonEmpty })).min(1),
     })
     .optional(),
@@ -1343,7 +1393,7 @@ Extend `CompileContextInput`:
   representation?: {
     provider: string;
     file_key: string;
-    approved_anchor: { round: number; sdir_digest: string };
+    approved_anchor: { round: number; sdir_digest: string; screenshot_digests: Array<{ ref: string; sha256: string }> };
     region_frames: Array<{ region: string; node_id: string; name: string }>;
   } | undefined;
 ```
@@ -1358,7 +1408,7 @@ and to `trace.selected`:
 
 ```ts
       ...(representation === undefined
-        ? {}
+        ? []
         : [{ ref: "representation", reason: representation.region_frames.map((frame) => `${frame.region}->${frame.node_id}`) }]),
 ```
 
@@ -1408,7 +1458,7 @@ describe("client-facing design_realize schema (flat, no anyOf)", () => {
       design_session_id: "ds_x",
       mode: "submit_review",
       status: "approved",
-      figma_refs_verified: { file_key: "fk", frame_node_ids: ["n1"] },
+      provider_refs_verified: { file_key: "fk", frame_node_ids: ["n1"] },
       evidence: [
         { type: "screenshot", ref: "rep-evidence/round-1/hero.png" },
         { type: "human_decision", actor_ref: "user:x", source_type: "conversation", source_ref: "m1", quote: "approved" },
@@ -1428,7 +1478,7 @@ Expected: FAIL — no export `DesignRealizeInputSchema`.
 
 - [ ] **Step 3: Implement schema in `packages/prax-mcp/src/schemas.ts`**
 
-Extend the `prax-runtime` import with `FigmaRefsSchema, RealizationModeSchema`. Append:
+Extend the `prax-runtime` import with `ProviderRefsSchema, RealizationModeSchema`. Append:
 
 ```ts
 const RealizeEvidenceItem = z.object({
@@ -1452,9 +1502,9 @@ export const DesignRealizeInputSchema = z
     reason: z.string().trim().min(1).optional().describe("Required when re-proposing a different mode."),
     override: z.boolean().optional(),
     override_reason: z.string().trim().min(1).optional(),
-    figma_refs: FigmaRefsSchema.optional(),
+    provider_refs: ProviderRefsSchema.optional(),
     status: z.enum(["approved", "rejected"]).optional(),
-    figma_refs_verified: z
+    provider_refs_verified: z
       .object({ file_key: z.string().trim().min(1), frame_node_ids: z.array(z.string().trim().min(1)).min(1) })
       .optional(),
     feedback: z
@@ -1471,14 +1521,14 @@ export const DesignRealizeInputSchema = z
     if (input.mode === "propose" && (input.realization_mode === undefined || input.conditions === undefined)) {
       ctx.addIssue({ code: "custom", path: ["realization_mode"], message: "propose requires realization_mode and conditions." });
     }
-    if (input.mode === "submit_draft" && input.figma_refs === undefined) {
-      ctx.addIssue({ code: "custom", path: ["figma_refs"], message: "submit_draft requires figma_refs." });
+    if (input.mode === "submit_draft" && input.provider_refs === undefined) {
+      ctx.addIssue({ code: "custom", path: ["provider_refs"], message: "submit_draft requires provider_refs." });
     }
     if (
       input.mode === "submit_review" &&
-      (input.status === undefined || input.figma_refs_verified === undefined || input.evidence === undefined)
+      (input.status === undefined || input.provider_refs_verified === undefined || input.evidence === undefined)
     ) {
-      ctx.addIssue({ code: "custom", path: ["status"], message: "submit_review requires status, figma_refs_verified, and evidence." });
+      ctx.addIssue({ code: "custom", path: ["status"], message: "submit_review requires status, provider_refs_verified, and evidence." });
     }
   });
 
@@ -1606,6 +1656,14 @@ async function writeEvidence(store: FileSessionStore, sessionId: string, round: 
   return `rep-evidence/round-${round}/${name}`;
 }
 
+async function writeRuntimeSnapshot(store: FileSessionStore, sessionId: string, name: string) {
+  const dir = await store.artifactDirectory(sessionId);
+  await mkdir(join(dir, "rep-evidence"), { recursive: true });
+  const file = join(dir, "rep-evidence", `runtime-${name}`);
+  await writeFile(file, Buffer.from([0x89, 0x50, 0x4e, 0x47]));
+  return `rep-evidence/runtime-${name}`;
+}
+
 function draftRefs(regions: string[]) {
   return {
     file_key: "figma-landing",
@@ -1646,18 +1704,18 @@ describe("design_realize end to end", () => {
     const partial = await service.designRealize({
       design_session_id: sessionId,
       mode: "submit_draft",
-      figma_refs: { file_key: "figma-landing", frames: [draftRefs(regions).frames[0]!] },
+      provider_refs: { file_key: "figma-landing", frames: [draftRefs(regions).frames[0]!] },
     });
     expect(partial).toMatchObject({ status: "EXPAND" });
 
-    const draft = await service.designRealize({ design_session_id: sessionId, mode: "submit_draft", figma_refs: draftRefs(regions) });
+    const draft = await service.designRealize({ design_session_id: sessionId, mode: "submit_draft", provider_refs: draftRefs(regions) });
     expect(draft.status).toBe("REVIEW");
 
     const refsMismatch = await service.designRealize({
       design_session_id: sessionId,
       mode: "submit_review",
       status: "approved",
-      figma_refs_verified: { file_key: "figma-landing", frame_node_ids: ["node-1"] },
+      provider_refs_verified: { file_key: "figma-landing", frame_node_ids: ["node-1"] },
       evidence: [{ ...HUMAN_DECISION }],
     });
     expect(refsMismatch).toMatchObject({ status: "RETRY" });
@@ -1667,7 +1725,7 @@ describe("design_realize end to end", () => {
       design_session_id: sessionId,
       mode: "submit_review",
       status: "approved",
-      figma_refs_verified: { file_key: "figma-landing", frame_node_ids: draftRefs(regions).frames.map((frame) => frame.node_id) },
+      provider_refs_verified: { file_key: "figma-landing", frame_node_ids: draftRefs(regions).frames.map((frame) => frame.node_id) },
       feedback: { text: "approved" },
       evidence: [{ type: "screenshot", ref: heroRef }, HUMAN_DECISION],
     });
@@ -1691,6 +1749,7 @@ describe("design_realize end to end", () => {
     const planned = await service.designValidate({ design_session_id: sessionId, mode: "plan" });
     const checks = planned.checks as Array<{ id: string; evidence_required: boolean }>;
     expect(checks.map((check) => check.id)).toContain("design_representation_coverage");
+    const runtimeRef = await writeRuntimeSnapshot(store, sessionId, "landing.png");
     const evidence = {
       submitted_by: "realize-e2e",
       collected_at: new Date().toISOString(),
@@ -1703,7 +1762,7 @@ describe("design_realize end to end", () => {
           outcome: "pass" as const,
           source: "visual diff",
           notes: "runtime page matches approved frames",
-          artifact_refs: ["rep-evidence/round-1/hero.png", "run-evidence/runtime.png"],
+          artifact_refs: [heroRef, runtimeRef],
         },
       ],
     };
@@ -1725,13 +1784,13 @@ describe("design_realize end to end", () => {
       provider: "figma",
       conditions: figmaFirstConditions(),
     });
-    await service.designRealize({ design_session_id: sessionId, mode: "submit_draft", figma_refs: draftRefs(regions) });
+    await service.designRealize({ design_session_id: sessionId, mode: "submit_draft", provider_refs: draftRefs(regions) });
     const heroRef = await writeEvidence(store, sessionId, 1, "hero.png");
     const rejected = await service.designRealize({
       design_session_id: sessionId,
       mode: "submit_review",
       status: "rejected",
-      figma_refs_verified: { file_key: "figma-landing", frame_node_ids: draftRefs(regions).frames.map((frame) => frame.node_id) },
+      provider_refs_verified: { file_key: "figma-landing", frame_node_ids: draftRefs(regions).frames.map((frame) => frame.node_id) },
       feedback: { text: "hero too weak", region_annotations: [{ sdir_region: regions[0]!, note: "contrast" }] },
       evidence: [{ type: "screenshot", ref: heroRef }, HUMAN_DECISION],
     });
@@ -1740,13 +1799,13 @@ describe("design_realize end to end", () => {
     const artifact = await store.readArtifact<{ status: string }>(session, "representationArtifact");
     expect(artifact?.status).toBe("revision_requested");
 
-    await service.designRealize({ design_session_id: sessionId, mode: "submit_draft", figma_refs: draftRefs(regions) });
+    await service.designRealize({ design_session_id: sessionId, mode: "submit_draft", provider_refs: draftRefs(regions) });
     const heroRef2 = await writeEvidence(store, sessionId, 2, "hero.png");
     const approved = await service.designRealize({
       design_session_id: sessionId,
       mode: "submit_review",
       status: "approved",
-      figma_refs_verified: { file_key: "figma-landing", frame_node_ids: draftRefs(regions).frames.map((frame) => frame.node_id) },
+      provider_refs_verified: { file_key: "figma-landing", frame_node_ids: draftRefs(regions).frames.map((frame) => frame.node_id) },
       feedback: { text: "approved" },
       evidence: [{ type: "screenshot", ref: heroRef2 }, HUMAN_DECISION],
     });
@@ -2027,7 +2086,7 @@ Expected: FAIL — `service.designRealize` is not a function.
           next: nextTool("design_realize"),
         };
       }
-      const validation = validateDraft(input.figma_refs!, artifact);
+      const validation = validateDraft(input.provider_refs!, artifact);
       if (validation.status !== "PASS") {
         return {
           status: validation.status,
@@ -2039,7 +2098,7 @@ Expected: FAIL — `service.designRealize` is not a function.
       }
       const updatedArtifact = {
         ...artifact,
-        realization: { ...artifact.realization, refs: input.figma_refs! },
+        realization: { ...artifact.realization, refs: input.provider_refs! },
         status: "under_review" as const,
       };
       await this.sessions.commit(touch(session, now), [{ key: "representationArtifact", value: updatedArtifact }]);
@@ -2061,23 +2120,27 @@ Expected: FAIL — `service.designRealize` is not a function.
     }
     const sdir = await this.requireArtifact<Sdir>(session, "sdir");
     if (contentDigest(sdir) !== artifact.semantic_refs.sdir_digest) {
+      await this.sessions.commit(touch(session, now), [
+        { key: "representationArtifact", value: { ...artifact, status: "revision_requested" } },
+      ]);
       return {
         status: "BLOCK",
         code: "REALIZATION_SDIR_DRIFT",
-        message: "The SDIR changed after the representation was generated; regenerate the draft and re-run review.",
+        message: "The SDIR changed after the representation was generated; the artifact was reset to revision_requested — submit_draft again against the new SDIR.",
         next: nextTool("design_realize"),
       };
     }
     const sessionDirectory = await this.sessions.artifactDirectory(session.id);
+    const round = (priorReview?.round ?? 0) + 1;
     const validation = await validateReview(
       {
         status: input.status!,
-        figma_refs_verified: input.figma_refs_verified!,
+        provider_refs_verified: input.provider_refs_verified!,
         feedback: input.feedback,
         evidence: input.evidence!,
       },
       artifact,
-      { sessionDirectory, now },
+      { sessionDirectory, now, expectedRound: round },
     );
     if (validation.status !== "PASS") {
       return {
@@ -2088,10 +2151,21 @@ Expected: FAIL — `service.designRealize` is not a function.
         next: nextTool("design_realize"),
       };
     }
-    const round = (priorReview?.round ?? 0) + 1;
     const record = { ...validation.value!, round };
+    const priorRecord = priorReview === undefined
+      ? undefined
+      : {
+          round: priorReview.round,
+          status: priorReview.status,
+          provider_refs_verified: priorReview.provider_refs_verified,
+          ...(priorReview.feedback === undefined ? {} : { feedback: priorReview.feedback }),
+          evidence: priorReview.evidence,
+          decided_at: priorReview.decided_at,
+          sdir_digest_at_review: priorReview.sdir_digest_at_review,
+        };
+    const history = [...(priorReview?.history ?? []), ...(priorRecord === undefined ? [] : [priorRecord])];
     if (record.status === "approved") {
-      const review = RepresentationReviewSchema.parse({ version: "0.1", ...record, history: priorReview?.history ?? [] });
+      const review = RepresentationReviewSchema.parse({ version: "0.1", ...record, history });
       const updated = advanceSession(session, "realize", now);
       await this.sessions.commit(updated, [
         { key: "representationArtifact", value: { ...artifact, status: "approved" } },
@@ -2104,21 +2178,10 @@ Expected: FAIL — `service.designRealize` is not a function.
         next: nextTool("design_prepare_implementation"),
       };
     }
-    const priorRecord = priorReview === undefined
-      ? undefined
-      : {
-          round: priorReview.round,
-          status: priorReview.status,
-          figma_refs_verified: priorReview.figma_refs_verified,
-          ...(priorReview.feedback === undefined ? {} : { feedback: priorReview.feedback }),
-          evidence: priorReview.evidence,
-          decided_at: priorReview.decided_at,
-          sdir_digest_at_review: priorReview.sdir_digest_at_review,
-        };
     const review = RepresentationReviewSchema.parse({
       version: "0.1",
       ...record,
-      history: [...(priorReview?.history ?? []), ...(priorRecord === undefined ? [] : [priorRecord])],
+      history,
     });
     await this.sessions.commit(touch(session, now), [
       { key: "representationArtifact", value: { ...artifact, status: "revision_requested" } },
@@ -2173,13 +2236,20 @@ Add `RepresentationReviewSchema` to the prax-runtime imports.
           };
         }
         const refs = representationArtifact.realization.refs!;
+        const screenshotDigests = representationReview.evidence
+          .filter((item): item is Extract<typeof item, { type: "screenshot" }> => item.type === "screenshot")
+          .map((item) => ({ ref: item.ref, sha256: item.sha256 }));
         realizationBlock = {
           mode: "figma_first",
           provider: representationArtifact.realization.provider,
           provider_contract_version: representationArtifact.realization.provider_contract_version,
           representation_artifact_ref: "representation-artifact.yaml",
-          review: { round: representationReview.round, decided_at: representationReview.decided_at },
-          figma_refs: refs,
+          review: {
+            round: representationReview.round,
+            decided_at: representationReview.decided_at,
+            screenshot_digests: screenshotDigests,
+          },
+          provider_refs: refs,
           sdir_digest: representationArtifact.semantic_refs.sdir_digest,
         };
         representation = {
@@ -2188,6 +2258,7 @@ Add `RepresentationReviewSchema` to the prax-runtime imports.
           approved_anchor: {
             round: representationReview.round,
             sdir_digest: representationArtifact.semantic_refs.sdir_digest,
+            screenshot_digests: screenshotDigests,
           },
           region_frames: refs.frames.map((frame) => ({
             region: frame.sdir_region,
@@ -2209,7 +2280,9 @@ In `implementationBrief`, add after `validation_requirements`:
 
 In the `compileContext` call, add `...(representation === undefined ? {} : { representation }),`.
 
-4d. **Plan digests** — in `resolveValidationPlan`, after the `intentLite` read, add:
+4d. **Plan digests** — in `resolveValidationPlan`, add the artifact reads next to the other reads (before the `const digests` declaration), then extend the digest assignments **after** `const digests: Record<string, string> = {};` (the existing assignments stay):
+
+Reads (after the `intentLite` line):
 
 ```ts
     const realizationDecision =
@@ -2218,10 +2291,19 @@ In the `compileContext` call, add `...(representation === undefined ? {} : { rep
       (await this.sessions.readArtifact<RepresentationArtifact>(session, "representationArtifact")) ?? undefined;
     const representationReview =
       (await this.sessions.readArtifact<RepresentationReview>(session, "representationReview")) ?? undefined;
+    const sdirForDigest = (await this.sessions.readArtifact<Sdir>(session, "sdir")) ?? undefined;
+```
+
+Assignments (after the existing `existing_understanding` assignment):
+
+```ts
+    if (sdirForDigest !== undefined) digests.sdir = contentDigest(sdirForDigest);
     if (realizationDecision !== undefined) digests.realization_decision = contentDigest(realizationDecision);
     if (representationArtifact !== undefined) digests.representation_artifact = contentDigest(representationArtifact);
     if (representationReview !== undefined) digests.representation_review = contentDigest(representationReview);
 ```
+
+Note: adding the `sdir` digest grows the digest set for every full-SDIR session, so a stored pre-change plan re-derives once (revision +1). No existing test asserts the exact digest key set; revision-number assertions compare within a run and stay valid.
 
 and in the `this.validator.plan({...})` call add:
 
@@ -2234,14 +2316,49 @@ and in the `this.validator.plan({...})` call add:
 ```ts
     const representationArtifact =
       (await this.sessions.readArtifact<RepresentationArtifact>(session, "representationArtifact")) ?? undefined;
+    const representationReview =
+      (await this.sessions.readArtifact<RepresentationReview>(session, "representationReview")) ?? undefined;
 ```
 
 and extend the `this.validator.evaluate({...})` call:
 
 ```ts
       ...(representationArtifact === undefined ? {} : { representationArtifact }),
+      ...(representationReview === undefined ? {} : { representationReview }),
       ...(representationArtifact === undefined || sdirArtifact === undefined ? {} : { sdirDigest: contentDigest(sdirArtifact) }),
 ```
+
+4f. **Drift evidence verification (submit_evidence path)** — in `designValidate`, in the `submit_evidence` branch, after `const evidence = this.validator.parseEvidence(input.evidence);` add server-side verification for the structured two-sided drift evidence (ref 1 = approved snapshot ref, must match an approved review screenshot; ref 2 = runtime snapshot, must exist under the session evidence root):
+
+```ts
+      if (plan.checks.some((check) => check.id === "representation_runtime_drift")) {
+        const driftItem = evidence.items.find((item) => item.check_id === "representation_runtime_drift");
+        if (driftItem !== undefined) {
+          const sessionDirectory = await this.sessions.artifactDirectory(session.id);
+          const approvedRefs = new Set(
+            (representationReview?.evidence ?? []).flatMap((item) =>
+              item.type === "screenshot" ? [item.ref] : [],
+            ),
+          );
+          const issues: string[] = [];
+          if ((driftItem.artifact_refs?.length ?? 0) !== 2) {
+            issues.push("representation_runtime_drift requires exactly two artifact_refs: approved snapshot ref, then runtime snapshot ref.");
+          } else {
+            const [approvedRef, runtimeRef] = driftItem.artifact_refs!;
+            if (!approvedRefs.has(approvedRef)) {
+              issues.push(`approved snapshot ref '${approvedRef}' is not among the approved review screenshots.`);
+            }
+            const runtimeVerified = await verifyEvidenceFile(sessionDirectory, runtimeRef);
+            if (!runtimeVerified.ok) issues.push(runtimeVerified.error);
+          }
+          if (issues.length > 0) {
+            return { status: "EXPAND", code: "REALIZATION_DRIFT_EVIDENCE_INVALID", issues, next: nextTool("design_validate") };
+          }
+        }
+      }
+```
+
+Add `verifyEvidenceFile` to the `prax-runtime` service imports. Agents save the runtime snapshot under the session's `rep-evidence/runtime-<name>.png`; the approved side is anchored by digest to the review record.
 
 - [ ] **Step 5: Register the tool in `packages/prax-mcp/src/server.ts`**
 
@@ -2305,6 +2422,11 @@ and add `directCodeConditions` to the fixture import.
 with the fixture import extended.
 
 - [ ] **Step 3: Update `tests/lifecycle-e2e.test.ts` and `tests/correction-memory.test.ts`** — for every chain whose policy contains the full `sdir` gate (greenfield / rework / add_surface sessions) and which reaches `designPrepareImplementation`, insert the same `designRealize` propose call immediately before the prepare call. Chains using `modify_surface`/light paths are left untouched. (Grep first: `grep -n "designPrepareImplementation" tests/lifecycle-e2e.test.ts tests/correction-memory.test.ts` and apply per call site whose session mode is full-SDIR.)
+
+- [ ] **Step 3b: Update the two remaining full-SDIR prepare call sites**
+
+  - `tests/context-compilation.test.ts` line ~153 (the greenfield `ds_cc_3` chain): insert the same `designRealize` propose call (with `design_session_id: "ds_cc_3"`) between `designReconcile` and `designPrepareImplementation`. The modify_surface helper at line ~81 is NOT touched.
+  - `tests/lifecycle-policy.test.ts` line ~475 (the rework `ds_brief` chain): insert the same propose call (with `design_session_id: "ds_brief"`) immediately before `designPrepareImplementation`.
 
 - [ ] **Step 4: Run the full suite**
 
@@ -2417,7 +2539,7 @@ exploration valuable; runtime dependency low.
   rep-evidence/round-N/ and human_decision provenance; any rejection carries
   region-annotated feedback and triggers a revision round.
 - design_prepare_implementation emits a realization block (provider,
-  representation_artifact_ref, review round, figma_refs, sdir_digest) and the
+  representation_artifact_ref, review round, provider_refs, sdir_digest) and the
   compiled context carries the region→frame mapping.
 - validation plan contains design_representation_coverage (deterministic) and
   representation_runtime_drift (empirical, two-sided artifact_refs).
@@ -2448,11 +2570,13 @@ Fill before running; freeze outputs into fixture/ after a passing run.
 - notes: <deviations, provider incidents, overrides used>
 ```
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 4: Update `README.md`** — replace the "Ten tools" wording with eleven tools including `design_realize` (propose / submit_draft / submit_review), and insert `design_realize` into the documented full-SDIR flow between `design_reconcile` and `design_prepare_implementation` with one line noting v2 full-SDIR sessions must record a realization decision before prepare (direct_code or figma_first).
+
+- [ ] **Step 5: Commit**
 
 ```bash
-git add docs/adr-003-realization-gate.md docs/architecture.md golden/prax-landing
-git commit -m "docs: ADR-003 realization gate; architecture and prax-landing golden case"
+git add docs/adr-003-realization-gate.md docs/architecture.md golden/prax-landing README.md
+git commit -m "docs: ADR-003 realization gate; architecture, README, and prax-landing golden case"
 ```
 
 ---
@@ -2482,6 +2606,19 @@ git log --oneline -8
 ```
 
 Expected: clean tree; commit history readable as the feature arc.
+
+---
+
+## Deviations & engineering notes (subagent plan review, r2)
+
+1. **`design_realize` is custom-gated, not in `DESIGN_OPERATIONS`** — like `design_start`: its propose window spans two gates (prepare, realize) and version/policy checks carry richer messages than `checkOperationAllowed` produces. The splice/remove helpers live in `realization.ts` (pure policy transforms) rather than `state-machine.ts`; `state-machine.ts` needs no change because `currentGate`/`advanceSession` already read the policy gates array.
+2. **Commit ordering is the crash-recovery story, not a journal** — `FileSessionStore.commit` writes artifacts first and the session record last, so a crash mid-commit leaves an un-advanced session; agents re-submit and artifacts are overwritten. Building a staging/journal mechanism is out of scope (pre-existing store behavior, unchanged by this feature).
+3. **SDIR drift at submit_review resets the artifact to `revision_requested`** (transactional with the BLOCK) so `submit_draft` remains reachable — no dead-end gate.
+4. **Review history is append-only in one file** — the current record moves into `history` (full record, not summary) on every decided round; approved rounds preserve prior rejected rounds the same way.
+5. **Drift evidence is verified server-side in `design_validate` submit_evidence**: exactly two `artifact_refs` — the first must be an approved review screenshot ref (digest-anchored), the second a runtime snapshot verified under the session `rep-evidence/` root (existence, containment, sha256 via the same verifier). The generic validator keeps the ≥2 guard as backstop.
+6. **Screenshots are round-scoped** (`rep-evidence/round-<expectedRound>/`), preventing stale-round evidence; the brief and compiled anchor carry `screenshot_digests` alongside round + SDIR digest.
+7. **Provider neutrality**: schema symbols are `ProviderRefsSchema`/`ProviderFrameRefSchema`, payload fields `provider_refs`/`provider_refs_verified`; `figma` survives only as a provider id and in prose. Adding a provider = new `REALIZATION_PROVIDERS` entry + condition/eligibility rules.
+8. **The golden case live run is user-side by design** (human review in Figma + seat availability cannot be automated here); the service-level full chain — including drift evidence verification — is covered by `tests/realization-e2e.test.ts`.
 
 ---
 

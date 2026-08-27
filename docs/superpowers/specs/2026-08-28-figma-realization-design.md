@@ -1,6 +1,6 @@
 # Prax 设计→Figma 实现路径设计（Design Realization: figma_first）
 
-日期：2026-08-28（子代理审查后修订 r2）
+日期：2026-08-28（子代理审查后修订 r2；plan 审查后 r3：provider 中立命名 provider_refs/provider_refs_verified、drift 双侧证据落为两条 artifact_refs 约定、拼接辅助函数置于 realization.ts）
 状态：已与用户对齐（brainstorming 结论）+ codex 子代理审查修订，待实施
 驱动：用户 2026-08-28 决策——暂停 benchmark 驱动（MEM-001 切断），按文档建设 Design Realization 能力；Methodology Part V / §50 Phase 3 是 v0 之后规划中解锁的下一层
 
@@ -53,14 +53,14 @@ conditions: [{ id, holds, basis }]   # §18 条件逐条声明+依据；必须�
 
 # submit_draft —— agent 经 Figma MCP 生成 frames 后回填
 mode: submit_draft
-figma_refs:
+provider_refs:
   file_key: <string>
   frames: [{ node_id, name, sdir_region }]
 
 # submit_review —— 人审结果
 mode: submit_review
 status: approved | rejected
-figma_refs_verified: { file_key, frame_node_ids: [...] }
+provider_refs_verified: { file_key, frame_node_ids: [...] }
 feedback: { text, region_annotations: [{ sdir_region, note }] }   # rejected 必填
 evidence: [{ type, ref, notes }]    # approved 须含 ≥1 screenshot + ≥1 human_decision
 ```
@@ -112,7 +112,7 @@ conditions:
   - { id: high_visual_uncertainty, holds: true, basis: "..." }
   - { id: runtime_dependency_low, holds: true, basis: "静态页，无复杂交互状态" }
 proposed_at: "<iso>"
-supersedes: { decision: <prior>, reason: "<改判原因，figma_first→direct_code 时必填>" }
+supersedes: { prior_mode: <direct_code | figma_first>, reason: "<改判原因，改判时必填>" }
 ```
 
 ### 5.2 `representation-artifact.yaml`（仅 figma_first；§16 最小裁剪）
@@ -128,7 +128,7 @@ semantic_refs:
 realization:
   provider: figma
   provider_contract_version: remote-mcp-2026-08
-  refs: null                         # submit_draft 回填 figma_refs
+  refs: null                         # submit_draft 回填 provider_refs
 status: pending_generation           # → under_review → revision_requested | approved | abandoned
 validation: [design_representation_coverage, representation_runtime_drift]
 ```
@@ -141,7 +141,7 @@ validation: [design_representation_coverage, representation_runtime_drift]
 version: "0.1"
 round: 2
 status: rejected                     # approved | rejected
-figma_refs_verified: { file_key, frame_node_ids: [...] }
+provider_refs_verified: { file_key, frame_node_ids: [...] }
 feedback:
   text: "hero 太弱，features 顺序反了"
   region_annotations: [{ sdir_region: hero, note: "对比度不足" }]
@@ -159,7 +159,7 @@ sdir_digest_at_review: "sha256:<审轮时 SDIR digest>"
 history:                              # 前轮完整记录（同构字段），只追加不重写
   - round: 1
     status: rejected
-    figma_refs_verified: { ... }
+    provider_refs_verified: { ... }
     feedback: { ... }
     evidence: [ ... ]
     decided_at: "<iso>"
@@ -204,7 +204,7 @@ history:                              # 前轮完整记录（同构字段），�
 ### 6.3 submit_review
 
 - 时序：artifact status=under_review
-- `figma_refs_verified` 与 artifact refs 完全一致，否则 RETRY
+- `provider_refs_verified` 与 artifact refs 完全一致，否则 RETRY
 - rejected 必带非空 feedback；approved 必带 ≥1 screenshot（通过 §5.4 全部验证）+ ≥1 human_decision（结构化字段齐全），否则 EXPAND
 - approved 时 runtime 重读 SDIR 计算 digest，与 artifact `sdir_digest` 不一致 → BLOCK `REALIZATION_SDIR_DRIFT`（SDIR 在审批期被改，须重走 draft→review）
 - approved → gate 完成；rejected → revision_requested + 完整 review 记录入档
@@ -217,7 +217,7 @@ history:                              # 前轮完整记录（同构字段），�
 
 figma_first approved 后：
 
-- implementation-brief 增 `realization` 块：`{ mode, provider, provider_contract_version, representation_artifact_ref, review: {round, decided_at}, figma_refs, sdir_digest }`
+- implementation-brief 增 `realization` 块：`{ mode, provider, provider_contract_version, representation_artifact_ref, review: {round, decided_at}, provider_refs, sdir_digest }`
 - compileContext 增输入 representation（artifact + region→frame 映射）→ compiled-context 增 representation 段：实现 agent 按 region 找到 approved frame 引用；brief 同时携带 **live node refs 与 approved 锚点（round + sdir_digest + 截图 digest 清单）**——实现对照物是"审批时刻的表达快照"，不是可变的 live 节点
 - resolveValidationPlan 增读 realization-decision + representation artifact + approved review；**plan 的 `derived_from.artifact_digests` 纳入全部依赖**：sdir、realization-decision、representation-artifact、representation-review——任一变化 → plan revision 变化
 
@@ -229,7 +229,7 @@ direct_code：brief 增一行 `realization: { mode: direct_code }`，其余无�
 |---|---|---|---|
 | Design↔Figma | `design_representation_coverage` | deterministic（**必须真实执行，fail-closed**） | evaluate() 增类型化输入：representation artifact + approved review + sdir。缺失 artifact / 非 approved / SDIR digest 与 artifact 不符 / 任一 region 无 frame → **FAIL**。禁止未知 deterministic check 静默 PASS（测试断言每个 deterministic check 产出 finding） |
 | Design↔Runtime | `semantic_conformance`（现有） | 现有 | 不新增 |
-| Figma↔Runtime | `representation_runtime_drift` | empirical（**结构化双侧证据**） | `{approved_snapshot: {ref, sha256}, runtime_snapshot: {ref, sha256}, comparison: {method, outcome, notes}}`；任一侧缺失 → EXPAND（不是 warning）；runtime 按 §5.4 验证两侧文件并核对 approved_snapshot.sha256 与审轮 digest 一致 |
+| Figma↔Runtime | `representation_runtime_drift` | empirical（**双侧证据，服务端验证**） | evidence 项携带恰好两条 `artifact_refs`：第一条 = approved 审轮截图 ref（须在 review 记录内，digest 锚定），第二条 = 运行时快照（存 `rep-evidence/runtime-*`，runtime 按 §5.4 验证存在/containment/sha256）；缺任一侧或缺验证 → EXPAND（不是 warning） |
 
 **Figma 同节点编辑边界（如实声明）**：runtime 不直连 Figma，无法验证 file_key/node_id 指向的内容自审批后未变。补偿控制 = ①审轮截图 digest 锚定"批准了什么"；②`representation_runtime_drift` 以运行时截图对照 approved 截图；③差异 → Controlled Re-entry。此边界写入 architecture.md 已知限制。
 
