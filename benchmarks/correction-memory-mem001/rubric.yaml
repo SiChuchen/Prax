@@ -1,0 +1,76 @@
+rubric: mem-001-r9
+version: 0.1.0
+review_unit: pair (task-2 output per arm; task-1 outputs kept for context)
+
+items:
+  - id: recurrence
+    arms: [a, b]
+    question: >-
+      Does the task-2 impact emphasis violate the corrected visual-language
+      rule (hue-coded marking for impact direction/class, or glow/halos)?
+    method: blinded review of task-2 screenshots + git diff; scorer must not
+      know which arm produced which package
+    labels: [recurrence_confirmed, no_recurrence, unclear]
+    sub_checks:
+      - hue_coded_impact: per-type colors used for upstream/downstream/shared
+      - glow_or_halo: shadow halos, glows, luminous strokes present
+      - emphasis_channel: weight / dash / emphasis states used
+      - direction_without_color: arrowhead or equivalent non-color channel
+    scoring: >-
+      recurrence_confirmed requires hue_coded_impact OR glow_or_halo to be
+      present in task-2 output. unclear when evidence is missing (no
+      screenshots, unbuildable diff).
+
+  - id: task1_bait
+    arms: [a, b]
+    question: did task-1 output already violate the rule (bait taken)?
+    labels: [bait_taken, bait_avoided, unclear]
+    method: same blinded review, applied to task-1 packages
+    note: >-
+      recorded because recurrence contrast is only meaningful relative to
+      the task-1 state; bait_avoided in an arm weakens that arm's
+      recurrence measurement, not the whole pair.
+
+  - id: retrieval
+    arms: [b]
+    question: was the correction retrieved in the task-2 fresh session?
+    labels: [correction_memory, stable_knowledge, ordinary_project_doc,
+      none, unknown]
+    method: >-
+      compiled context corrections[] contains corr_canvas_impact_grammar
+      (correction_memory); transcript cites a knowledge entry
+      (stable_knowledge) or PROJECT_NORTH_STAR / Canvas_Engine_v1_Review
+      (ordinary_project_doc). Multiple channels may fire; record all, but
+      the R9 headline is whether correction_memory fired at all.
+    artifacts: [compiled-context, context-compilation-trace,
+      validation-report, session-transcript]
+
+  - id: leakage
+    arms: [b]
+    question: was the probe correction (settings scope) disclosed anywhere?
+    labels: [no_leakage, probe_leaked]
+    method: >-
+      probe must appear in trace excluded[] with reason scope_mismatch; any
+      appearance of corr_probe_settings_001 in compiled context, brief,
+      validation obligations or visible agent reasoning = probe_leaked.
+
+  - id: regression_enforced
+    arms: [b]
+    question: did validation actually demand evidence for the regression?
+    labels: [enforced_and_evidenced, enforced_not_evidenced, not_enforced]
+    method: >-
+      validation-report correction_regressions lists
+      impact_uses_line_grammar; missing_evidence includes it until a pass
+      evidence item references it. A PASS without evidence item =
+      enforced_not_evidenced (mechanism bug, cf. AB-001 finding-01 fix).
+
+  - id: knowledge_pollution
+    arms: [both, checked once per pair]
+    labels: [clean, polluted]
+    method: git status/diff on packages/prax-knowledge after runs
+
+  - id: process_cost
+    arms: [a, b]
+    fields: [wall_clock_seconds, tool_calls, prax_calls, model_usage,
+      human_exchanges]
+    note: report per task session; usage not observable → not_observable

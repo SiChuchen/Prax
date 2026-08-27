@@ -1,0 +1,102 @@
+id: PRAX-MEM-001
+name: cross-session-correction-memory
+version: 0.1.0
+status: defined
+spec: docs/Prax_Context_Evolution_and_Benchmark_Spec_v0.3.1.md (§14 H4, §15.2 R9, Phase 7B)
+
+hypothesis: H4-correction-memory-cross-session
+question: >-
+  Does a human correction recorded as project-local Prax correction memory
+  survive session close and change agent behavior in a later fresh session,
+  compared to a correction that existed only in a closed conversation?
+
+task_pair:
+  task1:
+    kind: modify_surface
+    requirement: task1-requirement.md
+    summary: Dependency impact emphasis on the Architecture canvas. The
+      natural default (hue-coded / glow marking) is expected to violate the
+      project's line-grammar visual convention.
+    role: produces an implementation whose impact emphasis is expected to
+      need the canonical human correction.
+  task2:
+    kind: modify_surface
+    requirement: task2-requirement.md
+    summary: Multi-select with aggregate impact in the Inspector; necessarily
+      reuses and extends the task-1 impact rendering.
+    role: given to a FRESH agent session on the same worktree (task-1 end
+      state); measures whether the correction recurs or is respected.
+    constraint: requirement text must not mention the correction or the
+      visual-language rule.
+
+correction:
+  canonical: correction.md   # verbatim chat text + seeded corrections.yaml
+  delivery: >-
+    In-conversation human feedback AFTER task 1 declares done. Agent may
+    acknowledge; NO rework is allowed. Session is then closed.
+  persistence:
+    arm-a-bare: none — the correction exists only in the closed conversation
+      and in whatever the task-1 code itself embodies.
+    arm-b-prax: operator seeds <worktree>/.prax/corrections.yaml (target
+      correction + one leakage probe) after the task-1 session closes.
+  not_in_stable_knowledge: >-
+    Verified 2026-08-27: packages/prax-knowledge has no line-grammar /
+    no-rainbow / no-glow entry. Nearest entries are generic quiet-controls
+      heuristics; retrieval classification must still separate them (R9).
+  leakage_probe: >-
+    A second correction scoped to a non-canvas surface (settings-page) is
+      seeded only in arm B. Task-2 compiled context must exclude it
+      (spec §38.4 unrelated-correction disclosure test).
+
+repository:
+  name: engineering-control-plane
+  root: E:\codex-prj\ecp
+  base_commit: 4f273c9   # deployed readability-corrected canvas (AB-001's
+                         # reference solution). NOT 2c77838: task 1 must not
+                         # inherit the readability problems that would
+                         # confound the impact-emphasis focus.
+  stack: [next.js, vite, react-flow, elk, typescript, tailwind]
+  environment_policy: ../architecture-canvas-ab/environment-policy.yaml
+
+arms:
+  - id: arm-a-bare
+    label: Bare Agent
+    receives: [task requirement, repository at base commit + task-1 end state,
+      normal dev tools, the correction as chat feedback during task 1 only]
+    denied: [prax-mcp, ".prax/", prax corrections routing, prax compiled
+      context, prax validation regression]
+  - id: arm-b-prax
+    label: Prax Agent
+    receives: [same task requirements, same chat correction during task 1,
+      prax MCP server, .prax/corrections.yaml seeded after task 1]
+    flow: [design session per task (modify_surface), requirement
+      confirmation, existing understanding, routing, decisions, sdir delta,
+      persisted validation plan, task-scoped compiled context (carrying the
+      correction), post-implementation validation (carrying the regression
+      check)]
+
+sessions:
+  per_pair: 4 (A1, B1 = task 1; A2, B2 = task 2)
+  isolation: fresh agent conversation per session; task 2 continues the same
+    arm worktree at the task-1 end state (code is a legitimate information
+    channel for BOTH arms — it is a normal project file)
+  worktrees: E:\codex-prj\ab-worktrees\mem1-pair-01-{a,b} (fresh; do not
+    reuse the kept PRAX-AB-001 worktrees)
+
+replication:
+  plan: pair-01 first; pair-02 scheduled only if pair-01 review leaves the
+    H4 question open and budget allows
+  evidence_ceiling: one pair = L1_single_run_diagnostic; a same-direction
+    second pair = at most L2_replicated_implementation
+
+review:
+  rubric: rubric.yaml
+  blinding: task-2 output packages anonymized (impl-1/impl-2) before
+    recurrence scoring; retrieval analysis happens after unblinding
+  single_reviewer_limitation: recorded unless a second reviewer joins
+
+claim_policy:
+  forbidden_words: [significantly better, statistically significant]
+  allowed: directional signal, observed in N pairs
+
+run_evidence_root: benchmark-runs/PRAX-MEM-001
