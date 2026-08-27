@@ -28,7 +28,7 @@ it("starts over stdio, registers exactly ten staged tools, and validates inputs"
     const listed = await client.listTools();
     expect(listed.tools.map((tool) => tool.name).sort()).toEqual([
       "design_context", "design_decide", "design_frame", "design_inspect", "design_prepare_implementation",
-      "design_reconcile", "design_route", "design_sdir", "design_start", "design_validate",
+      "design_realize", "design_reconcile", "design_route", "design_sdir", "design_start", "design_validate",
     ]);
 
     const started = await client.callTool({

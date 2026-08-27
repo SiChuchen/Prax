@@ -15,7 +15,14 @@ import {
   lifecyclePolicyFor,
   compileContext,
   loadCorrections,
+  normalizeCompletedGates,
   relevantCorrections,
+  removeRealizeGate,
+  spliceRealizeGate,
+  validateDraft,
+  validatePropose,
+  validateReview,
+  verifyEvidenceFile,
   NEXT_TOOL_BY_GATE,
   PraxRuntimeError,
   sessionPolicy,
@@ -37,9 +44,13 @@ import {
   type GateStatus,
   type IntentLite,
   type ProductFrame,
+  type RealizationDecision,
+  type RepresentationArtifact,
+  type RepresentationReview,
   type RequirementConfirmation,
   ProductFrameSchema,
   DesignContextSchema,
+  RepresentationReviewSchema,
 } from "prax-runtime";
 import { patternSurfaceContract, SdirEngine, validateSdirDelta, type Sdir, type SdirDelta } from "prax-sdir";
 import {
@@ -54,6 +65,7 @@ import type {
   DesignFrameInput,
   DesignInspectInput,
   DesignPrepareImplementationInput,
+  DesignRealizeInput,
   DesignReconcileInput,
   DesignRouteInput,
   DesignSdirInput,
@@ -735,6 +747,282 @@ export class PraxService {
     };
   }
 
+  public async designRealize(input: DesignRealizeInput): Promise<PraxOutput> {
+    const session = await this.sessions.getSession(input.design_session_id);
+    const policy = sessionPolicy(session);
+    if (policy.version !== "2" || !policy.gates.includes("sdir")) {
+      return {
+        status: "BLOCK",
+        code: "REALIZATION_WINDOW_INVALID",
+        message: "design_realize applies to v2 full-SDIR sessions only; this session has no realization decision point.",
+        next: nextTool(NEXT_TOOL_BY_GATE[currentGate(session)]),
+      };
+    }
+    if (normalizeCompletedGates(session.completed_gates).includes("realize")) {
+      return {
+        status: "BLOCK",
+        code: "REALIZATION_LOCKED",
+        message: "The realize gate is already completed; changing the realization strategy requires a new design change.",
+        next: nextTool(NEXT_TOOL_BY_GATE[currentGate(session)]),
+      };
+    }
+    const gate = currentGate(session);
+    const now = this.sessions.nowIso();
+
+    if (input.mode === "propose") {
+      if (gate !== "prepare" && gate !== "realize") {
+        return {
+          status: "BLOCK",
+          code: "REALIZATION_WINDOW_INVALID",
+          message: `realization proposals are accepted after sdir/reconcile and before prepare (current gate: ${gate}).`,
+          next: nextTool(NEXT_TOOL_BY_GATE[gate]),
+        };
+      }
+      const priorDecision =
+        (await this.sessions.readArtifact<RealizationDecision>(session, "realizationDecision")) ?? undefined;
+      const validation = validatePropose(
+        {
+          realization_mode: input.realization_mode!,
+          provider: input.provider,
+          conditions: input.conditions!,
+          reason: input.reason,
+          override: input.override,
+          override_reason: input.override_reason,
+        },
+        { mode: session.mode },
+        { now, priorDecision },
+      );
+      if (validation.status !== "PASS" && validation.status !== "WARN") {
+        return {
+          status: validation.status,
+          code: validation.codes?.[0],
+          issues: validation.issues,
+          warnings: validation.warnings,
+          recommended_realization_mode: validation.codes?.includes("REALIZATION_MODE_MISMATCH") ? "direct_code" : undefined,
+          next: nextTool("design_realize"),
+        };
+      }
+      const decision = validation.value!;
+      if (decision.realization_mode === "figma_first") {
+        const sdir = await this.requireArtifact<Sdir>(session, "sdir");
+        const artifact: RepresentationArtifact = {
+          version: "0.1",
+          id: `rep-${session.id}`,
+          representation: { role: "primary" },
+          semantic_refs: {
+            sdir_ref: "screen.sdir.yaml",
+            sdir_digest: contentDigest(sdir),
+            regions: sdir.screen.regions.map((region) => region.id),
+          },
+          realization: {
+            provider: decision.provider!,
+            provider_contract_version: decision.provider_contract_version!,
+            refs: null,
+          },
+          status: "pending_generation",
+          validation: ["design_representation_coverage", "representation_runtime_drift"],
+        };
+        const updated: DesignSession = {
+          ...touch(session, now),
+          lifecycle_policy: spliceRealizeGate(policy),
+          phase: "REALIZATION",
+          current_gate: { name: "realize" },
+        };
+        await this.sessions.commit(updated, [
+          { key: "realizationDecision", value: decision },
+          { key: "representationArtifact", value: artifact },
+        ]);
+        return {
+          status: validation.status,
+          realization_decision: decision,
+          representation_artifact: artifact,
+          warnings: validation.warnings,
+          phase: updated.phase,
+          next: nextTool("design_realize"),
+        };
+      }
+      const priorArtifact =
+        (await this.sessions.readArtifact<RepresentationArtifact>(session, "representationArtifact")) ?? undefined;
+      let updated: DesignSession = touch(session, now);
+      const writes: Array<{ key: "realizationDecision" | "representationArtifact"; value: unknown }> = [
+        { key: "realizationDecision", value: decision },
+      ];
+      if (gate === "realize" && priorArtifact !== undefined && priorArtifact.status !== "abandoned") {
+        updated = {
+          ...updated,
+          lifecycle_policy: removeRealizeGate(policy),
+          phase: "IMPLEMENTATION_READY",
+          current_gate: { name: "prepare" },
+        };
+        writes.push({ key: "representationArtifact", value: { ...priorArtifact, status: "abandoned" } });
+      }
+      await this.sessions.commit(updated, writes);
+      return {
+        status: validation.status,
+        realization_decision: decision,
+        warnings: validation.warnings,
+        phase: updated.phase,
+        next: nextTool("design_prepare_implementation"),
+      };
+    }
+
+    if (gate !== "realize") {
+      return {
+        status: "BLOCK",
+        code: "REALIZATION_WINDOW_INVALID",
+        message: `submit_draft/submit_review require the realize gate (current gate: ${gate}).`,
+        next: nextTool(NEXT_TOOL_BY_GATE[gate]),
+      };
+    }
+    const decision = await this.requireArtifact<RealizationDecision>(session, "realizationDecision");
+    if (decision.realization_mode !== "figma_first") {
+      return {
+        status: "BLOCK",
+        code: "REALIZATION_MODE_INVALID",
+        message: "The recorded realization decision is direct_code; re-propose before submitting representation payloads.",
+        next: nextTool("design_realize"),
+      };
+    }
+    const artifact = await this.requireArtifact<RepresentationArtifact>(session, "representationArtifact");
+    const priorReview =
+      (await this.sessions.readArtifact<RepresentationReview>(session, "representationReview")) ?? undefined;
+
+    if (input.mode === "submit_draft") {
+      if (artifact.status !== "pending_generation" && artifact.status !== "revision_requested") {
+        return {
+          status: "BLOCK",
+          code: "REALIZATION_WINDOW_INVALID",
+          message: `submit_draft expects pending_generation or revision_requested (current: ${artifact.status}).`,
+          next: nextTool("design_realize"),
+        };
+      }
+      const validation = validateDraft(input.provider_refs!, artifact);
+      if (validation.status !== "PASS") {
+        return {
+          status: validation.status,
+          code: validation.codes?.[0],
+          issues: validation.issues,
+          warnings: [],
+          next: nextTool("design_realize"),
+        };
+      }
+      const updatedArtifact = {
+        ...artifact,
+        realization: { ...artifact.realization, refs: input.provider_refs! },
+        status: "under_review" as const,
+      };
+      await this.sessions.commit(touch(session, now), [{ key: "representationArtifact", value: updatedArtifact }]);
+      return {
+        status: "REVIEW",
+        message: "Representation draft recorded. Human review in the provider surface is required before design_prepare_implementation.",
+        phase: session.phase,
+        next: nextTool("design_realize"),
+      };
+    }
+
+    if (artifact.status !== "under_review") {
+      return {
+        status: "BLOCK",
+        code: "REALIZATION_WINDOW_INVALID",
+        message: `submit_review expects under_review (current: ${artifact.status}).`,
+        next: nextTool("design_realize"),
+      };
+    }
+    const sdir = await this.requireArtifact<Sdir>(session, "sdir");
+    if (contentDigest(sdir) !== artifact.semantic_refs.sdir_digest) {
+      await this.sessions.commit(touch(session, now), [
+        { key: "representationArtifact", value: { ...artifact, status: "revision_requested" } },
+      ]);
+      return {
+        status: "BLOCK",
+        code: "REALIZATION_SDIR_DRIFT",
+        message: "The SDIR changed after the representation was generated; the artifact was reset to revision_requested — submit_draft again against the new SDIR.",
+        next: nextTool("design_realize"),
+      };
+    }
+    const sessionDirectory = await this.sessions.artifactDirectory(session.id);
+    const round = (priorReview?.round ?? 0) + 1;
+    const validation = await validateReview(
+      {
+        status: input.status!,
+        provider_refs_verified: input.provider_refs_verified!,
+        feedback:
+          input.feedback === undefined
+            ? undefined
+            : {
+                text: input.feedback.text ?? "",
+                ...(input.feedback.region_annotations === undefined
+                  ? {}
+                  : { region_annotations: input.feedback.region_annotations }),
+              },
+        evidence: input.evidence!.map((item) =>
+          item.type === "screenshot"
+            ? { type: "screenshot" as const, ref: item.ref ?? "" }
+            : {
+                type: "human_decision" as const,
+                actor_ref: item.actor_ref ?? "",
+                source_type: item.source_type ?? "",
+                source_ref: item.source_ref ?? "",
+                quote: item.quote ?? "",
+              },
+        ),
+      },
+      artifact,
+      { sessionDirectory, now, expectedRound: round },
+    );
+    if (validation.status !== "PASS") {
+      return {
+        status: validation.status,
+        code: validation.codes?.[0],
+        issues: validation.issues,
+        warnings: validation.warnings,
+        next: nextTool("design_realize"),
+      };
+    }
+    const record = { ...validation.value!, round };
+    const priorRecord = priorReview === undefined
+      ? undefined
+      : {
+          round: priorReview.round,
+          status: priorReview.status,
+          provider_refs_verified: priorReview.provider_refs_verified,
+          ...(priorReview.feedback === undefined ? {} : { feedback: priorReview.feedback }),
+          evidence: priorReview.evidence,
+          decided_at: priorReview.decided_at,
+          sdir_digest_at_review: priorReview.sdir_digest_at_review,
+        };
+    const history = [...(priorReview?.history ?? []), ...(priorRecord === undefined ? [] : [priorRecord])];
+    if (record.status === "approved") {
+      const review = RepresentationReviewSchema.parse({ version: "0.1", ...record, history });
+      const updated = advanceSession(session, "realize", now);
+      await this.sessions.commit(updated, [
+        { key: "representationArtifact", value: { ...artifact, status: "approved" } },
+        { key: "representationReview", value: review },
+      ]);
+      return {
+        status: "PASS",
+        representation_review: review,
+        phase: updated.phase,
+        next: nextTool("design_prepare_implementation"),
+      };
+    }
+    const review = RepresentationReviewSchema.parse({
+      version: "0.1",
+      ...record,
+      history,
+    });
+    await this.sessions.commit(touch(session, now), [
+      { key: "representationArtifact", value: { ...artifact, status: "revision_requested" } },
+      { key: "representationReview", value: review },
+    ]);
+    return {
+      status: "REVIEW",
+      representation_review: review,
+      phase: session.phase,
+      next: nextTool("design_realize"),
+    };
+  }
+
   public async designPrepareImplementation(input: DesignPrepareImplementationInput): Promise<PraxOutput> {
     const session = await this.sessions.getSession(input.design_session_id);
     const blocked = operationBlock(session, "design_prepare_implementation");
@@ -748,6 +1036,76 @@ export class PraxService {
       ? await this.requireArtifact<CapabilityMap>(session, "capabilityGaps")
       : { needs: [] as CapabilityMap["needs"] };
     const states = sdirArtifact?.screen.required_states ?? ["loading", "empty", "ready", "error"];
+
+    let realizationBlock: Record<string, unknown> | undefined;
+    let representation: Parameters<typeof compileContext>[0]["representation"];
+    if (policy.version === "2" && policy.gates.includes("sdir")) {
+      const decision =
+        (await this.sessions.readArtifact<RealizationDecision>(session, "realizationDecision")) ?? undefined;
+      if (decision === undefined) {
+        return {
+          status: "BLOCK",
+          code: "REALIZATION_REQUIRED",
+          message: "v2 full-SDIR sessions must record a realization decision via design_realize before prepare.",
+          next: nextTool("design_realize"),
+        };
+      }
+      if (decision.realization_mode === "figma_first") {
+        const representationArtifact =
+          (await this.sessions.readArtifact<RepresentationArtifact>(session, "representationArtifact")) ?? undefined;
+        const representationReview =
+          (await this.sessions.readArtifact<RepresentationReview>(session, "representationReview")) ?? undefined;
+        if (representationArtifact?.status !== "approved" || representationReview?.status !== "approved") {
+          return {
+            status: "BLOCK",
+            code: "REALIZATION_REQUIRED",
+            message: "figma_first sessions need an approved representation review via design_realize before prepare.",
+            next: nextTool("design_realize"),
+          };
+        }
+        if (sdirArtifact !== undefined && contentDigest(sdirArtifact) !== representationArtifact.semantic_refs.sdir_digest) {
+          return {
+            status: "BLOCK",
+            code: "REALIZATION_SDIR_DRIFT",
+            message: "The SDIR changed after representation approval; re-run draft and review via design_realize.",
+            next: nextTool("design_realize"),
+          };
+        }
+        const refs = representationArtifact.realization.refs!;
+        const screenshotDigests = representationReview.evidence
+          .filter((item): item is Extract<typeof item, { type: "screenshot" }> => item.type === "screenshot")
+          .map((item) => ({ ref: item.ref, sha256: item.sha256 }));
+        realizationBlock = {
+          mode: "figma_first",
+          provider: representationArtifact.realization.provider,
+          provider_contract_version: representationArtifact.realization.provider_contract_version,
+          representation_artifact_ref: "representation-artifact.yaml",
+          review: {
+            round: representationReview.round,
+            decided_at: representationReview.decided_at,
+            screenshot_digests: screenshotDigests,
+          },
+          provider_refs: refs,
+          sdir_digest: representationArtifact.semantic_refs.sdir_digest,
+        };
+        representation = {
+          provider: representationArtifact.realization.provider,
+          file_key: refs.file_key,
+          approved_anchor: {
+            round: representationReview.round,
+            sdir_digest: representationArtifact.semantic_refs.sdir_digest,
+            screenshot_digests: screenshotDigests,
+          },
+          region_frames: refs.frames.map((frame) => ({
+            region: frame.sdir_region,
+            node_id: frame.node_id,
+            name: frame.name,
+          })),
+        };
+      } else {
+        realizationBlock = { mode: "direct_code" };
+      }
+    }
     const { value: persistedPlan, changed: planChanged } = await this.resolveValidationPlan(session);
     const validationPlan = persistedPlan.plan;
 
@@ -798,6 +1156,7 @@ export class PraxService {
         revision: persistedPlan.revision,
       },
       validation_requirements: validationPlan.checks.map((check) => check.id),
+      ...(realizationBlock === undefined ? {} : { realization: realizationBlock }),
       ...(modePlan === undefined ? {} : { mode_plan: modePlan }),
     };
     const frameForCompilation = (await this.sessions.readArtifact<ProductFrame>(session, "productFrame")) ?? undefined;
@@ -813,6 +1172,7 @@ export class PraxService {
       planRevision: persistedPlan.revision,
       planCheckIds: persistedPlan.plan.checks.map((check) => check.id),
       corrections: await loadCorrections(join(session.project_root, ".prax")),
+      ...(representation === undefined ? {} : { representation }),
     });
     const updated = advanceSession(session, "prepare", this.sessions.nowIso());
     await this.sessions.commit(updated, [
@@ -844,6 +1204,13 @@ export class PraxService {
     const context = (await this.sessions.readArtifact<DesignContext>(session, "designContext")) ?? undefined;
     const decisions = (await this.sessions.readArtifact<DesignDecisions>(session, "designDecisions")) ?? undefined;
     const intentLite = intentLiteOverride ?? (await this.sessions.readArtifact<IntentLite>(session, "intentLite")) ?? undefined;
+    const realizationDecision =
+      (await this.sessions.readArtifact<RealizationDecision>(session, "realizationDecision")) ?? undefined;
+    const representationArtifact =
+      (await this.sessions.readArtifact<RepresentationArtifact>(session, "representationArtifact")) ?? undefined;
+    const representationReview =
+      (await this.sessions.readArtifact<RepresentationReview>(session, "representationReview")) ?? undefined;
+    const sdirForDigest = (await this.sessions.readArtifact<Sdir>(session, "sdir")) ?? undefined;
 
     const digests: Record<string, string> = {};
     if (frame !== undefined) digests.product_frame = contentDigest(frame);
@@ -851,6 +1218,10 @@ export class PraxService {
     if (decisions !== undefined) digests.design_decisions = contentDigest(decisions);
     if (intentLite !== undefined) digests.intent_lite = contentDigest(intentLite);
     if (understanding !== undefined) digests.existing_understanding = contentDigest(understanding);
+    if (sdirForDigest !== undefined) digests.sdir = contentDigest(sdirForDigest);
+    if (realizationDecision !== undefined) digests.realization_decision = contentDigest(realizationDecision);
+    if (representationArtifact !== undefined) digests.representation_artifact = contentDigest(representationArtifact);
+    if (representationReview !== undefined) digests.representation_review = contentDigest(representationReview);
 
     const stored = await this.sessions.readArtifact<PersistedValidationPlan>(session, "validationPlan");
     const canonical = (value: Record<string, string>) =>
@@ -871,6 +1242,7 @@ export class PraxService {
       ...(context === undefined ? {} : { context }),
       ...(decisions === undefined ? {} : { decisions }),
       ...(intentLite === undefined ? {} : { intentLite }),
+      ...(realizationDecision?.realization_mode === undefined ? {} : { realizationMode: realizationDecision.realization_mode }),
     });
     const value = PersistedValidationPlanSchema.parse({
       version: "0.1",
@@ -949,6 +1321,33 @@ export class PraxService {
         return { status: "RETRY", code: "VALIDATION_EVIDENCE_REQUIRED", checks: plan.checks, findings: [], missing_evidence: plan.checks.filter((check) => check.evidence_required).map((check) => check.id) };
       }
       const evidence = this.validator.parseEvidence(input.evidence);
+      if (plan.checks.some((check) => check.id === "representation_runtime_drift")) {
+        const driftItem = evidence.items.find((item) => item.check_id === "representation_runtime_drift");
+        if (driftItem !== undefined) {
+          const sessionDirectory = await this.sessions.artifactDirectory(session.id);
+          const representationReviewArtifact =
+            (await this.sessions.readArtifact<RepresentationReview>(session, "representationReview")) ?? undefined;
+          const approvedRefs = new Set(
+            (representationReviewArtifact?.evidence ?? []).flatMap((item) =>
+              item.type === "screenshot" ? [item.ref] : [],
+            ),
+          );
+          const driftIssues: string[] = [];
+          if ((driftItem.artifact_refs?.length ?? 0) !== 2) {
+            driftIssues.push("representation_runtime_drift requires exactly two artifact_refs: approved snapshot ref, then runtime snapshot ref.");
+          } else {
+            const [approvedRef, runtimeRef] = driftItem.artifact_refs as [string, string];
+            if (!approvedRefs.has(approvedRef)) {
+              driftIssues.push(`approved snapshot ref '${approvedRef}' is not among the approved review screenshots.`);
+            }
+            const runtimeVerified = await verifyEvidenceFile(sessionDirectory, runtimeRef);
+            if (!runtimeVerified.ok) driftIssues.push(runtimeVerified.error);
+          }
+          if (driftIssues.length > 0) {
+            return { status: "EXPAND", code: "REALIZATION_DRIFT_EVIDENCE_INVALID", issues: driftIssues, checks: plan.checks, findings: [], missing_evidence: ["representation_runtime_drift"], next: nextTool("design_validate") };
+          }
+        }
+      }
       await this.sessions.commit(touch(session, this.sessions.nowIso()), [
         { key: "validationReport", value: { plan_revision: persistedPlan.revision, evidence } },
         ...(planChanged ? [{ key: "validationPlan" as const, value: persistedPlan }] : []),
@@ -960,12 +1359,19 @@ export class PraxService {
     const sdirArtifact = (await this.sessions.readArtifact<Sdir>(session, "sdir")) ?? undefined;
     const sdirDeltaArtifact = (await this.sessions.readArtifact<SdirDelta>(session, "sdirDelta")) ?? undefined;
     const decisionsArtifact = (await this.sessions.readArtifact<DesignDecisions>(session, "designDecisions")) ?? undefined;
+    const representationArtifactForEvaluation =
+      (await this.sessions.readArtifact<RepresentationArtifact>(session, "representationArtifact")) ?? undefined;
+    const representationReviewForEvaluation =
+      (await this.sessions.readArtifact<RepresentationReview>(session, "representationReview")) ?? undefined;
     const evaluation = this.validator.evaluate({
       plan,
       ...(sdirArtifact === undefined ? {} : { sdir: sdirArtifact }),
       ...(sdirDeltaArtifact === undefined ? {} : { sdirDelta: sdirDeltaArtifact }),
       ...(decisionsArtifact === undefined ? {} : { decisions: decisionsArtifact }),
       ...(evidence === undefined ? {} : { evidence }),
+      ...(representationArtifactForEvaluation === undefined ? {} : { representationArtifact: representationArtifactForEvaluation }),
+      ...(representationReviewForEvaluation === undefined ? {} : { representationReview: representationReviewForEvaluation }),
+      ...(representationArtifactForEvaluation === undefined || sdirArtifact === undefined ? {} : { sdirDigest: contentDigest(sdirArtifact) }),
     });
     const now = this.sessions.nowIso();
     const updated = evaluation.status === "PASS"

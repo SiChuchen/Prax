@@ -8,6 +8,7 @@ import {
   DesignFrameInputSchema,
   DesignInspectInputSchema,
   DesignPrepareImplementationInputSchema,
+  DesignRealizeInputSchema,
   DesignReconcileInputSchema,
   DesignRouteInputSchema,
   DesignSdirInputSchema,
@@ -89,6 +90,13 @@ export function createPraxMcpServer(service: PraxService): McpServer {
     description: "Record supported, composable, gap, and blocked capabilities with explicit resolution.",
     inputSchema: DesignReconcileInputSchema,
   }, (input) => invoke(() => service.designReconcile(input)));
+
+  server.registerTool("design_realize", {
+    title: "Decide and steer design realization",
+    description:
+      "Propose the realization strategy (direct_code | figma_first) after SDIR; submit representation drafts and human review outcomes for figma_first sessions.",
+    inputSchema: DesignRealizeInputSchema,
+  }, (input) => invoke(() => service.designRealize(input)));
 
   server.registerTool("design_prepare_implementation", {
     title: "Prepare implementation packet",

@@ -5,6 +5,7 @@ import type {
   ExistingUnderstanding,
   IntentLite,
   ProductFrame,
+  RealizationCondition,
   RequirementConfirmation,
 } from "prax-runtime";
 import type { SdirDelta } from "prax-sdir";
@@ -324,4 +325,27 @@ export function sdirDelta(): SdirDelta {
       adds_capability: false,
     },
   };
+}
+
+export function figmaFirstConditions(
+  holds: Partial<Record<string, boolean>> = {},
+): RealizationCondition[] {
+  const all: Array<[string, string]> = [
+    ["greenfield", "session mode is greenfield"],
+    ["high_visual_uncertainty", "brand hero has no settled visual language"],
+    ["marketing_editorial", "product landing page"],
+    ["stakeholder_visual_approval", "product owner approves visuals in Figma"],
+    ["spatial_exploration_value", "layout exploration precedes code"],
+    ["runtime_dependency_low", "static marketing page"],
+  ];
+  return all.map(([id, basis]) => ({ id, holds: holds[id] ?? true, basis }));
+}
+
+export function directCodeConditions(): RealizationCondition[] {
+  return [
+    { id: "defect_fix_fit", holds: false, basis: "not a defect fix" },
+    { id: "visual_polish_fit", holds: false, basis: "not a polish pass" },
+    { id: "small_modification", holds: false, basis: "full greenfield surface" },
+    { id: "mature_design_system", holds: false, basis: "no design system yet" },
+  ];
 }
