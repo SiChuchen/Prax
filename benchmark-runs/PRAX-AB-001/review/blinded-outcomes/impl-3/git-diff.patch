@@ -1,0 +1,1325 @@
+diff --git a/.gitignore b/.gitignore
+index c413892..6079654 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -37,6 +37,7 @@ yarn-error.log*
+ next-env.d.ts
+ /dist/
+ /.wrangler/
++/.prax/
+ /.sites-runtime/
+ /outputs/
+ /work/
+diff --git a/app/architecture/architecture-canvas.tsx b/app/architecture/architecture-canvas.tsx
+index 94cc854..3429ac6 100644
+--- a/app/architecture/architecture-canvas.tsx
++++ b/app/architecture/architecture-canvas.tsx
+@@ -3,6 +3,7 @@
+ import { type ReactFlowInstance, useEdgesState, useNodesState } from "@xyflow/react";
+ import Link from "next/link";
+ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
++import { ARCHITECTURE_ZOOM_FLOOR, architectureDensityViewport, boundsOfRects } from "./camera";
+ import ArchitectureCanvasKernel from "./canvas-kernel";
+ import FlowPanel from "./flow-panel";
+ import { atRevision } from "./flow-projection";
+@@ -10,7 +11,7 @@ import Inspector from "./inspector";
+ import { bindInspector } from "./inspector-binding";
+ import { deriveCanvasView, type CanvasInteractionState, type CanvasSelection } from "./interaction";
+ import { layoutSemanticGraph, type CanvasLayout } from "./layout";
+-import { projectSemanticGraph, type CanvasNode, type CanvasObjectNode, type CanvasRelationshipEdge } from "./projection";
++import { projectSemanticGraph, type CanvasEdge, type CanvasNode, type CanvasObjectNode } from "./projection";
+ import { adaptArchitectureToSemanticGraph } from "./semantic-adapter";
+ import { semanticGraphFingerprint, type SemanticGraph } from "./semantic-graph";
+ import type {
+@@ -62,7 +63,15 @@ function sameEntity(left: ArchitectureEntity, right: ArchitectureEntity) {
+ }
+ 
+ function layoutStorageKey(graph: SemanticGraph) {
+-  return `ecp:canvas-engine-v1:${graph.scope.projectId}:r${graph.scope.revision}`;
++  return `ecp:canvas-engine-v2:${graph.scope.projectId}:r${graph.scope.revision}`;
++}
++
++function cameraBounds(graph: SemanticGraph, layout: CanvasLayout) {
++  const rootRects = graph.regions
++    .filter((region) => !region.parentRegionId)
++    .map((region) => layout.regionRects[region.id])
++    .filter((rect): rect is NonNullable<typeof rect> => Boolean(rect));
++  return boundsOfRects(rootRects.length > 0 ? rootRects : Object.values(layout.objectRects));
+ }
+ 
+ function readLayout(key: string, fingerprint: string) {
+@@ -115,11 +124,13 @@ export default function ArchitectureCanvas({
+     searchQuery: "",
+   });
+   const [nodes, setNodes, onNodesChange] = useNodesState<CanvasNode>([]);
+-  const [edges, setEdges, onEdgesChange] = useEdgesState<CanvasRelationshipEdge>([]);
+-  const instanceRef = useRef<ReactFlowInstance<CanvasNode, CanvasRelationshipEdge> | null>(null);
++  const [edges, setEdges, onEdgesChange] = useEdgesState<CanvasEdge>([]);
++  const instanceRef = useRef<ReactFlowInstance<CanvasNode, CanvasEdge> | null>(null);
+   const canvasRef = useRef<HTMLDivElement | null>(null);
++  const canvasMapRef = useRef<HTMLDivElement | null>(null);
+   const previousLayoutRef = useRef<CanvasLayout | null>(null);
+   const fittedLayoutRef = useRef("");
++  const dockToggleRef = useRef(false);
+ 
+   const baseEntities = useMemo(
+     () => revisionSnapshot(architecture.entities, viewRevision, currentRevision),
+@@ -228,17 +239,54 @@ export default function ArchitectureCanvas({
+     return () => { cancelled = true; window.clearTimeout(loadingTimer); };
+   }, [fingerprint, graph, layoutReset, storageKey]);
+ 
++  const applyArchitectureCamera = useCallback((duration = 360) => {
++    const instance = instanceRef.current;
++    const host = canvasMapRef.current;
++    if (!instance || !host || !layout) return;
++    const bounds = cameraBounds(graph, layout);
++    if (!bounds) return;
++    const viewport = architectureDensityViewport(bounds, { width: host.clientWidth, height: host.clientHeight });
++    void instance.setViewport(viewport, { duration });
++  }, [graph, layout]);
++
+   useEffect(() => {
+     setNodes(projection.nodes);
+     setEdges(projection.edges);
+     const layoutIdentity = layout ? `${storageKey}:${layout.fingerprint}` : "";
+     if (layoutIdentity && fittedLayoutRef.current !== layoutIdentity) {
+       fittedLayoutRef.current = layoutIdentity;
+-      const timer = window.setTimeout(() => instanceRef.current?.fitView({ padding: 0.16, duration: 360, maxZoom: 1.05 }), 40);
++      const timer = window.setTimeout(() => applyArchitectureCamera(), 60);
+       return () => window.clearTimeout(timer);
+     }
+     return undefined;
+-  }, [layout, projection, setEdges, setNodes, storageKey]);
++  }, [applyArchitectureCamera, layout, projection, setEdges, setNodes, storageKey]);
++
++  const docked = Boolean(inspectorBinding);
++  useEffect(() => {
++    if (dockToggleRef.current === docked) return;
++    dockToggleRef.current = docked;
++    const timer = window.setTimeout(() => {
++      const instance = instanceRef.current;
++      if (!instance) return;
++      if (interaction.mode === "trace" && interaction.activeFlowId) {
++        const flowObjectIds = new Set(graph.flows.find((flow) => flow.id === interaction.activeFlowId)?.objectIds ?? []);
++        const targetNodes = instance.getNodes().filter((node) => flowObjectIds.has(node.id));
++        if (targetNodes.length > 0) {
++          void instance.fitView({ nodes: targetNodes, padding: .3, duration: 320, minZoom: ARCHITECTURE_ZOOM_FLOOR, maxZoom: 1.15 });
++          return;
++        }
++      }
++      if ((interaction.mode === "focus" || interaction.mode === "inspect") && interaction.selection?.kind === "object") {
++        const targetNodes = instance.getNodes().filter((node) => node.id === interaction.selection?.id);
++        if (targetNodes.length > 0) {
++          void instance.fitView({ nodes: targetNodes, padding: .35, duration: 320, minZoom: ARCHITECTURE_ZOOM_FLOOR, maxZoom: 1.15 });
++          return;
++        }
++      }
++      applyArchitectureCamera(320);
++    }, 240);
++    return () => window.clearTimeout(timer);
++  }, [applyArchitectureCamera, docked, graph.flows, interaction.activeFlowId, interaction.mode, interaction.selection]);
+ 
+   useEffect(() => {
+     const availableObjects = new Set(graph.objects.map((object) => object.id));
+@@ -262,7 +310,7 @@ export default function ArchitectureCanvas({
+       window.setTimeout(() => {
+         const instance = instanceRef.current;
+         const targetNodes = instance?.getNodes().filter((node) => flowObjectIds.has(node.id)) ?? [];
+-        if (targetNodes.length > 0) void instance?.fitView({ nodes: targetNodes, padding: .38, duration: 420, maxZoom: 1.08 });
++        if (targetNodes.length > 0) void instance?.fitView({ nodes: targetNodes, padding: .3, duration: 420, minZoom: ARCHITECTURE_ZOOM_FLOOR, maxZoom: 1.15 });
+       }, 80);
+     }
+     setInteraction((current) => {
+@@ -283,7 +331,7 @@ export default function ArchitectureCanvas({
+     window.setTimeout(() => {
+       const instance = instanceRef.current;
+       const targetNodes = instance?.getNodes().filter((node) => focusIds.has(node.id)) ?? [];
+-      if (targetNodes.length > 0) void instance?.fitView({ nodes: targetNodes, padding: .48, duration: 380, maxZoom: 1.15 });
++      if (targetNodes.length > 0) void instance?.fitView({ nodes: targetNodes, padding: .42, duration: 380, minZoom: ARCHITECTURE_ZOOM_FLOOR, maxZoom: 1.15 });
+     }, 80);
+     setInteraction((current) => ({ ...current, mode: "focus", selection: { kind: "object", id: objectId }, activeFlowId: null }));
+   }, [graph.relationships]);
+@@ -291,7 +339,7 @@ export default function ArchitectureCanvas({
+   useEffect(() => {
+     const onKeyDown = (event: KeyboardEvent) => {
+       const target = event.target as HTMLElement | null;
+-      if (target?.matches("input, textarea, select, [contenteditable='true']")) return;
++      if (target instanceof Element && target.matches("input, textarea, select, [contenteditable='true']")) return;
+       if (event.key.toLowerCase() === "f" && interaction.selection?.kind === "object") focusObject(interaction.selection.id);
+       if (event.key === "Escape") select(null);
+     };
+@@ -365,7 +413,7 @@ export default function ArchitectureCanvas({
+         </div>
+         <div className="canvas-command-actions">
+           {detail && isCurrentRevision && pendingEntities.length > 0 && <button className={showPending ? "active" : ""} onClick={() => setShowPending((value) => !value)} type="button">Change Overlay <b>{pendingEntities.length}</b></button>}
+-          <button onClick={() => instanceRef.current?.fitView({ padding: 0.16, duration: 300, maxZoom: 1.05 })} type="button">Fit</button>
++          <button onClick={() => applyArchitectureCamera(300)} type="button">Fit</button>
+           <button onClick={resetLayout} type="button">Layout</button>
+           <button onClick={() => void toggleFullscreen()} type="button">Full</button>
+         </div>
+@@ -386,31 +434,33 @@ export default function ArchitectureCanvas({
+       )}
+ 
+       <div className="canvas-stage">
+-        <ArchitectureCanvasKernel
+-          edges={edges}
+-          mode={interaction.mode}
+-          nodes={nodes}
+-          onEdgeClick={(edge) => select({ kind: "relationship", id: edge.id })}
+-          onEdgesChange={onEdgesChange}
+-          onInit={(instance) => { instanceRef.current = instance; }}
+-          onNodeClick={(node) => select({ kind: "object", id: node.id })}
+-          onNodeDragStop={handleNodeDragStop}
+-          onNodesChange={onNodesChange}
+-          onPaneClick={handlePaneClick}
+-          onViewportChange={(viewport) => setInteraction((current) => Math.abs(current.zoom - viewport.zoom) < 0.015 ? current : { ...current, zoom: viewport.zoom })}
+-        >
+-          <div className="canvas-reading-key">
+-            <span><i className="object-key" /> Object</span>
+-            <span><i className="relationship-key" /> Relationship</span>
+-            {interaction.mode === "trace" && <span><i className="trace-key" /> Active Flow</span>}
+-            <em>{interaction.mode === "trace" ? "动画表示语义顺序，不代表实时流量" : "拖动只调整本机视图，不改变架构关系"}</em>
+-          </div>
+-        </ArchitectureCanvasKernel>
+-
+-        {flowLensOpen && <FlowPanel activeFlowId={interaction.activeFlowId} flows={graph.flows} onClose={() => setFlowLensOpen(false)} onSelect={(flowId) => { select({ kind: "flow", id: flowId }); setFlowLensOpen(false); }} />}
++        <div className="canvas-stage-map" ref={canvasMapRef}>
++          <ArchitectureCanvasKernel
++            edges={edges}
++            mode={interaction.mode}
++            nodes={nodes}
++            onEdgeClick={(edge) => select({ kind: "relationship", id: edge.id })}
++            onEdgesChange={onEdgesChange}
++            onInit={(instance) => { instanceRef.current = instance; }}
++            onNodeClick={(node) => select({ kind: "object", id: node.id })}
++            onNodeDragStop={handleNodeDragStop}
++            onNodesChange={onNodesChange}
++            onPaneClick={handlePaneClick}
++            onViewportChange={(viewport) => setInteraction((current) => Math.abs(current.zoom - viewport.zoom) < 0.015 ? current : { ...current, zoom: viewport.zoom })}
++          >
++            <div className="canvas-reading-key">
++              <span><i className="object-key" /> Object</span>
++              <span><i className="relationship-key" /> Relationship</span>
++              {interaction.mode === "trace" && <span><i className="trace-key" /> Active Flow</span>}
++              <em>{interaction.mode === "trace" ? "动画表示语义顺序，不代表实时流量" : "拖动只调整本机视图，不改变架构关系"}</em>
++            </div>
++          </ArchitectureCanvasKernel>
++
++          {flowLensOpen && <FlowPanel activeFlowId={interaction.activeFlowId} flows={graph.flows} onClose={() => setFlowLensOpen(false)} onSelect={(flowId) => { select({ kind: "flow", id: flowId }); setFlowLensOpen(false); }} />}
++          {layouting && <div className="canvas-layouting">ELK is arranging the system…</div>}
++          {layoutError && <div className="canvas-layout-error" role="status">{layoutError}</div>}
++        </div>
+         <Inspector binding={inspectorBinding} mode={interaction.mode} onClose={() => interaction.mode === "trace" ? setInteraction((current) => ({ ...current, selection: null })) : select(null)} onFocus={focusObject} onSelect={select} />
+-        {layouting && <div className="canvas-layouting">ELK is arranging the system…</div>}
+-        {layoutError && <div className="canvas-layout-error" role="status">{layoutError}</div>}
+       </div>
+ 
+       <footer className="canvas-statusbar">
+diff --git a/app/architecture/architecture-edge.tsx b/app/architecture/architecture-edge.tsx
+index c734d82..b6809a8 100644
+--- a/app/architecture/architecture-edge.tsx
++++ b/app/architecture/architecture-edge.tsx
+@@ -76,7 +76,7 @@ export default function RelationshipEdge(props: EdgeProps<ArchitectureFlowEdge>)
+   const animate = emphasis === "active" && Boolean(props.data?.activeFlowName);
+ 
+   return (
+-    <g className={`relationship-edge type-${relationship?.relationshipType ?? "dependency"} emphasis-${emphasis} ${props.selected ? "is-selected" : ""}`}>
++    <g className={`relationship-edge type-${relationship?.relationshipType ?? "dependency"} emphasis-${emphasis} zoom-${props.data?.zoomLevel ?? "architecture"} ${props.data?.interRegion ? "inter-region" : ""} ${props.selected ? "is-selected" : ""}`}>
+       <BaseEdge
+         id={props.id}
+         interactionWidth={22}
+diff --git a/app/architecture/architecture-node.tsx b/app/architecture/architecture-node.tsx
+index 18a64ca..6442352 100644
+--- a/app/architecture/architecture-node.tsx
++++ b/app/architecture/architecture-node.tsx
+@@ -2,6 +2,7 @@
+ 
+ import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
+ import type { CSSProperties } from "react";
++import { screenSpaceLabelScale } from "./camera";
+ import type { SemanticObjectType } from "./semantic-graph";
+ import type { ObjectNodeData } from "./types";
+ 
+@@ -35,15 +36,11 @@ function ObjectTypeIcon({ type }: { type: SemanticObjectType }) {
+ export type ArchitectureFlowNode = Node<ObjectNodeData, "object">;
+ 
+ export default function ObjectNode({ data, selected }: NodeProps<ArchitectureFlowNode>) {
+-  const { object, emphasis, zoomLevel, zoom, incomingCount, outgoingCount, flowSteps } = data;
++  const { object, emphasis, zoomLevel, zoom, incomingCount, outgoingCount, flowSteps, flowRole } = data;
+   const showState = zoomLevel !== "landscape";
+   const showSummary = zoomLevel === "component" || zoomLevel === "operational";
+   const showMetadata = zoomLevel === "operational";
+-  const labelScale = zoomLevel === "landscape"
+-    ? Math.min(4.5, Math.max(1, 0.78 / Math.max(zoom, 0.16)))
+-    : zoomLevel === "architecture"
+-      ? Math.min(2.2, Math.max(1, 0.78 / Math.max(zoom, 0.42)))
+-      : 1;
++  const labelScale = screenSpaceLabelScale(zoom);
+   const technology = String(object.metadata.technology ?? "");
+ 
+   return (
+@@ -56,6 +53,13 @@ export default function ObjectNode({ data, selected }: NodeProps<ArchitectureFlo
+         <Handle className="semantic-port" id={`target-${side}`} key={`target-${side}`} position={POSITION[side]} type="target" />,
+         <Handle className="semantic-port" id={`source-${side}`} key={`source-${side}`} position={POSITION[side]} type="source" />,
+       ])}
++      {flowRole && (
++        <div className="object-corridor-badge" aria-label={`Flow ${flowRole}`}>
++          {flowRole === "entry" && <span className="corridor-endpoint entry">入口</span>}
++          {flowRole === "result" && <span className="corridor-endpoint result">结果</span>}
++          <b>{flowSteps[0]?.sequence ?? 1}</b>
++        </div>
++      )}
+       <div className="object-surface">
+         <header className="object-type-row">
+           <span className="object-type-icon"><ObjectTypeIcon type={object.objectType} /></span>
+diff --git a/app/architecture/camera.ts b/app/architecture/camera.ts
+new file mode 100644
+index 0000000..681dc14
+--- /dev/null
++++ b/app/architecture/camera.ts
+@@ -0,0 +1,47 @@
++export const ARCHITECTURE_ZOOM_FLOOR = 0.55;
++export const ARCHITECTURE_ZOOM_CEILING = 1;
++export const CANVAS_VIEW_PADDING = 0.08;
++export const SCREEN_TEXT_FLOOR = 12;
++export const LABEL_BASE_SIZE = 13;
++export const LABEL_COMPENSATION_MAX = 4.5;
++
++export type Size = { width: number; height: number };
++
++export type CameraBounds = { x: number; y: number; width: number; height: number };
++
++export type CameraViewport = { x: number; y: number; zoom: number };
++
++export function boundsOfRects(rects: Array<{ x: number; y: number; width: number; height: number }>): CameraBounds | null {
++  if (rects.length === 0) return null;
++  const left = Math.min(...rects.map((rect) => rect.x));
++  const top = Math.min(...rects.map((rect) => rect.y));
++  const right = Math.max(...rects.map((rect) => rect.x + rect.width));
++  const bottom = Math.max(...rects.map((rect) => rect.y + rect.height));
++  return { x: left, y: top, width: right - left, height: bottom - top };
++}
++
++export function architectureDensityViewport(
++  bounds: CameraBounds,
++  viewport: Size,
++  options: { padding?: number; zoomFloor?: number; zoomCeiling?: number } = {},
++): CameraViewport {
++  const padding = options.padding ?? CANVAS_VIEW_PADDING;
++  const zoomFloor = options.zoomFloor ?? ARCHITECTURE_ZOOM_FLOOR;
++  const zoomCeiling = options.zoomCeiling ?? ARCHITECTURE_ZOOM_CEILING;
++  const availableWidth = Math.max(1, viewport.width * (1 - padding * 2));
++  const availableHeight = Math.max(1, viewport.height * (1 - padding * 2));
++  const fitZoom = Math.min(availableWidth / Math.max(1, bounds.width), availableHeight / Math.max(1, bounds.height));
++  const zoom = Math.min(zoomCeiling, Math.max(zoomFloor, fitZoom));
++  const centerX = bounds.x + bounds.width / 2;
++  const centerY = bounds.y + bounds.height / 2;
++  return {
++    x: viewport.width / 2 - centerX * zoom,
++    y: viewport.height / 2 - centerY * zoom,
++    zoom,
++  };
++}
++
++export function screenSpaceLabelScale(zoom: number) {
++  const compensation = SCREEN_TEXT_FLOOR / (LABEL_BASE_SIZE * Math.max(zoom, 0.16));
++  return Math.min(LABEL_COMPENSATION_MAX, Math.max(1, compensation));
++}
+diff --git a/app/architecture/canvas-kernel.tsx b/app/architecture/canvas-kernel.tsx
+index f52cd26..78164e5 100644
+--- a/app/architecture/canvas-kernel.tsx
++++ b/app/architecture/canvas-kernel.tsx
+@@ -16,21 +16,22 @@ import { SmartEdgeProvider } from "@tisoap/react-flow-smart-edge";
+ import type { ReactNode } from "react";
+ import RelationshipEdge from "./architecture-edge";
+ import ObjectNode from "./architecture-node";
++import CorridorEdge from "./corridor-edge";
+ import RegionNode from "./region-node";
+ import type { CanvasMode } from "./interaction";
+-import type { CanvasNode, CanvasObjectNode, CanvasRelationshipEdge } from "./projection";
++import type { CanvasEdge, CanvasNode, CanvasObjectNode, CanvasRelationshipEdge } from "./projection";
+ import type { ObjectNodeData } from "./types";
+ 
+ const nodeTypes = { object: ObjectNode, region: RegionNode };
+-const edgeTypes = { relationship: RelationshipEdge };
++const edgeTypes = { relationship: RelationshipEdge, corridor: CorridorEdge };
+ 
+ type CanvasKernelProps = {
+   nodes: CanvasNode[];
+-  edges: CanvasRelationshipEdge[];
++  edges: CanvasEdge[];
+   mode: CanvasMode;
+   onNodesChange: (changes: NodeChange<CanvasNode>[]) => void;
+-  onEdgesChange: (changes: EdgeChange<CanvasRelationshipEdge>[]) => void;
+-  onInit: (instance: ReactFlowInstance<CanvasNode, CanvasRelationshipEdge>) => void;
++  onEdgesChange: (changes: EdgeChange<CanvasEdge>[]) => void;
++  onInit: (instance: ReactFlowInstance<CanvasNode, CanvasEdge>) => void;
+   onNodeClick: (node: CanvasObjectNode) => void;
+   onEdgeClick: (edge: CanvasRelationshipEdge) => void;
+   onNodeDragStop: (node: CanvasObjectNode) => void;
+@@ -65,7 +66,7 @@ export default function ArchitectureCanvasKernel({
+         debounceMs: 16,
+       }}
+     >
+-      <ReactFlow<CanvasNode, CanvasRelationshipEdge>
++      <ReactFlow<CanvasNode, CanvasEdge>
+         className={`architecture-canvas-kernel mode-${mode}`}
+         edges={edges}
+         edgesReconnectable={false}
+@@ -79,7 +80,7 @@ export default function ArchitectureCanvasKernel({
+         nodes={nodes}
+         nodesConnectable={false}
+         nodesDraggable
+-        onEdgeClick={(_, edge) => onEdgeClick(edge)}
++        onEdgeClick={(_, edge) => { if (edge.type === "relationship") onEdgeClick(edge as CanvasRelationshipEdge); }}
+         onEdgesChange={onEdgesChange}
+         onInit={onInit}
+         onMoveEnd={(_, viewport) => onViewportChange(viewport)}
+diff --git a/app/architecture/corridor-edge.tsx b/app/architecture/corridor-edge.tsx
+new file mode 100644
+index 0000000..b8a4bcd
+--- /dev/null
++++ b/app/architecture/corridor-edge.tsx
+@@ -0,0 +1,36 @@
++"use client";
++
++import { BaseEdge, EdgeLabelRenderer, getSmoothStepPath, type Edge, type EdgeProps } from "@xyflow/react";
++import { screenSpaceLabelScale } from "./camera";
++import type { CorridorEdgeData } from "./types";
++
++export type CanvasCorridorEdgeComponent = Edge<CorridorEdgeData, "corridor">;
++
++export default function CorridorEdge(props: EdgeProps<CanvasCorridorEdgeComponent>) {
++  const [path, labelX, labelY] = getSmoothStepPath({
++    sourceX: props.sourceX,
++    sourceY: props.sourceY,
++    sourcePosition: props.sourcePosition,
++    targetX: props.targetX,
++    targetY: props.targetY,
++    targetPosition: props.targetPosition,
++    borderRadius: 12,
++    offset: 28,
++  });
++  const scale = Math.min(2, screenSpaceLabelScale(props.data?.zoom ?? 1));
++  return (
++    <g className="trace-corridor-edge">
++      <BaseEdge id={props.id} interactionWidth={12} path={path} />
++      <EdgeLabelRenderer>
++        <div
++          className="corridor-transition nodrag nopan"
++          style={{ transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px) scale(${scale})` }}
++          title={props.data?.transition}
++        >
++          <b>{props.data?.order}</b>
++          <span>{props.data?.fromSequence}→{props.data?.toSequence}</span>
++        </div>
++      </EdgeLabelRenderer>
++    </g>
++  );
++}
+diff --git a/app/architecture/layout.ts b/app/architecture/layout.ts
+index 8137001..4e1c187 100644
+--- a/app/architecture/layout.ts
++++ b/app/architecture/layout.ts
+@@ -11,6 +11,20 @@ const elk = new ELK();
+ 
+ export type LayoutOrientation = "RIGHT" | "DOWN";
+ 
++export const ROOT_COMPOSITION = {
++  gutterX: 170,
++  gutterY: 130,
++  targetAspect: 1.5,
++  minColumns: 2,
++  maxColumns: 5,
++} as const;
++
++export function compositionColumns(blockCount: number, averageBlockWidth = 1, averageBlockHeight = 1) {
++  if (blockCount < 2) return 1;
++  const byAspect = Math.sqrt(ROOT_COMPOSITION.targetAspect * blockCount * Math.max(averageBlockHeight, 1) / Math.max(averageBlockWidth, 1));
++  return Math.min(ROOT_COMPOSITION.maxColumns, Math.max(ROOT_COMPOSITION.minColumns, Math.round(byAspect)));
++}
++
+ export type LayoutRect = {
+   id: string;
+   x: number;
+@@ -42,6 +56,12 @@ export type CanvasLayout = {
+   objectRects: Record<string, LayoutRect>;
+   regionRects: Record<string, RegionLayoutRect>;
+   relationshipRoutes: Record<string, RelationshipRoute>;
++  composition?: {
++    level: "root" | "region";
++    containerId: string | null;
++    columns: number;
++    blockIds: string[];
++  };
+ };
+ 
+ function intersects(left: LayoutRect, right: LayoutRect, padding = 22) {
+@@ -51,8 +71,343 @@ function intersects(left: LayoutRect, right: LayoutRect, padding = 22) {
+     && left.y + left.height + padding > right.y;
+ }
+ 
+-function stabilizeIncrementalLayout(graph: SemanticGraph, previous: CanvasLayout, next: CanvasLayout): CanvasLayout {
+-  if (previous.fingerprint === next.fingerprint) return { ...previous, durationMs: 0 };
++type BoundarySide = "left" | "right" | "top" | "bottom";
++
++type CompositionBlock = {
++  id: string;
++  residual: boolean;
++  memberRegionIds: Set<string>;
++  memberObjectIds: Set<string>;
++  original: LayoutRect;
++  packed: LayoutRect;
++  column: number;
++  row: number;
++  delta: { x: number; y: number };
++};
++
++type CompositionGeometry = {
++  columnGutterXs: number[];
++  rowGutterYs: number[];
++};
++
++function strictlyInside(rect: LayoutRect, point: { x: number; y: number }, epsilon = 1) {
++  return point.x > rect.x + epsilon
++    && point.x < rect.x + rect.width - epsilon
++    && point.y > rect.y + epsilon
++    && point.y < rect.y + rect.height - epsilon;
++}
++
++function looselyInside(rect: LayoutRect, point: { x: number; y: number }, epsilon = 1) {
++  return point.x >= rect.x - epsilon
++    && point.x <= rect.x + rect.width + epsilon
++    && point.y >= rect.y - epsilon
++    && point.y <= rect.y + rect.height + epsilon;
++}
++
++function boundarySide(rect: LayoutRect, point: { x: number; y: number }): BoundarySide {
++  const candidates: Array<{ side: BoundarySide; distance: number }> = [
++    { side: "left", distance: Math.abs(point.x - rect.x) },
++    { side: "right", distance: Math.abs(point.x - (rect.x + rect.width)) },
++    { side: "top", distance: Math.abs(point.y - rect.y) },
++    { side: "bottom", distance: Math.abs(point.y - (rect.y + rect.height)) },
++  ];
++  candidates.sort((left, right) => left.distance - right.distance);
++  return candidates[0].side;
++}
++
++function nearestValue(values: number[], target: number) {
++  return values.reduce((best, value) => Math.abs(value - target) < Math.abs(best - target) ? value : best, values[0]);
++}
++
++function compactOrthogonalPoints(points: Array<{ x: number; y: number }>) {
++  const result: Array<{ x: number; y: number }> = [];
++  for (const point of points) {
++    const last = result.at(-1);
++    if (last && Math.abs(last.x - point.x) < .01 && Math.abs(last.y - point.y) < .01) continue;
++    result.push(point);
++  }
++  for (let index = result.length - 2; index > 0; index -= 1) {
++    const previous = result[index - 1];
++    const current = result[index];
++    const next = result[index + 1];
++    if (Math.abs(previous.x - current.x) < .01 && Math.abs(current.x - next.x) < .01) result.splice(index, 1);
++    else if (Math.abs(previous.y - current.y) < .01 && Math.abs(current.y - next.y) < .01) result.splice(index, 1);
++  }
++  return result;
++}
++
++function bridgeAcrossGutters(
++  prefixEnd: { x: number; y: number },
++  sourceBlock: CompositionBlock,
++  suffixStart: { x: number; y: number },
++  targetBlock: CompositionBlock,
++  geometry: CompositionGeometry,
++) {
++  const sideSource = boundarySide(sourceBlock.packed, prefixEnd);
++  const sideTarget = boundarySide(targetBlock.packed, suffixStart);
++  const offset = (side: BoundarySide) => {
++    if (side === "left") return { x: -ROOT_COMPOSITION.gutterX / 2, y: 0 };
++    if (side === "right") return { x: ROOT_COMPOSITION.gutterX / 2, y: 0 };
++    if (side === "top") return { x: 0, y: -ROOT_COMPOSITION.gutterY / 2 };
++    return { x: 0, y: ROOT_COMPOSITION.gutterY / 2 };
++  };
++  const offsetSource = offset(sideSource);
++  const offsetTarget = offset(sideTarget);
++  const outSource = { x: prefixEnd.x + offsetSource.x, y: prefixEnd.y + offsetSource.y };
++  const outTarget = { x: suffixStart.x + offsetTarget.x, y: suffixStart.y + offsetTarget.y };
++  const horizontalSource = sideSource === "left" || sideSource === "right";
++  const horizontalTarget = sideTarget === "left" || sideTarget === "right";
++  const rowRunY = horizontalSource ? nearestValue(geometry.rowGutterYs, outSource.y) : outSource.y;
++  const columnRunX = horizontalTarget ? outTarget.x : nearestValue(geometry.columnGutterXs, outTarget.x);
++  const points = compactOrthogonalPoints([
++    prefixEnd,
++    outSource,
++    { x: outSource.x, y: rowRunY },
++    { x: columnRunX, y: rowRunY },
++    { x: columnRunX, y: outTarget.y },
++    outTarget,
++    suffixStart,
++  ]);
++  return {
++    points,
++    labelPoint: { x: (outSource.x + columnRunX) / 2, y: rowRunY },
++  };
++}
++
++function composeTopLevelBlocks(graph: SemanticGraph, layout: CanvasLayout): CanvasLayout {
++  const rootRegions = graph.regions
++    .filter((region) => !region.parentRegionId)
++    .sort((left, right) => (left.order ?? 0) - (right.order ?? 0) || left.id.localeCompare(right.id));
++  let level: "root" | "region" = "root";
++  let containerId: string | null = null;
++  let blockRegions: SemanticRegion[] = rootRegions;
++  if (rootRegions.length === 1) {
++    const children = graph.regions
++      .filter((region) => region.parentRegionId === rootRegions[0].id)
++      .sort((left, right) => (left.order ?? 0) - (right.order ?? 0) || left.id.localeCompare(right.id));
++    if (children.length >= 2) {
++      level = "region";
++      containerId = rootRegions[0].id;
++      blockRegions = children;
++    }
++  }
++  if (blockRegions.length < 2) return layout;
++
++  const childRegions = new Map<string, SemanticRegion[]>();
++  for (const region of graph.regions) {
++    if (!region.parentRegionId) continue;
++    childRegions.set(region.parentRegionId, [...(childRegions.get(region.parentRegionId) ?? []), region]);
++  }
++  const descendantRegionIds = (root: string) => {
++    const ids = new Set<string>([root]);
++    const queue = [root];
++    while (queue.length > 0) {
++      const current = queue.shift()!;
++      for (const child of childRegions.get(current) ?? []) {
++        if (!ids.has(child.id)) {
++          ids.add(child.id);
++          queue.push(child.id);
++        }
++      }
++    }
++    return ids;
++  };
++
++  const blocks: CompositionBlock[] = [];
++  for (const region of blockRegions) {
++    const memberRegionIds = descendantRegionIds(region.id);
++    const memberObjectIds = new Set(graph.objects.filter((object) => memberRegionIds.has(object.regionId)).map((object) => object.id));
++    const rect = layout.regionRects[region.id];
++    if (!rect || memberObjectIds.size === 0) continue;
++    blocks.push({
++      id: region.id,
++      residual: false,
++      memberRegionIds,
++      memberObjectIds,
++      original: { id: region.id, x: rect.x, y: rect.y, width: rect.width, height: rect.height },
++      packed: { id: region.id, x: 0, y: 0, width: rect.width, height: rect.height },
++      column: 0,
++      row: 0,
++      delta: { x: 0, y: 0 },
++    });
++  }
++
++  const containerObjectIds = new Set(
++    graph.objects.filter((object) => (level === "region" ? object.regionId === containerId : false)).map((object) => object.id),
++  );
++  if (containerObjectIds.size > 0) {
++    const rects = [...containerObjectIds].map((id) => layout.objectRects[id]).filter((rect): rect is LayoutRect => Boolean(rect));
++    if (rects.length > 0) {
++      const left = Math.min(...rects.map((rect) => rect.x)) - 26;
++      const top = Math.min(...rects.map((rect) => rect.y)) - 26;
++      const right = Math.max(...rects.map((rect) => rect.x + rect.width)) + 26;
++      const bottom = Math.max(...rects.map((rect) => rect.y + rect.height)) + 26;
++      blocks.push({
++        id: `${containerId ?? "root"}:residual`,
++        residual: true,
++        memberRegionIds: new Set<string>(),
++        memberObjectIds: containerObjectIds,
++        original: { id: "residual", x: left, y: top, width: right - left, height: bottom - top },
++        packed: { id: `${containerId ?? "root"}:residual`, x: 0, y: 0, width: right - left, height: bottom - top },
++        column: 0,
++        row: 0,
++        delta: { x: 0, y: 0 },
++      });
++    }
++  }
++  if (blocks.length < 2) return layout;
++
++  const ordered = [...blocks].sort((left, right) =>
++    left.original.y - right.original.y || left.original.x - right.original.x || left.id.localeCompare(right.id));
++  const averageBlockWidth = ordered.reduce((total, block) => total + block.original.width, 0) / ordered.length;
++  const averageBlockHeight = ordered.reduce((total, block) => total + block.original.height, 0) / ordered.length;
++  const columns = compositionColumns(ordered.length, averageBlockWidth, averageBlockHeight);
++  const columnWidths = Array.from({ length: columns }, (_, column) =>
++    Math.max(...ordered.filter((_, index) => index % columns === column).map((block) => block.original.width), 0));
++  const rowCount = Math.ceil(ordered.length / columns);
++  const rowHeights = Array.from({ length: rowCount }, (_, row) =>
++    Math.max(...ordered.filter((_, index) => Math.floor(index / columns) === row).map((block) => block.original.height), 0));
++
++  const columnXs: number[] = [];
++  let cursorX = 0;
++  for (let column = 0; column < columns; column += 1) {
++    columnXs.push(cursorX);
++    cursorX += columnWidths[column] + ROOT_COMPOSITION.gutterX;
++  }
++  const rowYs: number[] = [];
++  let cursorY = 0;
++  for (let row = 0; row < rowCount; row += 1) {
++    rowYs.push(cursorY);
++    cursorY += rowHeights[row] + ROOT_COMPOSITION.gutterY;
++  }
++
++  ordered.forEach((block, index) => {
++    block.column = index % columns;
++    block.row = Math.floor(index / columns);
++    block.packed = { ...block.packed, x: columnXs[block.column], y: rowYs[block.row] };
++    block.delta = { x: block.packed.x - block.original.x, y: block.packed.y - block.original.y };
++  });
++
++  const objectRects: Record<string, LayoutRect> = { ...layout.objectRects };
++  const regionRects: Record<string, RegionLayoutRect> = { ...layout.regionRects };
++  const blockOfObject = new Map<string, CompositionBlock>();
++  for (const block of ordered) {
++    for (const objectId of block.memberObjectIds) {
++      blockOfObject.set(objectId, block);
++      const rect = objectRects[objectId];
++      if (rect) objectRects[objectId] = { ...rect, x: rect.x + block.delta.x, y: rect.y + block.delta.y };
++    }
++    if (block.residual) continue;
++    for (const regionId of block.memberRegionIds) {
++      const rect = regionRects[regionId];
++      if (rect) regionRects[regionId] = { ...rect, x: rect.x + block.delta.x, y: rect.y + block.delta.y };
++    }
++  }
++
++  const packedRight = Math.max(...ordered.map((block) => block.packed.x + block.packed.width));
++  const packedBottom = Math.max(...ordered.map((block) => block.packed.y + block.packed.height));
++  if (level === "region" && containerId) {
++    const container = regionRects[containerId];
++    if (container) {
++      regionRects[containerId] = {
++        ...container,
++        x: -26,
++        y: -54,
++        width: packedRight + 52,
++        height: packedBottom + 80,
++      };
++    }
++  }
++
++  const columnGutterXs = [
++    columnXs[0] - ROOT_COMPOSITION.gutterX / 2,
++    ...Array.from({ length: columns - 1 }, (_, index) =>
++      columnXs[index] + columnWidths[index] + ROOT_COMPOSITION.gutterX / 2),
++    columnXs[columns - 1] + columnWidths[columns - 1] + ROOT_COMPOSITION.gutterX / 2,
++  ];
++  const rowGutterYs = [
++    rowYs[0] - ROOT_COMPOSITION.gutterY / 2,
++    ...Array.from({ length: rowCount - 1 }, (_, index) =>
++      rowYs[index] + rowHeights[index] + ROOT_COMPOSITION.gutterY / 2),
++    rowYs[rowCount - 1] + rowHeights[rowCount - 1] + ROOT_COMPOSITION.gutterY / 2,
++  ];
++  const geometry: CompositionGeometry = { columnGutterXs, rowGutterYs };
++
++  const relationshipRoutes: Record<string, RelationshipRoute> = {};
++  for (const relationship of graph.relationships) {
++    const route = layout.relationshipRoutes[relationship.id];
++    if (!route) continue;
++    const sourceBlock = blockOfObject.get(relationship.sourceObjectId);
++    const targetBlock = blockOfObject.get(relationship.targetObjectId);
++    if (!sourceBlock || !targetBlock) {
++      relationshipRoutes[relationship.id] = route;
++      continue;
++    }
++    if (sourceBlock === targetBlock) {
++      relationshipRoutes[relationship.id] = {
++        ...route,
++        points: route.points.map((point) => ({ x: point.x + sourceBlock.delta.x, y: point.y + sourceBlock.delta.y })),
++        labelPoint: route.labelPoint
++          ? { x: route.labelPoint.x + sourceBlock.delta.x, y: route.labelPoint.y + sourceBlock.delta.y }
++          : undefined,
++      };
++      continue;
++    }
++    let prefixEnd = -1;
++    for (let index = 0; index < route.points.length; index += 1) {
++      if (!strictlyInside(sourceBlock.original, route.points[index])) {
++        prefixEnd = index;
++        break;
++      }
++    }
++    let suffixStart = -1;
++    for (let index = route.points.length - 1; index >= 0; index -= 1) {
++      if (!looselyInside(targetBlock.original, route.points[index])) {
++        suffixStart = index + 1;
++        break;
++      }
++      suffixStart = index;
++    }
++    if (suffixStart > 0) suffixStart -= 1;
++    if (prefixEnd < 1 || suffixStart < 1 || prefixEnd > suffixStart) continue;
++
++    const translatedPrefix = route.points.slice(0, prefixEnd + 1)
++      .map((point) => ({ x: point.x + sourceBlock.delta.x, y: point.y + sourceBlock.delta.y }));
++    const translatedSuffix = route.points.slice(suffixStart)
++      .map((point) => ({ x: point.x + targetBlock.delta.x, y: point.y + targetBlock.delta.y }));
++    const bridge = bridgeAcrossGutters(
++      translatedPrefix.at(-1)!,
++      sourceBlock,
++      translatedSuffix[0],
++      targetBlock,
++      geometry,
++    );
++    relationshipRoutes[relationship.id] = {
++      ...route,
++      points: compactOrthogonalPoints([...translatedPrefix, ...bridge.points, ...translatedSuffix]),
++      labelPoint: bridge.labelPoint,
++    };
++  }
++
++  const width = Math.max(...Object.values(regionRects).map((rect) => rect.x + rect.width)) + 42;
++  const height = Math.max(...Object.values(regionRects).map((rect) => rect.y + rect.height)) + 42;
++  return {
++    ...layout,
++    width,
++    height,
++    objectRects,
++    regionRects,
++    relationshipRoutes,
++    composition: {
++      level,
++      containerId,
++      columns,
++      blockIds: ordered.map((block) => block.id),
++    },
++  };
++}
++
++function stabilizeIncrementalLayout(graph: SemanticGraph, previous: CanvasLayout, next: CanvasLayout): CanvasLayout {  if (previous.fingerprint === next.fingerprint) return { ...previous, durationMs: 0 };
+   const graphObjectIds = new Set(graph.objects.map((object) => object.id));
+   const commonObjectIds = Object.keys(previous.objectRects).filter((id) => graphObjectIds.has(id) && next.objectRects[id]);
+   const priorObjectCount = Object.keys(previous.objectRects).length;
+@@ -303,7 +658,7 @@ function regionOptions(orientation: LayoutOrientation, depth: number) {
+     "elk.algorithm": "layered",
+     "elk.direction": orientation,
+     "elk.edgeRouting": "ORTHOGONAL",
+-    "elk.padding": `[top=${depth === 0 ? 54 : 46},left=26,bottom=26,right=26]`,
++    "elk.padding": `[top=${depth === 0 ? 92 : 78},left=26,bottom=26,right=26]`,
+     "elk.spacing.nodeNode": depth === 0 ? "34" : "28",
+     "elk.layered.spacing.nodeNodeBetweenLayers": depth === 0 ? "82" : "68",
+     "elk.layered.spacing.edgeNodeBetweenLayers": "30",
+@@ -458,7 +813,7 @@ export async function layoutSemanticGraph(
+   }
+ 
+   const finished = typeof performance === "undefined" ? Date.now() : performance.now();
+-  const result: CanvasLayout = {
++  const elkResult: CanvasLayout = {
+     graphId: graph.id,
+     fingerprint,
+     orientation,
+@@ -469,6 +824,7 @@ export async function layoutSemanticGraph(
+     regionRects,
+     relationshipRoutes,
+   };
++  const result = composeTopLevelBlocks(graph, elkResult);
+   return options.previousLayout ? stabilizeIncrementalLayout(graph, options.previousLayout, result) : result;
+ }
+ 
+diff --git a/app/architecture/projection.ts b/app/architecture/projection.ts
+index e326131..bf94148 100644
+--- a/app/architecture/projection.ts
++++ b/app/architecture/projection.ts
+@@ -2,12 +2,14 @@ import { MarkerType, type Edge, type Node } from "@xyflow/react";
+ import { visibleObjectIds, type CanvasViewModel } from "./interaction";
+ import type { CanvasLayout } from "./layout";
+ import { indexSemanticGraph, type SemanticFlowStep, type SemanticGraph } from "./semantic-graph";
+-import type { ObjectNodeData, RegionNodeData, RelationshipEdgeData } from "./types";
++import type { CorridorEdgeData, ObjectNodeData, RegionNodeData, RelationshipEdgeData } from "./types";
+ 
+ export type CanvasObjectNode = Node<ObjectNodeData, "object">;
+ export type CanvasRegionNode = Node<RegionNodeData, "region">;
+ export type CanvasNode = CanvasObjectNode | CanvasRegionNode;
+ export type CanvasRelationshipEdge = Edge<RelationshipEdgeData, "relationship">;
++export type CanvasCorridorEdge = Edge<CorridorEdgeData, "corridor">;
++export type CanvasEdge = CanvasRelationshipEdge | CanvasCorridorEdge;
+ 
+ function handleId(side: "left" | "right" | "top" | "bottom", role: "source" | "target") {
+   return `${role}-${side}`;
+@@ -29,18 +31,44 @@ function flowTransition(
+   return null;
+ }
+ 
++export type CorridorStop = {
++  objectId: string;
++  sequence: number;
++  role: string;
++  title: string;
++};
++
++export function corridorStops(steps: SemanticFlowStep[]): CorridorStop[] {
++  const ordered = [...steps].sort((left, right) => left.sequence - right.sequence || left.id.localeCompare(right.id));
++  const stops: CorridorStop[] = [];
++  for (const step of ordered) {
++    const last = stops.at(-1);
++    if (last && last.objectId === step.objectId) continue;
++    stops.push({ objectId: step.objectId, sequence: step.sequence, role: step.role, title: step.title });
++  }
++  return stops;
++}
++
+ export function projectSemanticGraph(
+   graph: SemanticGraph,
+   layout: CanvasLayout,
+   view: CanvasViewModel,
+-): { nodes: CanvasNode[]; edges: CanvasRelationshipEdge[] } {
++): { nodes: CanvasNode[]; edges: CanvasEdge[] } {
+   const index = indexSemanticGraph(graph);
+   const visibleIds = visibleObjectIds(graph, view);
+   const activeFlow = view.activeFlowId ? index.flowById.get(view.activeFlowId) : undefined;
++  const stops = activeFlow ? corridorStops(activeFlow.steps) : [];
+   const regionNodes = graph.regions
+     .map<CanvasRegionNode | null>((region) => {
+       const rect = layout.regionRects[region.id];
+       if (!rect) return null;
++      const memberObjects = index.objectsByRegionId.get(region.id) ?? [];
++      const typeCounts = new Map<string, number>();
++      for (const object of memberObjects) typeCounts.set(object.objectType, (typeCounts.get(object.objectType) ?? 0) + 1);
++      const keyObjectNames = [...memberObjects]
++        .sort((left, right) => right.importance.score - left.importance.score || left.id.localeCompare(right.id))
++        .slice(0, 3)
++        .map((object) => object.name);
+       return {
+         id: region.id,
+         type: "region",
+@@ -49,9 +77,12 @@ export function projectSemanticGraph(
+           region,
+           emphasis: view.regionEmphasis.get(region.id) ?? "normal",
+           zoomLevel: view.zoomLevel,
+-          objectCount: index.objectsByRegionId.get(region.id)?.length ?? 0,
++          zoom: view.zoom,
++          objectCount: memberObjects.length,
+           childRegionCount: index.childRegionsByRegionId.get(region.id)?.length ?? 0,
+           depth: rect.depth,
++          typeCounts: [...typeCounts.entries()].map(([type, count]) => ({ type, count })).sort((left, right) => right.count - left.count),
++          keyObjectNames,
+         },
+         draggable: false,
+         selectable: false,
+@@ -67,6 +98,8 @@ export function projectSemanticGraph(
+     .map<CanvasObjectNode | null>((object) => {
+       const rect = layout.objectRects[object.id];
+       if (!rect) return null;
++      const stopIndex = stops.findIndex((stop) => stop.objectId === object.id);
++      const stop = stopIndex >= 0 ? stops[stopIndex] : undefined;
+       return {
+         id: object.id,
+         type: "object",
+@@ -81,6 +114,7 @@ export function projectSemanticGraph(
+           flowSteps: (activeFlow?.steps ?? [])
+             .filter((step) => step.objectId === object.id)
+             .map((step) => ({ sequence: step.sequence, role: step.role, title: step.title })),
++          flowRole: stop ? (stopIndex === 0 ? "entry" : stopIndex === stops.length - 1 ? "result" : "step") : undefined,
+         },
+         draggable: true,
+         selectable: true,
+@@ -91,7 +125,7 @@ export function projectSemanticGraph(
+     })
+     .filter((node): node is CanvasObjectNode => Boolean(node));
+ 
+-  const edges = graph.relationships
++  const relationshipEdges = graph.relationships
+     .filter((relationship) => visibleIds.has(relationship.sourceObjectId) && visibleIds.has(relationship.targetObjectId))
+     .map<CanvasRelationshipEdge>((relationship) => {
+     const route = layout.relationshipRoutes[relationship.id];
+@@ -108,6 +142,8 @@ export function projectSemanticGraph(
+           : relationship.state.severity === "critical"
+             ? "#b98580"
+             : "#83939a";
++    const sourceRegion = index.objectById.get(relationship.sourceObjectId)?.regionId;
++    const targetRegion = index.objectById.get(relationship.targetObjectId)?.regionId;
+     return {
+       id: relationship.id,
+       source: relationship.sourceObjectId,
+@@ -120,6 +156,7 @@ export function projectSemanticGraph(
+         route: renderedRoute,
+         emphasis,
+         zoomLevel: view.zoomLevel,
++        interRegion: sourceRegion !== targetRegion,
+         activeFlowName: activeFlow?.name,
+         flowSequence: transition?.sequence,
+         flowPayload: transition?.payload,
+@@ -132,5 +169,38 @@ export function projectSemanticGraph(
+     };
+     });
+ 
+-  return { nodes: [...regionNodes, ...objectNodes], edges };
++  const corridorEdges: CanvasCorridorEdge[] = [];
++  if (activeFlow && view.mode === "trace") {
++    for (let index_ = 0; index_ < stops.length - 1; index_ += 1) {
++      const from = stops[index_];
++      const to = stops[index_ + 1];
++      const fromRect = layout.objectRects[from.objectId];
++      const toRect = layout.objectRects[to.objectId];
++      const dx = fromRect && toRect ? (toRect.x + toRect.width / 2) - (fromRect.x + fromRect.width / 2) : 1;
++      const dy = fromRect && toRect ? (toRect.y + toRect.height / 2) - (fromRect.y + fromRect.height / 2) : 0;
++      const sourceSide = Math.abs(dx) >= Math.abs(dy) ? (dx >= 0 ? "right" : "left") : (dy >= 0 ? "bottom" : "top") as "right" | "left" | "bottom" | "top";
++      const targetSide = Math.abs(dx) >= Math.abs(dy) ? (dx >= 0 ? "left" : "right") : (dy >= 0 ? "top" : "bottom") as "right" | "left" | "bottom" | "top";
++      corridorEdges.push({
++        id: `corridor:${activeFlow.id}:${from.objectId}:${to.objectId}`,
++        source: from.objectId,
++        target: to.objectId,
++        sourceHandle: `source-${sourceSide}`,
++        targetHandle: `target-${targetSide}`,
++        type: "corridor",
++        data: {
++          flowId: activeFlow.id,
++          order: index_ + 1,
++          fromSequence: from.sequence,
++          toSequence: to.sequence,
++          transition: `${from.title} → ${to.title}`,
++          zoom: view.zoom,
++        },
++        zIndex: 26,
++        selectable: false,
++        focusable: false,
++      });
++    }
++  }
++
++  return { nodes: [...regionNodes, ...objectNodes], edges: [...relationshipEdges, ...corridorEdges] };
+ }
+diff --git a/app/architecture/region-node.tsx b/app/architecture/region-node.tsx
+index 3b3ed91..44ea022 100644
+--- a/app/architecture/region-node.tsx
++++ b/app/architecture/region-node.tsx
+@@ -1,22 +1,43 @@
+ "use client";
+ 
+-import type { Node, NodeProps } from "@xyflow/react";
++import { type Node, type NodeProps } from "@xyflow/react";
++import type { CSSProperties } from "react";
++import { screenSpaceLabelScale } from "./camera";
+ import type { RegionNodeData } from "./types";
+ 
+ export type ArchitectureRegionNode = Node<RegionNodeData, "region">;
+ 
++const TYPE_COPY: Record<string, string> = {
++  service: "Service",
++  agent: "Agent",
++  storage: "Storage",
++  external: "External",
++};
++
+ export default function RegionNode({ data }: NodeProps<ArchitectureRegionNode>) {
+-  const { region, emphasis, zoomLevel, objectCount, childRegionCount, depth } = data;
++  const { region, emphasis, zoomLevel, zoom, objectCount, childRegionCount, depth, typeCounts, keyObjectNames } = data;
++  const labelScale = screenSpaceLabelScale(zoom);
++  const composition = typeCounts.map((entry) => `${entry.count} ${TYPE_COPY[entry.type] ?? entry.type}`).join(" · ");
++  const showKeyObjects = zoomLevel === "landscape" || zoomLevel === "architecture";
+   return (
+     <section
+       aria-label={`Region ${region.name}`}
+       className={`canvas-region depth-${Math.min(depth, 3)} emphasis-${emphasis} zoom-${zoomLevel}`}
++      style={{ "--label-scale": labelScale } as CSSProperties}
+     >
+       <header>
+         <span>Region</span>
+         <strong>{region.name}</strong>
+-        {zoomLevel !== "landscape" && <small>{objectCount} objects{childRegionCount > 0 ? ` · ${childRegionCount} regions` : ""}</small>}
++        <small>{composition || "no objects"}</small>
+       </header>
++      <div className="region-summary">
++        <p>{region.summary || (childRegionCount > 0 ? `${childRegionCount} sub-regions · ${objectCount} objects` : `${objectCount} objects`)}</p>
++        {showKeyObjects && keyObjectNames.length > 0 && (
++          <ul>
++            {keyObjectNames.map((name) => <li key={name} title={name}>{name}</li>)}
++          </ul>
++        )}
++      </div>
+     </section>
+   );
+ }
+diff --git a/app/architecture/types.ts b/app/architecture/types.ts
+index d5a91e8..50c5eeb 100644
+--- a/app/architecture/types.ts
++++ b/app/architecture/types.ts
+@@ -105,11 +105,21 @@ export type RelationshipEdgeData = Record<string, unknown> & {
+   route?: RelationshipRoute;
+   emphasis: RelationshipEmphasis;
+   zoomLevel: SemanticZoomLevel;
++  interRegion: boolean;
+   activeFlowName?: string;
+   flowSequence?: number;
+   flowPayload?: string;
+ };
+ 
++export type CorridorEdgeData = Record<string, unknown> & {
++  flowId: string;
++  order: number;
++  fromSequence: number;
++  toSequence: number;
++  transition: string;
++  zoom: number;
++};
++
+ export type ArchitectureEdgeData = RelationshipEdgeData;
+ 
+ export type ProjectDetail = {
+@@ -137,15 +147,19 @@ export type ObjectNodeData = Record<string, unknown> & {
+   incomingCount: number;
+   outgoingCount: number;
+   flowSteps: Array<{ sequence: number; role: string; title: string }>;
++  flowRole?: "entry" | "result" | "step";
+ };
+ 
+ export type RegionNodeData = Record<string, unknown> & {
+   region: SemanticRegion;
+   emphasis: RegionEmphasis;
+   zoomLevel: SemanticZoomLevel;
++  zoom: number;
+   objectCount: number;
+   childRegionCount: number;
+   depth: number;
++  typeCounts: Array<{ type: string; count: number }>;
++  keyObjectNames: string[];
+ };
+ 
+ export type ArchitectureNodeData = ObjectNodeData;
+diff --git a/app/globals.css b/app/globals.css
+index 261e228..85ba084 100644
+--- a/app/globals.css
++++ b/app/globals.css
+@@ -916,7 +916,8 @@ button:focus-visible, select:focus-visible, a:focus-visible {
+ .canvas-shell .revision-timeline span { background: transparent; color: var(--map-text-muted); }
+ .canvas-shell .revision-timeline input { accent-color: var(--map-focus); }
+ 
+-.canvas-shell .canvas-stage { display: block; flex: 1 1 auto; height: auto; min-height: 0; overflow: hidden; position: relative; }
++.canvas-shell .canvas-stage { display: flex; flex: 1 1 auto; height: auto; min-height: 0; overflow: hidden; position: relative; }
++.canvas-stage-map { display: block; flex: 1 1 auto; min-height: 0; min-width: 0; position: relative; }
+ .architecture-workbench:fullscreen .canvas-stage { height: auto; }
+ .canvas-stage .architecture-canvas-kernel { background: var(--map-bg); }
+ .canvas-stage .react-flow__pane { cursor: grab; }
+@@ -973,12 +974,26 @@ button:focus-visible, select:focus-visible, a:focus-visible {
+ .canvas-region.depth-2, .canvas-region.depth-3 { background: transparent; border-color: rgba(159,179,184,.08); }
+ .canvas-region.emphasis-active { border-color: rgba(155,210,193,.24); }
+ .canvas-region.emphasis-muted { border-color: rgba(159,179,184,.055); }
+-.canvas-region > header { align-items: baseline; color: var(--map-text-muted); display: flex; gap: 9px; left: 14px; position: absolute; top: 11px; }
++.canvas-region > header { align-items: baseline; color: var(--map-text-muted); display: flex; gap: 9px; left: 14px; position: absolute; top: 11px; transform: scale(var(--label-scale, 1)); transform-origin: left top; }
+ .canvas-region > header span { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8125rem; letter-spacing: .08em; text-transform: uppercase; }
+-.canvas-region > header strong { color: #9eadb0; font-size: .8125rem; font-weight: 620; }
++.canvas-region > header strong { color: #b9c7ca; font-size: .9rem; font-weight: 680; letter-spacing: -.01em; }
+ .canvas-region > header small { font-size: .8125rem; }
+-.canvas-region.zoom-landscape > header span, .canvas-region.zoom-landscape > header small { display: none; }
++.canvas-region.zoom-landscape > header span { display: none; }
++.region-summary { color: var(--map-text-muted); font-size: .8125rem; left: 15px; position: absolute; right: 15px; top: 34px; transform: scale(var(--label-scale, 1)); transform-origin: left top; }
++.region-summary p { line-height: 1.4; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
++.region-summary ul { display: flex; flex-wrap: wrap; gap: 3px 10px; list-style: none; margin: 3px 0 0; max-width: 100%; overflow: hidden; padding: 0; }
++.region-summary li { color: #8fa0a4; font-size: .8125rem; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
++.canvas-region.zoom-component .region-summary, .canvas-region.zoom-operational .region-summary { display: none; }
+ .canvas-region.emphasis-muted > header strong { color: #69787c; }
++.trace-corridor-edge .react-flow__edge-path { fill: none; stroke: var(--map-focus); stroke-dasharray: 9 5; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2; }
++.corridor-transition { align-items: center; background: #101d1c; border: 1px solid rgba(155,210,193,.55); color: var(--map-text); display: flex; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8125rem; gap: 5px; padding: 2px 7px; pointer-events: none; position: absolute; white-space: nowrap; z-index: 27; }
++.corridor-transition b { color: var(--map-focus-strong); font-size: .875rem; }
++.corridor-transition span { color: #93a7a4; }
++.object-corridor-badge { align-items: center; display: flex; gap: 5px; position: absolute; right: 12px; top: -12px; transform: scale(var(--label-scale, 1)); transform-origin: right bottom; }
++.object-corridor-badge > b { align-items: center; background: var(--map-focus); border-radius: 50%; color: #0b1114; display: flex; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8125rem; font-weight: 700; height: 22px; justify-content: center; width: 22px; }
++.corridor-endpoint { color: #0b1114; font-size: .8125rem; font-weight: 700; letter-spacing: .04em; padding: 3px 7px; }
++.corridor-endpoint.entry { background: #9bd2c1; }
++.corridor-endpoint.result { background: #c9b184; }
+ 
+ .relationship-edge .react-flow__edge-path { fill: none; stroke: #72858a; stroke-linecap: square; stroke-linejoin: round; stroke-width: 1.25; }
+ .relationship-edge.type-control .react-flow__edge-path { stroke-dasharray: 8 4; }
+@@ -988,6 +1003,8 @@ button:focus-visible, select:focus-visible, a:focus-visible {
+ .relationship-edge.emphasis-related .react-flow__edge-path { stroke: #7ea79f; stroke-width: 1.45; }
+ .relationship-edge.emphasis-active .react-flow__edge-path, .relationship-edge.is-selected .react-flow__edge-path { stroke: var(--map-focus-strong); stroke-width: 2.35; }
+ .relationship-edge.emphasis-muted .react-flow__edge-path { stroke: #46555a; stroke-width: .9; }
++.relationship-edge.zoom-architecture.emphasis-normal:not(.inter-region) .react-flow__edge-path { opacity: .34; stroke-width: .95; }
++.relationship-edge:hover .react-flow__edge-path { stroke: #9db8b3; stroke-width: 2.1; }
+ .relationship-edge.emphasis-suppressed .react-flow__edge-path { opacity: .07; stroke-width: .8; }
+ .relationship-label { background: rgba(12,18,21,.96); border: 1px solid var(--map-line-strong); color: var(--map-text-soft); display: flex; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8125rem; gap: 5px; max-width: 170px; padding: 2px 5px; pointer-events: all; position: absolute; }
+ .relationship-label.active { border-color: rgba(155,210,193,.55); color: var(--map-focus-strong); }
+@@ -1026,8 +1043,8 @@ button:focus-visible, select:focus-visible, a:focus-visible {
+ .flow-lens-list > button > b { color: var(--map-focus); font-size: .8125rem; font-weight: 650; }
+ .flow-lens-empty { border-top: 1px solid var(--map-line); color: var(--map-text-muted); font-size: .8125rem; padding: 14px 2px; }
+ 
+-.canvas-inspector { background: rgba(15,22,26,.985); border-left: 1px solid var(--map-line-strong); bottom: 0; color: var(--map-text); overflow-y: auto; position: absolute; right: 0; top: 0; transform: translateX(101%); transition: transform 170ms ease; width: 336px; z-index: 24; }
+-.canvas-inspector.open { transform: translateX(0); }
++.canvas-inspector { background: rgba(15,22,26,.985); border-left: 1px solid var(--map-line-strong); color: var(--map-text); flex: 0 0 336px; overflow-y: auto; width: 336px; }
++.canvas-inspector:not(.open) { border-left: 0; flex-basis: 0; overflow: hidden; width: 0; }
+ .inspector-heading { align-items: flex-start; border-bottom: 1px solid var(--map-line); display: flex; justify-content: space-between; padding: 15px 15px 13px; }
+ .inspector-heading > div { display: grid; min-width: 0; }
+ .inspector-heading small { color: var(--map-focus); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8125rem; letter-spacing: .08em; text-transform: uppercase; }
+@@ -1081,7 +1098,8 @@ button:focus-visible, select:focus-visible, a:focus-visible {
+   .canvas-commandbar { gap: 5px; grid-template-columns: auto minmax(120px,1fr) auto; }
+   .canvas-command-actions button:nth-last-child(n+3) { display: none; }
+   .canvas-reading-key { display: none; }
+-  .canvas-inspector { width: min(336px,88vw); }
++  .canvas-inspector { bottom: 0; flex-basis: auto; position: absolute; right: 0; top: 0; transform: translateX(101%); transition: transform 170ms ease; width: min(336px,88vw); z-index: 24; }
++  .canvas-inspector.open { transform: translateX(0); }
+   .canvas-statusbar span:nth-child(2), .canvas-statusbar span:nth-child(3) { display: none; }
+ }
+ 
+diff --git a/run-evidence/screenshots/01-browse-architecture-density-small.png b/run-evidence/screenshots/01-browse-architecture-density-small.png
+new file mode 100644
+index 0000000..44dd16f
+Binary files /dev/null and b/run-evidence/screenshots/01-browse-architecture-density-small.png differ
+diff --git a/run-evidence/screenshots/02-browse-architecture-density-complex.png b/run-evidence/screenshots/02-browse-architecture-density-complex.png
+new file mode 100644
+index 0000000..0087106
+Binary files /dev/null and b/run-evidence/screenshots/02-browse-architecture-density-complex.png differ
+diff --git a/run-evidence/screenshots/03-inspector-docked-complex.png b/run-evidence/screenshots/03-inspector-docked-complex.png
+new file mode 100644
+index 0000000..3e34ad9
+Binary files /dev/null and b/run-evidence/screenshots/03-inspector-docked-complex.png differ
+diff --git a/run-evidence/screenshots/04-trace-corridor-complex.png b/run-evidence/screenshots/04-trace-corridor-complex.png
+new file mode 100644
+index 0000000..6ca12b9
+Binary files /dev/null and b/run-evidence/screenshots/04-trace-corridor-complex.png differ
+diff --git a/run-evidence/screenshots/05-browse-landscape-region-summaries.png b/run-evidence/screenshots/05-browse-landscape-region-summaries.png
+new file mode 100644
+index 0000000..380570a
+Binary files /dev/null and b/run-evidence/screenshots/05-browse-landscape-region-summaries.png differ
+diff --git a/tests/canvas-readability.test.mjs b/tests/canvas-readability.test.mjs
+new file mode 100644
+index 0000000..dac6592
+--- /dev/null
++++ b/tests/canvas-readability.test.mjs
+@@ -0,0 +1,136 @@
++import assert from "node:assert/strict";
++import { register } from "node:module";
++import test from "node:test";
++
++register("./cloudflare-loader.mjs", import.meta.url);
++
++const { CANVAS_FIXTURES, COMPLEX_CANVAS_FIXTURE, MEDIUM_CANVAS_FIXTURE } = await import("../app/architecture/fixtures.ts");
++const { ARCHITECTURE_ZOOM_CEILING, ARCHITECTURE_ZOOM_FLOOR, architectureDensityViewport, screenSpaceLabelScale } = await import("../app/architecture/camera.ts");
++const { deriveCanvasView } = await import("../app/architecture/interaction.ts");
++const { compositionColumns, layoutSemanticGraph } = await import("../app/architecture/layout.ts");
++const { corridorStops, projectSemanticGraph } = await import("../app/architecture/projection.ts");
++
++function overlap(left, right, padding = 0) {
++  return left.x < right.x + right.width + padding && left.x + left.width + padding > right.x
++    && left.y < right.y + right.height + padding && left.y + left.height + padding > right.y;
++}
++
++test("top-level regions compose in two dimensions instead of one long strip", { timeout: 60_000 }, async () => {
++  for (const name of ["small", "medium", "large", "complex"]) {
++    const graph = CANVAS_FIXTURES[name];
++    const layout = await layoutSemanticGraph(graph);
++    const blockIds = layout.composition?.blockIds ?? [];
++    assert.ok(blockIds.length >= 2, `${name}: composition must engage for multi-block fixtures`);
++    const blocks = blockIds.map((id) => layout.regionRects[id]);
++    const rows = new Set(blocks.map((rect) => Math.round(rect.y / 100)));
++    const columns = new Set(blocks.map((rect) => Math.round(rect.x / 100)));
++    assert.ok(rows.size >= 2 || columns.size >= 2, `${name}: blocks must occupy a 2D grid, received ${rows.size} rows × ${columns.size} columns`);
++    if (blockIds.length >= 5) assert.ok(rows.size >= 2 && columns.size >= 2, `${name}: five or more blocks must wrap into multiple rows`);
++    for (let left = 0; left < blocks.length; left += 1) {
++      for (let right = left + 1; right < blocks.length; right += 1) {
++        assert.equal(overlap(blocks[left], blocks[right], 8), false, `${name}: composed blocks ${blockIds[left]} and ${blockIds[right]} overlap`);
++      }
++    }
++    const aspect = layout.width / layout.height;
++    assert.ok(aspect > .45 && aspect < 3, `${name}: composed canvas aspect ${aspect.toFixed(2)} must stay viewport-shaped`);
++  }
++});
++
++test("composition columns follow block proportions", () => {
++  assert.equal(compositionColumns(1), 1);
++  assert.equal(compositionColumns(2, 100, 100), 2);
++  assert.ok(compositionColumns(9, 100, 240) >= 4, "tall blocks need more columns to reach the target aspect");
++  assert.ok(compositionColumns(9, 240, 100) <= 5, "wide blocks must not exceed the column cap");
++});
++
++test("default camera anchors architecture density with a readable zoom floor", () => {
++  const stage = { width: 1280, height: 800 };
++  const huge = architectureDensityViewport({ x: 0, y: 0, width: 9000, height: 6000 }, stage);
++  assert.equal(huge.zoom, ARCHITECTURE_ZOOM_FLOOR, "oversized maps clamp to the architecture zoom floor instead of shrinking labels");
++  assert.ok(huge.zoom >= .48, "default zoom must stay inside the architecture semantic zoom band");
++
++  const small = architectureDensityViewport({ x: 0, y: 0, width: 1200, height: 700 }, stage);
++  assert.ok(small.zoom <= ARCHITECTURE_ZOOM_CEILING, "small maps must not zoom past the ceiling");
++
++  const bounds = { x: -500, y: -250, width: 1000, height: 500 };
++  const centered = architectureDensityViewport(bounds, stage);
++  const centerX = (centered.x + (bounds.x + bounds.width / 2) * centered.zoom);
++  const centerY = (centered.y + (bounds.y + bounds.height / 2) * centered.zoom);
++  assert.ok(Math.abs(centerX - stage.width / 2) < 1, "camera centers the composition horizontally");
++  assert.ok(Math.abs(centerY - stage.height / 2) < 1, "camera centers the composition vertically");
++
++  const docked = architectureDensityViewport({ x: 0, y: 0, width: 9000, height: 6000 }, { width: stage.width - 336, height: stage.height });
++  assert.equal(docked.zoom, ARCHITECTURE_ZOOM_FLOOR, "docked inspector keeps the readable zoom floor over the effective viewport");
++  assert.notDeepEqual(docked, huge);
++});
++
++test("labels are compensated to a screen-space text floor", () => {
++  assert.ok(screenSpaceLabelScale(ARCHITECTURE_ZOOM_FLOOR) > 1, "architecture-density zoom must compensate labels above 1");
++  assert.equal(screenSpaceLabelScale(1), 1);
++  assert.equal(screenSpaceLabelScale(.16), 4.5, "compensation is capped");
++  assert.ok(13 * screenSpaceLabelScale(.55) * .55 >= 11.9, "compensated labels render at the 12px screen floor");
++});
++
++test("regions carry a strong readable summary at every density", { timeout: 60_000 }, async () => {
++  const graph = MEDIUM_CANVAS_FIXTURE;
++  const layout = await layoutSemanticGraph(graph);
++  for (const zoom of [.35, .6, 1]) {
++    const view = deriveCanvasView(graph, { mode: "browse", selection: null, activeFlowId: null, zoom, searchQuery: "" });
++    const projection = projectSemanticGraph(graph, layout, view);
++    const regionNodes = projection.nodes.filter((node) => node.type === "region");
++    assert.ok(regionNodes.length > 0);
++    for (const node of regionNodes) {
++      assert.equal(node.data.typeCounts.length > 0, node.data.objectCount > 0, "region summary lists its object composition");
++      assert.ok(node.data.keyObjectNames.length <= 3);
++      assert.ok(typeof node.data.zoom === "number" && node.data.zoom > 0, "region nodes receive zoom for screen-space label compensation");
++    }
++  }
++});
++
++test("relationship density is graded: intra-region edges recede at architecture density", { timeout: 60_000 }, async () => {
++  const graph = MEDIUM_CANVAS_FIXTURE;
++  const layout = await layoutSemanticGraph(graph);
++  const view = deriveCanvasView(graph, { mode: "browse", selection: null, activeFlowId: null, zoom: .6, searchQuery: "" });
++  const projection = projectSemanticGraph(graph, layout, view);
++  const relationshipEdges = projection.edges.filter((edge) => edge.type === "relationship");
++  const regionOf = new Map(graph.objects.map((object) => [object.id, object.regionId]));
++  for (const edge of relationshipEdges) {
++    const expected = regionOf.get(edge.source) !== regionOf.get(edge.target);
++    assert.equal(edge.data.interRegion, expected, `edge ${edge.id} interRegion flag must reflect region membership`);
++  }
++  assert.ok(relationshipEdges.some((edge) => edge.data.interRegion), "medium fixture must contain inter-region edges");
++  assert.ok(relationshipEdges.some((edge) => !edge.data.interRegion), "medium fixture must contain intra-region edges");
++});
++
++test("trace renders an ordered corridor with entry and result over the stable map", { timeout: 60_000 }, async () => {
++  const graph = COMPLEX_CANVAS_FIXTURE;
++  const layout = await layoutSemanticGraph(graph);
++  const flow = graph.flows[0];
++  const view = deriveCanvasView(graph, { mode: "trace", selection: { kind: "flow", id: flow.id }, activeFlowId: flow.id, zoom: .7, searchQuery: "" });
++  const projection = projectSemanticGraph(graph, layout, view);
++
++  const stops = corridorStops(flow.steps);
++  assert.ok(stops.length >= 2, "flow must produce corridor stops");
++  for (let index = 1; index < stops.length; index += 1) {
++    assert.ok(stops[index - 1].sequence <= stops[index].sequence, "corridor stops keep flow sequence order");
++  }
++
++  const corridorEdges = projection.edges.filter((edge) => edge.type === "corridor");
++  assert.equal(corridorEdges.length, stops.length - 1, "corridor must connect every consecutive stop");
++  for (const edge of corridorEdges) {
++    assert.ok(edge.data.fromSequence < edge.data.toSequence, "corridor transitions are strictly ordered");
++    assert.equal(edge.data.flowId, flow.id);
++  }
++  const orders = corridorEdges.map((edge) => edge.data.order);
++  assert.deepEqual(orders, [...orders].sort((left, right) => left - right), "corridor edge order is monotonic");
++
++  const objectNodes = new Map(projection.nodes.filter((node) => node.type === "object").map((node) => [node.id, node]));
++  assert.equal(objectNodes.get(stops[0].objectId)?.data.flowRole, "entry", "first corridor stop is the entry");
++  assert.equal(objectNodes.get(stops[stops.length - 1].objectId)?.data.flowRole, "result", "last corridor stop is the result");
++  for (const stop of stops.slice(1, -1)) {
++    assert.equal(objectNodes.get(stop.objectId)?.data.flowRole, "step");
++  }
++
++  const layoutAgain = await layoutSemanticGraph(graph, { previousLayout: layout });
++  assert.deepEqual(layoutAgain.objectRects, layout.objectRects, "trace must be a lens: reopening the same graph keeps the stable map");
++});
