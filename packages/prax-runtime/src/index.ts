@@ -7,5 +7,6 @@ export * from "./contracts.js";
 export * from "./errors.js";
 export * from "./gate-validation.js";
 export * from "./lifecycle-policy.js";
+export * from "./realization.js";
 export * from "./state-machine.js";
 export * from "./corrections.js";
