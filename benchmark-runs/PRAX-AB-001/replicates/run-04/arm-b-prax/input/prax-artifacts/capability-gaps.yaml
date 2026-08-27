@@ -1,0 +1,69 @@
+needs:
+  - id: elk-2d-composition
+    product_action: 顶层 Region 以二维组合排布（适配视口宽高比），Region 内部保持 RIGHT 方向性布局
+    required_experience:
+      - 默认视图不再是一条长横条
+      - 顶层 Region 在默认 Architecture 密度下形成可扫读的二维块面
+      - 同一 fingerprint 的布局稳定可复现
+    capabilities:
+      - elkjs layered INCLUDE_CHILDREN
+      - 每 Region 独立子布局后二维打包
+      - layout.ts 布局编排
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: 保留 ELK/React Flow 基础：对顶层 Region 采用面向视口宽高比的二维组合（如列数受宽高比约束的自顶向下打包），Region 内部继续用现有 RIGHT Layered。不新引入图布局算法。
+  - id: architecture-density-camera
+    product_action: 默认打开即处于 Architecture 密度：Region 与关键 Object 标签屏幕字号可读（≥13px 有效），内容占有效视口大部分
+    required_experience:
+      - 不先缩放即可读 Region 摘要与关键对象标签
+      - 默认 zoom 落在 Architecture 密度区间而非 Landscape
+      - 非关键几何允许在屏外，Fit 操作仍可全览
+    capabilities:
+      - ReactFlow instance.fitView/setViewport
+      - 按屏幕空间尺寸计算的初始 zoom 与中心点
+      - 语义缩放阈值与可见集裁剪联动
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 初始相机按'可读屏幕尺寸'目标计算 zoom（受 Architecture 密度下限约束），必要时配合可见集裁剪（Landscape 才隐藏对象，Architecture 密度保留全部对象但降存在感）。
+  - id: docked-inspector-camera-response
+    product_action: Inspector 停靠为工作区面板，停靠打开/关闭时相机 refit 到有效视口
+    required_experience:
+      - Inspector 打开后画布不塌成缩略图
+      - 有效视口随停靠宽度变化，内容仍占大部分
+      - Browse 模式不因停靠退化为 Landscape 缩放
+    capabilities:
+      - CSS grid/flex 停靠布局（非 absolute 覆盖）
+      - 容器 resize 后 refit（ResizeObserver + fitView）
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: canvas-stage 改为 grid（画布 + 停靠列），Inspector 打开时对 React Flow 容器 refit；fitView 使用有效视口。
+  - id: trace-ordered-corridor
+    product_action: Trace 呈现入口→带序号步骤→转换 payload→结果的有序主路径，地图保持稳定
+    required_experience:
+      - 走廊沿步骤序号可读地行进（边序号/payload、节点步骤标记）
+      - 入口与结果对象有明确标记
+      - 选中其它对象或关闭 Trace 后地图回到稳定状态
+    capabilities:
+      - flow steps 顺序派生主路径（interaction read model）
+      - edge data 携带 sequence/payload
+      - 节点 flow-steps 标记已有
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 在 interaction.ts 派生有序主路径（含入口/出口标记与每段转换 payload），projection.ts 把序号与 payload 投影到走廊边；不做布局重排。
+  - id: region-readable-summary
+    product_action: Region 头部提供强可读摘要：名称、对象/子 Region 计数、关键对象例举
+    required_experience:
+      - Landscape/Architecture 密度下 Region 摘要可读
+      - 隐藏对象后 Region 仍能解释自己装了什么
+      - 摘要安静不与内容争夺注意力
+    capabilities:
+      - region-node 头部扩展
+      - semantic graph 索引派生计数与关键对象
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: projection.ts 为 Region 派生 summary 数据（计数 + 高重要度对象名例举），region-node.tsx 呈现；保持线型/单色安静语法。

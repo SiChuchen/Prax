@@ -1,0 +1,35 @@
+version: "0.1"
+user_quote:
+  - 画布上线条繁多混乱，结果不是人类可读的。默认视图就像一个超大的缩略图
+  - 默认 fit 把对象标签压到不可读的尺寸
+  - 顶层 Region 排成一条长横条
+  - Landscape 隐藏对象却没有提供有意义的 Region 摘要
+  - 关系线多且难以跟随
+  - Trace 只高亮一个集合，没有形成可读的有序主路径
+  - Inspector 覆盖在画布上，没有相机重构
+  - 可读的屏幕空间节点尺寸——验收单位是屏幕空间尺寸，不是相机 fit 前的节点内部布局宽度
+  - 顶层 Region 二维组合——内部流程/Flow 布局可以保持方向性
+  - 架构级默认密度——默认视图停留在 Region 和关键 Object 标签可读的 Architecture 密度，而不是立即进入 Landscape
+  - 画布内容占据有效视口的大部分——但不要求所有几何一次全部放下
+  - Inspector 停靠化——Inspector 是停靠的工作区面板，相机和有效视口必须响应它（Browse 模式不等于 Landscape 缩放）
+  - 稳定地图 + 有序 Trace 走廊——Trace 是稳定地图上的透镜，应展示有序步骤、转换、入口和结果
+restatement: 在不动 Semantic Graph 领域模型、Agent 维护契约、后端与数据形状的前提下，重构 app/architecture 的空间与可读性行为，使六条契约在真实浏览器使用中成立：默认打开即处于 Architecture 密度（Region 二维组合、Region 与关键 Object 标签不缩放即可读、内容占满有效视口的大部分但不强求全部几何可见）；Inspector 变成停靠面板并让相机与有效视口响应停靠；Trace 在稳定地图上以有序走廊呈现入口→步骤→转换→结果。验收以真实浏览器证据为准，禁止彩虹配色、永久发光与装饰性仪表盘。
+boundaries:
+  in_scope:
+    - app/architecture/ 下的几何、布局、相机/视口、语义缩放阈值、Region 摘要、Inspector 停靠、Trace 有序主路径实现
+    - app/globals.css 中相关画布样式
+    - tests/ 下新增或更新几何/布局不变量、相机/视口行为、Trace 排序、Inspector 视口交互测试
+    - run-evidence/screenshots/ 真实浏览器截图证据
+  out_of_scope:
+    - 后端、D1、协议、部署、ECP Change 发布
+    - Runtime Overlay 新数据源
+    - 重写 Semantic Graph 模型或 Agent 维护契约
+    - 任何部署或远程写操作
+  scope_complete: true
+open_questions: []
+confirmation:
+  status: requirement_is_sufficient
+  evidence:
+    - type: task_brief
+      ref: REQUIREMENT（Architecture Canvas 可读性修正）任务简报，2026-08-27 用户消息，含产品上下文、用户拒绝记录、六条共识契约、固定约束、工作范围与验收框架
+  confirmed_at: 2026-08-27T01:00:00Z

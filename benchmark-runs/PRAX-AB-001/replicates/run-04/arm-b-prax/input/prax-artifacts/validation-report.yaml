@@ -1,0 +1,90 @@
+plan_revision: 1
+evidence:
+  submitted_by: agent
+  collected_at: 2026-08-26T17:35:00Z
+  items:
+    - check_id: delta_conformance
+      outcome: pass
+      source: tests/canvas-engine.test.mjs via npm test
+      notes: sdir_delta 应用通过（design_sdir apply_delta PASS）。canvas-stage/inspector-panel/flow-lens 按 delta 修改，commandbar/revision-timeline/statusbar preserve_explicit 未动。
+    - check_id: untouched_surface_regression
+      outcome: pass
+      source: npm test（18 tests pass：canvas-engine + foundation-contract + maintenance-contract + project-scope + rendered-html）
+      notes: 变更目标之外的 surface（Registry、Agent 维护契约、Project API、只读边界测试）全部通过；npm run lint 与 npm run build（npm test 内含 build-verified.sh）通过。
+    - check_id: pattern_consistency
+      outcome: pass
+      source: tests + 代码走查（Semantic Graph/ELK/React Flow/SmartEdge 保留；线型关系语法未改）
+      notes: 布局仍由 ELK Layered 拥有（Region 子树内部 RIGHT 方向性保留），顶层二维组合是编排层；跨块关系沿用既有 SmartEdge 有界回退；fingerprint 缓存仅版本化 key 升级（ecp:canvas-engine-v1.1:）。
+    - check_id: authority_consistency
+      outcome: pass
+      source: docs/architecture-canvas-standard-v0.1.md 与 docs/Canvas_Engine_v1_Review.md 冻结约束对照
+      notes: 13px 最小有效文字（默认视图实测 13.0px）、内容感知节点高度、无彩虹配色、无永久发光、Landscape 先减对象再谈可读、Inspector 处于 320-352px 带（336px 停靠列）、活跃关系权重显著强于普通拓扑（2.35px vs 1.25px）。
+    - check_id: requirement_alignment
+      outcome: pass
+      source: 真实浏览器 Playwright 验证 + run-evidence/screenshots/*.png
+      notes: 六条契约逐条成立：1) 默认 Architecture 密度 zoom=0.75 地板，对象标签实测 13.0px、Region 头 13px、卡片宽 178px（屏幕空间）；2) 顶层 Region 二维多行组合（截图确认，非长横条）；3) 默认 BROWSE·architecture；4) 内容占满有效视口、允许屏外几何；5) Inspector 停靠（grid 1208px+336px、static 定位），相机精确平移 -168px=336/2，zoom 不塌缩；6) Trace 有序走廊：底部 1..8 序号步骤条含入口/结果标记，主路径高亮带序号与 payload，地图布局稳定（透镜不重排）。截图：browse-architecture-density-medium.png / inspector-docked.png / trace-corridor.png / landscape-region-summaries.png。
+evaluation:
+  status: PASS
+  checks:
+    - id: delta_conformance
+      label: Delta conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The sdir_delta passes referential and render-leak validation.
+      evidence_required: false
+    - id: untouched_surface_regression
+      label: Untouched surface regression
+      kind: empirical
+      profile: runtime_degradation
+      facet: behavioral
+      requirement: Surfaces outside the declared change targets behave exactly as before.
+      evidence_required: true
+    - id: pattern_consistency
+      label: Pattern consistency
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The change follows the established patterns recorded in the existing-product understanding.
+      evidence_required: true
+    - id: authority_consistency
+      label: Design authority consistency
+      kind: assistive
+      profile: semantic_integrity
+      facet: epistemic
+      requirement: The result stays consistent with the declared design authorities.
+      evidence_required: true
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+  findings:
+    - check_id: delta_conformance
+      kind: deterministic
+      outcome: pass
+      message: The sdir_delta passes referential and render-leak validation.
+      source: prax-validator
+    - check_id: untouched_surface_regression
+      kind: empirical
+      outcome: pass
+      message: 变更目标之外的 surface（Registry、Agent 维护契约、Project API、只读边界测试）全部通过；npm run lint 与 npm run build（npm test 内含 build-verified.sh）通过。
+      source: npm test（18 tests pass：canvas-engine + foundation-contract + maintenance-contract + project-scope + rendered-html）
+    - check_id: pattern_consistency
+      kind: assistive
+      outcome: pass
+      message: 布局仍由 ELK Layered 拥有（Region 子树内部 RIGHT 方向性保留），顶层二维组合是编排层；跨块关系沿用既有 SmartEdge 有界回退；fingerprint 缓存仅版本化 key 升级（ecp:canvas-engine-v1.1:）。
+      source: tests + 代码走查（Semantic Graph/ELK/React Flow/SmartEdge 保留；线型关系语法未改）
+    - check_id: authority_consistency
+      kind: assistive
+      outcome: pass
+      message: 13px 最小有效文字（默认视图实测 13.0px）、内容感知节点高度、无彩虹配色、无永久发光、Landscape 先减对象再谈可读、Inspector 处于 320-352px 带（336px 停靠列）、活跃关系权重显著强于普通拓扑（2.35px vs 1.25px）。
+      source: docs/architecture-canvas-standard-v0.1.md 与 docs/Canvas_Engine_v1_Review.md 冻结约束对照
+    - check_id: requirement_alignment
+      kind: assistive
+      outcome: pass
+      message: 六条契约逐条成立：1) 默认 Architecture 密度 zoom=0.75 地板，对象标签实测 13.0px、Region 头 13px、卡片宽 178px（屏幕空间）；2) 顶层 Region 二维多行组合（截图确认，非长横条）；3) 默认 BROWSE·architecture；4) 内容占满有效视口、允许屏外几何；5) Inspector 停靠（grid 1208px+336px、static 定位），相机精确平移 -168px=336/2，zoom 不塌缩；6) Trace 有序走廊：底部 1..8 序号步骤条含入口/结果标记，主路径高亮带序号与 payload，地图布局稳定（透镜不重排）。截图：browse-architecture-density-medium.png / inspector-docked.png / trace-corridor.png / landscape-region-summaries.png。
+      source: 真实浏览器 Playwright 验证 + run-evidence/screenshots/*.png
+  missing_evidence: []

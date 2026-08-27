@@ -1,0 +1,29 @@
+version: "0.1"
+session_id: ds_20260826165604_fe25fa2f
+task_ref: architecture-workbench, architecture-fixtures, project-architecture
+selected:
+  - ref: product_relationships
+    reason: []
+  - ref: region_relationships
+    reason: []
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-CANVAS-WORKSPACE
+  - ref: unresolved
+    reason: []
+  - ref: corrections
+    reason: []
+  - ref: validation-plan@1
+    reason:
+      - delta_conformance
+      - untouched_surface_regression
+      - pattern_consistency
+      - authority_consistency
+      - requirement_alignment
+excluded:
+  - ref: region_relationships
+    reason: sdir_delta carries region changes, not region relationships
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata

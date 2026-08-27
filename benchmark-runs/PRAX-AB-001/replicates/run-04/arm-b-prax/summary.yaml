@@ -1,0 +1,55 @@
+run:
+  id: PRAX-AB-001-run-04-B
+  arm: arm-b-prax
+  agent_cli: claude-code (glm-5.3)
+  session: 3a0d76df-fcb6-4551-a9f7-dd9dd9d1c86b
+  commit: a722fbb   # single commit on ab/run-04-arm-b
+  started_at: not_recorded
+  ended_at: not_recorded
+
+result:
+  implementation_completed: true
+  final_validation: pending_review   # operator did not report validate phase this run
+  changed_files: 10
+  diff_stat: "759 insertions(+), 199 deletions(-)"
+  tests_touched: tests/canvas-engine.test.mjs (+141)
+
+prax_flow:
+  design_session_id: ds_20260826165604_fe25fa2f
+  artifacts_persisted: 16 files (input/prax-artifacts/)
+
+process:
+  wall_clock_seconds: 2812   # 46m52s, operator-reported
+  model_usage:
+    input_tokens: 1055585
+    output_tokens: 314411
+    cache_read_input_tokens: 62766912
+  assistant_turns: 395
+  tool_calls: 197
+  file_edits: 54
+  browser_verification: playwright screenshots (4)
+  prax_calls: 13   # 12 design_start attempts + 1 design_route via MCP
+  human_clarifications: 0
+  first_pass_at: not_recorded_by_operator
+  first_pass_validation_failures: not_recorded
+  post_first_pass_repair_rounds: not_recorded
+
+process_observations:
+  - >-
+    Same anyOf schema wall as run-02: 12 design_start MCP attempts rejected at
+    client-side validation before reaching the server; flow completed via
+    stdio JSON-RPC against the same prax-mcp binary (see
+    lessons/prax-gaps.yaml gap-mcp-anyof-schema).
+
+contamination_check:
+  base_commit_verified: 2c77838
+  arm_a_isolation: intact
+
+evidence:
+  screenshots: 4   # browse-architecture-density, inspector docked, landscape
+                   # region summaries, trace corridor
+  prax_artifacts: input/prax-artifacts/
+
+open_questions:
+  - validate-phase outcome unconfirmed (check prax-artifacts/validation-report.yaml at review)
+  - first-pass timing not recorded

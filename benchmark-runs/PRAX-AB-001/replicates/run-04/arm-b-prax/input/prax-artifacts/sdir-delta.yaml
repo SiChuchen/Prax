@@ -1,0 +1,84 @@
+version: "0.1"
+surface: architecture-workbench
+impact:
+  changes_product_objects: false
+  changes_region_structure: true
+  changes_interaction_model: true
+  changes_state_model: false
+  adds_capability: false
+base_regions:
+  - id: canvas-stage
+    role: 关系地图画布（React Flow，全量 fitView 默认）
+    importance: dominant
+  - id: inspector-panel
+    role: 绝对定位覆盖画布右侧的 Inspector 浮层
+    importance: primary
+  - id: commandbar
+    role: 模式切换 / 搜索 / 全局命令条
+    importance: supporting
+  - id: revision-timeline
+    role: Revision 时间轴
+    importance: supporting
+  - id: flow-lens
+    role: Flow 选择浮层（左上角）
+    importance: contextual
+  - id: statusbar
+    role: 模式/统计/耗时状态条
+    importance: contextual
+changes:
+  - region: canvas-stage
+    action: modify
+    role: 稳定地图工作区：默认 Architecture 密度、Region 二维组合与可读摘要、关系渐进披露、Trace 有序走廊透镜
+    fields:
+      behavior_intent:
+        - 默认相机进入 Architecture 密度：以屏幕空间可读为验收单位的 fit，允许非关键几何在有效视口外
+        - 顶层 Region 二维组合（适配视口宽高比），Region 内部保持方向性 Flow 布局
+        - Region 摘要头：名称+计数+关键对象例举，Landscape/Architecture 密度承担解释责任
+        - 关系渐进披露：非活跃关系低存在感，活跃关系显著强化且方向可读
+        - Trace 有序走廊：入口→带序号步骤→转换 payload→结果，稳定地图上的透镜，不重排布局
+      note: 契约 1/2/3/4/6；修复问题 1/2/3/4/7。禁止彩虹配色/永久发光/装饰仪表盘。
+    rationale: 默认视图是理解工具不是缩略图；顶层二维组合消除长横条；Region 摘要在对象被隐藏时承担解释责任；Trace 需要可读有序主路径。
+  - region: inspector-panel
+    action: modify
+    role: 停靠式 Inspector 工作区面板
+    fields:
+      behavior_intent:
+        - 右侧停靠（非 absolute 覆盖）
+        - 停靠打开时相机 refit 到有效视口；Browse 不等于 Landscape 缩放
+    rationale: 契约 5 与问题 6：Inspector 是工作区一部分，画布不得塌成缩略图；PAT-LIST-DETAIL-INSPECTOR 从属情境化面板。
+  - region: flow-lens
+    action: modify
+    role: Trace 选择入口：与停靠 Inspector 同侧的情境面板，选中 Flow 后让位于走廊
+    fields:
+      behavior_intent:
+        - docked/transient 选择列表
+        - 选中后走廊成为信息主体
+    rationale: P-22 Signal over Chrome 与 PAT-CANVAS-WORKSPACE：工具从属于画布。
+  - region: commandbar
+    action: preserve_explicit
+    fields: {}
+    rationale: 模式语义与命令保持稳定，用户习惯不变
+  - region: revision-timeline
+    action: preserve_explicit
+    fields: {}
+    rationale: Revision 快照语义不变
+  - region: statusbar
+    action: preserve_explicit
+    fields: {}
+    rationale: 状态条保持安静的结构化反馈
+preserved:
+  - commandbar
+  - revision-timeline
+  - statusbar
+regression_points:
+  - 默认 Architecture 密度下 Region 摘要头与关键 Object 标签的屏幕字号不小于 13px（真实浏览器证据）
+  - Inspector 停靠打开/关闭时画布内容占据有效视口的大部分，不塌成缩略图
+  - Trace 呈现入口→有序步骤→转换→结果的主路径，且不重排地图布局
+  - 跟随两个对象间一条关系时保持全局上下文（Focus/Inspect 上下文不回归）
+  - Small/Medium/Large/Complex fixtures 的几何审计（无重叠、正交路由、端口约束）继续通过
+  - 拖拽只写 localStorage 本机布局；无任何远程写
+capability_needs:
+  - ELK 顶层二维组合布局（方向/打包策略适配视口宽高比）
+  - 有效视口 fit：默认 Architecture 密度相机与停靠响应 refit
+  - Trace 有序走廊派生：步骤序号、转换 payload、入口/结果标记
+  - Region 摘要数据派生（计数与关键对象例举）

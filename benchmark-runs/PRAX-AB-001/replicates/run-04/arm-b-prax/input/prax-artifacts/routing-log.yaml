@@ -1,0 +1,494 @@
+version: "0.1"
+events:
+  - question: "Read-only semantic architecture map on web desktop: default architecture-density camera with readable region summaries and two-dimensional region composition, docked inspector that the camera responds to, and an ordered flow-trace corridor over a stable map. Which interaction pattern candidates apply?"
+    routed_at: 2026-08-26T16:58:10.219Z
+    result:
+      status: PASS
+      candidate_domains:
+        - architecture
+        - data
+      principles:
+        - id: P-19
+          type: principle
+          name: Preserve Context
+          one_line_use: Let users inspect detail without losing their place in the larger system.
+          triggers:
+            - context
+            - inspect
+            - trace
+            - selection
+            - architecture
+            - canvas
+          scope:
+            user_type: []
+            task_type:
+              - inspect
+              - trace
+              - compare
+            domain: []
+            platform:
+              - web_desktop
+            density: []
+            phase:
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: trigger 'inspect' matched the framed product question
+            trigger: inspect
+            scope_match:
+              - task:architecture-workbench, architecture-fixtures, project-architecture
+              - platform:web_desktop
+            confidence: high
+        - id: P-22
+          type: principle
+          name: Signal over Chrome
+          one_line_use: Keep controls and decoration quieter than the information users came to understand.
+          triggers:
+            - signal_to_noise
+            - density
+            - chrome
+            - toolbar
+            - architecture
+            - data
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform:
+              - web_desktop
+            density:
+              - compact
+              - regular
+            phase:
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: trigger 'density' matched the framed product question
+            trigger: density
+            scope_match:
+              - platform:web_desktop
+              - density:regular
+            confidence: high
+        - id: P-01
+          type: principle
+          name: Perceptual Grouping
+          one_line_use: Group related product objects so structure is visible before detail is read.
+          triggers:
+            - grouping
+            - architecture
+            - canvas
+            - relationships
+            - dense_information
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform:
+              - web_desktop
+            density: []
+            phase:
+              - routing
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: trigger 'architecture' matched the framed product question
+            trigger: architecture
+            scope_match:
+              - platform:web_desktop
+            confidence: high
+        - id: P-03
+          type: principle
+          name: Visual Hierarchy
+          one_line_use: Make importance and reading order evident without relying on decoration.
+          triggers:
+            - hierarchy
+            - importance
+            - attention
+            - architecture
+            - toolbar
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform:
+              - web_desktop
+            density: []
+            phase:
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: trigger 'architecture' matched the framed product question
+            trigger: architecture
+            scope_match:
+              - platform:web_desktop
+            confidence: high
+        - id: P-10
+          type: principle
+          name: Match the Product Mental Model
+          one_line_use: Organize the interface around user-recognized objects and tasks, not backend records.
+          triggers:
+            - mental_model
+            - product_objects
+            - backend_leak
+            - architecture
+            - settings
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform: []
+            density: []
+            phase:
+              - product_framing
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: trigger 'architecture' matched the framed product question
+            trigger: architecture
+            scope_match:
+              - generic
+            confidence: medium
+      heuristics:
+        - id: H-19
+          type: heuristic
+          name: Contextual Inspector
+          one_line_use: Show details for the current selection while preserving the parent workspace.
+          triggers:
+            - inspector
+            - selection
+            - detail
+            - architecture
+            - canvas
+          scope:
+            user_type: []
+            task_type:
+              - inspect
+              - trace
+            domain:
+              - architecture
+              - data
+            platform:
+              - web_desktop
+            density: []
+            phase:
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: trigger 'inspector' matched the framed product question
+            trigger: inspector
+            scope_match:
+              - domain:project-architecture, architecture-fixtures, architecture-workbench
+              - task:architecture-workbench, architecture-fixtures, project-architecture
+              - platform:web_desktop
+            confidence: high
+        - id: H-22
+          type: heuristic
+          name: Overview, Filter, Detail
+          one_line_use: Start with a meaningful overview, narrow deliberately, then expose detail on demand.
+          triggers:
+            - overview
+            - filter
+            - zoom
+            - detail
+            - architecture
+            - data
+          scope:
+            user_type: []
+            task_type:
+              - explore
+              - inspect
+              - trace
+              - compare
+            domain:
+              - architecture
+              - data
+            platform: []
+            density: []
+            phase:
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: trigger 'zoom' matched the framed product question
+            trigger: zoom
+            scope_match:
+              - domain:project-architecture, architecture-fixtures, architecture-workbench
+              - task:architecture-workbench, architecture-fixtures, project-architecture
+            confidence: high
+        - id: H-13
+          type: heuristic
+          name: Structured Density
+          one_line_use: Professional tools may be dense when groups, hierarchy, and interaction remain legible.
+          triggers:
+            - density
+            - professional_tool
+            - data
+            - architecture
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform:
+              - web_desktop
+            density:
+              - compact
+              - regular
+            phase:
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: trigger 'density' matched the framed product question
+            trigger: density
+            scope_match:
+              - platform:web_desktop
+              - density:regular
+            confidence: high
+        - id: H-21
+          type: heuristic
+          name: Orientation Invariants
+          one_line_use: Preserve stable anchors, selection, and view position across inspection steps.
+          triggers:
+            - context_preservation
+            - orientation
+            - trace
+            - architecture
+          scope:
+            user_type: []
+            task_type:
+              - inspect
+              - trace
+              - compare
+            domain: []
+            platform: []
+            density: []
+            phase:
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: trigger 'trace' matched the framed product question
+            trigger: trace
+            scope_match:
+              - task:architecture-workbench, architecture-fixtures, project-architecture
+            confidence: high
+        - id: H-01
+          type: heuristic
+          name: Task-first Entry
+          one_line_use: The first view should make the primary user task obvious.
+          triggers:
+            - primary_task
+            - entry
+            - navigation
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform: []
+            density: []
+            phase:
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: generic scoped guidance ranked for the current decision
+            trigger: scope_and_lifecycle
+            scope_match:
+              - generic
+            confidence: low
+      patterns:
+        - id: PAT-CANVAS-WORKSPACE
+          type: pattern
+          name: Canvas Workspace
+          one_line_use: A spatial workspace for understanding and manipulating relationships.
+          triggers:
+            - architecture
+            - canvas
+            - graph
+            - nodes
+            - relationships
+            - trace
+          scope:
+            user_type: []
+            task_type:
+              - inspect
+              - trace
+              - explore
+            domain:
+              - architecture
+            platform:
+              - web_desktop
+            density:
+              - compact
+              - regular
+            phase:
+              - decision
+          lifecycle:
+            status: reviewed
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: trigger 'architecture' matched the framed product question
+            trigger: architecture
+            scope_match:
+              - domain:project-architecture, architecture-fixtures, architecture-workbench
+              - task:architecture-workbench, architecture-fixtures, project-architecture
+              - platform:web_desktop
+              - density:regular
+            confidence: high
+        - id: PAT-LIST-DETAIL-INSPECTOR
+          type: pattern
+          name: Contextual Inspector
+          one_line_use: A subordinate panel that reflects the current workspace selection.
+          triggers:
+            - inspector
+            - selection
+            - properties
+            - architecture
+            - canvas
+          scope:
+            user_type: []
+            task_type:
+              - inspect
+              - trace
+            domain:
+              - architecture
+              - data
+            platform:
+              - web_desktop
+            density: []
+            phase:
+              - decision
+          lifecycle:
+            status: reviewed
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: trigger 'inspector' matched the framed product question
+            trigger: inspector
+            scope_match:
+              - domain:project-architecture, architecture-fixtures, architecture-workbench
+              - task:architecture-workbench, architecture-fixtures, project-architecture
+              - platform:web_desktop
+            confidence: high
+        - id: PAT-LIST-DETAIL
+          type: pattern
+          name: List Detail
+          one_line_use: Select from a collection and inspect one object in an adjacent detail region.
+          triggers:
+            - list
+            - collection
+            - detail
+            - selection
+          scope:
+            user_type: []
+            task_type:
+              - browse
+              - inspect
+            domain: []
+            platform:
+              - web_desktop
+            density: []
+            phase:
+              - decision
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: generic scoped guidance ranked for the current decision
+            trigger: scope_and_lifecycle
+            scope_match:
+              - task:architecture-workbench, architecture-fixtures, project-architecture
+              - platform:web_desktop
+            confidence: medium
+      platform_profile:
+        - id: WEB-DESKTOP
+          type: platform_convention
+          name: Web Desktop Professional Tool
+          one_line_use: Pointer-and-keyboard conventions for large-viewport, information-dense work.
+          triggers:
+            - web
+            - desktop
+            - pointer
+            - keyboard
+            - large_viewport
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform:
+              - web_desktop
+            density: []
+            phase:
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: trigger 'web' matched the framed product question
+            trigger: web
+            scope_match:
+              - platform:web_desktop
+            confidence: high
+      excluded:
+        - id: PAT-DATA-EXPLORER
+          reason: domain scope data, logs does not match project-architecture, architecture-fixtures, architecture-workbench
+        - id: PAT-SETTINGS-SECTIONS
+          reason: domain scope settings does not match project-architecture, architecture-fixtures, architecture-workbench
+        - id: PAT-RESOURCE-MANAGEMENT
+          reason: task scope manage, administer does not match the framed task
+      confidence: high
+    derived_from_understanding: true

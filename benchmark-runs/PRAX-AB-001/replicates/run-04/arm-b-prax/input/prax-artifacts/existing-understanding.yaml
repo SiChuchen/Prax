@@ -1,0 +1,115 @@
+version: "0.1"
+current_objects:
+  - id: object-card
+    user_name: Object 卡片
+    purpose: 232–296×124/144 的语义对象卡片，标签 13px 下限
+    evidence_refs:
+      - app/architecture/architecture-node.tsx
+      - app/architecture/layout.ts objectSize()
+  - id: region-frame
+    user_name: Region 边框
+    purpose: ELK 计算的复合 Region 矩形，头部只有名称与计数
+    evidence_refs:
+      - app/architecture/region-node.tsx
+      - app/architecture/layout.ts
+  - id: relationship-edge
+    user_name: 关系边
+    purpose: ELK 正交路由 + SmartEdge 回退的边，label 渐进披露
+    evidence_refs:
+      - app/architecture/projection.ts
+      - app/architecture/layout.ts
+  - id: flow-lens
+    user_name: Flow 列表面板
+    purpose: 绝对定位在画布左上（left:12px top:12px）的 Flow 选择浮层
+    evidence_refs:
+      - app/architecture/flow-panel.tsx
+      - app/globals.css .flow-lens
+  - id: inspector-panel
+    user_name: Inspector 浮层
+    purpose: absolute 覆盖在画布右侧的 336px 面板，打开时不改变相机与有效视口
+    evidence_refs:
+      - app/architecture/inspector.tsx
+      - app/globals.css .canvas-inspector
+  - id: camera-fitview
+    user_name: 默认 fitView
+    purpose: 布局就绪后 fitView(padding .16, maxZoom 1.05)，把全部几何一次塞进视口，导致标签压缩
+    evidence_refs:
+      - app/architecture/architecture-canvas.tsx L237
+  - id: trace-highlight
+    user_name: Trace 高亮
+    purpose: Trace 模式只做 emphasis 集合高亮 + fitView(flow objects)，无有序走廊/步骤呈现
+    evidence_refs:
+      - app/architecture/interaction.ts L140-161
+      - app/architecture/architecture-canvas.tsx select() L259-266
+  - id: semantic-zoom
+    user_name: 语义缩放
+    purpose: zoom<.48 Landscape 隐藏低重要度对象，阈值 .48/.8/1.22
+    evidence_refs:
+      - app/architecture/interaction.ts semanticZoomLevel() visibleObjectIds()
+current_relationships: []
+current_surfaces:
+  - id: project-architecture
+    purpose: Project 详情页的 Architecture 标签，挂载 ArchitectureCanvas
+    evidence_refs:
+      - app/projects/[projectId]/project-architecture.tsx
+  - id: architecture-fixtures
+    purpose: 应力 fixtures 工作台（Small/Medium/Large/Complex）用于无后端验证
+    evidence_refs:
+      - app/architecture-fixtures/fixture-workbench.tsx
+  - id: architecture-workbench
+    purpose: 画布工作台：commandbar + canvas-stage + statusbar
+    evidence_refs:
+      - app/architecture/architecture-canvas.tsx
+      - app/globals.css .architecture-workbench
+established_patterns:
+  - Semantic Graph 边界与 fingerprint 缓存
+  - ELK Layered INCLUDE_CHILDREN + 语义端口 FIXED_ORDER + RIGHT 方向
+  - interaction read model 的 emphasis 语法（surface/border/label/edge 分离）
+  - 只读交互：pan/zoom/fit/minimap/drag→localStorage
+user_habits:
+  - 键盘 F 聚焦选中对象，Escape 清空选择
+  - 搜索框定位对象
+  - Minimap 与 Fit/Layout/Full 按钮
+constraints_and_debt:
+  - localStorage 布局缓存按 fingerprint 命中；布局算法变化需要版本化失效
+  - elk.model-order 在 compound 模式下崩溃（v1 已移除）
+  - v1 冻结约束：13px 最小文字、内容感知节点高度、无彩虹配色/发光
+change_targets:
+  - architecture-workbench
+  - architecture-fixtures
+  - project-architecture
+actual_usage: []
+pain_points:
+  - 默认视图像超大的缩略图，标签不可读
+  - 顶层 Region 一条长横条，浪费二维空间
+  - Landscape 隐藏对象但无有意义摘要
+  - 关系线多而乱
+  - Trace 无可读有序主路径
+  - Inspector 覆盖画布无相机重构
+must_preserve:
+  - Semantic Graph / ELK / React Flow / SmartEdge 基础
+  - Human Web 只读边界与拖拽仅写本机布局
+  - 现有公开 Canvas 数据形状与 Agent 维护契约
+  - 线型关系语法（非彩虹配色）、无永久发光
+  - Browse/Inspect/Focus/Trace 模式语义与 Inspector 绑定
+must_replace:
+  - 默认全量 fitView 相机策略
+  - 顶层 RIGHT 单轴 Region 展开
+  - Inspector 绝对定位覆盖（不响应相机的浮层）
+  - Trace 的纯集合高亮
+free_to_reconsider:
+  - 语义缩放阈值与标签补偿倍率
+  - 节点尺寸带宽与 ELK 间距参数
+  - Inspector 停靠宽度与 FlowPanel 位置
+  - 默认密度下显示哪些 Object（关键对象筛选规则）
+migration_notes:
+  - 布局缓存版本化（storageKey 版本号）以失效旧 RIGHT 长横条缓存
+  - architecture-node/region-node 的 data 形状扩展需向后兼容 fixtures 工作台
+design_authorities:
+  - docs/architecture-canvas-standard-v0.1.md
+  - docs/Canvas_Engine_v1_Review.md（冻结约束与 v2 建议）
+surface_context:
+  density: regular
+  user_expertise: expert
+  destructive_actions: none
+  task_frequency: high

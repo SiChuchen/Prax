@@ -1,0 +1,42 @@
+user:
+  primary_role: existing product user
+  expertise: mixed
+  familiarity: unknown
+goal:
+  primary: 在不动 Semantic Graph 领域模型、Agent 维护契约、后端与数据形状的前提下，重构 app/architecture 的空间与可读性行为，使六条契约在真实浏览器使用中成立：默认打开即处于 Architecture 密度（Region 二维组合、Region 与关键 Object 标签不缩放即可读、内容占满有效视口的大部分但不强求全部几何可见）；Inspector 变成停靠面板并让相机与有效视口响应停靠；Trace 在稳定地图上以有序走廊呈现入口→步骤→转换→结果。验收以真实浏览器证据为准，禁止彩虹配色、永久发光与装饰性仪表盘。
+tasks:
+  primary: architecture-workbench, architecture-fixtures, project-architecture
+  secondary: []
+product_objects:
+  - id: object-card
+    user_name: Object 卡片
+    purpose: 232–296×124/144 的语义对象卡片，标签 13px 下限
+  - id: region-frame
+    user_name: Region 边框
+    purpose: ELK 计算的复合 Region 矩形，头部只有名称与计数
+  - id: relationship-edge
+    user_name: 关系边
+    purpose: ELK 正交路由 + SmartEdge 回退的边，label 渐进披露
+  - id: flow-lens
+    user_name: Flow 列表面板
+    purpose: 绝对定位在画布左上（left:12px top:12px）的 Flow 选择浮层
+  - id: inspector-panel
+    user_name: Inspector 浮层
+    purpose: absolute 覆盖在画布右侧的 336px 面板，打开时不改变相机与有效视口
+  - id: camera-fitview
+    user_name: 默认 fitView
+    purpose: 布局就绪后 fitView(padding .16, maxZoom 1.05)，把全部几何一次塞进视口，导致标签压缩
+  - id: trace-highlight
+    user_name: Trace 高亮
+    purpose: Trace 模式只做 emphasis 集合高亮 + fitView(flow objects)，无有序走廊/步骤呈现
+  - id: semantic-zoom
+    user_name: 语义缩放
+    purpose: zoom<.48 Landscape 隐藏低重要度对象，阈值 .48/.8/1.22
+relationships: []
+mental_model_hypothesis:
+  summary: derived from existing understanding
+  confidence: medium
+  evidence:
+    - existing_product
+primary_success_definition: the change preserves the existing product model
+open_questions: []

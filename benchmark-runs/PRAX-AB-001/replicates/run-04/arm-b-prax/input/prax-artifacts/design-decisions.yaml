@@ -1,0 +1,96 @@
+session_id: ds_20260826165604_fe25fa2f
+primary_structure:
+  pattern: PAT-CANVAS-WORKSPACE
+  rationale:
+    - PAT-CANVAS-WORKSPACE Canvas Workspace（Router 返回并已 L1 检视）：关系画布占主导，导航/工具/检视保持从属与情境化——正是稳定地图 + 停靠 Inspector + Trace 透镜的结构
+    - 与 PAT-LIST-DETAIL-INSPECTOR（已 L1 检视）组合：Contextual Inspector 以不替换工作区的方式暴露细节
+    - P-19 Preserve Context：Trace 与 Inspector 交互不摧毁空间记忆
+    - P-01 Perceptual Grouping + P-03 Visual Hierarchy：Region 二维组合编码真实层级，少量显著级对应重要度
+    - P-22 Signal over Chrome：对比度给结构/状态/例外，控件安静
+    - WEB-DESKTOP 约束：键鼠等价、可见焦点、窗口尺寸弹性（Inspector 停靠 refit）
+  confidence: high
+information_hierarchy:
+  primary:
+    - architecture
+    - architecture 主导画布工作区上的 Region 名称与摘要（默认 Architecture 密度不缩放可读）
+    - architecture 主导画布工作区上的关键（高重要度/选中/Trace 参与者）Object 标签
+    - architecture 主导画布工作区上的活跃关系与 Trace 走廊有序步骤、转换与入口/结果
+  secondary:
+    - 次要 Object（默认密度降低存在感，不隐藏到不可发现）
+    - Object 摘要/元数据（component/operational 密度渐进披露）
+    - 停靠 Inspector 的细节与 Raw
+    - Revision Timeline 与状态栏
+density:
+  intent: regular
+  strategy:
+    - 默认相机以屏幕空间尺寸为验收单位：Region 与关键对象标签达到可读屏幕尺寸（标签有效字号不小于 13px），必要时按 Architecture 密度裁剪可见集而不是缩小一切
+    - 顶层 Region 采用二维组合（面向视口宽高比的布局），内部流程布局保持方向性
+    - 画布内容占有效视口的大部分：fit 以有效视口（扣除停靠面板）为准，允许部分几何在屏外
+    - Inspector 停靠时相机 refit 到有效视口，Browse 不等于 Landscape 缩放
+    - Trace 在稳定地图上画有序走廊：步骤序号、转换 payload、入口/结果标记；非 Trace 关系压低而非消失
+  avoid:
+    - 彩虹配色与仅色彩语义
+    - 永久发光、营销装饰、通用 AI SaaS 卡片
+    - 装饰性仪表盘（节点内小部件堆叠）
+    - 一次性全量 fit 把所有几何塞进缩略图
+    - Inspector 浮层覆盖画布
+major_choices:
+  - id: camera-default
+    choice: 默认相机进入 Architecture 密度而非全量 fit：按有效视口与可读屏幕尺寸约束计算初始 zoom（maxZoom 下限），超出密度的对象按重要度裁剪/降级
+    rationale: 契约 1/3/4：验收单位是屏幕空间尺寸；默认视图是理解工具而非缩略图
+    confidence: high
+    references:
+      - camera-fitview
+      - semantic-zoom
+      - region-frame
+  - id: region-composition
+    choice: 顶层 Region 二维组合：顶层布局按视口宽高比用 DOWN 方向或行列打包，Region 内部保持 RIGHT 流向
+    rationale: 契约 2：消除长横条，二维利用屏幕；内部 Flow 方向性保留
+    confidence: high
+    references:
+      - region-frame
+      - object-card
+  - id: region-summary
+    choice: Region 边框升级为强可读摘要头：名称 + 对象/关系计数 + 关键对象例举（Landscape/Architecture 密度）
+    rationale: 契约 3/7：Landscape 隐藏对象时 Region 摘要必须承担解释责任
+    confidence: high
+    references:
+      - region-frame
+      - object-card
+      - semantic-zoom
+  - id: inspector-dock
+    choice: Inspector 从绝对覆盖改为停靠工作区面板（PAT-LIST-DETAIL-INSPECTOR 的从属情境化面板），停靠打开时相机对有效视口 refit，相机跟随停靠状态
+    rationale: 契约 5：Inspector 是工作区一部分，画布不得塌成缩略图
+    confidence: high
+    references:
+      - inspector-panel
+      - camera-fitview
+  - id: trace-corridor
+    choice: Trace 呈现有序主路径：入口→带序号步骤→转换 payload→结果；地图布局保持稳定（PAT-CANVAS-WORKSPACE 主画布不被替换），走廊是透镜不是重排
+    rationale: 契约 6：Trace 是稳定地图上的透镜，可读主路径而非集合高亮
+    confidence: high
+    references:
+      - trace-highlight
+      - flow-lens
+      - relationship-edge
+      - camera-fitview
+  - id: relationship-followability
+    choice: 默认密度下关系渐进披露：非活跃关系降低存在感、hover/选中强化，活跃关系线宽显著更强且带方向
+    rationale: 问题 4：线多难跟随；P-22 Signal over Chrome
+    confidence: high
+    references:
+      - relationship-edge
+      - object-card
+      - semantic-zoom
+rejected:
+  - option: 继续全量 fitView + 只调颜色/线宽
+    reason: 用户已明确拒绝：仅改颜色无法修复结构问题
+  - option: 重写为通用白板/图表引擎
+    reason: 违反固定约束：保留 Semantic Graph/ELK/React Flow，可读性修正不构成重写领域模型的理由
+  - option: Inspector 保持浮层但加阴影
+    reason: 不解决相机与有效视口响应，画布仍被遮挡成缩略图
+  - option: Trace 模式重排布局成走廊
+    reason: 摧毁稳定地图与空间记忆（P-19），Trace 应是稳定地图上的透镜
+  - option: 彩虹配色区分关系类型
+    reason: 违反关系语法约束与既有线型语法决策
+unresolved: []
