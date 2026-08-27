@@ -10,6 +10,7 @@ import {
   architectureDecisions,
   architectureProductFrame,
   requirementConfirmation,
+  directCodeConditions,
 } from "./fixtures.js";
 
 const cleanup: string[] = [];
@@ -61,6 +62,7 @@ it("runs Architecture Canvas end-to-end and supports cross-Agent resume", async 
   expect((sdir.sdir as { screen: { required_states: string[] } }).screen.required_states).toContain("selected");
 
   expect((await service.designReconcile({ design_session_id: sessionId, capability_map: architectureCapabilities() })).status).toBe("PASS");
+  expect((await service.designRealize({ design_session_id: sessionId, mode: "propose", realization_mode: "direct_code", conditions: directCodeConditions() })).status).toBe("PASS");
   expect((await service.designPrepareImplementation({ design_session_id: sessionId, platform: "web_desktop", framework: "react" })).status).toBe("PASS");
 
   const planned = await service.designValidate({ design_session_id: sessionId, mode: "plan" });

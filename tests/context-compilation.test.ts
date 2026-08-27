@@ -13,6 +13,7 @@ import {
   architectureUnderstanding,
   requirementConfirmation,
   sdirDelta,
+  directCodeConditions,
 } from "./fixtures.js";
 
 const cleanup: string[] = [];
@@ -150,6 +151,7 @@ describe("task-scoped context compilation", () => {
     await service.designDecide({ design_session_id: "ds_cc_3", design_decisions: decisions });
     await service.designSdir({ design_session_id: "ds_cc_3", mode: "generate_from_decisions" });
     await service.designReconcile({ design_session_id: "ds_cc_3", capability_map: architectureCapabilities() });
+    await service.designRealize({ design_session_id: "ds_cc_3", mode: "propose", realization_mode: "direct_code", conditions: directCodeConditions() });
     const prepared = await service.designPrepareImplementation({
       design_session_id: "ds_cc_3",
       platform: "web_desktop",

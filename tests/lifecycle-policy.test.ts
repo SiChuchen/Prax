@@ -19,7 +19,18 @@ import {
   validateRequirementConfirmation,
   type DesignSession,
 } from "prax-runtime";
-import { architectureCapabilities, architectureContext, architectureDecisions, architectureProductFrame, architectureUnderstanding, intentLite, requirementConfirmation, reworkUnderstanding, sdirDelta } from "./fixtures.js";
+import {
+  architectureCapabilities,
+  architectureContext,
+  architectureDecisions,
+  architectureProductFrame,
+  architectureUnderstanding,
+  intentLite,
+  requirementConfirmation,
+  reworkUnderstanding,
+  sdirDelta,
+  directCodeConditions,
+} from "./fixtures.js";
 import { validateSdirDelta } from "prax-sdir";
 import { PraxValidator } from "prax-validator";
 
@@ -481,6 +492,7 @@ describe("mode-differentiated implementation brief", () => {
     await service.designDecide({ design_session_id: "ds_brief", design_decisions: architectureDecisions("ds_brief") });
     await service.designSdir({ design_session_id: "ds_brief", mode: "generate_from_decisions" });
     await service.designReconcile({ design_session_id: "ds_brief", capability_map: architectureCapabilities() });
+    await service.designRealize({ design_session_id: "ds_brief", mode: "propose", realization_mode: "direct_code", conditions: directCodeConditions() });
     const prepared = await service.designPrepareImplementation({ design_session_id: "ds_brief", platform: "web_desktop", framework: "react" });
     expect(prepared.status).toBe("PASS");
     const brief = prepared.implementation_brief as { mode_plan: { migration_plan: { per_surface: Array<{ treatment: string }> } } };

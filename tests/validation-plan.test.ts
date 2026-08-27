@@ -13,6 +13,7 @@ import {
   architectureUnderstanding,
   intentLite,
   requirementConfirmation,
+  directCodeConditions,
 } from "./fixtures.js";
 
 const cleanup: string[] = [];
@@ -55,6 +56,7 @@ async function driveGreenfieldToPrepare(service: PraxService, sessionId: string)
   });
   await service.designSdir({ design_session_id: sessionId, mode: "generate_from_decisions" });
   await service.designReconcile({ design_session_id: sessionId, capability_map: architectureCapabilities() });
+  await service.designRealize({ design_session_id: sessionId, mode: "propose", realization_mode: "direct_code", conditions: directCodeConditions() });
 }
 
 describe("persisted pre-implementation validation plan", () => {
