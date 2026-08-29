@@ -1,0 +1,65 @@
+user:
+  primary_role: engineering lead evaluating AI-assisted frontend design tooling
+  expertise: expert
+  familiarity: low
+goal:
+  primary: 让工程负责人在一次页面浏览内判断 Prax 是否适配其团队的前端设计工作流，并被引导完成主 CTA 动作
+tasks:
+  primary: 快速评估 Prax 与其团队前端设计工作流的适配度（扫描价值主张 → 理解三段工作原理 → 对照能力清单）
+  secondary:
+    - 点击主 CTA 进入下一步（开始使用/查看仓库）
+product_objects:
+  - id: hero
+    user_name: Hero 区（价值主张 + 主 CTA）
+    purpose: 在首屏内让访客明白 Prax 是什么、为谁解决什么问题，并提供唯一主 CTA
+  - id: how_it_works
+    user_name: How it works（三段式）
+    purpose: 用三段式讲清产品工作机理，支撑工程判断而非营销话术
+  - id: features
+    user_name: Capability features 列表
+    purpose: 枚举具体能力，供深入评估对照自家工作流
+  - id: cta_close
+    user_name: 收尾 CTA 区
+    purpose: 把评估兴趣转化为动作（开始使用 / 查看仓库 / 文档）
+relationships:
+  - id: scan_flow
+    source: hero
+    target: how_it_works
+    type: leads_to
+    direction: forward
+    meaning: 评估式浏览的自上而下顺序
+    condition: 访客滚动浏览时
+    importance: primary
+  - id: proof_flow
+    source: how_it_works
+    target: features
+    type: leads_to
+    direction: forward
+    meaning: 机制理解后进一步寻求具体证据
+    condition: 机制已理解后
+    importance: supporting
+  - id: act_flow
+    source: features
+    target: cta_close
+    type: leads_to
+    direction: forward
+    meaning: 评估通过后的行动出口
+    condition: 评估通过后
+    importance: primary
+mental_model_hypothesis:
+  summary: 工程负责人按自上而下评估型心智阅读落地页：先要一句可信的价值主张（是什么、为谁），再看机制三步（怎么做到），再扫具体能力清单（能证明什么），最后才行动。他们对营销话术免疫，凡是无机制支撑的形容词都会降低信任。
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: 工程负责人无需点击离开本页即可：说出 Prax 是什么、用三步复述其工作原理、并明确知道主 CTA 会带他去哪；且页面上找不到任何被其判定为营销套话的内容。
+open_questions: []
+existing_product:
+  stable_user_concepts: []
+  stable_patterns:
+    - developer-tool landing：单页纵向滚动、hero→机制→证据→行动 四区结构
+  current_user_pain_points: []
+  current_constraints:
+    - 静态页面，无运行时状态
+    - desktop web 优先
+  legacy_debt: []

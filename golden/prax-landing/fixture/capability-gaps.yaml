@@ -1,0 +1,55 @@
+needs:
+  - id: n1-static-content
+    product_action: 静态内容展示：价值主张、三段机制、能力清单、CTA 文案
+    required_experience:
+      - 首屏可读
+      - 滚动流畅
+    capabilities:
+      - static html/css
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯静态 HTML+CSS 实现，无运行时依赖；figma_first 落地以人审批准的 Figma 稿为表现基准
+  - id: n2-primary-cta
+    product_action: 主 CTA 点击导航到起始地址（占位 href，待 primary-cta-destination 定案）
+    required_experience:
+      - 单一主 CTA 明确
+    capabilities:
+      - anchor link
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: "原生 <a> 链接；href 占位为 #get-started，待 unresolved primary-cta-destination 定案后替换"
+  - id: n3-keyboard-access
+    product_action: 键盘可达：链接可聚焦、焦点可见、原生 landmark 语义
+    required_experience:
+      - keyboard_equivalent
+      - preserve_context
+    capabilities:
+      - native landmarks
+      - focus styles
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: header/main/footer 原生 landmark + 可见焦点环；无复合组件需求
+  - id: n4-brand-tokens
+    product_action: 品牌未定案前提下的 token 级视觉语言（色板、字阶、间距）
+    required_experience:
+      - 与 precise/product-first 语气一致
+    capabilities:
+      - css custom properties
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: 页面内 CSS 自定义属性承载 token；品牌系统化后续另行立项
+  - id: n5-visual-approval
+    product_action: 视觉方案人审批准（figma_first 落地门）
+    required_experience:
+      - stakeholder visual approval
+    capabilities:
+      - figma mcp
+      - human review loop
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: 经 design_realize submit_draft → 人审 → submit_review approved 链路完成；批准作为 prepare 前置条件

@@ -1,0 +1,69 @@
+version: "0.1"
+screen:
+  id: application_shell_screen
+  intent:
+    primary_task: 快速评估 Prax 与其团队前端设计工作流的适配度（扫描价值主张 → 理解三段工作原理 → 对照能力清单）
+    secondary_tasks:
+      - 点击主 CTA 进入下一步（开始使用/查看仓库）
+  archetype:
+    pattern_ref: PAT-APPLICATION-SHELL
+  density_intent: spacious
+  regions:
+    - id: hero 区：价值主张 + 主 CTA（首屏唯一焦点）
+      role: experimental:hero 区：价值主张 + 主 CTA（首屏唯一焦点）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: how-it-works 三段式（机制理解）
+      role: experimental:how-it-works 三段式（机制理解）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: capability features 列表（证据对照）
+      role: experimental:capability features 列表（证据对照）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 收尾 CTA（行动出口）
+      role: experimental:收尾 CTA（行动出口）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: workspace
+      role: dominant_workspace
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - preserve_context
+  relationships: []
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved:
+    - id: primary-cta-destination
+      question: primary-cta-destination
+      impact: low
+      affects:
+        - 收尾 CTA 区
+        - hero 主 CTA 的 href
+  rejected_alternatives:
+    - option: PAT-LIST-DETAIL（列表-详情结构）
+      reason: L1 检视：applies_when 要求'条目自然有序或可过滤'，本页四区块是叙事段落而非可选择集合；does_not_apply_when 命中——区块间叙事关系是主要对象，非选择+检视任务

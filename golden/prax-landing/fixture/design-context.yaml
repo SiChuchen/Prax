@@ -1,0 +1,70 @@
+user:
+  expertise: expert
+  familiarity: low
+task:
+  primary: 通过浏览首页快速评估 Prax 与团队前端设计工作流的适配度
+  modes:
+    - browse
+    - read
+    - scan
+  frequency: low
+domain:
+  type: developer-tool product website
+  entities:
+    - 价值主张
+    - 工作流三阶段
+    - 能力清单
+    - 行动召唤
+information:
+  volume: low
+  relationship_complexity: low
+  change_rate: low
+  comparison_need: medium
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: none
+  error_cost: low
+priorities:
+  - 价值主张一眼可信
+  - 机制三段可复述
+  - 能力清单可对照评估
+  - 单一主 CTA 明确
+  - 零营销套话
+density_intent: spacious
+confidence:
+  overall: high
+unknowns:
+  - id: brand-language-unsettled
+    impact: medium
+    affects:
+      - hero
+      - 整体视觉语言
+  - id: primary-cta-destination
+    impact: low
+    affects:
+      - 收尾 CTA 的目标动作
+classification:
+  version: "1"
+  task_type: browse_collection
+  domain_id: unknown
+  interaction_mode: collection_with_contextual_detail
+  product_type: unknown
+  primary_object_type: how_it_works
+  secondary_object_types:
+    - features
+    - hero
+    - cta_close
+  confidence: medium
+  evidence:
+    - task_type=browse_collection ← token 'browse' in context.task and frame.tasks
+    - interaction_mode=collection_with_contextual_detail ← token 'rows' in context.task, frame.tasks, and context.priorities
+    - primary_object_type=how_it_works ← most referenced product object in the Product Frame
+  open_questions:
+    - domain_id could not be classified from the provided context; refine the context fields or record a custom classification
+    - product_type could not be derived; record the intended audience and product kind

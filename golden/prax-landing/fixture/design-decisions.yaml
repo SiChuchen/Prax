@@ -1,0 +1,81 @@
+session_id: ds_20260829074608_9cd15a9c
+primary_structure:
+  pattern: PAT-APPLICATION-SHELL
+  rationale:
+    - 形式采纳路由返回的 PAT-APPLICATION-SHELL：静态单页的稳定外壳 = header（wordmark + 主 CTA）+ footer，包裹单一线性内容区（见 major_choice 'shell-adaptation' 的语义收窄）
+    - 路由 KB 未覆盖 marketing landing 域；两个路由候选经 design_inspect L1 检视，PAT-LIST-DETAIL 因'条目选择+检视'语义不符被拒绝，PAT-APPLICATION-SHELL 是唯一剩余的结构候选
+    - 四个内容区块与 requirement 的四个 section 1:1 对应（hero / how-it-works 三段 / features / 收尾 CTA），覆盖检查可确定性通过
+  confidence: high
+information_hierarchy:
+  primary:
+    - hero 区：价值主张 + 主 CTA（首屏唯一焦点）
+  secondary:
+    - how-it-works 三段式（机制理解）
+    - capability features 列表（证据对照）
+    - 收尾 CTA（行动出口）
+density:
+  intent: spacious
+  strategy:
+    - 单列 max-width ≈1120px 容器，两端留白
+    - 区块间距 ≥120px，区块内模块间距分级
+    - hero 以留白衬托主张，不堆叠元素
+    - features 三列网格但每卡信息上限：名称+两行描述
+  avoid:
+    - 多栏正文长段落
+    - 弹窗与干扰性动效
+    - 图标装饰堆砌
+major_choices:
+  - id: structure
+    choice: 纵向叙事滚动四区结构（hero→how-it-works→features→CTA），页内不做多页面跳转
+    rationale: 评估型阅读自上而下线性推进；四区与需求 1:1 对应；路由候选经 L1 检视后 PAT-LIST-DETAIL 不适用，PAT-APPLICATION-SHELL 为最接近的结构隐喻
+    confidence: medium
+    references:
+      - hero
+      - how_it_works
+      - features
+      - cta_close
+      - 通过浏览首页快速评估 Prax 与团队前端设计工作流的适配度
+      - developer-tool product website
+  - id: shell-adaptation
+    choice: 外壳语义适配：PAT-APPLICATION-SHELL 的稳定外壳收窄为静态站的 header（wordmark + 主 CTA）与 footer，内容区为单一线性滚动叙事，不提供多工作区导航
+    rationale: 路由 KB 未覆盖 marketing landing 域；静态单页确实存在稳定的身份外壳（header/footer）包裹内容区，但'多持久工作区'语义不存在，故显式收窄外壳职责，避免强加应用导航
+    confidence: medium
+    references:
+      - cta_close
+      - browse
+      - developer-tool product website
+  - id: cta
+    choice: 全页单一主 CTA「开始使用」（header + hero + 收尾复用同一动作），无并行入口
+    rationale: 评估页行动出口应唯一，多 CTA 稀释主任务；收尾区仅次级链接（文档/仓库）作补充
+    confidence: medium
+    references:
+      - hero
+      - cta_close
+      - 点击主 CTA 进入下一步（开始使用/查看仓库）
+      - 单一主 CTA 明确
+  - id: tone
+    choice: 文案以机制陈述为主，形容词最小化，每句可验证
+    rationale: 受众对营销话术免疫，无机制支撑的形容会降低信任（golden case tone 约束）
+    confidence: medium
+    references:
+      - how_it_works
+      - features
+      - 零营销套话
+      - 能力清单
+  - id: visual-language
+    choice: 浅色高对比编辑型视觉方向：大面积留白 + 单色系 + mono 字体作工程信号点缀
+    rationale: 与 'precise, product-first' 语气一致；深色炫技风与 no-marketing-fluff 相悖；品牌未定案，以 token 级表达留出后续扩展
+    confidence: medium
+    references:
+      - hero
+      - 价值主张
+      - user_requirement
+rejected:
+  - option: PAT-LIST-DETAIL（列表-详情结构）
+    reason: L1 检视：applies_when 要求'条目自然有序或可过滤'，本页四区块是叙事段落而非可选择集合；does_not_apply_when 命中——区块间叙事关系是主要对象，非选择+检视任务
+unresolved:
+  - id: primary-cta-destination
+    impact: low
+    affects:
+      - 收尾 CTA 区
+      - hero 主 CTA 的 href

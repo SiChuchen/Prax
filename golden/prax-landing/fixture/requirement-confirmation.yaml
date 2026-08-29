@@ -1,0 +1,28 @@
+version: "0.1"
+user_quote:
+  - '"开始吧" (user, conversation, 2026-08-29) — authorizing execution of PRAX-LANDING-001 as specified in the golden case brief'
+  - "\"Design and implement the Prax product website home page. Sections: hero with product value proposition and primary CTA, 'how it works' value summary (three-stage), capability features list, closing CTA.\""
+  - '"Audience: engineering leads evaluating AI-assisted frontend design tooling. Tone: precise, product-first, no marketing fluff. Static page; no complex runtime state."'
+restatement: 为 Prax 产品官网设计并实现首页：包含 hero（产品价值主张 + 主 CTA）、how-it-works 三段式价值摘要、capability 特性列表、收尾 CTA。受众为评估 AI 辅助前端设计工具的工程负责人；语气精确、产品优先、无营销套话；静态页面，无复杂运行时状态。按 Methodology §18.2 走 figma_first 落地：Figma 建稿 → 人审批准 → 实现 apps/prax-landing/ → 验证至 COMPLETE。
+boundaries:
+  in_scope:
+    - Prax 产品官网首页（单页）：hero（产品价值主张 + 主 CTA）
+    - how-it-works 三段式价值摘要
+    - capability features 列表
+    - 收尾 CTA 区块
+    - 静态页面实现，落在 apps/prax-landing/，figma_first 落地并经人审
+  out_of_scope:
+    - 其余页面（文档、定价、博客等）
+    - 后端、运行时状态、数据获取
+    - 移动端深度适配（desktop web 优先）
+    - 品牌 VI 系统全量定义（仅页面所需 token 级别）
+  scope_complete: true
+open_questions: []
+confirmation:
+  status: requirement_is_sufficient
+  evidence:
+    - type: task_brief
+      ref: golden/prax-landing/requirement.md
+    - type: conversation_message
+      ref: user message "开始吧" (2026-08-29T07:46 UTC, authorizing run start of golden/prax-landing/requirement.md as written)
+  confirmed_at: 2026-08-29T07:46:31Z
