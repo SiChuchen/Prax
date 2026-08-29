@@ -1,0 +1,84 @@
+# Phase Report — 2026-08-29 (A/B closure, MEM-001 cut, figma realization path)
+
+Per spec §42.5. Baseline at start: `b9a50ce` (end of the 2026-08-26 report).
+Baseline at end: `8d18514` + this report. Tests: **172/172 passing** (16 files;
+171 prior + golden-fixture replay), build green, main pushed to origin.
+
+## Status per work-order item
+
+| Item | Status | Evidence |
+|---|---|---|
+| A10 — PRAX-AB-001 replicates (6×, isolated worktrees) | done | `6995a3f`..`06c065c` run packages under `benchmark-runs/PRAX-AB-001/replicates/` (diffs, screenshots, transcripts, prax artifacts, summaries) |
+| AB dual-blind review + unblind + Gate A–H | done | `fc21945`, `6f03f23` (locked scores, 67% label agreement, divergences one-notch consistent), `52ae87e` (comparison.yaml, findings.yaml, gates.md, blinding-map.yaml) |
+| AB lessons absorbed into code | done | `8572616` (design_start anyOf schema wall — gap-mcp-anyof-schema), `ca9774d` (validator requires artifact_refs for empirical claims) |
+| PRAX-MEM-001 defined, then cut after task 1 | done (closed) | `5b33653`, `f6d369f`; user decision 2026-08-28, `benchmark-runs/PRAX-MEM-001/CLOSURE.md` — experiment cycle too slow vs development pace; correction memory stays **keep_provisional / untested** (no R9 evidence) |
+| Pivot: figma_first realization path | done | spec `9c66364` (subagent-reviewed r2), plan `baea8ab`+`f7e4fe7`, implementation `2635b20`→`a8bb8fc` (contracts, lifecycle v2 realize gate, validation, draft/review with evidence verification, compiled representation mapping, service, tests), ADR-003 `a3681b4` |
+| PRAX-LANDING-001 live run (figma_first) | done, PASS | `e07a830`; session `ds_20260829074608_9cd15a9c`; Figma `FVsFvRYZyAWv0Z4JXO9tyZ` frames 1:2–1:6; human review **round 1 approved in-session** (human_decision provenance + 5 sha256-verified screenshots); prepare realization block complete; validation **COMPLETE 8/8, zero warnings**; drift evidence exactly two verified artifact_refs; frozen into `golden/prax-landing/fixture/` |
+| Golden fixture replay regression test | done | `8d18514`; `tests/prax-landing-fixture.test.ts` — regenerated SDIR deep-equals frozen artifact with matching contentDigest; screenshot digests match review record; anchors match; suite 171→172 |
+| Research snapshot gap (A2 flag) | closed | `Prax_MegaPrompt_Insights.md` located at workspace root, backfilled into `research/upstream/` with sha256; manifest `missing:` section emptied |
+
+## AB-001 headline results (see review/ for full detail)
+
+Process effect replicated 3/3: every Prax-arm run produced a complete,
+auditable pre-implementation design record and none abandoned the flow.
+Outcome labels (R1–R7) show no directional arm difference at this rubric
+granularity — cross-arm comparison INCONCLUSIVE at n=3; evidence ceiling
+L2_replicated_implementation. Known rubric bias: blind scoring structurally
+under-credits the Prax arm (rationale lives in .prax artifacts, excluded from
+blind bundles). Gates A–H recorded with provisional dispositions; second
+benchmark (B6/B7) still required before schema stabilization.
+
+## Keep / Revise / Remove / Defer (updated with first live realization evidence)
+
+- keep: relationship three-layer, context manifest, persisted validation
+  plan, context compilation — all consumed by the landing run; no harm signals
+- keep_provisional: correction memory (untested after MEM-001 cut); **new:
+  realization gate (ADR-003)** — one live figma_first case, n=1; direct_code
+  has service-test coverage but no live case yet
+- defer (unchanged): Phase 8 implementation supervision (§21–23) — note: the
+  landing run produced the first real drift-evidence artifacts, so the
+  recorded precondition for revisiting Phase 8 now exists in sample size 1;
+  Capability Registry (Phase 9+); Registry/Community/Asset UX (§25–34)
+- none removed
+
+## Explicitly NOT implemented (unchanged from 2026-08-26 report)
+
+Registry/Community/Asset UX (§25–34); implementation supervision & controlled
+re-entry (§21–23); statistics beyond directional language.
+
+## Open operator items
+
+1. `primary-cta-destination` unresolved (low impact): landing CTA href is a
+   placeholder `#get-started` until the operator picks the target.
+2. Figma account cleanup (manual, no MCP delete API): drafts file “Prax MCP
+   写权限测试（可删）” and aborted-attempt file `22WgXGAA7q2I6aOQFp5lCa`.
+3. Optional: lightweight correction-memory probe design (MEM-001 H4) without
+   rerunning the full pair experiment.
+4. direct_code realization gate still live-untested: the defect_fix policy
+   skips the realize gate entirely (by design), so covering it requires a
+   modify_surface (or greenfield direct_code) live case.
+
+## Second realization-path case (2026-08-29, same session)
+
+Existing-product defect_fix executed live: session
+`ds_20260829184622_a50704d0` — favicon 404 on apps/prax-landing (recorded
+defect, item 2 above, now fixed). Lifecycle exercised the paths that had only
+service-test coverage: existing_product start with task-brief-backed
+confirmation, existing_understanding frame, intent_lite (twice refined after
+LIFECYCLE_KIND_MISMATCH lint correctly rejected structural phrasing),
+correction memory loading (`.prax/corrections.yaml` header-collapse correction
+surfaced and correctly scoped out), and the collapsed defect_fix validation
+plan (regression_check + requirement_alignment only — no route/decide/sdir/
+realize gates by design). Fix: `public/favicon.svg` (ink token monochrome) +
+one `<link rel="icon">` declaration; zero approved-region changes. Verified
+in the production build: console 0 errors, only `/favicon.svg` requested
+(200), full page unchanged, suite 172/172. Validation **COMPLETE 2/2, zero
+warnings**.
+
+## Next phase preconditions
+
+1. ~~Second realization case, exercising the paths that are service-tested but
+   not live-proven~~ **done 2026-08-29** (see "Second realization-path case"
+   above); remaining live-coverage gap narrowed to the direct_code realize
+   gate inside a modify_surface/greenfield case (item 4 above).
+2. Cross-case review per Gate D before treating the realization gate as stable.
