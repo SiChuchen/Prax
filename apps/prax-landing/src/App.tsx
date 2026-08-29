@@ -46,9 +46,10 @@ const FEATURES = [
   },
 ];
 
-// Unresolved: primary-cta-destination — placeholder anchor until the CTA
-// target (repo / docs / signup) is decided.
-const CTA_HREF = "#get-started";
+// primary-cta-destination resolved (session ds_20260829190800_0ced9700):
+// the project repository is the one real next step for a fresh evaluator.
+const CTA_HREF = "https://github.com/SiChuchen/Prax";
+const CTA_EXTERNAL = { target: "_blank", rel: "noopener" } as const;
 
 function Header() {
   return (
@@ -60,7 +61,7 @@ function Header() {
         <a className="mono-link" href="#docs">
           docs · github
         </a>
-        <a className="button button-small" href={CTA_HREF}>
+        <a className="button button-small" href={CTA_HREF} {...CTA_EXTERNAL}>
           Get started
         </a>
       </nav>
@@ -84,7 +85,7 @@ function Hero() {
         time.
       </p>
       <div className="hero-cta-row">
-        <a className="button button-large" href={CTA_HREF} id="get-started">
+        <a className="button button-large" href={CTA_HREF} {...CTA_EXTERNAL}>
           Get started
         </a>
         <span className="mono-code">$ npx prax-mcp</span>
@@ -141,7 +142,7 @@ function ClosingCta() {
       <p className="closing-body">
         Run the gates, keep the evidence, ship UI your reviewers can trust.
       </p>
-      <a className="button button-large" href={CTA_HREF}>
+      <a className="button button-large" href={CTA_HREF} {...CTA_EXTERNAL}>
         Get started
       </a>
       <footer className="site-footer">

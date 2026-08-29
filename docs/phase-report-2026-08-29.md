@@ -48,15 +48,22 @@ re-entry (§21–23); statistics beyond directional language.
 
 ## Open operator items
 
-1. `primary-cta-destination` unresolved (low impact): landing CTA href is a
-   placeholder `#get-started` until the operator picks the target.
+1. ~~`primary-cta-destination` unresolved~~ **resolved 2026-08-29** (session
+   `ds_20260829190800_0ced9700`): CTA wired to
+   `https://github.com/SiChuchen/Prax` (new tab) — the project repository is
+   the only real destination; surrogate decision recorded in the
+   requirement-confirmation evidence chain. Validation COMPLETE 5/5, zero
+   warnings; full modify_surface chain live-confirmed as
+   confirm→understanding→route→decide→sdir_delta→prepare→validate with no
+   realize gate.
 2. Figma account cleanup (manual, no MCP delete API): drafts file “Prax MCP
    写权限测试（可删）” and aborted-attempt file `22WgXGAA7q2I6aOQFp5lCa`.
 3. Optional: lightweight correction-memory probe design (MEM-001 H4) without
    rerunning the full pair experiment.
-4. direct_code realization gate still live-untested: the defect_fix policy
-   skips the realize gate entirely (by design), so covering it requires a
-   modify_surface (or greenfield direct_code) live case.
+4. direct_code realization gate still live-untested: it exists only in
+   full-SDIR chains (greenfield/rework/add_surface); both existing-product
+   lifecycles skip the realize gate by design. A greenfield direct_code case
+   is queued in the harder-page golden set (golden/README.md).
 
 ## Second realization-path case (2026-08-29, same session)
 
@@ -74,6 +81,20 @@ one `<link rel="icon">` declaration; zero approved-region changes. Verified
 in the production build: console 0 errors, only `/favicon.svg` requested
 (200), full page unchanged, suite 172/172. Validation **COMPLETE 2/2, zero
 warnings**.
+
+## Third live case: CTA destination via modify_surface (2026-08-29, same session)
+
+Session `ds_20260829190800_0ced9700` resolved the recorded
+`primary-cta-destination` through the full modify_surface chain: existing
+understanding (with the live-confirmed change-target-to-surface referential
+check), routing (PAT-APPLICATION-SHELL now the sole, semantically fitting
+routed pattern), L1 inspection, decision with vocabulary-checked references,
+sdir_delta (behavior_intent only — the render-leak lint correctly rejected
+free-form field names), prepare with the five-check modify validation plan,
+and evidence-backed evaluation to **COMPLETE 5/5, zero warnings**. All three
+CTAs verified in-DOM (href/target/rel), page visually unchanged, suite
+175/175. Lifecycle finding recorded: modify chains contain no realize gate,
+so direct_code propose remains live-untested pending a full-SDIR case.
 
 ## Next phase preconditions
 

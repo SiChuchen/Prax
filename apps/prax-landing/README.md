@@ -9,9 +9,10 @@ PRAX-LANDING-001 (session `ds_20260829074608_9cd15a9c`):
   representation artifact and carried in the compiled context.
 
 Static marketing page: hero, three-stage how-it-works, capability
-features, closing CTA. No runtime state; single primary CTA whose
-destination is a recorded unresolved (`primary-cta-destination`,
-placeholder anchor `#get-started`).
+features, closing CTA. No runtime state; single primary CTA resolved to
+the project repository (https://github.com/SiChuchen/Prax, new tab) in
+session `ds_20260829190800_0ced9700`, closing the recorded
+`primary-cta-destination` unresolved.
 
 ## Run
 
