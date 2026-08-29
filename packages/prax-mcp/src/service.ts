@@ -1,4 +1,6 @@
 import { join } from "node:path";
+import { mkdir, writeFile } from "node:fs/promises";
+import { stringify } from "yaml";
 import {
   KnowledgeStore,
   loadBuiltInKnowledgeStore,
@@ -8,8 +10,11 @@ import { DesignRouter, DisclosureGate, type RoutingResult } from "prax-router";
 import {
   FileSessionStore,
   advanceSession,
+  activeCorrections,
   checkOperationAllowed,
   contentDigest,
+  CORRECTIONS_FILE,
+  CorrectionSchema,
   currentGate,
   deriveContextManifest,
   lifecyclePolicyFor,
@@ -36,6 +41,8 @@ import {
   validateRequirementConfirmation,
   type CapabilityMap,
   type ContextManifest,
+  type Correction,
+  type CorrectionsFile,
   type DesignContext,
   type DesignDecisions,
   type DesignOperation,
@@ -61,6 +68,7 @@ import {
 } from "prax-validator";
 import type {
   DesignContextInput,
+  DesignCorrectInput,
   DesignDecideInput,
   DesignFrameInput,
   DesignInspectInput,
@@ -1406,6 +1414,46 @@ export class PraxService {
         : {}),
       phase: updated.phase,
       ...(evaluation.status === "PASS" && finalMissing.length === 0 ? {} : { next: nextTool("design_validate") }),
+    };
+  }
+
+  public async designCorrect(input: DesignCorrectInput): Promise<PraxOutput> {
+    const session = await this.sessions.getSession(input.design_session_id);
+    const correctionsRoot = join(session.project_root, ".prax");
+    const existing = await loadCorrections(correctionsRoot);
+    const issues: string[] = [];
+    if (existing.some((correction) => correction.id === input.correction.id)) {
+      issues.push(
+        `correction id '${input.correction.id}' already exists in ${CORRECTIONS_FILE}; record a new id and list the old one under supersedes.`,
+      );
+    }
+    const knownIds = new Set(existing.map((correction) => correction.id));
+    const unknownSupersedes = input.correction.supersedes.filter((id) => !knownIds.has(id));
+    if (unknownSupersedes.length > 0) {
+      issues.push(
+        `supersedes targets do not exist in ${CORRECTIONS_FILE}: ${unknownSupersedes.join(", ")} (supersede chains corrections only).`,
+      );
+    }
+    if (issues.length > 0) {
+      return {
+        status: "RETRY",
+        code: "CORRECTION_INGESTION_INVALID",
+        issues,
+        next: nextTool("design_correct"),
+      };
+    }
+    const parsedCorrection = CorrectionSchema.parse({
+      ...input.correction,
+      created_at: this.sessions.nowIso(),
+    }) as Correction;
+    const file: CorrectionsFile = { version: "0.1", corrections: [...existing, parsedCorrection] };
+    await mkdir(correctionsRoot, { recursive: true });
+    await writeFile(join(correctionsRoot, CORRECTIONS_FILE), stringify(file), "utf8");
+    return {
+      status: "PASS",
+      correction: parsedCorrection,
+      file: join(".prax", CORRECTIONS_FILE),
+      active_corrections: activeCorrections(file.corrections).length,
     };
   }
 

@@ -1,5 +1,7 @@
 # 模式分化生命周期（Mode-Differentiated Lifecycle）实施计划 v2
 
+> **STATUS (2026-08-29): IMPLEMENTED & LIVE-VALIDATED.** All tasks shipped (lifecycle-policy.ts, errors.ts, gate policies; verified by tests/lifecycle-*.test.ts, tests/correction-memory.test.ts and the live defect_fix run ds_20260829184622_a50704d0). Checkboxes below are left as written; this banner is the completion record.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 让 `design_start` 的 mode/change_kind 真正分化生命周期深度：三模式 × 变更类型 × 外部设计权威，新增需求确认与存量理解门禁，SDIR 增量形态，执行计划与验证按模式装配。

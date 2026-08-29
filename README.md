@@ -29,7 +29,7 @@ become the product model.
 
 | Package | Responsibility |
 |---|---|
-| `prax-mcp` | Prax MCP server, ten tool contracts, orchestration, and CLI |
+| `prax-mcp` | Prax MCP server, twelve tool contracts, orchestration, and CLI |
 | `prax-runtime` | Explicit sessions, state machine, artifact persistence, gate validation |
 | `prax-knowledge` | Scoped, lifecycle-managed design knowledge with L0–L3 disclosure |
 | `prax-router` | Context routing, candidate caps, audit records, disclosure authorization |
@@ -89,7 +89,8 @@ During repository development, use `npm run prax -- <command>` after building.
 
 ## MCP workflow
 
-Eleven tools, three lifecycle depths. `design_start` declares the posture toward
+Twelve tools: eleven staged lifecycle tools plus `design_correct` (project
+correction memory, legal in any phase). `design_start` declares the posture toward
 the existing system and the change kind, which expands into a per-session gate
 policy:
 
@@ -121,6 +122,10 @@ policy:
    `realize` gate). 10. `design_prepare_implementation` (mode-specific
    integration/change/migration plan) 11. `design_validate` (policy-assembled
    check set).
+12. `design_correct` — agent-facing ingestion for project-local correction
+    memory (`.prax/corrections.yaml`): evidence refs required, duplicate ids
+    and unknown supersedes targets rejected; scoped corrections surface in
+    later sessions as compiled-context entries and validation obligations.
 
 Tool order is enforced by the per-session gate policy. Calls after
 `design_start` require an explicit `design_session_id`, so a second agent can

@@ -3,6 +3,7 @@ import type { CallToolResult } from "@modelcontextprotocol/server";
 import { PraxRuntimeError } from "prax-runtime";
 import {
   DesignContextInputSchema,
+  DesignCorrectInputSchema,
   DesignDecideInputSchema,
   DesignStartClientSchema,
   DesignFrameInputSchema,
@@ -109,6 +110,13 @@ export function createPraxMcpServer(service: PraxService): McpServer {
     description: "Return context-routed checks, accept real evidence, and evaluate without fabricating user evidence.",
     inputSchema: DesignValidateInputSchema,
   }, (input) => invoke(() => service.designValidate(input)));
+
+  server.registerTool("design_correct", {
+    title: "Record a project-local correction",
+    description:
+      "Write an evidence-backed project correction to <project>/.prax/corrections.yaml (agent-facing ingestion; supersedes must reference existing correction ids). Legal in any session phase; later sessions carry scoped corrections into compiled context and validation obligations.",
+    inputSchema: DesignCorrectInputSchema,
+  }, (input) => invoke(() => service.designCorrect(input)));
 
   return server;
 }

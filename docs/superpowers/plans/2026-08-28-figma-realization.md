@@ -1,5 +1,7 @@
 # Figma-first Realization Path Implementation Plan
 
+> **STATUS (2026-08-29): IMPLEMENTED & LIVE-VALIDATED.** All tasks shipped (design_realize, realize gate, representation artifacts; tests/realization-*.test.ts) and validated end-to-end by the PRAX-LANDING-001 live run (golden/prax-landing/fixture/, validation COMPLETE 8/8) plus tests/prax-landing-fixture.test.ts replay. Checkboxes below are left as written; this banner is the completion record.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add the `design_realize` tool (11th), the `realize` gate, and the representation artifacts that implement the figma_first realization path per spec `docs/superpowers/specs/2026-08-28-figma-realization-design.md` (r2).

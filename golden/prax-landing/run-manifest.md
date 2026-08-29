@@ -1,6 +1,6 @@
 # Run Manifest — PRAX-LANDING-001 (live acceptance run)
 
-Fill before running; freeze outputs into fixture/ after a passing run.
+Run completed 2026-08-29 (result PASS); outputs frozen into fixture/.
 
 - agent_cli: ZCode (zcode CLI, desktop)
 - agent_model: builtin:bigmodel-start-plan/GLM-5.3-Flash

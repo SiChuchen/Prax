@@ -8,7 +8,7 @@ loads the authoritative YAML record and gate artifacts from disk.
 
 | Plane | v0 implementation | Boundary |
 |---|---|---|
-| Protocol | MCP 2026-07-28 over stdio, SDK v2 | Eleven staged tools (`design_realize` added by ADR-003) |
+| Protocol | MCP 2026-07-28 over stdio, SDK v2 | Twelve staged tools (`design_realize` added by ADR-003; `design_correct` agent-facing correction ingestion) |
 | State | `prax-runtime` local YAML store | Optimistic revision check and atomic rename |
 | Knowledge | 23 fully expanded entries | No list-all/search-everything tool; entries are a compiled subset of the versioned `research/upstream/` snapshot, not the whole research asset |
 | Routing | Scope filters plus deterministic scoring | 5 principles, 5 heuristics, 3 patterns, 1 profile |

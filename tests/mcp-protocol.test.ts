@@ -11,7 +11,7 @@ afterEach(async () => {
   await Promise.all(cleanup.splice(0).map((path) => rm(path, { recursive: true, force: true })));
 });
 
-it("starts over stdio, registers exactly ten staged tools, and validates inputs", async () => {
+it("starts over stdio, registers exactly twelve staged tools, and validates inputs", async () => {
   const root = await mkdtemp(join(tmpdir(), "prax-mcp-"));
   cleanup.push(root);
   const projectRoot = join(root, "project");
@@ -27,7 +27,7 @@ it("starts over stdio, registers exactly ten staged tools, and validates inputs"
     await client.connect(transport);
     const listed = await client.listTools();
     expect(listed.tools.map((tool) => tool.name).sort()).toEqual([
-      "design_context", "design_decide", "design_frame", "design_inspect", "design_prepare_implementation",
+      "design_context", "design_correct", "design_decide", "design_frame", "design_inspect", "design_prepare_implementation",
       "design_realize", "design_reconcile", "design_route", "design_sdir", "design_start", "design_validate",
     ]);
 

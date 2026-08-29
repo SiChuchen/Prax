@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
   CapabilityMapSchema,
   ChangeKindSchema,
+  CorrectionSchema,
   DesignContextSchema,
   DesignDecisionsSchema,
   DesignModeSchema,
@@ -146,6 +147,13 @@ export const DesignValidateInputSchema = z.object({
   evidence: ValidationEvidenceSchema.optional(),
 });
 
+export const DesignCorrectInputSchema = z.object({
+  design_session_id: SessionId,
+  correction: CorrectionSchema.omit({ created_at: true }).describe(
+    "Evidence-backed project-local correction; supersedes must reference existing correction ids in the same corrections.yaml.",
+  ),
+});
+
 const RealizeEvidenceItem = z.object({
   type: z.enum(["screenshot", "human_decision"]),
   ref: z.string().trim().min(1).optional(),
@@ -208,5 +216,6 @@ export type DesignSdirInput = z.infer<typeof DesignSdirInputSchema>;
 export type DesignReconcileInput = z.infer<typeof DesignReconcileInputSchema>;
 export type DesignPrepareImplementationInput = z.infer<typeof DesignPrepareImplementationInputSchema>;
 export type DesignValidateInput = z.infer<typeof DesignValidateInputSchema>;
+export type DesignCorrectInput = z.infer<typeof DesignCorrectInputSchema>;
 export type DesignRealizeInput = z.infer<typeof DesignRealizeInputSchema>;
 
