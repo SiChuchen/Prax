@@ -54,6 +54,64 @@ describe("validatePropose", () => {
     expect(result.value?.provider_contract_version).toBe(REALIZATION_PROVIDERS.figma.contract_version);
   });
 
+  it("accepts every registered provider and stamps that provider's contract version", () => {
+    for (const provider of Object.values(REALIZATION_PROVIDERS)) {
+      const result = validatePropose(
+        { realization_mode: "figma_first", provider: provider.id, conditions: figmaFirstConditions() },
+        { mode: "greenfield" },
+        { now: NOW },
+      );
+      expect(result.status, provider.id).toBe("PASS");
+      expect(result.value?.provider, provider.id).toBe(provider.id);
+      expect(result.value?.provider_contract_version, provider.id).toBe(provider.contract_version);
+    }
+  });
+
+  it("carries a non-figma provider through draft refs and review verification unchanged", async () => {
+    const proposed = validatePropose(
+      { realization_mode: "figma_first", provider: "penpot", conditions: figmaFirstConditions() },
+      { mode: "greenfield" },
+      { now: NOW },
+    );
+    expect(proposed.status).toBe("PASS");
+    const refs = { file_key: "8f1c2a3d-0000-0000-0000-000000000000", frames: [{ node_id: "shape-1", name: "workspace", sdir_region: "workspace" }] };
+    const artifact: RepresentationArtifact = {
+      version: "0.1",
+      id: "rep-ds_x",
+      representation: { role: "primary" },
+      semantic_refs: { sdir_ref: "screen.sdir.yaml", sdir_digest: "d".repeat(64), regions: ["workspace"] },
+      realization: {
+        provider: proposed.value!.provider!,
+        provider_contract_version: proposed.value!.provider_contract_version!,
+        refs,
+      },
+      status: "under_review",
+      validation: ["design_representation_coverage", "representation_runtime_drift"],
+    };
+    expect(validateDraft(refs, artifact).status).toBe("PASS");
+    const submission = {
+      status: "approved" as const,
+      provider_refs_verified: { file_key: refs.file_key, frame_node_ids: ["shape-1"] },
+      evidence: [
+        { type: "screenshot" as const, ref: "rep-evidence/round-1/workspace.png" },
+        {
+          type: "human_decision" as const,
+          actor_ref: "product owner",
+          source_type: "conversation_message",
+          source_ref: "session",
+          quote: "looks right",
+        },
+      ],
+    };
+    const root = await mkdtemp(join(tmpdir(), "prax-rev-"));
+    cleanup.push(root);
+    await mkdir(join(root, "rep-evidence", "round-1"), { recursive: true });
+    await writeFile(join(root, "rep-evidence", "round-1", "workspace.png"), Buffer.from([0x89, 0x50, 0x4e, 0x47]));
+    const review = await validateReview(submission, artifact, { sessionDirectory: root, now: NOW, expectedRound: 1 });
+    expect(review.status).toBe("PASS");
+    expect(review.value?.provider_refs_verified.file_key).toBe(refs.file_key);
+  });
+
   it("blocks figma_first without a registered provider", () => {
     const result = validatePropose(
       { realization_mode: "figma_first", provider: "sketch", conditions: figmaFirstConditions() },

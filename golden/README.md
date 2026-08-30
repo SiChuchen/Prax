@@ -46,6 +46,12 @@ landing site: genuinely editorial (visual uncertainty, stakeholder approval,
 spatial exploration all honestly hold), and it must integrate with the
 existing shell + tokens (integration_plan path never run live).
 
+2026-08-30: the draft phase hit the Figma Starter MCP quota wall (session
+`ds_20260830103431_85ce10c7`, frames 1:2-1:6 created in file
+`IMABm8SeaCNXn5MuCDK0yS`, content population blocked). Per ADR-004 the case
+resumes on any registered provider (`figma | penpot | pen`) with no gate
+bypass; provider adapter guide: `docs/realization-providers.md`.
+
 ### 3. PRAX-WIZARD-001 — greenfield + direct_code (`prax-wizard/`)
 
 Multi-step wizard form with validation, the hardest state machine: per-step

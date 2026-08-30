@@ -818,6 +818,11 @@ Design
 - Stakeholder 需要视觉审批；
 - 空间布局探索价值高但运行时依赖较低。
 
+注：`figma_first` 是"表现优先"路径的历史名，不绑定 Figma 一家。自 2026-08-30
+（ADR-004）起 provider 可插拔：`figma | penpot | pen`，注册表见
+`REALIZATION_PROVIDERS`，逐供应商驱动手册见 `docs/realization-providers.md`。
+模式的固定六条件、资格谓词与 draft→人审→批准锚点生命周期不变。
+
 ### 18.3 `executable_prototype_first`
 
 适合：

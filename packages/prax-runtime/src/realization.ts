@@ -16,10 +16,27 @@ import {
 
 export const REALIZATION_PREDICATE_VERSION = "1";
 
+// Pluggable realization providers for the figma_first mode. The mode name is
+// historical: it means "representation-first with stakeholder visual approval",
+// not a Figma-only path. Every provider must offer the same capability triple —
+// write_canvas (build frames named exactly after SDIR region ids), screenshot
+// (per-region evidence under rep-evidence/round-N/), metadata (read back what
+// was created so provider_refs can be reported) — because validateDraft and
+// validateReview stay provider-agnostic (file_key + frames[{node_id,name,sdir_region}]).
 export const REALIZATION_PROVIDERS = {
   figma: {
     id: "figma",
     contract_version: "remote-mcp-2026-08",
+    capabilities: ["write_canvas", "screenshot", "metadata"],
+  },
+  penpot: {
+    id: "penpot",
+    contract_version: "official-mcp-2026-08",
+    capabilities: ["write_canvas", "screenshot", "metadata"],
+  },
+  pen: {
+    id: "pen",
+    contract_version: "local-mcp-2026-08",
     capabilities: ["write_canvas", "screenshot", "metadata"],
   },
 } as const;
