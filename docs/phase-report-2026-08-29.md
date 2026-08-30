@@ -96,6 +96,34 @@ CTAs verified in-DOM (href/target/rel), page visually unchanged, suite
 175/175. Lifecycle finding recorded: modify chains contain no realize gate,
 so direct_code propose remains live-untested pending a full-SDIR case.
 
+## Fourth live case: PRAX-DASHBOARD-001, direct_code (2026-08-30)
+
+Session `ds_20260830045528_df52c3d8` closed the last realization-coverage
+gap: greenfield with **direct_code propose accepted before prepare** (three
+of four conditions honestly false — only mature_design_system holds; the
+direct_code path declares and records, it has no eligibility predicate).
+The prepare brief carries only `{mode: direct_code}` in its realization
+block and the validation plan contains **no representation checks**
+(design_representation_coverage / representation_runtime_drift are
+figma_first-only) — both golden observations verified live. The KB routed
+at high confidence to **PAT-DATA-EXPLORER** (first live match of the
+data-exploration domain; its semantic component contracts
+DATA-SURFACE / FILTER-CONTROLS / CONTEXTUAL-DETAIL surfaced in the brief),
+and the plan gained data-explorer-specific checks (filter_state,
+comparison_scan). Reconcile recorded the first live capability **gap**
+(n4-export, explicit compromise). Implementation: `apps/prax-dashboard/`
+(dark instrument panel, compact density — first non-spacious case; four
+honest states reachable via ?forceError=1 / ?slow=1 seams and an empty
+filter; SVG bar chart without a chart library). Playwright evidence:
+loading/empty/error/selected screenshots, real-keyboard walkthrough
+(:focus-visible verified per stop, Enter selects), sort/filter DOM
+assertions. Suite 175/175. Validation **COMPLETE 8/8, zero warnings**.
+Note: the mid-chain design_correct probe could not run through MCP in this
+session (the tool shipped after this MCP connection started); the write
+path plus scoped-obligation behavior is covered by
+tests/correction-ingestion.test.ts and needs only an MCP reconnect to use
+live.
+
 ## Next phase preconditions
 
 1. ~~Second realization case, exercising the paths that are service-tested but
