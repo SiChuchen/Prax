@@ -1,0 +1,498 @@
+version: "0.1"
+events:
+  - question: Prax 本地运维仪表盘（单操作者、紧凑密度、主对象为可排序/过滤/选中的会话数据表，选中驱动详情侧栏，四状态真实可达）应采用什么页面结构模式？
+    routed_at: 2026-08-30T04:56:37.004Z
+    result:
+      status: PASS
+      candidate_domains:
+        - data
+        - logs
+        - architecture
+      principles:
+        - id: P-19
+          type: principle
+          name: Preserve Context
+          one_line_use: Let users inspect detail without losing their place in the larger system.
+          triggers:
+            - context
+            - inspect
+            - trace
+            - selection
+            - architecture
+            - canvas
+          scope:
+            user_type: []
+            task_type:
+              - inspect
+              - trace
+              - compare
+            domain: []
+            platform:
+              - web_desktop
+            density: []
+            phase:
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=compare_filter_records and domain_id=data_exploration match this entry's scope; natural-language trigger 'inspect' supports it
+            trigger: inspect
+            scope_match:
+              - task_type:compare_filter_records
+              - platform:web_desktop
+            confidence: high
+        - id: P-22
+          type: principle
+          name: Signal over Chrome
+          one_line_use: Keep controls and decoration quieter than the information users came to understand.
+          triggers:
+            - signal_to_noise
+            - density
+            - chrome
+            - toolbar
+            - architecture
+            - data
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform:
+              - web_desktop
+            density:
+              - compact
+              - regular
+            phase:
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=compare_filter_records and domain_id=data_exploration match this entry's scope
+            trigger: scope_and_lifecycle
+            scope_match:
+              - platform:web_desktop
+              - density:compact
+            confidence: medium
+        - id: P-26
+          type: principle
+          name: Visibility of System Status
+          one_line_use: Expose meaningful progress, readiness, selection, and failure states.
+          triggers:
+            - status
+            - loading
+            - empty
+            - ready
+            - error
+            - selected
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform: []
+            density: []
+            phase:
+              - decision
+              - sdir
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=compare_filter_records and domain_id=data_exploration match this entry's scope; natural-language trigger 'loading' supports it
+            trigger: loading
+            scope_match:
+              - generic
+            confidence: medium
+        - id: P-01
+          type: principle
+          name: Perceptual Grouping
+          one_line_use: Group related product objects so structure is visible before detail is read.
+          triggers:
+            - grouping
+            - architecture
+            - canvas
+            - relationships
+            - dense_information
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform:
+              - web_desktop
+            density: []
+            phase:
+              - routing
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=compare_filter_records and domain_id=data_exploration match this entry's scope
+            trigger: scope_and_lifecycle
+            scope_match:
+              - platform:web_desktop
+            confidence: low
+        - id: P-03
+          type: principle
+          name: Visual Hierarchy
+          one_line_use: Make importance and reading order evident without relying on decoration.
+          triggers:
+            - hierarchy
+            - importance
+            - attention
+            - architecture
+            - toolbar
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform:
+              - web_desktop
+            density: []
+            phase:
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=compare_filter_records and domain_id=data_exploration match this entry's scope
+            trigger: scope_and_lifecycle
+            scope_match:
+              - platform:web_desktop
+            confidence: low
+      heuristics:
+        - id: H-19
+          type: heuristic
+          name: Contextual Inspector
+          one_line_use: Show details for the current selection while preserving the parent workspace.
+          triggers:
+            - inspector
+            - selection
+            - detail
+            - architecture
+            - canvas
+          scope:
+            user_type: []
+            task_type:
+              - inspect
+              - trace
+            domain:
+              - architecture
+              - data
+            platform:
+              - web_desktop
+            density: []
+            phase:
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=compare_filter_records and domain_id=data_exploration match this entry's scope; natural-language trigger 'detail' supports it
+            trigger: detail
+            scope_match:
+              - domain_id:data_exploration
+              - task_type:compare_filter_records
+              - platform:web_desktop
+            confidence: high
+        - id: H-22
+          type: heuristic
+          name: Overview, Filter, Detail
+          one_line_use: Start with a meaningful overview, narrow deliberately, then expose detail on demand.
+          triggers:
+            - overview
+            - filter
+            - zoom
+            - detail
+            - architecture
+            - data
+          scope:
+            user_type: []
+            task_type:
+              - explore
+              - inspect
+              - trace
+              - compare
+            domain:
+              - architecture
+              - data
+            platform: []
+            density: []
+            phase:
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=compare_filter_records and domain_id=data_exploration match this entry's scope; natural-language trigger 'filter' supports it
+            trigger: filter
+            scope_match:
+              - domain_id:data_exploration
+              - task_type:compare_filter_records
+            confidence: high
+        - id: H-13
+          type: heuristic
+          name: Structured Density
+          one_line_use: Professional tools may be dense when groups, hierarchy, and interaction remain legible.
+          triggers:
+            - density
+            - professional_tool
+            - data
+            - architecture
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform:
+              - web_desktop
+            density:
+              - compact
+              - regular
+            phase:
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=compare_filter_records and domain_id=data_exploration match this entry's scope
+            trigger: scope_and_lifecycle
+            scope_match:
+              - platform:web_desktop
+              - density:compact
+            confidence: medium
+        - id: H-07
+          type: heuristic
+          name: State Completeness
+          one_line_use: Define loading, empty, ready, selected, and error behavior before implementation.
+          triggers:
+            - states
+            - loading
+            - empty
+            - ready
+            - selected
+            - error
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform: []
+            density: []
+            phase:
+              - sdir
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=compare_filter_records and domain_id=data_exploration match this entry's scope; natural-language trigger 'loading' supports it
+            trigger: loading
+            scope_match:
+              - generic
+            confidence: medium
+        - id: H-21
+          type: heuristic
+          name: Orientation Invariants
+          one_line_use: Preserve stable anchors, selection, and view position across inspection steps.
+          triggers:
+            - context_preservation
+            - orientation
+            - trace
+            - architecture
+          scope:
+            user_type: []
+            task_type:
+              - inspect
+              - trace
+              - compare
+            domain: []
+            platform: []
+            density: []
+            phase:
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=compare_filter_records and domain_id=data_exploration match this entry's scope
+            trigger: scope_and_lifecycle
+            scope_match:
+              - task_type:compare_filter_records
+            confidence: medium
+      patterns:
+        - id: PAT-DATA-EXPLORER
+          type: pattern
+          name: Data Explorer
+          one_line_use: Filterable, comparable data surface with detail on demand.
+          triggers:
+            - data
+            - logs
+            - rows
+            - columns
+            - filter
+            - compare
+          scope:
+            user_type: []
+            task_type:
+              - compare
+              - filter
+              - inspect
+            domain:
+              - data
+              - logs
+            platform:
+              - web_desktop
+            density:
+              - compact
+            phase:
+              - decision
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=compare_filter_records and domain_id=data_exploration match this entry's scope; natural-language trigger 'filter' supports it
+            trigger: filter
+            scope_match:
+              - domain_id:data_exploration
+              - task_type:compare_filter_records
+              - platform:web_desktop
+              - density:compact
+            confidence: high
+        - id: PAT-LIST-DETAIL-INSPECTOR
+          type: pattern
+          name: Contextual Inspector
+          one_line_use: A subordinate panel that reflects the current workspace selection.
+          triggers:
+            - inspector
+            - selection
+            - properties
+            - architecture
+            - canvas
+          scope:
+            user_type: []
+            task_type:
+              - inspect
+              - trace
+            domain:
+              - architecture
+              - data
+            platform:
+              - web_desktop
+            density: []
+            phase:
+              - decision
+          lifecycle:
+            status: reviewed
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=compare_filter_records and domain_id=data_exploration match this entry's scope
+            trigger: scope_and_lifecycle
+            scope_match:
+              - domain_id:data_exploration
+              - task_type:compare_filter_records
+              - platform:web_desktop
+            confidence: high
+        - id: PAT-LIST-DETAIL
+          type: pattern
+          name: List Detail
+          one_line_use: Select from a collection and inspect one object in an adjacent detail region.
+          triggers:
+            - list
+            - collection
+            - detail
+            - selection
+          scope:
+            user_type: []
+            task_type:
+              - browse
+              - inspect
+            domain: []
+            platform:
+              - web_desktop
+            density: []
+            phase:
+              - decision
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=compare_filter_records and domain_id=data_exploration match this entry's scope; natural-language trigger 'detail' supports it
+            trigger: detail
+            scope_match:
+              - task_type:compare_filter_records
+              - platform:web_desktop
+            confidence: high
+      platform_profile:
+        - id: WEB-DESKTOP
+          type: platform_convention
+          name: Web Desktop Professional Tool
+          one_line_use: Pointer-and-keyboard conventions for large-viewport, information-dense work.
+          triggers:
+            - web
+            - desktop
+            - pointer
+            - keyboard
+            - large_viewport
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform:
+              - web_desktop
+            density: []
+            phase:
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=compare_filter_records and domain_id=data_exploration match this entry's scope; natural-language trigger 'web' supports it
+            trigger: web
+            scope_match:
+              - platform:web_desktop
+            confidence: high
+      excluded:
+        - id: PAT-CANVAS-WORKSPACE
+          reason: domain scope architecture does not match canonical domain_id data_exploration
+        - id: PAT-SETTINGS-SECTIONS
+          reason: domain scope settings does not match canonical domain_id data_exploration
+        - id: PAT-RESOURCE-MANAGEMENT
+          reason: task scope manage, administer does not match canonical task_type compare_filter_records
+      confidence: high

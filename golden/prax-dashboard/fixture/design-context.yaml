@@ -1,0 +1,69 @@
+user:
+  expertise: expert
+  familiarity: high
+task:
+  primary: 监控运行时健康并下钻异常会话
+  modes:
+    - scan
+    - filter
+    - select
+    - inspect
+  frequency: high
+domain:
+  type: operations dashboard (instrument panel)
+  entities:
+    - KPI 指标
+    - 会话记录
+    - 会话状态
+    - 门结果分布
+    - 事件条目
+information:
+  volume: medium
+  relationship_complexity: medium
+  change_rate: medium
+  comparison_need: medium
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - keyboard
+    - pointer
+  viewport: large
+risk:
+  destructive_actions: none
+  error_cost: low
+priorities:
+  - 状态诚实（loading/empty/error/selected 全真实）
+  - 一屏扫读 KPI
+  - 两次点击下钻详情
+  - 全键盘可操作
+  - 紧凑不拥挤
+density_intent: compact
+confidence:
+  overall: high
+unknowns:
+  - id: fixture-data-shape
+    impact: low
+    affects:
+      - event_log 翻页策略
+classification:
+  version: "1"
+  task_type: compare_filter_records
+  domain_id: data_exploration
+  interaction_mode: collection_with_contextual_detail
+  product_type: internal_engineering_tool
+  primary_object_type: detail_panel
+  secondary_object_types:
+    - sessions_table
+    - event_log
+    - header_strip
+    - kpi_cards
+    - gate_chart
+  confidence: high
+  evidence:
+    - task_type=compare_filter_records ← token 'filter' in context.task and frame.tasks
+    - domain_id=data_exploration ← token '记录' in context.domain
+    - interaction_mode=collection_with_contextual_detail ← token 'filter' in context.task, frame.tasks, and context.priorities
+    - product_type=internal_engineering_tool ← expert user in an engineering domain
+    - primary_object_type=detail_panel ← most referenced product object in the Product Frame
+  open_questions: []

@@ -1,0 +1,26 @@
+version: "0.1"
+user_quote:
+  - '"删文件不着急，你继续去做" (user, 2026-08-29)'
+  - '"Build the Prax local operations dashboard as a single dense page..." (golden/prax-dashboard/requirement.md)'
+restatement: 为 Prax 建一个本地运维仪表盘单页：header 运行时标识、四张 KPI 卡、可排序/过滤/选中带详情侧栏的会话表、无图表库的 14 天 SVG 柱图、事件日志；数据来自打包 fixture 但 loading/empty/error(?forceError=1)/selected 四状态全部真实可达；暗色紧凑 token 已钉死；全键盘可操作；direct_code 落地。
+boundaries:
+  in_scope:
+    - 单页仪表盘（header/KPI 卡/会话表+详情侧栏/14 天 SVG 柱图/事件日志）
+    - 四状态可达：loading/empty/error(?forceError=1)/selected
+    - 纯键盘可操作 + 可见焦点
+    - 钉死 token 的紧凑密度视觉
+  out_of_scope:
+    - 后端/真实数据源
+    - 图表库
+    - 移动端适配
+    - 营销文案
+  scope_complete: true
+open_questions: []
+confirmation:
+  status: requirement_is_sufficient
+  evidence:
+    - type: task_brief
+      ref: golden/prax-dashboard/requirement.md (self-sufficient golden case brief, committed b594b88)
+    - type: conversation_message
+      ref: "user instruction (2026-08-29): 删文件不着急，你继续去做 — continuing the queued golden suite per golden/README.md order"
+  confirmed_at: 2026-08-29T20:00:00Z

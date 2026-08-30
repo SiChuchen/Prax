@@ -1,0 +1,42 @@
+version: "0.1"
+platform_profile: WEB-DESKTOP
+framework: react
+sdir_ref: screen.sdir.yaml
+decision_ref: design-decisions.yaml
+approved_patterns:
+  - PAT-DATA-EXPLORER
+approved_component_contracts:
+  - DATA-SURFACE
+  - FILTER-CONTROLS
+  - CONTEXTUAL-DETAIL
+states_required:
+  - loading
+  - empty
+  - ready
+  - selected
+  - error
+capability_gaps:
+  - id: n4-export
+    product_action: 导出会话/事件为 CSV 供离线分析
+    required_experience:
+      - 一键导出
+    capabilities:
+      - none — 无后端导出端点
+    status: gap
+    resolution:
+      type: explicit_compromise
+      notes: 显式妥协：本次不实现导出（无后端）；记录为后续后端能力，UI 不放死按钮
+validation_plan_ref:
+  artifact: validation-plan.yaml
+  revision: 1
+validation_requirements:
+  - semantic_conformance
+  - state_completeness
+  - product_model_alignment
+  - keyboard
+  - hierarchy_review
+  - filter_state
+  - comparison_scan
+  - requirement_alignment
+realization:
+  mode: direct_code

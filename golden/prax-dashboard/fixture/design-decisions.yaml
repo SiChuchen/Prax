@@ -1,0 +1,61 @@
+session_id: ds_20260830045528_df52c3d8
+primary_structure:
+  pattern: PAT-DATA-EXPLORER
+  rationale:
+    - 路由高置信首选，domain_id=data_exploration 与 task_type=compare_filter_records 精确匹配（KB 首次出现真匹配域）
+    - L1 检视：applies_when 'items share comparable fields' 命中会话记录；spatial 关系非主要，does_not_apply 不触发
+    - LIST-DETAIL-INSPECTOR 作为 subordinate 成分并入（侧栏），LIST-DETAIL 因语义更窄被拒绝
+  confidence: high
+information_hierarchy:
+  primary:
+    - data
+    - sessions_table 会话主表（排序/过滤/选中，承载 compare_filter_records 主任务）
+  secondary:
+    - kpi_cards 扫读层
+    - detail_panel 选中详情（contextual，非主任务）
+    - gate_chart 14 天分布
+    - event_log 事件时间线
+density:
+  intent: compact
+  strategy:
+    - 12px 基线网格，行高 32px
+    - 四区一屏：header/KPI 行/主表+侧栏/柱图+日志
+    - 状态色仅用于语义（running 蓝/complete 绿/failed 红），无装饰色
+    - Signal over Chrome：控件比数据安静
+  avoid:
+    - 装饰性 chrome 与营销留白
+    - 每行多行文本
+    - 弹窗打断选区
+major_choices:
+  - id: structure
+    choice: 采纳 PAT-DATA-EXPLORER：过滤/比较主导的数据面 + 按需详情
+    rationale: 主任务 compare_filter_records 与 items 共享可比较字段（会话记录）两个 applies_when 命中；高置信路由首选
+    confidence: medium
+    references:
+      - sessions_table
+      - kpi_cards
+      - 监控运行时健康并下钻异常会话（扫 KPI → 过滤/排序会话表 → 选中查看详情 → 对照事件日志）
+      - operations dashboard (instrument panel)
+  - id: inspector
+    choice: 详情侧栏为 contextual inspector：选中行驱动，但不替代主工作区
+    rationale: L1 检视 LIST-DETAIL-INSPECTOR 的 applies_when（selection 频繁 + detail 为 supporting）命中；detail 非长文主任务
+    confidence: medium
+    references:
+      - detail_panel
+      - sessions_table
+  - id: states
+    choice: 四态真实化：loading 首屏骨架、过滤空态、?forceError=1 错误横幅+重试、行选中
+    rationale: fixture 无后端但状态必须诚实可达（P-26 Visibility of System Status + H-07 State Completeness 双命中）
+    confidence: medium
+    references:
+      - sessions_table
+      - 状态诚实（loading/empty/error/selected 全真实）
+      - 会话状态
+rejected:
+  - option: PAT-LIST-DETAIL（列表-详情）
+    reason: L1 检视：仅覆盖'选择→检视'，缺 filter/compare 主任务语义，是 DATA-EXPLORER 的子集；采用它将丢失排序/过滤的一等结构地位
+unresolved:
+  - id: fixture-data-shape
+    impact: low
+    affects:
+      - event_log 翻页策略

@@ -1,0 +1,49 @@
+version: "0.1"
+session_id: ds_20260830045528_df52c3d8
+task:
+  surfaces: []
+  primary: 监控运行时健康并下钻异常会话（扫 KPI → 过滤/排序会话表 → 选中查看详情 → 对照事件日志）
+product_relationships:
+  - id: drill_down
+    source: sessions_table
+    target: detail_panel
+    type: leads_to
+    direction: forward
+    meaning: 行选中驱动详情侧栏
+    importance: primary
+  - id: trace_events
+    source: detail_panel
+    target: event_log
+    type: leads_to
+    direction: forward
+    meaning: 从异常会话去事件日志找时间线
+    importance: supporting
+region_relationships:
+  - id: region_rel_data_detail
+    source: data
+    target: detail
+    type: selection_drives_contextual_detail
+decisions:
+  primary_structure: PAT-DATA-EXPLORER
+  density_intent: compact
+  major_choice_ids:
+    - structure
+    - inspector
+    - states
+must_preserve: []
+regression_points: []
+unresolved:
+  - fixture-data-shape
+corrections: []
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - filter_state
+    - comparison_scan
+    - requirement_alignment
+  regression_check_ids: []

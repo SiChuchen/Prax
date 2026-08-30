@@ -1,0 +1,86 @@
+version: "0.1"
+screen:
+  id: data_explorer_screen
+  intent:
+    primary_task: 监控运行时健康并下钻异常会话（扫 KPI → 过滤/排序会话表 → 选中查看详情 → 对照事件日志）
+    secondary_tasks:
+      - 强制失败演练（?forceError=1）验证错误态与重试
+  archetype:
+    pattern_ref: PAT-DATA-EXPLORER
+  density_intent: compact
+  regions:
+    - id: data
+      role: collection
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - comparison_group
+        - filter_then_inspect
+    - id: sessions_table 会话主表（排序/过滤/选中，承载 compare_filter_records 主任务）
+      role: experimental:sessions_table 会话主表（排序/过滤/选中，承载 compare_filter_records 主任务）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: kpi_cards 扫读层
+      role: experimental:kpi_cards 扫读层
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: detail_panel 选中详情（contextual，非主任务）
+      role: experimental:detail_panel 选中详情（contextual，非主任务）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: gate_chart 14 天分布
+      role: experimental:gate_chart 14 天分布
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: event_log 事件时间线
+      role: experimental:event_log 事件时间线
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: detail
+      role: contextual_inspector
+      importance: contextual
+      visibility:
+        condition: selection_driven
+      behavior_intent:
+        - selection_driven
+  relationships:
+    - id: region_rel_data_detail
+      source: data
+      target: detail
+      type: selection_drives_contextual_detail
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved:
+    - id: fixture-data-shape
+      question: fixture-data-shape
+      impact: low
+      affects:
+        - event_log 翻页策略
+  rejected_alternatives:
+    - option: PAT-LIST-DETAIL（列表-详情）
+      reason: L1 检视：仅覆盖'选择→检视'，缺 filter/compare 主任务语义，是 DATA-EXPLORER 的子集；采用它将丢失排序/过滤的一等结构地位

@@ -1,0 +1,36 @@
+version: "0.1"
+session_id: ds_20260830045528_df52c3d8
+task_ref: 监控运行时健康并下钻异常会话（扫 KPI → 过滤/排序会话表 → 选中查看详情 → 对照事件日志）
+selected:
+  - ref: product_relationships
+    reason:
+      - drill_down:sessions_table->detail_panel
+      - trace_events:detail_panel->event_log
+  - ref: region_relationships
+    reason:
+      - region_rel_data_detail
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-DATA-EXPLORER
+  - ref: unresolved
+    reason:
+      - fixture-data-shape
+  - ref: corrections
+    reason: []
+  - ref: validation-plan@1
+    reason:
+      - semantic_conformance
+      - state_completeness
+      - product_model_alignment
+      - keyboard
+      - hierarchy_review
+      - filter_state
+      - comparison_scan
+      - requirement_alignment
+excluded:
+  - ref: correction:corr-landing-header-flex-collapse
+    reason: scope_mismatch
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata

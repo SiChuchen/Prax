@@ -24,16 +24,21 @@ existing-product lifecycles skip the realize gate by design).
 
 ## Queue (run in order)
 
-### 1. PRAX-DASHBOARD-001 — greenfield + direct_code (`prax-dashboard/`)
+### 1. PRAX-DASHBOARD-001 — greenfield + direct_code (`prax-dashboard/`) — **DONE 2026-08-30, PASS**
 
-Closes the direct_code realize-gate live gap. Compact density (first
-non-spacious case), real states with deterministic Playwright assertions,
-zero visual uncertainty (tokens pinned in the requirement) so direct_code
-fit is honest. Golden observations: propose direct_code accepted before
-prepare; validation plan carries NO representation checks; states + keyboard
-verified live.
+Session `ds_20260830045528_df52c3d8`, validation COMPLETE 8/8, zero warnings.
+Every golden observation held: direct_code proposed and accepted before
+prepare (mature_design_system the only holding condition — the path records,
+it does not predicate); the plan carried no representation checks and gained
+the data-explorer checks (filter_state, comparison_scan); KB routed at high
+confidence to PAT-DATA-EXPLORER with semantic component contracts; reconcile
+recorded the first live capability gap (n4-export, explicit compromise);
+four honest states plus real-keyboard walkthrough captured as Playwright
+evidence; implementation in `apps/prax-dashboard/`. The mid-chain
+`design_correct` probe awaits an MCP reconnect (tool shipped mid-session);
+service-level coverage in tests/correction-ingestion.test.ts.
 
-### 2. PRAX-PRICING-001 — existing_product + add_surface + figma_first (`prax-pricing/`)
+### 2. PRAX-PRICING-001 — existing_product + add_surface + figma_first (`prax-pricing/`) — next
 
 Second figma_first case (Gate D: n=2 before treating the realization gate as
 stable) and the first add_surface lifecycle. Pricing/comparison page on the

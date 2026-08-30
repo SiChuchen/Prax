@@ -1,0 +1,71 @@
+version: "0.1"
+revision: 1
+session_id: ds_20260830045528_df52c3d8
+derived_from:
+  artifact_digests:
+    product_frame: 5dabb06da362a2d3f80beec8ae2517131c30192f7854d7aeabb4adffbc188494
+    design_context: 71299b56464acad5c74ef22a5014b5816b334c25fbff73808f918f94b829557c
+    design_decisions: 94db860f7ea54f6c7879642e77f330586526e99cc1e9835dc55301b9362f0749
+    sdir: 4d761799e110eba23827dc8b4675d31fa36a69e37f6cdbfa117999fdca7eb73d
+    realization_decision: a292e02dadb1fb1f00343c4423fbaed8e0efdf70d0faac54c77a1cffe4e53402
+plan:
+  version: "0.1"
+  pattern_ref: PAT-DATA-EXPLORER
+  checks:
+    - id: semantic_conformance
+      label: Semantic conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR is valid, semantic, and aligned to the approved pattern.
+      evidence_required: false
+    - id: state_completeness
+      label: State completeness
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Required loading, empty, ready, and error states exist.
+      evidence_required: false
+    - id: product_model_alignment
+      label: Product model alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: User-facing structure and language preserve the Product Frame.
+      evidence_required: true
+    - id: keyboard
+      label: Keyboard operability
+      kind: empirical
+      profile: keyboard_accessibility
+      facet: behavioral
+      requirement: Primary work and selection are operable with keyboard and visible focus.
+      evidence_required: true
+    - id: hierarchy_review
+      label: Hierarchy review
+      kind: assistive
+      profile: semantic_integrity
+      facet: visual_hierarchy
+      requirement: Visual prominence follows SDIR importance rather than implementation convenience.
+      evidence_required: true
+    - id: filter_state
+      label: Filter state
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Active filters and result state are represented explicitly.
+      evidence_required: true
+    - id: comparison_scan
+      label: Comparison scan
+      kind: empirical
+      profile: state_coverage
+      facet: behavioral
+      requirement: Comparable values can be scanned without opening every item.
+      evidence_required: true
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+history: []

@@ -1,0 +1,50 @@
+needs:
+  - id: n1-data-surface
+    product_action: 会话表排序/过滤/选中 + KPI/柱图/日志渲染
+    required_experience:
+      - 一屏扫读
+      - 两次点击下钻
+    capabilities:
+      - static html/css
+      - bundled json fixture
+      - fetch simulation
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 打包 fixture 驱动，前端内存排序/过滤；?forceError=1 走模拟失败路径
+  - id: n2-honest-states
+    product_action: 四态真实可达（loading/empty/error/selected）
+    required_experience:
+      - 状态诚实
+    capabilities:
+      - css skeleton
+      - empty state
+      - error banner
+      - row selection
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 首屏 300ms 模拟加载骨架；过滤空集显式空态；forceError 走 error+retry；选中行高亮并驱动侧栏
+  - id: n3-keyboard-a11y
+    product_action: 全键盘操作：过滤→排序表头→行→重试，Enter 选中，焦点可见
+    required_experience:
+      - keyboard_equivalent
+      - preserve_context
+    capabilities:
+      - semantic html
+      - focus-visible
+      - aria-sort/aria-live
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 原生 button/交互表格行 tabIndex + Enter/Space 处理；aria-live 宣告过滤结果数
+  - id: n4-export
+    product_action: 导出会话/事件为 CSV 供离线分析
+    required_experience:
+      - 一键导出
+    capabilities:
+      - none — 无后端导出端点
+    status: gap
+    resolution:
+      type: explicit_compromise
+      notes: 显式妥协：本次不实现导出（无后端）；记录为后续后端能力，UI 不放死按钮

@@ -36,6 +36,8 @@ become the product model.
 | `prax-sdir` | Semantic Design Intent Record generation and render-leak linting |
 | `prax-validator` | Context-specific plans, evidence ingestion, and typed findings |
 | `prax-web` | Reserved for a later review/administration UI; intentionally deferred in v0 |
+| `prax-landing` | Product website home page — PRAX-LANDING-001 golden case output (figma_first) |
+| `prax-dashboard` | Local operations dashboard — PRAX-DASHBOARD-001 golden case output (direct_code) |
 
 ## Requirements
 
@@ -140,5 +142,8 @@ Desktop/React implementation handoff only. The knowledge store is small and
 auditable, and the router uses deterministic filters and ranking.
 
 See [Architecture](docs/architecture.md), [Constitution](docs/constitution.md),
-and the [Architecture Canvas Golden Case](golden/architecture-canvas/README.md).
+the [Architecture Canvas Golden Case](golden/architecture-canvas/README.md),
+and the [Golden Case Suite](golden/README.md) — PRAX-LANDING-001 (figma_first),
+PRAX-DASHBOARD-001 (direct_code), and the queued pricing/wizard cases, each
+with a live-run record in `docs/phase-report-2026-08-29.md`.
 

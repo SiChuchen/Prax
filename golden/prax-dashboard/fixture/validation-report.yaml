@@ -1,0 +1,153 @@
+plan_revision: 1
+evidence:
+  submitted_by: zcode agent (GLM-5.3-Flash)
+  collected_at: 2026-08-30T05:22:00Z
+  items:
+    - check_id: product_model_alignment
+      outcome: pass
+      source: zcode agent runtime verification (vite preview, chromium 1440)
+      notes: 六个 product object 全部落为真实组件：header_strip（版本/uptime/会话计数）、kpi_cards（48h 会话 5/门延迟中位 59m/证据 99/开放缺口 1——来自本次 reconcile 的 n4-export gap）、sessions_table（9 行）、detail_panel（选中驱动）、gate_chart（14 天 SVG 柱图，无图表库）、event_log（最新在前）；关系 drill_down/trace_events 可操作；文案零营销（数字+状态+时间戳）。
+      artifact_refs:
+        - rep-evidence/runtime/state-ready-full.png
+    - check_id: state_completeness
+      outcome: pass
+      source: zcode agent runtime verification (Playwright 四态逐一驱动并截图)
+      notes: 五态全部真实演示：loading 骨架（?slow=1 截图，role=status）；过滤无匹配空态（task=zzz → 0/9，显式空态文案）；错误横幅（?forceError=1，role=alert）+ Retry 点击后 600ms 内到达 ready；行选中（aria-selected + 高亮）驱动详情面板（aria-live）。
+      artifact_refs:
+        - rep-evidence/runtime/state-loading-skeleton.png
+        - rep-evidence/runtime/state-empty-filter.png
+        - rep-evidence/runtime/state-error-banner.png
+        - rep-evidence/runtime/state-selected-detail.png
+    - check_id: keyboard
+      outcome: pass
+      source: zcode agent runtime verification (真实键盘 pressKey + focus-visible 检查)
+      notes: 真实键盘走查（Playwright pressKey）：Tab 首停点=status 过滤器（matches(':focus-visible')=true，outline solid）；Tab 链 select→task 输入→排序按钮×2→行；焦点在行上按 Enter → 行选中（focusedRowSelected=true）且详情面板更新、焦点保留。无键盘陷阱。
+      artifact_refs:
+        - rep-evidence/runtime/state-ready-full.png
+    - check_id: hierarchy_review
+      outcome: pass
+      source: zcode agent runtime inspection (对照 SDIR importance 逐区检查)
+      notes: data/sessions_table 为 dominant/primary：占屏最大、含主交互；detail 为 contextual（空态提示'Select a row'）；KPI/柱图/日志为 supporting；状态色仅语义使用；紧凑密度下分组与层级可读（H-13 Structured Density）。
+      artifact_refs:
+        - rep-evidence/runtime/state-ready-full.png
+    - check_id: filter_state
+      outcome: pass
+      source: zcode agent runtime verification (DOM 断言 + 截图)
+      notes: 过滤功能断言：task=zzz → 0/9 + 空态；status=failed → 2/9 且所有行 badge=failed；aria-live result-count 实时更新（0/9→2/9→9/9）；清空恢复全量。
+      artifact_refs:
+        - rep-evidence/runtime/state-empty-filter.png
+        - rep-evidence/runtime/state-ready-full.png
+    - check_id: comparison_scan
+      outcome: pass
+      source: zcode agent runtime verification (DOM 断言)
+      notes: 排序断言：started 列点击切换 desc→asc，首行从 ds_20260830045528 反转为 ds_20260826125836，th aria-sort 同步 ascending；status 列可同方式排序；行内字段可比较（gates x/y、evidence 数）。
+      artifact_refs:
+        - rep-evidence/runtime/state-ready-full.png
+    - check_id: requirement_alignment
+      outcome: pass
+      source: zcode agent artifact check (对照 requirement.md 与 implementation brief)
+      notes: 与 restatement/golden 观测逐条对齐：六区齐备；四态真实可达（forceError/slow 测试接缝为 requirement 明文允许）；无图表库（手写 SVG）；token 与钉死值一致（#101014/#17171C/#E8E8EC/#9A9AA5/#5B8AF5/r8/Inter+Roboto Mono）；n4-export gap 按显式妥协处理（UI 无死按钮）；全量测试 175/175。
+      artifact_refs:
+        - rep-evidence/runtime/state-ready-full.png
+evaluation:
+  status: PASS
+  checks:
+    - id: semantic_conformance
+      label: Semantic conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR is valid, semantic, and aligned to the approved pattern.
+      evidence_required: false
+    - id: state_completeness
+      label: State completeness
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Required loading, empty, ready, and error states exist.
+      evidence_required: false
+    - id: product_model_alignment
+      label: Product model alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: User-facing structure and language preserve the Product Frame.
+      evidence_required: true
+    - id: keyboard
+      label: Keyboard operability
+      kind: empirical
+      profile: keyboard_accessibility
+      facet: behavioral
+      requirement: Primary work and selection are operable with keyboard and visible focus.
+      evidence_required: true
+    - id: hierarchy_review
+      label: Hierarchy review
+      kind: assistive
+      profile: semantic_integrity
+      facet: visual_hierarchy
+      requirement: Visual prominence follows SDIR importance rather than implementation convenience.
+      evidence_required: true
+    - id: filter_state
+      label: Filter state
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Active filters and result state are represented explicitly.
+      evidence_required: true
+    - id: comparison_scan
+      label: Comparison scan
+      kind: empirical
+      profile: state_coverage
+      facet: behavioral
+      requirement: Comparable values can be scanned without opening every item.
+      evidence_required: true
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+  findings:
+    - check_id: semantic_conformance
+      kind: deterministic
+      outcome: pass
+      message: SDIR is valid, semantic, and aligned to the approved pattern.
+      source: prax-validator
+    - check_id: state_completeness
+      kind: deterministic
+      outcome: pass
+      message: Required loading, empty, ready, and error states exist.
+      source: prax-validator
+    - check_id: product_model_alignment
+      kind: assistive
+      outcome: pass
+      message: 六个 product object 全部落为真实组件：header_strip（版本/uptime/会话计数）、kpi_cards（48h 会话 5/门延迟中位 59m/证据 99/开放缺口 1——来自本次 reconcile 的 n4-export gap）、sessions_table（9 行）、detail_panel（选中驱动）、gate_chart（14 天 SVG 柱图，无图表库）、event_log（最新在前）；关系 drill_down/trace_events 可操作；文案零营销（数字+状态+时间戳）。
+      source: zcode agent runtime verification (vite preview, chromium 1440)
+    - check_id: keyboard
+      kind: empirical
+      outcome: pass
+      message: 真实键盘走查（Playwright pressKey）：Tab 首停点=status 过滤器（matches(':focus-visible')=true，outline solid）；Tab 链 select→task 输入→排序按钮×2→行；焦点在行上按 Enter → 行选中（focusedRowSelected=true）且详情面板更新、焦点保留。无键盘陷阱。
+      source: zcode agent runtime verification (真实键盘 pressKey + focus-visible 检查)
+    - check_id: hierarchy_review
+      kind: assistive
+      outcome: pass
+      message: data/sessions_table 为 dominant/primary：占屏最大、含主交互；detail 为 contextual（空态提示'Select a row'）；KPI/柱图/日志为 supporting；状态色仅语义使用；紧凑密度下分组与层级可读（H-13 Structured Density）。
+      source: zcode agent runtime inspection (对照 SDIR importance 逐区检查)
+    - check_id: filter_state
+      kind: deterministic
+      outcome: pass
+      message: 过滤功能断言：task=zzz → 0/9 + 空态；status=failed → 2/9 且所有行 badge=failed；aria-live result-count 实时更新（0/9→2/9→9/9）；清空恢复全量。
+      source: zcode agent runtime verification (DOM 断言 + 截图)
+    - check_id: comparison_scan
+      kind: empirical
+      outcome: pass
+      message: 排序断言：started 列点击切换 desc→asc，首行从 ds_20260830045528 反转为 ds_20260826125836，th aria-sort 同步 ascending；status 列可同方式排序；行内字段可比较（gates x/y、evidence 数）。
+      source: zcode agent runtime verification (DOM 断言)
+    - check_id: requirement_alignment
+      kind: assistive
+      outcome: pass
+      message: 与 restatement/golden 观测逐条对齐：六区齐备；四态真实可达（forceError/slow 测试接缝为 requirement 明文允许）；无图表库（手写 SVG）；token 与钉死值一致（#101014/#17171C/#E8E8EC/#9A9AA5/#5B8AF5/r8/Inter+Roboto Mono）；n4-export gap 按显式妥协处理（UI 无死按钮）；全量测试 175/175。
+      source: zcode agent artifact check (对照 requirement.md 与 implementation brief)
+  missing_evidence: []
+  warnings: []

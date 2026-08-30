@@ -1,0 +1,63 @@
+user:
+  primary_role: Prax benchmark operator (single, expert)
+  expertise: expert
+  familiarity: high
+goal:
+  primary: 让操作者一屏内掌握 Prax 运行时状态：会话吞吐、门延迟、证据量与异常，并能下钻任一会话详情
+tasks:
+  primary: 监控运行时健康并下钻异常会话（扫 KPI → 过滤/排序会话表 → 选中查看详情 → 对照事件日志）
+  secondary:
+    - 强制失败演练（?forceError=1）验证错误态与重试
+product_objects:
+  - id: header_strip
+    user_name: Header 运行时条
+    purpose: 运行时标识：版本、uptime、会话计数
+  - id: kpi_cards
+    user_name: KPI 卡
+    purpose: 四项核心指标扫读（今日会话/门延迟中位/证据文件/开放缺口）
+  - id: sessions_table
+    user_name: 会话表
+    purpose: 会话主表：排序/过滤/选中，是下钻入口
+  - id: detail_panel
+    user_name: 详情侧栏
+    purpose: 选中会话的详情侧栏
+  - id: gate_chart
+    user_name: 门结果柱图
+    purpose: 14 天门结果分布（静态 SVG 柱图）
+  - id: event_log
+    user_name: 事件日志
+    purpose: 最近 200 条事件，最新在前
+relationships:
+  - id: drill_down
+    source: sessions_table
+    target: detail_panel
+    type: leads_to
+    direction: forward
+    meaning: 行选中驱动详情侧栏
+    condition: 表格选中行时
+    importance: primary
+  - id: trace_events
+    source: detail_panel
+    target: event_log
+    type: leads_to
+    direction: forward
+    meaning: 从异常会话去事件日志找时间线
+    condition: 异常排查时
+    importance: supporting
+mental_model_hypothesis:
+  summary: 操作者以'扫视 KPI → 定位异常会话 → 下钻详情 → 查事件日志'的监控心智使用仪表盘；表格是主对象，状态（运行中/完成/失败）是最重要的维度；任何异步假象必须诚实呈现四态。
+  confidence: high
+  evidence:
+    - domain_convention
+    - user_requirement
+primary_success_definition: 操作者无需滚动即可读出四项 KPI；两次点击内到达任一会话详情；过滤到空集时明确显示空态；强制失败路径显示可重试的错误横幅；全程键盘可完成且焦点可见。
+open_questions: []
+existing_product:
+  stable_user_concepts: []
+  stable_patterns:
+    - instrument-panel 仪表盘惯例：header/KPI 行/主表+侧栏/次级日志
+  current_user_pain_points: []
+  current_constraints:
+    - 单桌面视口 1280-1680px
+    - 无图表库，SVG 手绘
+  legacy_debt: []
