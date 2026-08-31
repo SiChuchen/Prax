@@ -1,0 +1,89 @@
+session_id: ds_20260831064508_e3bc12f1
+primary_structure:
+  pattern: PAT-CANVAS-WORKSPACE
+  rationale:
+    - The task is spatial relationship understanding on a dominant canvas; the inspector and reading key stay subordinate
+    - Multi-selection impact must live in the canvas emphasis grammar itself so the operator reads union and shared impact without leaving the workspace
+    - "PAT-LIST-DETAIL-INSPECTOR stays supporting: the Inspector complements the canvas with the aggregate summary"
+  confidence: high
+information_hierarchy:
+  primary:
+    - architecture
+    - selection
+    - impact-union
+    - shared-impact
+  secondary:
+    - aggregate-inspector
+    - status bar selection count
+    - camera framing the selection plus its impact union
+density:
+  intent: regular
+  strategy:
+    - "Reuse the existing emphasis grammar: selected objects primary, impacted union related, unrelated muted; edges incident to the selection active"
+    - "Shared impact is a non-color channel: a count badge and glyph on the existing impact chip plus an inset line on shared cards; no new hues"
+    - Inspector aggregate section keeps the 13px text floor and progressive disclosure; 336px dock unchanged
+  avoid:
+    - glow, halos or per-relationship-type rainbow for impact or shared marking (frozen correction corr_canvas_impact_grammar)
+    - new permanent chrome around the canvas
+    - animated packets for impact (reserved for Trace semantic order)
+major_choices:
+  - id: multi-selection-state
+    choice: "CanvasInteractionState gains selectedObjectIds: string[] (ordered, primary selection stays in selection). Click keeps single-select behavior identical; shift-click and Shift+drag marquee add objects via React Flow selection events (onSelectionChange), synced into the interaction state"
+    rationale: Keeps the single-selection pathway untouched (requirement 4) while making selection a set; React Flow already owns the marquee surface (elementsSelectable, selectionOnDrag false + Shift key box selection)
+    confidence: high
+    references:
+      - canvas-kernel
+      - architecture-canvas-container
+  - id: impact-union-read-model
+    choice: "deriveImpact generalizes to a set of subject ids: upstream/downstream object and relationship sets are the union over all selected objects, each impacted id carries a source count (number of distinct selected objects impacting it); count >= 2 means shared impact. Direct neighbors only - no transitive closure"
+    rationale: A single derivation serves single and multi selection (single = union of one), so single-select behavior is provably unchanged; direct-neighbor scope matches the frozen v1 cognition budget and camera contract
+    confidence: high
+    references:
+      - interaction-read-model
+      - stress-fixtures
+  - id: inspect-lens-owns-multi-impact
+    choice: In Inspect mode all selected objects get primary emphasis, the impact union gets related emphasis, unrelated topology recedes to muted; incident relationships become active. Impact computation stays scoped to inspect mode (and single-object focus, unchanged)
+    rationale: Multi-select is an Inspect activity; Focus keeps its two-hop grammar and Trace keeps the Flow lens per requirement 4; browse mode with no selection returns everything to normal
+    confidence: high
+    references:
+      - interaction-read-model
+      - architecture-canvas-container
+  - id: shared-impact-line-grammar
+    choice: "Shared impact is identified through non-color channels on existing primitives: the object impact chip gains a source-count badge (x N) plus an inset line on shared cards, shared edges gain a weight bump, the reading key explains the shared treatment, and the Inspector lists shared objects with per-object counts"
+    rationale: Correction corr_canvas_impact_grammar requires emphasis via line grammar and emphasis states with a non-color channel; count badges make 'shared' quantitatively readable
+    confidence: high
+    references:
+      - object-node
+      - relationship-edge
+      - reading-key
+      - inspector-panel
+  - id: inspector-aggregate-binding
+    choice: "While two or more objects are selected in Inspect, bindInspector returns a new multi-selection binding: selection summary, aggregate impact counts (upstream/downstream/shared) and clickable object lists; empty selection keeps returning null so the Inspector stays idle/closed"
+    rationale: Requirement 3 asks for counts plus object list; the docked inspector is already the reading companion and its null-binding idle behavior already satisfies the empty-selection requirement
+    confidence: high
+    references:
+      - inspector-panel
+      - architecture-canvas-container
+  - id: camera-fits-multi-impact
+    choice: Camera fit for a multi-selection targets the selected objects plus their impact union; camera intent key includes the multi-selection ids
+    rationale: Consistent with the single-select inspect camera (selection plus neighbors); keeps the union readable without manual panning and preserves the operator's orientation
+    confidence: medium
+    references:
+      - architecture-canvas-container
+      - interaction-read-model
+rejected:
+  - option: Represent multi-selection as repeated single-selection events (replace selection each click)
+    reason: Defeats the requirement; union and shared impact cannot be computed from a single subject
+  - option: Transitive multi-hop impact closure across the selection
+    reason: Breaks at-a-glance reading on 40/70 and 100/180 graphs; frozen v1 decision bounds impact to direct neighbors
+  - option: Distinct rainbow hue per selection member or a glow halo for shared objects
+    reason: Violates frozen line-grammar correction corr_canvas_impact_grammar
+  - option: Move aggregate summary into a floating overlay above the canvas
+    reason: Adds permanent chrome and covers the map; the docked Inspector is the established detail surface
+  - option: Apply multi-impact emphasis in Focus and Trace modes
+    reason: Requirement 4 freezes Focus two-hop grammar and Trace Flow lens; multi-impact is an Inspect lens behavior
+unresolved:
+  - id: reactflow_selection_event_order
+    impact: low
+    affects:
+      - canvas-kernel

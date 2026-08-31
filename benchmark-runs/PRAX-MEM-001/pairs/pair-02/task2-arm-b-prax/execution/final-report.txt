@@ -1,0 +1,53 @@
+All done. Final report:
+
+## 1. What I implemented
+
+Multi-select impact analysis on the Architecture Canvas, following the full Prax gate chain (frame → route → decide → sdir delta → reconcile → prepare → validate, all PASS):
+
+- **Union impact read model** (`interaction.ts`): `deriveImpact(graph, subjectIds)` now computes the union of direct upstream dependencies and downstream dependents over *any number* of selected objects, plus per-id `impactSourceCounts` / `relationshipSourceCounts` and `sharedObjectIds` / `sharedRelationshipIds` (impacted by ≥2 selected objects). `CanvasInteractionState` gained `selectedObjectIds`. Single selection is the union of one, so single-select behavior is provably unchanged.
+- **Selection ownership**: React Flow owns selection state (click, ctrl/cmd-click additive, Shift+drag marquee); `onSelectionChange` mirrors it into the interaction model exactly once per genuine change. The projection no longer writes `selected` flags (this removes an echo loop between projection and RF's click changes); programmatic selections (search, Inspector lists, F-focus, Escape) are pushed into RF through its own `onNodesChange` pipeline.
+- **Shared impact identification** (non-color channels per frozen correction `corr_canvas_impact_grammar`): `×N` source-count badge on the existing impact chip, `impact-shared` inset line on cards, edge weight bump + `×N` on shared relationship labels, "Shared ×n" reading-key entry, status bar "N selected".
+- **Inspector aggregate summary** (`inspector-binding.ts`, `inspector.tsx`): new `multi` binding with Upstream/Downstream/Shared counts, clickable object lists with per-object shared counts, relationship count, Selected objects list; empty selection still returns the binding `null` → Inspector idle/closed.
+- **Extras**: camera fits selection + impact union on multi-select; Focus/F-key requires a single-object selection; Focus and Trace semantics untouched.
+- **Incidental fix (required for browser evidence)**: `layout.ts` constructed `new ELK()` at module scope, which crashed SSR of every canvas page (the prior review's browser QA was blocked on exactly this). ELK is now constructed lazily on first layout — zero behavior change; all 17 tests still pass.
+
+## 2. Files changed (all under `E:\codex-prj\ab-worktrees\mem1-pair-01-b`)
+
+- `app/architecture/interaction.ts` — union/shared impact derivation, `selectedObjectIds`, generalized Inspect emphasis
+- `app/architecture/projection.ts` — shared impact counts on nodes/edges, selection ownership removal
+- `app/architecture/inspector-binding.ts` — `MultiSelectInspectorBinding`
+- `app/architecture/inspector.tsx` — aggregate impact UI
+- `app/architecture/architecture-canvas.tsx` — selection sync, programmatic dispatch, camera, command bar, status bar, reading key
+- `app/architecture/canvas-kernel.tsx` — `onSelectionChange` bridge, optional `onNodeClick`
+- `app/architecture/architecture-node.tsx` — shared badge/aria
+- `app/architecture/architecture-edge.tsx` — shared marker/aria
+- `app/architecture/types.ts` — `sharedImpactCount` on node/edge data
+- `app/architecture/layout.ts` — lazy ELK construction (SSR fix)
+- `app/globals.css` — shared-impact and aggregate-count styles
+- `tests/canvas-engine.test.mjs` — new multi-select test (union, shared, single-select equivalence, focus/trace regression, registry graph, inspector bindings)
+
+## 3. Screenshots (all in `E:\codex-prj\ab-worktrees\mem1-pair-01-b\evidence\`)
+
+- `01-small-browse.png` — Small 15/20 fixture, Browse baseline, everything normal
+- `02-small-single-impact.png` — single-select impact (regression: unchanged behavior)
+- `03-small-multi-shared-impact.png` — 2 objects ctrl+click-selected; union impact, "Both ways ×2"/"Downstream ×2" chips, shared "requires ×2" edge, Inspector aggregate (Up 1 / Down 6 / Shared 2), reading key "Shared ×n"
+- `04-small-idle-after-clear.png` — after Escape: Browse, no selection, Inspector closed
+- `05-medium-marquee-shared-impact.png` — Medium 40/70, marquee-selected 10 objects; Inspector "10 objects selected" (Up 7 / Down 6 / Shared 7) with per-object ×N list
+- `06-registry-browse.png` — production registry project (real `/api/projects` → adapter path), Browse
+- `07-registry-single-impact.png` — registry single-select impact
+- `08-registry-multi-shared-impact.png` — registry multi-select: "×2 Registry Store" shared card/edge, aggregate counts, shared + downstream lists
+- `09-registry-idle-after-clear.png` — registry idle after clearing
+
+## 4. Verification per requirement point
+
+- **R1 union via click + marquee**: Playwright script (`.sites-runtime/capture-multiselect.mjs`) — 9/9 DOM-asserted checks passed: click → single inspect; ctrl+click → 2 selected with union; medium Shift+drag marquee → 10 selected ("INSPECT · architecture · 10 selected"); expected sets asserted in tests against raw relationship data on Small 15/20 and Medium 40/70.
+- **R2 shared impact**: shared objects carry `×N` badges (asserted in DOM + projection tests), inspector "SHARED IMPACT · REACHED BY 2+ SELECTED" list with per-object counts; test asserts shared sets equal independently computed expectations.
+- **R3 Inspector aggregate + idle**: counts cells asserted (`Upstream/Downstream/Shared`); after Escape/pane clear, `canvas-inspector.open` = 0, mode BROWSE, impact `null` (test + screenshots 04/09).
+- **R4 no regression**: all 8 pre-existing tests untouched and green (incl. single-select impact, Focus two-hop, Trace with `impact === null`); test proves `deriveCanvasView` with explicit single ids equals the legacy single-selection path; browser evidence 02/07.
+- **R5 scales + registry**: Small 15/20 and Medium 40/70 evidence; registry data served through the real API (`/api/projects` → `ProjectDetail` → adapter) from a locally seeded D1 (migrations applied; demo project "Evidence Demo Platform"); `npm test` 17/17, `tsc --noEmit` and `eslint` clean. Nothing was deployed.
+
+Product decisions made where the requirement was ambiguous: additive click uses Ctrl/Cmd (React Flow's multi-selection key; Shift is reserved for marquee); impact stays direct-neighbor only (frozen v1 decision, no transitive closure); multi-impact is an Inspect-lens behavior (Focus/Trace untouched); during Trace, a single-node pick rebinds the Inspector while keeping the Flow lens (v1 parity).
+
+## 5. Prax design session
+
+`ds_20260831064508_e3bc12f1` — requirement confirmed, frame/context/route/decisions/SDIR-delta/reconcile/prepare completed, `design_validate` evaluate: **PASS, phase COMPLETE** (all five checks: delta_conformance, untouched_surface_regression, pattern_consistency, authority_consistency, requirement_alignment).

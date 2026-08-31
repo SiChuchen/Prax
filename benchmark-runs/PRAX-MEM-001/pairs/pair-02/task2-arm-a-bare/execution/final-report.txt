@@ -1,0 +1,49 @@
+Implementation complete and fully verified. Final report:
+
+## 1. What I implemented
+
+Multi-select union-impact analysis for the Architecture Canvas, respecting the Semantic Graph boundary (all logic lives in the renderer-independent interaction read model; React Flow is only the gesture surface):
+
+- **Multi-object selection** — new `{ kind: "objects"; ids: string[] }` selection kind. Shift+drag on the canvas = marquee/box selection, Shift+click = toggle-add (React Flow v12 `selectionKeyCode`/`multiSelectionKeyCode`); plain clicks still produce the legacy single-object selection (sets of 1 are normalized back to `{ kind: "object" }`). `deleteKeyCode` disabled (Human Web stays read-only), `selectNodesOnDrag` off so drags stay layout-only.
+- **Union impact with shared identification** — `deriveAggregateImpact()` BFS-merges per-root upstream/downstream impacts keeping minimum hop depth, and counts `objectImpactCounts`/`relationshipImpactCounts` per root. Objects impacted by ≥2 selected objects are flagged in `sharedObjectIds`. Nodes render an amber chip `▲▼ <hops> ×k` plus amber border when shared; the reading key gains a "◆ 共享 Shared" legend.
+- **Aggregate Inspector** — new `MultiSelectionInspectorBinding` ("N Objects") with an Aggregate Impact section: counts (▲ upstream / ▼ downstream / ◆ shared, max depths) plus clickable Shared / Upstream / Downstream object lists and a Selected Objects list. It renders only while a selection exists and returns to the idle (closed) state when the selection empties (Escape / pane click).
+- **Preserved behavior** — single-select Inspect, Focus ("f" key + button) and Trace lenses use the same code paths as before (single root = degenerate aggregate); camera fit, validity reset, and localStorage layout cache unchanged. A real bug found during browser QA was fixed: an inline `onSelectionChange` identity caused React Flow to re-emit stale selections on every render, preventing Escape/pane-click from clearing multi-selections; the kernel now passes a `useCallback`-stable handler, and the keyboard handler was hardened against non-Element event targets.
+- **Product decisions made** (noted as required): multi-object selection always switches to Inspect mode and clears an active Trace lens (single-object selection in Trace still preserves the lens, as before); aggregate union totals deliberately exclude the per-node "direct 1-hop" root chip, which remains single-select-only.
+
+## 2. Files changed (tracked)
+
+- `E:\codex-prj\ab-worktrees\mem1-pair-01-a\app\architecture\interaction.ts` — objects selection kind, `deriveAggregateImpact`, multi emphasis, landscape visibility
+- `E:\codex-prj\ab-worktrees\mem1-pair-01-a\app\architecture\canvas-kernel.tsx` — marquee/Shift-click wiring, stable `onSelectionChange`, delete disabled
+- `E:\codex-prj\ab-worktrees\mem1-pair-01-a\app\architecture\architecture-canvas.tsx` — `applySelection`/`handleSelectedObjectNodes`, validation, camera fit for multi, shared reading key
+- `E:\codex-prj\ab-worktrees\mem1-pair-01-a\app\architecture\inspector-binding.ts` — `MultiSelectionInspectorBinding`
+- `E:\codex-prj\ab-worktrees\mem1-pair-01-a\app\architecture\inspector.tsx` — aggregate impact summary panel
+- `E:\codex-prj\ab-worktrees\mem1-pair-01-a\app\architecture\projection.ts` — multi `selected`, impact `sources`, union-safe root chip
+- `E:\codex-prj\ab-worktrees\mem1-pair-01-a\app\architecture\architecture-node.tsx` — shared `×k` chip + aria labels
+- `E:\codex-prj\ab-worktrees\mem1-pair-01-a\app\architecture\types.ts` — `ObjectNodeData.impact.sources`
+- `E:\codex-prj\ab-worktrees\mem1-pair-01-a\app\globals.css` — shared chip/border + Inspector shared-tag styles (13px floor respected)
+- `E:\codex-prj\ab-worktrees\mem1-pair-01-a\tests\canvas-engine.test.mjs` — 5 new multi-select regression tests (BFS oracle, union/shared, single-select preservation, view-model emphasis, fixture+registry-shaped binding)
+- (`app\architecture\architecture-edge.tsx` shows modified but that diff pre-dates this task, from earlier uncommitted work in the worktree)
+
+Untracked local-QA devices: `cf-shim.mjs` (extended: local D1 over `node:sqlite` so the production page runs on real seeded registry data), `vite.fixture.config.ts` (pre-existing), `evidence\` (script + screenshots). Node_modules-only patch: `@cloudflare/vite-plugin` runner-worker `idFromName` shim to tolerate the installed workerd runtime (dev-server infra break verified pre-existing at HEAD; no repo dependency changes).
+
+## 3. Screenshots (all real Chromium captures, `evidence\`)
+
+- `multi-impact-01-small-browse.png` — Small 15/20 fixture, Browse baseline
+- `multi-impact-02-small-single-select.png` — legacy single-object Inspector (依赖影响, Focus button)
+- `multi-impact-03-small-marquee-union-impact.png` — Shift+drag marquee of 3 objects: union impact, amber `×3` shared chips, "◆ 15 共享" aggregate
+- `multi-impact-04-small-shift-click-grow.png` — Shift+click grows selection to 4, union recomputed
+- `multi-impact-05-small-inspector-idle.png` — after Escape: BROWSE, no selection, Inspector closed (idle)
+- `multi-impact-06-small-focus.png` — Focus mode unchanged (single-object Focus panel)
+- `multi-impact-07-small-trace.png` — Trace lens unchanged (Flow "Intent to Verified Change")
+- `multi-impact-08-medium-marquee-union-impact.png` — Medium 40/70: ▲18/▼39/◆38 shared with `×2` chips
+- `multi-impact-09-registry-union-impact.png` — production `ecp-core` registry (r2, D1 data): 2 selected, ▲8/▼11/◆9 shared
+
+## 4. Verification per requirement
+
+1. **Union impact on click + box selection** — browser: marquee + Shift+click states show union upstream/downstream emphasis and counts (shots 03/04/08/09); unit: `deriveAggregateImpact` equals an independent BFS oracle for depth-min union on the 15/20 fixture, and equals the union of per-root impacts on 40/70.
+2. **Shared impact identifiable** — `sharedObjectIds`/`objectImpactCounts` unit-tested (flag ⇔ count>1, exact sets); visually amber `×k` chips, "◆ 共享" legend, and Inspector "Shared · 被 ≥2 个选中对象影响" list (shots 03/04/08/09).
+3. **Aggregate Inspector + idle on empty** — Inspector shows counts + object lists for the live selection and, after Escape/pane click, `mode` returns to BROWSE, 0 selected, no `canvas-inspector.open` (shot 05, `inspectorIdle` check true); bindInspector returns `null` for empty selections (unit-tested).
+4. **Single-select + Focus/Trace preserved** — single click still yields the object Inspector with Focus button and 依赖影响 line (shot 02); Focus (FOCUS statusbar + "Focused" state, shot 06) and Trace (TRACE + flow lens + animated ELK-routed path, shot 07) unchanged; existing tests untouched and passing.
+5. **Fixture sizes + production registry** — verified on Small 15/20 and Medium 40/70 in-browser, and on `/projects/ecp-core` serving real seeded D1 registry data through `adaptArchitectureToSemanticGraph` (shot 09); unit tests additionally cover the registry-shaped adapter path. `npm test` (build + 20/20), `npm run lint`, `git diff --check`, and `tsc --noEmit` all pass.
+
+Nothing was deployed. A local QA server (`npx vite --config vite.fixture.config.ts --port 5230`) is still running at http://localhost:5230 if you want to reproduce the interactions; evidence was captured by `evidence\capture-multi-select-evidence.cjs` (9/9 assertions true).

@@ -1,0 +1,451 @@
+diff --git a/app/architecture/architecture-canvas.tsx b/app/architecture/architecture-canvas.tsx
+index 29a0c5a..f40fbd6 100644
+--- a/app/architecture/architecture-canvas.tsx
++++ b/app/architecture/architecture-canvas.tsx
+@@ -429,8 +429,10 @@ export default function ArchitectureCanvas({
+             <div className="canvas-reading-key">
+               <span><i className="object-key" /> Object</span>
+               <span><i className="relationship-key" /> Relationship</span>
++              {view.impact && <span>▲ 上游 Upstream</span>}
++              {view.impact && <span>▼ 下游 Downstream</span>}
+               {interaction.mode === "trace" && <span><i className="trace-key" /> Active Flow</span>}
+-              <em>{interaction.mode === "trace" ? "动画表示语义顺序，不代表实时流量" : "拖动只调整本机视图，不改变架构关系"}</em>
++              <em>{interaction.mode === "trace" ? "动画表示语义顺序，不代表实时流量" : view.impact ? "▲ 表示被选中对象依赖的上游，▼ 表示受其影响的下游；数字为跳数" : "拖动只调整本机视图，不改变架构关系"}</em>
+             </div>
+           </ArchitectureCanvasKernel>
+ 
+@@ -438,7 +440,7 @@ export default function ArchitectureCanvas({
+           {layouting && <div className="canvas-layouting">ELK is arranging the system…</div>}
+           {layoutError && <div className="canvas-layout-error" role="status">{layoutError}</div>}
+         </div>
+-        <Inspector binding={inspectorBinding} mode={interaction.mode} onClose={() => interaction.mode === "trace" ? setInteraction((current) => ({ ...current, selection: null })) : select(null)} onFocus={focusObject} onSelect={select} />
++        <Inspector binding={inspectorBinding} impact={view.impact} mode={interaction.mode} onClose={() => interaction.mode === "trace" ? setInteraction((current) => ({ ...current, selection: null })) : select(null)} onFocus={focusObject} onSelect={select} />
+       </div>
+ 
+       <footer className="canvas-statusbar">
+diff --git a/app/architecture/architecture-edge.tsx b/app/architecture/architecture-edge.tsx
+index 6f28cc2..db9597b 100644
+--- a/app/architecture/architecture-edge.tsx
++++ b/app/architecture/architecture-edge.tsx
+@@ -72,6 +72,7 @@ export default function RelationshipEdge(props: EdgeProps<ArchitectureFlowEdge>)
+   const labelY = props.data?.route?.labelPoint?.y ?? (smart.route?.kind === "routed" ? smart.route.edgeCenterY : fallback[2]);
+   const relationship = props.data?.relationship;
+   const emphasis = props.data?.emphasis ?? "normal";
++  const impactRole = props.data?.impactRole;
+   const showLabel = emphasis === "active" || props.selected || props.data?.zoomLevel === "operational";
+   const label = props.data?.flowPayload || relationship?.label || relationship?.relationshipType;
+   const animate = emphasis === "active" && Boolean(props.data?.activeFlowName);
+@@ -83,7 +84,7 @@ export default function RelationshipEdge(props: EdgeProps<ArchitectureFlowEdge>)
+       : 1;
+ 
+   return (
+-    <g className={`relationship-edge type-${relationship?.relationshipType ?? "dependency"} emphasis-${emphasis} ${props.selected ? "is-selected" : ""}`}>
++    <g className={`relationship-edge type-${relationship?.relationshipType ?? "dependency"} emphasis-${emphasis} ${impactRole ? `impact-${impactRole}` : ""} ${props.selected ? "is-selected" : ""}`}>
+       <BaseEdge
+         id={props.id}
+         interactionWidth={22}
+@@ -99,13 +100,14 @@ export default function RelationshipEdge(props: EdgeProps<ArchitectureFlowEdge>)
+       {showLabel && label && (
+         <EdgeLabelRenderer>
+           <div
+-            className={`relationship-label nodrag nopan ${emphasis === "active" ? "active" : ""}`}
++            className={`relationship-label nodrag nopan ${emphasis === "active" ? "active" : ""} ${impactRole ? `impact-${impactRole}` : ""}`}
+             style={{
+               "--edge-label-scale": labelScale,
+               transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px) scale(var(--edge-label-scale))`,
+             } as CSSProperties}
+             title={relationship?.summary || relationship?.label}
+           >
++            {impactRole && <b aria-hidden="true">{impactRole === "upstream" ? "▲" : impactRole === "downstream" ? "▼" : "▲▼"}</b>}
+             {props.data?.flowSequence !== undefined && <b>{props.data.flowSequence}</b>}
+             <span>{label}</span>
+           </div>
+diff --git a/app/architecture/architecture-node.tsx b/app/architecture/architecture-node.tsx
+index 189dd93..e8252e0 100644
+--- a/app/architecture/architecture-node.tsx
++++ b/app/architecture/architecture-node.tsx
+@@ -35,7 +35,7 @@ function ObjectTypeIcon({ type }: { type: SemanticObjectType }) {
+ export type ArchitectureFlowNode = Node<ObjectNodeData, "object">;
+ 
+ export default function ObjectNode({ data, selected }: NodeProps<ArchitectureFlowNode>) {
+-  const { object, emphasis, zoomLevel, zoom, incomingCount, outgoingCount, flowSteps } = data;
++  const { object, emphasis, zoomLevel, zoom, incomingCount, outgoingCount, flowSteps, impact, impactTotals } = data;
+   const showState = zoomLevel === "component" || zoomLevel === "operational";
+   const showSummary = zoomLevel === "component" || zoomLevel === "operational";
+   const showMetadata = zoomLevel === "operational";
+@@ -45,17 +45,39 @@ export default function ObjectNode({ data, selected }: NodeProps<ArchitectureFlo
+       ? Math.min(2.4, Math.max(1, 0.92 / Math.max(zoom, 0.42)))
+       : 1;
+   const technology = String(object.metadata.technology ?? "");
++  const impactGlyphs = impact
++    ? `${impact.role === "upstream" || impact.role === "both" ? "▲" : ""}${impact.role === "downstream" || impact.role === "both" ? "▼" : ""}`
++    : "";
++  const impactLabel = impact
++    ? impact.role === "upstream"
++      ? `上游依赖，${impact.depth} 跳`
++      : impact.role === "downstream"
++        ? `下游依赖，${impact.depth} 跳`
++        : `双向依赖，${impact.depth} 跳`
++    : "";
+ 
+   return (
+     <article
+       aria-label={`${TYPE_COPY[object.objectType]} ${object.name}，${object.state.label}`}
+-      className={`object-node type-${object.objectType} emphasis-${emphasis} zoom-${zoomLevel} ${selected ? "is-selected" : ""}`}
++      className={`object-node type-${object.objectType} emphasis-${emphasis} zoom-${zoomLevel} ${impact ? `impact-${impact.role}` : ""} ${selected ? "is-selected" : ""}`}
+       style={{ "--label-scale": labelScale } as CSSProperties}
+     >
+       {(["left", "right", "top", "bottom"] as const).flatMap((side) => [
+         <Handle className="semantic-port" id={`target-${side}`} key={`target-${side}`} position={POSITION[side]} type="target" />,
+         <Handle className="semantic-port" id={`source-${side}`} key={`source-${side}`} position={POSITION[side]} type="source" />,
+       ])}
++      {impact && (
++        <span aria-label={impactLabel} className={`object-impact-chip role-${impact.role}`}>
++          <b>{impactGlyphs}</b>
++          <i>{impact.depth}</i>
++        </span>
++      )}
++      {impactTotals && (
++        <span aria-label={`直接上游 ${impactTotals.upstream} 个，直接下游 ${impactTotals.downstream} 个`} className="object-impact-chip role-root">
++          <b>▲</b><i>{impactTotals.upstream}</i>
++          <b>▼</b><i>{impactTotals.downstream}</i>
++        </span>
++      )}
+       <div className="object-surface">
+         <header className="object-type-row">
+           <span className="object-type-icon"><ObjectTypeIcon type={object.objectType} /></span>
+diff --git a/app/architecture/inspector.tsx b/app/architecture/inspector.tsx
+index efc5d98..654dd5b 100644
+--- a/app/architecture/inspector.tsx
++++ b/app/architecture/inspector.tsx
+@@ -1,6 +1,6 @@
+ "use client";
+ 
+-import type { CanvasMode, CanvasSelection } from "./interaction";
++import type { CanvasImpact, CanvasMode, CanvasSelection } from "./interaction";
+ import type { InspectorBinding } from "./inspector-binding";
+ import type { SemanticRelationship } from "./semantic-graph";
+ 
+@@ -15,6 +15,10 @@ const TYPE_COPY: Record<string, string> = {
+   dependency: "Dependency",
+ };
+ 
++function maxDepth(depths: Map<string, number>) {
++  return depths.size === 0 ? 0 : Math.max(...depths.values());
++}
++
+ function RelationshipList({
+   relationships,
+   direction,
+@@ -40,12 +44,14 @@ function RelationshipList({
+ 
+ export default function Inspector({
+   binding,
++  impact,
+   mode,
+   onClose,
+   onFocus,
+   onSelect,
+ }: {
+   binding: InspectorBinding | null;
++  impact: CanvasImpact | null;
+   mode: CanvasMode;
+   onClose: () => void;
+   onFocus: (objectId: string) => void;
+@@ -100,6 +106,12 @@ export default function Inspector({
+             <summary>Relations</summary>
+             {binding.kind === "object" && (
+               <>
++                {impact && impact.rootId === binding.id && (
++                  <p className="inspector-impact-summary">
++                    依赖影响 <b>▲ {impact.upstream.size} 上游</b>（最深 {maxDepth(impact.upstream)} 跳）
++                    <b>▼ {impact.downstream.size} 下游</b>（最深 {maxDepth(impact.downstream)} 跳）
++                  </p>
++                )}
+                 <small className="inspector-section-label">Incoming · {binding.incoming.length}</small>
+                 <RelationshipList direction="in" onSelect={onSelect} relationships={binding.incoming} />
+                 <small className="inspector-section-label">Outgoing · {binding.outgoing.length}</small>
+diff --git a/app/architecture/interaction.ts b/app/architecture/interaction.ts
+index fafc761..5746dc6 100644
+--- a/app/architecture/interaction.ts
++++ b/app/architecture/interaction.ts
+@@ -1,4 +1,4 @@
+-import { indexSemanticGraph, type SemanticGraph } from "./semantic-graph";
++import { indexSemanticGraph, type SemanticGraph, type SemanticGraphIndex } from "./semantic-graph";
+ 
+ export type CanvasMode = "browse" | "inspect" | "focus" | "trace";
+ 
+@@ -16,6 +16,16 @@ export type RelationshipEmphasis = "active" | "related" | "normal" | "muted" | "
+ 
+ export type RegionEmphasis = "active" | "normal" | "muted";
+ 
++export type ImpactRole = "upstream" | "downstream" | "both";
++
++export type CanvasImpact = {
++  rootId: string;
++  upstream: Map<string, number>;
++  downstream: Map<string, number>;
++  objectRoles: Map<string, ImpactRole>;
++  relationshipRoles: Map<string, ImpactRole>;
++};
++
+ export type CanvasInteractionState = {
+   mode: CanvasMode;
+   selection: CanvasSelection;
+@@ -36,6 +46,7 @@ export type CanvasViewModel = {
+   searchMatches: Set<string>;
+   focusObjectIds: Set<string>;
+   activeRelationshipIds: Set<string>;
++  impact: CanvasImpact | null;
+ };
+ 
+ export function semanticZoomLevel(zoom: number): SemanticZoomLevel {
+@@ -45,10 +56,6 @@ export function semanticZoomLevel(zoom: number): SemanticZoomLevel {
+   return "operational";
+ }
+ 
+-function adjacentObjectId(sourceObjectId: string, targetObjectId: string, objectId: string) {
+-  return sourceObjectId === objectId ? targetObjectId : sourceObjectId;
+-}
+-
+ function neighbors(graph: SemanticGraph, objectIds: Set<string>) {
+   const result = new Set<string>();
+   for (const relationship of graph.relationships) {
+@@ -58,6 +65,61 @@ function neighbors(graph: SemanticGraph, objectIds: Set<string>) {
+   return result;
+ }
+ 
++function mergeImpactRole(current: ImpactRole | undefined, next: ImpactRole): ImpactRole {
++  if (current === undefined || current === next) return next;
++  return "both";
++}
++
++function walkImpactDirection(
++  index: SemanticGraphIndex,
++  rootId: string,
++  side: "incoming" | "outgoing",
++  depths: Map<string, number>,
++) {
++  const queue: Array<{ id: string; depth: number }> = [{ id: rootId, depth: 0 }];
++  while (queue.length > 0) {
++    const { id, depth } = queue.shift()!;
++    const incident = (side === "incoming" ? index.incomingByObjectId.get(id) : index.outgoingByObjectId.get(id)) ?? [];
++    for (const relationship of incident) {
++      const nextId = relationship.sourceObjectId === id ? relationship.targetObjectId : relationship.sourceObjectId;
++      if (nextId === rootId) continue;
++      const nextDepth = depth + 1;
++      const knownDepth = depths.get(nextId);
++      if (knownDepth !== undefined && knownDepth <= nextDepth) continue;
++      depths.set(nextId, nextDepth);
++      queue.push({ id: nextId, depth: nextDepth });
++    }
++  }
++}
++
++function deriveImpact(graph: SemanticGraph, index: SemanticGraphIndex, rootId: string): CanvasImpact {
++  const upstream = new Map<string, number>();
++  const downstream = new Map<string, number>();
++  walkImpactDirection(index, rootId, "incoming", upstream);
++  walkImpactDirection(index, rootId, "outgoing", downstream);
++
++  const objectRoles = new Map<string, ImpactRole>();
++  for (const id of upstream.keys()) objectRoles.set(id, "upstream");
++  for (const id of downstream.keys()) objectRoles.set(id, mergeImpactRole(objectRoles.get(id), "downstream"));
++
++  const downstreamSources = new Set<string>([rootId, ...downstream.keys()]);
++  const upstreamTargets = new Set<string>([rootId, ...upstream.keys()]);
++  const relationshipRoles = new Map<string, ImpactRole>();
++  for (const relationship of graph.relationships) {
++    const orientations: Array<[string, string]> = relationship.direction === "bidirectional"
++      ? [[relationship.sourceObjectId, relationship.targetObjectId], [relationship.targetObjectId, relationship.sourceObjectId]]
++      : [[relationship.sourceObjectId, relationship.targetObjectId]];
++    let role: ImpactRole | undefined;
++    for (const [source, target] of orientations) {
++      if (downstreamSources.has(source) && downstream.has(target)) role = mergeImpactRole(role, "downstream");
++      if (upstream.has(source) && upstreamTargets.has(target)) role = mergeImpactRole(role, "upstream");
++    }
++    if (role) relationshipRoles.set(relationship.id, role);
++  }
++
++  return { rootId, upstream, downstream, objectRoles, relationshipRoles };
++}
++
+ export function deriveCanvasView(graph: SemanticGraph, interaction: CanvasInteractionState): CanvasViewModel {
+   const index = indexSemanticGraph(graph);
+   const objectEmphasis = new Map(graph.objects.map((object) => [object.id, "normal" as ObjectEmphasis]));
+@@ -81,19 +143,35 @@ export function deriveCanvasView(graph: SemanticGraph, interaction: CanvasIntera
+     }
+   }
+ 
+-  if (interaction.mode === "inspect" && interaction.selection?.kind === "object") {
++  const selectedObjectId = interaction.selection?.kind === "object" && ["inspect", "focus"].includes(interaction.mode)
++    ? interaction.selection.id
++    : null;
++  const impact = selectedObjectId !== null && index.objectById.has(selectedObjectId)
++    ? deriveImpact(graph, index, selectedObjectId)
++    : null;
++
++  if (interaction.mode === "inspect" && interaction.selection?.kind === "object" && impact) {
+     const selectedId = interaction.selection.id;
+     focusObjectIds.add(selectedId);
+     objectEmphasis.set(selectedId, "primary");
+-    const incident = [
+-      ...(index.incomingByObjectId.get(selectedId) ?? []),
+-      ...(index.outgoingByObjectId.get(selectedId) ?? []),
+-    ];
+-    for (const relationship of incident) {
+-      relationshipEmphasis.set(relationship.id, "active");
+-      activeRelationshipIds.add(relationship.id);
+-      const adjacentId = adjacentObjectId(relationship.sourceObjectId, relationship.targetObjectId, selectedId);
+-      if (adjacentId !== selectedId) objectEmphasis.set(adjacentId, "related");
++    for (const object of graph.objects) {
++      if (object.id === selectedId) continue;
++      const upstreamDepth = impact.upstream.get(object.id);
++      const downstreamDepth = impact.downstream.get(object.id);
++      const depth = upstreamDepth !== undefined && downstreamDepth !== undefined
++        ? Math.min(upstreamDepth, downstreamDepth)
++        : upstreamDepth ?? downstreamDepth;
++      objectEmphasis.set(object.id, depth === undefined ? "muted" : depth === 1 ? "related" : "context");
++    }
++    for (const relationship of graph.relationships) {
++      const role = impact.relationshipRoles.get(relationship.id);
++      if (!role) {
++        relationshipEmphasis.set(relationship.id, "muted");
++        continue;
++      }
++      const touchesRoot = relationship.sourceObjectId === selectedId || relationship.targetObjectId === selectedId;
++      relationshipEmphasis.set(relationship.id, touchesRoot ? "active" : "related");
++      if (touchesRoot) activeRelationshipIds.add(relationship.id);
+     }
+   }
+ 
+@@ -167,6 +245,10 @@ export function deriveCanvasView(graph: SemanticGraph, interaction: CanvasIntera
+   }
+   if (["focus", "trace"].includes(interaction.mode)) {
+     for (const region of graph.regions) regionEmphasis.set(region.id, activeRegionIds.has(region.id) ? "active" : "muted");
++  } else if (interaction.mode === "inspect" && impact) {
++    for (const region of graph.regions) {
++      if (activeRegionIds.has(region.id)) regionEmphasis.set(region.id, "active");
++    }
+   }
+ 
+   return {
+@@ -181,6 +263,7 @@ export function deriveCanvasView(graph: SemanticGraph, interaction: CanvasIntera
+     searchMatches,
+     focusObjectIds,
+     activeRelationshipIds,
++    impact,
+   };
+ }
+ 
+@@ -188,6 +271,7 @@ export function visibleObjectIds(graph: SemanticGraph, view: CanvasViewModel) {
+   if (view.zoomLevel !== "landscape") return new Set(graph.objects.map((object) => object.id));
+   return new Set(graph.objects
+     .filter((object) => {
++      if (view.impact && (object.id === view.impact.rootId || view.impact.objectRoles.has(object.id))) return true;
+       const emphasis = view.objectEmphasis.get(object.id) ?? "normal";
+       const important = object.importance.level === "critical" || object.importance.level === "high";
+       if (view.mode === "trace") return important || emphasis === "primary" || emphasis === "related";
+diff --git a/app/architecture/projection.ts b/app/architecture/projection.ts
+index 12124e5..f888d33 100644
+--- a/app/architecture/projection.ts
++++ b/app/architecture/projection.ts
+@@ -73,6 +73,14 @@ export function projectSemanticGraph(
+     .map<CanvasObjectNode | null>((object) => {
+       const rect = layout.objectRects[object.id];
+       if (!rect) return null;
++      const impactRole = view.impact?.objectRoles.get(object.id);
++      const impactDepth = view.impact
++        ? Math.min(
++          view.impact.upstream.get(object.id) ?? Number.MAX_SAFE_INTEGER,
++          view.impact.downstream.get(object.id) ?? Number.MAX_SAFE_INTEGER,
++        )
++        : Number.MAX_SAFE_INTEGER;
++      const isImpactRoot = view.impact?.rootId === object.id;
+       return {
+         id: object.id,
+         type: "object",
+@@ -87,6 +95,15 @@ export function projectSemanticGraph(
+           flowSteps: (activeFlow?.steps ?? [])
+             .filter((step) => step.objectId === object.id)
+             .map((step) => ({ sequence: step.sequence, role: step.role, title: step.title })),
++          impact: impactRole !== undefined && impactDepth !== Number.MAX_SAFE_INTEGER
++            ? { role: impactRole, depth: impactDepth }
++            : undefined,
++          impactTotals: isImpactRoot && view.impact
++            ? {
++              upstream: [...view.impact.upstream.values()].filter((depth) => depth === 1).length,
++              downstream: [...view.impact.downstream.values()].filter((depth) => depth === 1).length,
++            }
++            : undefined,
+         },
+         draggable: true,
+         selectable: true,
+@@ -104,6 +121,7 @@ export function projectSemanticGraph(
+     const emphasis = view.relationshipEmphasis.get(relationship.id) ?? "normal";
+     const transition = activeFlow ? flowTransition(activeFlow.steps, relationship.sourceObjectId, relationship.targetObjectId) : null;
+     const active = emphasis === "active";
++    const impactRole = view.impact?.relationshipRoles.get(relationship.id);
+     const renderedRoute = route;
+     const markerColor = active
+       ? "#e8f4ee"
+@@ -130,6 +148,7 @@ export function projectSemanticGraph(
+         activeFlowName: activeFlow?.name,
+         flowSequence: transition?.sequence,
+         flowPayload: transition?.payload,
++        impactRole,
+       },
+       markerEnd: { type: MarkerType.ArrowClosed, width: active ? 18 : 15, height: active ? 18 : 15, color: markerColor },
+       selected: view.selection?.kind === "relationship" && view.selection.id === relationship.id,
+diff --git a/app/architecture/types.ts b/app/architecture/types.ts
+index 1d80dc2..4422a2e 100644
+--- a/app/architecture/types.ts
++++ b/app/architecture/types.ts
+@@ -1,4 +1,4 @@
+-import type { ObjectEmphasis, RegionEmphasis, RelationshipEmphasis, SemanticZoomLevel } from "./interaction";
++import type { ImpactRole, ObjectEmphasis, RegionEmphasis, RelationshipEmphasis, SemanticZoomLevel } from "./interaction";
+ import type { RelationshipRoute } from "./layout";
+ import type { SemanticObject, SemanticRegion, SemanticRelationship } from "./semantic-graph";
+ 
+@@ -109,6 +109,7 @@ export type RelationshipEdgeData = Record<string, unknown> & {
+   activeFlowName?: string;
+   flowSequence?: number;
+   flowPayload?: string;
++  impactRole?: ImpactRole;
+ };
+ 
+ export type ArchitectureEdgeData = RelationshipEdgeData;
+@@ -138,6 +139,8 @@ export type ObjectNodeData = Record<string, unknown> & {
+   incomingCount: number;
+   outgoingCount: number;
+   flowSteps: Array<{ sequence: number; role: string; title: string }>;
++  impact?: { role: ImpactRole; depth: number };
++  impactTotals?: { upstream: number; downstream: number };
+ };
+ 
+ export type RegionNodeData = Record<string, unknown> & {
+diff --git a/app/globals.css b/app/globals.css
+index 2dbc751..76e031b 100644
+--- a/app/globals.css
++++ b/app/globals.css
+@@ -966,6 +966,11 @@ button:focus-visible, select:focus-visible, a:focus-visible {
+ .object-flow-steps b { color: var(--map-focus); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+ .object-flow-steps i { font-style: normal; overflow: hidden; text-overflow: ellipsis; }
+ .object-flow-steps em { color: var(--map-focus); font-size: .8125rem; font-style: normal; }
++.object-impact-chip { align-items: center; background: #101a20; border: 1px solid var(--map-line-strong); color: var(--map-text-soft); display: inline-flex; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8125rem; gap: 4px; left: 50%; line-height: 1; padding: 3px 8px; position: absolute; top: -10px; transform: translate(-50%, 0); white-space: nowrap; z-index: 3; }
++.object-impact-chip b { color: var(--map-focus); font-weight: 680; }
++.object-impact-chip i { font-style: normal; }
++.object-impact-chip.role-root { border-color: rgba(216,242,232,.6); color: var(--map-focus-strong); }
++.object-node.zoom-architecture .object-impact-chip, .object-node.zoom-landscape .object-impact-chip { top: calc(-29px - (var(--label-scale) - 1) * 32px); transform: translate(-50%, 0) scale(var(--label-scale)); transform-origin: center bottom; }
+ .semantic-port { background: var(--map-focus) !important; border: 0 !important; height: 6px !important; opacity: 0; transition: opacity 100ms ease; width: 6px !important; }
+ .object-node:hover .semantic-port, .object-node.is-selected .semantic-port { opacity: .28; }
+ .object-node.zoom-landscape .object-type-row, .object-node.zoom-landscape .object-summary, .object-node.zoom-landscape .object-metadata { visibility: hidden; }
+@@ -1068,6 +1073,8 @@ button:focus-visible, select:focus-visible, a:focus-visible {
+ .inspector-endpoints strong { font-size: .8125rem; overflow-wrap: anywhere; }
+ .inspector-endpoints > span { color: var(--map-focus); }
+ .inspector-section-label { color: var(--map-text-muted); display: block; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8125rem; margin: 5px 0 3px; text-transform: uppercase; }
++.inspector-impact-summary { color: var(--map-text-soft); font-size: .8125rem; margin: 2px 0 4px; }
++.inspector-impact-summary b { color: var(--map-focus); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 650; margin-right: 4px; }
+ .inspector-relation-list, .inspector-object-list, .inspector-flow-list { display: grid; }
+ .inspector-relation-list button, .inspector-object-list button, .inspector-flow-list button { align-items: center; background: transparent; border: 0; border-top: 1px solid var(--map-line); color: var(--map-text-soft); display: grid; font-size: .8125rem; gap: 6px; min-height: 35px; padding: 5px 0; text-align: left; }
+ .inspector-relation-list button { grid-template-columns: 13px minmax(0,1fr); }

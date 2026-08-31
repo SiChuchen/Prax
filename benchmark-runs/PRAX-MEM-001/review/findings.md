@@ -71,3 +71,25 @@ match, token-subset in either direction, or one shared non-generic token
 five new unit tests in tests/correction-memory.test.ts ("surface scope
 matching"); target correction now reaches canvas tasks while the settings
 probe stays excluded. Full suite 182/182. Pair-02 prerequisite satisfied.
+
+## Pair-02 (2026-08-31, post token-fix): vocabulary divergence + first avoidance
+
+Token matching (3d54fe2) fixed pair-01's separator failure but pair-02's
+arm-B session named its surfaces with zero lexical overlap
+(project-architecture/architecture-fixtures vs canvas-stage/
+canvas-inspector) — the target correction was again excluded
+(scope_mismatch, deterministically reproduced against the built dist).
+Second mechanism finding: free-form surface naming makes lexical scope
+matching fundamentally fragile.
+
+Behaviorally, though, pair-02 delivered the first avoidance: B2' explored
+.prax/, read corrections.yaml directly (transcript 836/853), cited the
+correction in its design decisions, and implemented shared impact entirely
+through non-color channels (no_recurrence), while bare A2' recurred with
+amber chips. H4 directional signal across two pairs: correction available
+→ avoidance; correction absent → recurrence. Attribution caveat: delivery
+was the raw memory file, not the designed compiled-context channel.
+
+Purpose-tier fix (8368828): relevantCorrections also matches declared
+purposes of CHANGE-TARGET surfaces; CJK-aware tokenizer; vacuous-truth
+guard. Suite 186/186. Pair-03 prerequisite satisfied.

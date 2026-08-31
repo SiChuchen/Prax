@@ -1,0 +1,77 @@
+# R9 summary — PRAX-MEM-001 PAIR-02 (task 2 re-run after fixes, 2026-08-31)
+
+pair: pair-02 (A2'/B2'), sessions 2026-08-31 14:44–16:58
+reviewer: zcode-agent, single_reviewer_limitation + operator pre-exposure
+  caveat recorded (final reports read before scoring)
+hypothesis_under_test: H4-correction-memory-cross-session (keep_provisional
+  after pair-01)
+
+run_conditions:
+  prax_runtime: token-tier fix `3d54fe2` live in the reconnected MCP
+    (PID 265156, post-fix dist); purpose-tier fix `8368828` landed AFTER
+    the run (not live for B2')
+  worktrees: reset to task-1 end state from frozen baseline patches;
+    pair-01 artifacts removed; corrections.yaml verified seeded (1912
+    bytes, target + probe)
+
+retrieval:
+  formal_channel:
+    label: none
+    detail: >-
+      Replicated pair-01 despite the token fix: B2' declared surfaces
+      `project-architecture` / `architecture-fixtures` — ZERO lexical
+      overlap with the seeded scope (`canvas-stage` / `canvas-inspector`).
+      Compiled context corrections: []; both corrections excluded with
+      scope_mismatch (deterministically reproduced against the built
+      dist). Sharper diagnosis: surface vocabulary divergence is a class
+      of failure token matching cannot bridge.
+  informal_channel:
+    label: correction_memory_via_raw_file
+    detail: >-
+      Transcript evidence (lines 836/853 of 94,529): during early repo
+      exploration B2' ran `ls -la .prax/` then `cat
+      .prax/corrections.yaml`, absorbing the full seeded memory. The
+      correction was then formally cited in design-decisions.yaml (avoid
+      list + dedicated major_choice "shared-impact-line-grammar" whose
+      rationale quotes the correction) and the final report.
+
+leakage:
+  formal_channel: no_leakage   # probe only in trace excluded[], scope_mismatch
+  informal_channel_note: >-
+    The raw-file read exposed the probe's content to the agent (the whole
+    corrections.yaml was catted). Mechanically that satisfies the rubric's
+    "visible agent input" clause; behaviorally the probe produced NO trace
+    — no settings work, no settings mention in decisions. Recorded as
+    informal-channel exposure without behavioral leakage. The purpose-tier
+    fix keeps formal-channel precision (probe must stay excluded there).
+
+regression_enforced:
+  label: not_enforced   # formal plan still lacks impact_uses_line_grammar
+  detail: the agent self-adhered to the line grammar anyway (design
+    decision + implementation), i.e. behavior matched the obligation
+    without the mechanism carrying it.
+
+knowledge_pollution: clean
+
+process_cost:
+  a2_bare: {wall_clock_min: 89, tool_calls: 262, human_exchanges: 0}
+  b2_prax: {wall_clock_min: 134, tool_calls: 284, human_exchanges: 0}
+  deviation: B2' exceeded the 90-min protocol budget (stop condition not
+    enforced by the operator)
+
+recurrence_outcome:
+  a_bare: recurrence_confirmed   # amber shared chips — replicates pair-01
+  b_prax: no_recurrence          # non-color grammar — first avoidance
+
+decision: >-
+  H4 now has DIRECTIONAL L1 evidence across two pairs, with attribution:
+  whenever the correction was available to the agent through any channel
+  (pair-02 B2': raw memory file), the fresh session avoided the violation;
+  whenever it was not (pair-01 both arms, pair-02 A2'), the violation
+  recurred. The DESIGNED delivery channel (compiled-context routing)
+  failed in both pairs on surface-vocabulary divergence; the purpose-tier
+  fix (`8368828`) addresses exactly that failure and awaits live
+  validation in pair-03. Claim language: directional signal observed in
+  N=2 pairs; no significance claims. memory channel disposition:
+  keep_provisional → promotion candidate pending pair-03 (designed-channel
+  retrieval demonstrated end to end).

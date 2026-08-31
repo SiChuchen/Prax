@@ -1,0 +1,112 @@
+plan_revision: 1
+evidence:
+  submitted_by: ZCode agent (implementer)
+  collected_at: 2026-08-31T08:20:00Z
+  items:
+    - check_id: delta_conformance
+      outcome: pass
+      source: node --experimental-strip-types --test tests/*.test.mjs
+      notes: "sdir_delta regions all modified within declared scope; no render-leak: interaction.ts deriveImpact/deriveCanvasView are renderer-independent, projection.ts maps view to primitives; node test suite passes 17/17 including new multi-select test."
+      artifact_refs:
+        - tests/canvas-engine.test.mjs
+    - check_id: untouched_surface_regression
+      outcome: pass
+      source: npm test suite + real browser capture .sites-runtime/capture-multiselect.mjs
+      notes: Existing canvas-engine tests green (focus/trace/zoom/layout/geometry unchanged); browser evidence shows Browse with no selection renders normal emphasis and the Inspector stays closed on fixture and registry surfaces; Focus/Trace grammar untouched (trace impact still null per test).
+      artifact_refs:
+        - tests/canvas-engine.test.mjs
+        - evidence/01-small-browse.png
+        - evidence/04-small-idle-after-clear.png
+        - evidence/09-registry-idle-after-clear.png
+    - check_id: pattern_consistency
+      outcome: pass
+      source: code review of interaction.ts/inspector.tsx/globals.css + screenshot evidence
+      notes: Reuses established emphasis grammar (primary/related/muted, active edges), impact chip glyph channel, progressive-disclosure Inspector sections and the docked 336px column; shared impact uses non-color channels (xN count badge, inset line, edge weight bump, dashed legend swatch) per correction corr_canvas_impact_grammar.
+      artifact_refs:
+        - app/architecture/interaction.ts
+        - app/architecture/inspector.tsx
+        - evidence/03-small-multi-shared-impact.png
+    - check_id: authority_consistency
+      outcome: pass
+      source: docs/architecture-canvas-standard-v0.1.md interaction boundary + implementation inspection
+      notes: "Canvas remains a read model: selection writes no canonical data, drag still only writes device-local layout; standard's interaction boundary table respected; bounded cognition budget kept (direct-neighbor impact, no transitive closure)."
+      artifact_refs:
+        - docs/architecture-canvas-standard-v0.1.md
+        - docs/Canvas_Engine_v1_Review.md
+        - evidence/05-medium-marquee-shared-impact.png
+    - check_id: requirement_alignment
+      outcome: pass
+      source: Playwright evidence capture 9/9 checks passed with DOM assertions
+      notes: R1 union impact via click + ctrl+click + marquee shown on small 15/20 (2 selected), medium 40/70 (10 selected via marquee) and registry data; R2 shared impact identifiable via xN badges, edge markers, reading key and inspector shared list; R3 aggregate impact summary with counts and object lists, and inspector returns to idle when selection empties (screenshot 04/09); R4 single-select behavior identical (02/07) and Focus/Trace untouched (tests); R5 works on 15/20, 40/70 and production registry data.
+      artifact_refs:
+        - evidence/02-small-single-impact.png
+        - evidence/03-small-multi-shared-impact.png
+        - evidence/05-medium-marquee-shared-impact.png
+        - evidence/07-registry-single-impact.png
+        - evidence/08-registry-multi-shared-impact.png
+evaluation:
+  status: PASS
+  checks:
+    - id: delta_conformance
+      label: Delta conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The sdir_delta passes referential and render-leak validation.
+      evidence_required: false
+    - id: untouched_surface_regression
+      label: Untouched surface regression
+      kind: empirical
+      profile: runtime_degradation
+      facet: behavioral
+      requirement: Surfaces outside the declared change targets behave exactly as before.
+      evidence_required: true
+    - id: pattern_consistency
+      label: Pattern consistency
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The change follows the established patterns recorded in the existing-product understanding.
+      evidence_required: true
+    - id: authority_consistency
+      label: Design authority consistency
+      kind: assistive
+      profile: semantic_integrity
+      facet: epistemic
+      requirement: The result stays consistent with the declared design authorities.
+      evidence_required: true
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+  findings:
+    - check_id: delta_conformance
+      kind: deterministic
+      outcome: pass
+      message: The sdir_delta passes referential and render-leak validation.
+      source: prax-validator
+    - check_id: untouched_surface_regression
+      kind: empirical
+      outcome: pass
+      message: Existing canvas-engine tests green (focus/trace/zoom/layout/geometry unchanged); browser evidence shows Browse with no selection renders normal emphasis and the Inspector stays closed on fixture and registry surfaces; Focus/Trace grammar untouched (trace impact still null per test).
+      source: npm test suite + real browser capture .sites-runtime/capture-multiselect.mjs
+    - check_id: pattern_consistency
+      kind: assistive
+      outcome: pass
+      message: Reuses established emphasis grammar (primary/related/muted, active edges), impact chip glyph channel, progressive-disclosure Inspector sections and the docked 336px column; shared impact uses non-color channels (xN count badge, inset line, edge weight bump, dashed legend swatch) per correction corr_canvas_impact_grammar.
+      source: code review of interaction.ts/inspector.tsx/globals.css + screenshot evidence
+    - check_id: authority_consistency
+      kind: assistive
+      outcome: pass
+      message: "Canvas remains a read model: selection writes no canonical data, drag still only writes device-local layout; standard's interaction boundary table respected; bounded cognition budget kept (direct-neighbor impact, no transitive closure)."
+      source: docs/architecture-canvas-standard-v0.1.md interaction boundary + implementation inspection
+    - check_id: requirement_alignment
+      kind: assistive
+      outcome: pass
+      message: R1 union impact via click + ctrl+click + marquee shown on small 15/20 (2 selected), medium 40/70 (10 selected via marquee) and registry data; R2 shared impact identifiable via xN badges, edge markers, reading key and inspector shared list; R3 aggregate impact summary with counts and object lists, and inspector returns to idle when selection empties (screenshot 04/09); R4 single-select behavior identical (02/07) and Focus/Trace untouched (tests); R5 works on 15/20, 40/70 and production registry data.
+      source: Playwright evidence capture 9/9 checks passed with DOM assertions
+  missing_evidence: []
+  warnings: []

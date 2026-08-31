@@ -1,0 +1,71 @@
+version: "0.1"
+session_id: ds_20260831064508_e3bc12f1
+task:
+  surfaces:
+    - project-architecture
+    - architecture-fixtures
+  primary: project-architecture, architecture-fixtures
+product_relationships:
+  - id: selection-drives-impact
+    source: interaction-read-model
+    target: object-node
+    type: projection
+    direction: forward
+    meaning: Single object selection in Inspect/Focus derives CanvasImpactView; projection maps it to impactRole on cards and edges; camera fits selection plus neighbors
+    importance: supporting
+  - id: selection-opens-inspector
+    source: architecture-canvas-container
+    target: inspector-panel
+    type: opens_detail
+    direction: forward
+    meaning: Selection binds Inspector; empty selection returns Inspector to idle
+    importance: supporting
+  - id: reactflow-selection-surface
+    source: canvas-kernel
+    target: interaction-read-model
+    type: reports_selection
+    direction: forward
+    meaning: React Flow owns click/marquee selection events; today only one object is lifted into interaction state via onNodeClick
+    importance: supporting
+  - id: key-explains-treatments
+    source: reading-key
+    target: relationship-edge
+    type: explains
+    direction: forward
+    meaning: Reading key names impact treatments while active
+    importance: supporting
+region_relationships: []
+decisions:
+  primary_structure: PAT-CANVAS-WORKSPACE
+  density_intent: regular
+  major_choice_ids:
+    - multi-selection-state
+    - impact-union-read-model
+    - inspect-lens-owns-multi-impact
+    - shared-impact-line-grammar
+    - inspector-aggregate-binding
+    - camera-fits-multi-impact
+must_preserve:
+  - Single-select Inspect emphasis, camera contract and Inspector binding
+  - Focus two-hop and same-Region grammar; Trace Flow lens, packet animation and stable ELK routes
+  - Browse returns everything to normal when selection empties
+  - Search, Minimap, Controls, Revision Timeline, Change Overlay
+  - 13px text floor and label compensation
+regression_points:
+  - Single-select Inspect emphasis, camera contract and Inspector binding
+  - Focus two-hop and same-Region grammar; Trace Flow lens, packet animation and stable ELK routes
+  - Browse returns everything to normal when selection empties
+  - Search, Minimap, Controls, Revision Timeline, Change Overlay
+  - 13px text floor and label compensation
+unresolved:
+  - reactflow_selection_event_order
+corrections: []
+validation:
+  plan_revision: 1
+  check_ids:
+    - delta_conformance
+    - untouched_surface_regression
+    - pattern_consistency
+    - authority_consistency
+    - requirement_alignment
+  regression_check_ids: []
