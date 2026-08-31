@@ -63,3 +63,23 @@ export function advanceSession(session: DesignSession, gate: GateName, now: stri
     current_gate: { name: next ?? "complete" },
   };
 }
+
+/**
+ * Rewind a session so that `targetGate` is the current (incomplete) gate
+ * again, dropping every later completion. Used by design_context revision:
+ * the mis-classified-context trap (PRAX-WIZARD-001 first session) previously
+ * forced a whole new session because gates were one-way.
+ */
+export function rewindSession(session: DesignSession, targetGate: GateName, now: string): DesignSession {
+  const gates = sessionPolicy(session).gates;
+  const targetIndex = gates.indexOf(targetGate);
+  const completed = gates.slice(0, targetIndex < 0 ? gates.length : targetIndex);
+  return {
+    ...session,
+    phase: GATE_PHASE[targetGate],
+    updated_at: now,
+    revision: session.revision + 1,
+    completed_gates: completed,
+    current_gate: { name: targetGate },
+  };
+}

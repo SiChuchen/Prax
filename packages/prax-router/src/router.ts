@@ -95,14 +95,22 @@ function hardScopeMismatch(
     return `platform scope ${scope.platform.join(", ")} does not include ${platform}`;
   }
   if (scope.domain.length > 0) {
-    const matches =
-      canonical !== undefined
-        ? scope.domain.some((value) => canonical.domainTokens.includes(normalized(value)))
-        : anyMatch(scope.domain, haystack) !== undefined;
-    if (!matches) {
-      return canonical !== undefined
-        ? `domain scope ${scope.domain.join(", ")} does not match canonical domain_id ${canonical.classification.domain_id}`
-        : `domain scope ${scope.domain.join(", ")} does not match ${context.domain.type}`;
+    if (canonical === undefined) {
+      if (anyMatch(scope.domain, haystack) === undefined) {
+        return `domain scope ${scope.domain.join(", ")} does not match ${context.domain.type}`;
+      }
+    } else {
+      const matches = scope.domain.some((value) => canonical.domainTokens.includes(normalized(value)));
+      if (!matches) {
+        // A canonicalized domain that misses this scope is a true boundary.
+        // An UNCANONICALIZED domain (the classifier failed to place it) is a
+        // vocabulary gap, not a boundary — excluding here is what trapped the
+        // PRAX-WIZARD-001 first session (fitting pattern excluded AND made
+        // uninspectable). Task-type scope still classifies and stays hard.
+        if (canonical.classification.domain_id !== "unknown") {
+          return `domain scope ${scope.domain.join(", ")} does not match canonical domain_id ${canonical.classification.domain_id}`;
+        }
+      }
     }
   }
   if (scope.task_type.length > 0) {
@@ -146,10 +154,17 @@ function scoreEntry(
     if (trigger !== undefined) score += 4;
     if (
       entry.scope.domain.length > 0 &&
+      canonical.domainTokens.length > 0 &&
       entry.scope.domain.some((value) => canonical.domainTokens.includes(normalized(value)))
     ) {
       score += 6;
       scopeMatch.push(`domain_id:${canonical.classification.domain_id}`);
+    }
+    if (
+      entry.scope.domain.length > 0 &&
+      canonical.classification.domain_id === "unknown"
+    ) {
+      scopeMatch.push("domain_vocabulary_mismatch:canonical_domain_unknown");
     }
     if (
       entry.scope.task_type.length > 0 &&

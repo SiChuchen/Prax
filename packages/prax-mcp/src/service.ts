@@ -23,6 +23,7 @@ import {
   normalizeCompletedGates,
   relevantCorrections,
   removeRealizeGate,
+  rewindSession,
   spliceRealizeGate,
   validateDraft,
   validatePropose,
@@ -359,7 +360,27 @@ export class PraxService {
   public async designContext(input: DesignContextInput): Promise<PraxOutput> {
     const session = await this.sessions.getSession(input.design_session_id);
     const blocked = operationBlock(session, "design_context");
-    if (blocked !== undefined) return blocked;
+    // PRAX-WIZARD-001 first-session trap: a mis-classified context could not
+    // be revised once routing advanced. Revision is legal while the chain is
+    // still pre-sdir (current gate route/decide); it rewinds completed gates
+    // back to route so the corrected context re-routes. After sdir the chain
+    // is too far downstream — blocked, but with an explicit reason.
+    const completedGates = new Set(normalizeCompletedGates(session.completed_gates));
+    const hasContextGate = sessionPolicy(session).gates.includes("context");
+    const revisable =
+      blocked !== undefined &&
+      hasContextGate &&
+      completedGates.has("context") &&
+      ["route", "decide"].includes(currentGate(session));
+    if (blocked !== undefined && !revisable) {
+      if (hasContextGate && completedGates.has("context")) {
+        return {
+          ...blocked,
+          message: `${String(blocked.message)} design_context can only be revised before the sdir gate; after sdir, start a new session (recorded limitation).`,
+        };
+      }
+      return blocked;
+    }
     const frame = await this.requireArtifact<ProductFrame>(session, "productFrame");
     const validation = validateDesignContext(input.design_context, frame);
     if (validation.status !== "PASS" && validation.status !== "WARN") {
@@ -370,12 +391,15 @@ export class PraxService {
         next: nextTool("design_context"),
       };
     }
-    const updated = advanceSession(session, "context", this.sessions.nowIso());
+    const updated = revisable
+      ? rewindSession(session, "route", this.sessions.nowIso())
+      : advanceSession(session, "context", this.sessions.nowIso());
     await this.sessions.commit(updated, [{ key: "designContext", value: validation.value }]);
     return {
       status: validation.status,
       material_unknowns: [],
       warnings: validation.warnings,
+      ...(revisable ? { context_revised: true } : {}),
       phase: updated.phase,
       next: nextTool("design_route"),
     };

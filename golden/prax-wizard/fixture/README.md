@@ -30,7 +30,7 @@ routing note below). Validation **COMPLETE 8/8, zero warnings**. Implementation:
 - **Capability gap**: n4-queue-execution (no backend) advances under an
   explicit compromise — simulated queueing, disclosed in the UI and banner.
 
-## Routing note (recorded for the KB backlog)
+## Routing note (recorded for the KB backlog — **hardened 2026-09-01**)
 
 First attempt (`ds_20260831145232_5c68410c`, kept in .prax): the wizard's
 domain was described with the novel word "benchmark_operations" → canonical
@@ -42,8 +42,18 @@ with the KB-canonical classification (domain settings/preferences, explicit
 confidence. Same vocabulary-divergence family as MEM-001's correction
 routing, one layer up: unrecognized domain vocabulary silently degrades
 pattern routing and the disclosure gate makes the excluded candidate
-unreachable. Candidate hardening: fuzzy/vocabulary-tolerant domain matching,
-or a routing hint when task_type matches but domain_id is unknown.
+unreachable.
+
+Both traps are now closed in the runtime (2026-09-01, TDD, suite 213/213):
+(a) anuncanonicalized domain (domain_id=unknown) degrades to a flagged soft
+match — the pattern stays a candidate with
+`domain_vocabulary_mismatch:canonical_domain_unknown` in its routing audit
+and no domain bonus, while KNOWN domain mismatches remain hard boundaries
+and task-type scope stays hard; (b) design_context is revisable while the
+chain is pre-sdir (gates route/decide): re-submission rewinds completed
+gates back to route (`context_revised: true`), and after sdir it stays
+blocked with an explicit "start a new session" hint instead of a bare
+GATE_NOT_SATISFIED.
 
 ## SDIR shape note
 
