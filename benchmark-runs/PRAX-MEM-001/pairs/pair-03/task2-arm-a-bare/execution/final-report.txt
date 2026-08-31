@@ -1,0 +1,50 @@
+All work is complete and verified. Final report:
+
+## 1. Summary of what was implemented
+
+Multi-select union impact for the Architecture Canvas, built within the existing Semantic Graph → ELK layout → interaction read model → projection pipeline (boundary, adapter, validation and cache untouched; Human Web still read-only; React Flow/ELK/SmartEdge stack unchanged):
+
+- **Selection model** (`interaction.ts`): `CanvasInteractionState.selectedObjectIds` (ordered set). Plain click selects one object; Ctrl/Cmd+click toggles; Shift+drag marquee (React Flow `selectionKeyCode` default) box-selects. React Flow is the selection source of truth via a new `onSelectionChange` kernel hook; the canvas mirrors it and preserves Trace/Focus behavior.
+- **Union + shared impact** (`interaction.ts`): `deriveImpact` now accepts multiple roots — per-root BFS with minimum hop depth across roots, merged per-object roles (`upstream`/`downstream`/`both`), per-relationship roles. Selected roots stay "selected", never "impacted", even when another root reaches them (a bug my first cut had; caught by unit tests). New `contributorCount` and `sharedObjectIds` make "impacted by more than one selected object" an explicit, testable concept.
+- **Aggregate Inspector** (`inspector-binding.ts`, `inspector.tsx`): `bindSelectionImpact` produces a summary (selected count/regions, ▲ upstream count+max depth, ▼ downstream count+max depth, ⇄ shared count) plus the full impacted object list sorted shared-first, each row showing role, hops and `⇄ n` contributors, one-click drill-down. With 2+ objects selected the Inspector renders this aggregate panel; emptying the selection returns the Inspector to its idle (closed) state. Single-select keeps the existing object binding and impact summary.
+- **Visuals** (`projection.ts`, `architecture-node.tsx`, `globals.css`): shared objects get an amber `⇄ n` chip + border; node data carries `{role, depth, contributors, shared}`; multi-selected nodes render selection rings; reading key shows `⇄ Shared 共同影响` and a selection-aware hint.
+- **Camera + integrity**: multi-selection frames the union of roots + impacted in Browse/Inspect only; Focus/Trace framing untouched. Group drags persist every selected object's device-local layout (and only drop routes touching moved objects); `deleteKeyCode` disabled so Backspace can never remove view nodes.
+- **Docs**: new "2026-08-31 multi-select union impact" section + acceptance row in `docs/Canvas_Engine_v1_Review.md`; interaction-boundary row in `docs/architecture-canvas-standard-v0.1.md`.
+
+Product decisions made (noted per instruction): aggregate panel replaces the single-object binding when ≥2 objects are selected; roots exclude each other from impacted counts; shared impact is computed over non-root objects; multi-select overlay applies only in Browse/Inspect so Focus/Trace stay literally unaffected. I also restored `tests/canvas-engine.test.mjs`, which was deleted (uncommitted) in the working tree but passes fully and anchors the geometry regression suite.
+
+## 2. Files changed (all under `E:\codex-prj\ab-worktrees\mem1-pair-01-a`)
+
+- `app/architecture/interaction.ts` — multi-root `CanvasImpact` (`rootIds`, `contributorCount`, `sharedObjectIds`), `selectedObjectIds` state, aggregate emphasis, landscape reveal
+- `app/architecture/inspector-binding.ts` — `SelectionImpactSummary`, `bindSelectionImpact`
+- `app/architecture/inspector.tsx` — aggregate `SelectionImpactPanel`, idle-state open logic, `rootIds` fix
+- `app/architecture/canvas-kernel.tsx` — `onSelectionChange`, `deleteKeyCode=null`, event-aware `onNodeClick`
+- `app/architecture/architecture-canvas.tsx` — multi-select wiring (selection sync, additive clicks, camera intents, validity effect, group-drag persistence, aggregate Inspector prop, reading key)
+- `app/architecture/projection.ts` — shared/contributor node data, multi-selection `selected` flags, single-root totals gating
+- `app/architecture/architecture-node.tsx` — shared impact chip and aria labels
+- `app/architecture/types.ts` — `impact { role, depth, contributors, shared }`
+- `app/globals.css` — shared chip/border styles, aggregate impact list styles, 13px floor compliance
+- `tests/canvas-impact.test.mjs` (new, 11 tests), `tests/canvas-engine.test.mjs` (restored + updated for the new required field)
+- `scripts/capture-multi-select-evidence.mjs` (new Playwright evidence script), `scripts/render-canvas-evidence.mjs` (new field)
+- `docs/Canvas_Engine_v1_Review.md`, `docs/architecture-canvas-standard-v0.1.md`
+
+## 3. Screenshots (real Playwright/Chromium captures, `E:\codex-prj\ab-worktrees\mem1-pair-01-a\evidence\`)
+
+- `multi-select-01-small-idle.png` — Small 15/20 fixture, no selection, Inspector idle
+- `multi-select-02-small-single-impact.png` — single-select inspect impact with “依赖影响 ▲ 0 上游 ▼ 14 下游” summary and root totals chip (existing behavior)
+- `multi-select-03-small-union-shared.png` — Ctrl+click of 3 objects: aggregate panel (▲0/▼12, ⇄12 shared), per-node `▼ depth ⇄n` chips
+- `multi-select-04-small-marquee.png` — Shift+drag marquee of 2 objects: union with upstream+downstream, `▲▼ 双向` roles, ⇄2 shared markers
+- `multi-select-05-small-focus-unaffected.png` — Focus mode with a pending multi-selection (aggregate suppressed, focus emphasis intact)
+- `multi-select-06-trace-lens-open.png` — Trace flow lens open
+- `multi-select-07-small-trace-unaffected.png` — Trace of "Intent to Verified Change" unaffected by multi-selection
+- `multi-select-08-small-back-to-idle.png` — after Escape: Inspector closed, canvas idle (console verified `inspector idle after Escape: true`)
+- `multi-select-09-medium-union-shared.png` — Medium 40/70: 3 objects, ▲15/▼37 (最深 23 跳)， ⇄37 shared
+- `multi-select-10-production-registry.png` — production Registry project `ecp-core` r2 (12 objects/21 relationships from local D1): Gateway + Maintenance Write API selected, ⇄9 shared incl. D1 Core Store
+
+## 4. Verification per requirement point
+
+1. **Union impact (click + marquee)** — unit tests (diamond graph union, min-depth merge) + screenshots 03 (Ctrl+click) and 04 (marquee); both gestures captured live.
+2. **Shared impact identifiable** — `contributorCount`/`sharedObjectIds` unit tests; amber `⇄ n` chips and the shared-first list visible in screenshots 03/04/09/10.
+3. **Aggregate Inspector + idle reset** — `bindSelectionImpact` tests (counts, list, null for single/empty); screenshots 03/09/10 show the panel; screenshot 08 plus the scripted `inspector idle after Escape: true` check show idle reset.
+4. **Single-select + Focus/Trace unaffected** — dedicated tests (single-select invariants; deep-equal emphasis maps for Focus/Trace with vs. without a pending multi-selection); screenshots 02, 05, 07. Screenshot review of 02 also caught and fixed a real regression (`impact.rootId` → `rootIds`) with a source-level regression test.
+5. **Fixture sizes + production data** — tests assert union/shared behavior on Small 15/20 and Medium 40/70 plus a production-shaped adapter bundle; browser evidence covers Small, Medium and the real `ecp-core` Registry data served from local D1. Full suite: 26/26 tests pass; `eslint` clean; verified `vinext` build completes. Nothing was deployed.

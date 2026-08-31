@@ -1,0 +1,78 @@
+version: "0.1"
+session_id: ds_20260831100402_9e0584e7
+task:
+  surfaces:
+    - architecture-workbench
+    - inspector
+    - fixture-workbench
+  primary: architecture-workbench, inspector, fixture-workbench
+product_relationships:
+  - id: sel-obj
+    source: canvas
+    target: object
+    type: selects
+    meaning: Clicking an object opens the Inspector and highlights it; escape or pane click returns to browse
+    importance: supporting
+  - id: sel-rel
+    source: canvas
+    target: relationship
+    type: selects
+    meaning: Clicking a relationship highlights both endpoints in the Inspector
+    importance: supporting
+  - id: obj-rel
+    source: object
+    target: relationship
+    type: connected_by
+    meaning: Objects are relationship endpoints; edge direction defines upstream vs downstream
+    importance: supporting
+  - id: flow-obj
+    source: flow
+    target: object
+    type: participates
+    meaning: Flows order objects into steps; selecting a flow enters Trace
+    importance: supporting
+  - id: sel-impact
+    source: object
+    target: impact
+    type: derives
+    meaning: A single selected object derives its upstream/downstream impact view in inspect and focus modes
+    importance: supporting
+region_relationships: []
+decisions:
+  primary_structure: PAT-CANVAS-WORKSPACE
+  density_intent: regular
+  major_choice_ids:
+    - D1-aggregate-read-model
+    - D2-shared-impact-role
+    - D3-selection-gestures
+    - D4-aggregate-inspector
+    - D5-camera
+must_preserve:
+  - Single-select inspect/focus impact emphasis and chips
+  - Focus and Trace mode emphasis, fit and lens behavior
+  - Semantic Graph validation, adapter, fingerprint, layout cache
+  - "Read-only Human Web boundary: no canonical writes"
+  - Relationship and Flow selection kinds in the Inspector
+  - selection reset to browse on empty selection
+regression_points:
+  - Single-select inspect/focus impact emphasis and chips
+  - Focus and Trace mode emphasis, fit and lens behavior
+  - Semantic Graph validation, adapter, fingerprint, layout cache
+  - "Read-only Human Web boundary: no canonical writes"
+  - Relationship and Flow selection kinds in the Inspector
+  - selection reset to browse on empty selection
+unresolved: []
+corrections:
+  - id: corr_canvas_impact_grammar
+    check_id: impact_uses_line_grammar
+    intended: "Impact emphasis must reuse the established grammar: edge weight and dash pattern plus the existing object emphasis states (primary / related / context / muted). No hue-coded (rainbow) marking for impact direction or class; no glow or shadow halos. An impact edge remains its original relation type; direction stays readable via the edge's own direction (arrowhead) or an equivalent non-color channel."
+validation:
+  plan_revision: 1
+  check_ids:
+    - delta_conformance
+    - untouched_surface_regression
+    - pattern_consistency
+    - authority_consistency
+    - requirement_alignment
+  regression_check_ids:
+    - impact_uses_line_grammar

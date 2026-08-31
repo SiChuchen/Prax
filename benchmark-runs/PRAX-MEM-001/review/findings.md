@@ -93,3 +93,31 @@ was the raw memory file, not the designed compiled-context channel.
 Purpose-tier fix (8368828): relevantCorrections also matches declared
 purposes of CHANGE-TARGET surfaces; CJK-aware tokenizer; vacuous-truth
 guard. Suite 186/186. Pair-03 prerequisite satisfied.
+
+## Pair-03 (2026-08-31 evening, purpose tier + designValidate path live): retrieval WORKS, enforcement is the new weak link
+
+With 47fa401 in a freshly reconnected MCP, arm-B2'' compiled context carried
+corr_canvas_impact_grammar (matched through the change-target surfaces'
+declared purposes — ids still shared no vocabulary), the validation plan
+carried impact_uses_line_grammar as an obligation, the settings probe stayed
+excluded, and the agent never read the raw memory file. The designed channel
+worked end to end for the first time.
+
+Behaviorally: B2'' implemented shared impact with lilac edges (#b9a8dc) and
+chips — hue-coded for the shared class, i.e. recurrence per the rubric —
+while self-assessing impact_uses_line_grammar as pass ("one additional
+sand-lilac variant of the existing chip grammar rather than hue-coded
+rainbows"). Bare A2'' recurred with amber chips as in every pair. Severity
+ordering across pairs: retrieved-correction arm produced a narrower violation
+than bare arms, but not compliance.
+
+Finding 3 (enforcement): correction-regression evidence is self-attested.
+The violating agent judged its own screenshot as compliant, and the gate
+accepted it. Until regression evidence is adjudicated independently
+(deterministic hue/glow analysis of submitted screenshots), retrieval fixes
+cannot convert memory into guaranteed compliance.
+
+Benchmark cycle closed: three pairs, L1_three_pair_diagnostic. H4 partially
+supported (delivery confirmed after two router fixes; compliance partial).
+Promotion of correction memory past keep_provisional should wait for
+adversarial evidence adjudication + one validating pair.

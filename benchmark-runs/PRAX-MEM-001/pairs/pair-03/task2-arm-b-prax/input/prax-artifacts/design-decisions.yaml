@@ -1,0 +1,70 @@
+session_id: ds_20260831100402_9e0584e7
+primary_structure:
+  pattern: PAT-CANVAS-WORKSPACE
+  rationale:
+    - The canvas already derives all interaction semantics from deriveCanvasView; multi-select is an additive state extension, not a new surface
+    - The Contextual Inspector pattern (PAT-LIST-DETAIL-INSPECTOR, inspected at L1) already binds to selection and closes when selection is null, which directly yields the required idle return
+    - Keeping the change inside the read model preserves the Semantic Graph boundary, adapter, validation and cache behavior
+  confidence: high
+information_hierarchy:
+  primary:
+    - architecture
+    - "architecture-workbench: selected objects show primary emphasis and the aggregate union impact (upstream blue / downstream amber / shared sand) directly on the canvas"
+  secondary:
+    - "inspector: aggregate impact summary (counts + object list), subordinate to the canvas and returning to idle on empty selection"
+    - "fixture-workbench: verification surface"
+density:
+  intent: regular
+  strategy:
+    - reuse the existing reading key and impact chip grammar; add one Shared variant
+    - aggregate summary lives inside the existing inspector region
+    - selected objects keep primary emphasis; union impact uses the existing related emphasis
+  avoid:
+    - new permanent chrome (sidebars/bars) for a transient selection state
+    - a fourth edge color competing with the existing upstream blue / downstream amber pair
+major_choices:
+  - id: D1-aggregate-read-model
+    choice: Aggregate union impact computed in deriveCanvasView by per-object deriveImpact over all selected objects; sets unioned; shared = objects (and relationships) appearing in more than one per-object impact set; a single selected object keeps the existing CanvasImpactView shape exactly
+    rationale: Keeps the Semantic Graph boundary and the existing read model as the single source of interaction semantics; additive fields preserve all existing tests
+    confidence: high
+    references:
+      - impact
+      - object
+      - relationship
+  - id: D2-shared-impact-role
+    choice: Add a fourth ImpactRole 'shared' rendered as a sand/gold chip on impacted nodes shared by 2+ selected objects; upstream/downstream roles remain for non-shared impacted objects
+    rationale: The requirement demands shared impact be identifiable at a glance; extending the existing chip vocabulary is cheaper and quieter than a new overlay layer
+    confidence: high
+    references:
+      - impact
+      - object
+  - id: D3-selection-gestures
+    choice: "Multi-select gestures: Ctrl/Cmd+click toggles objects into the selection set; Shift+drag on the pane performs box/marquee selection (React Flow selectionOnDrag while Shift held, panOnDrag otherwise); plain click and pane click keep the existing single-select/clear behavior"
+    rationale: Matches web desktop conventions and preserves existing pan/drag behavior; plain-click regression risk is zero
+    confidence: high
+    references:
+      - canvas
+      - object
+  - id: D4-aggregate-inspector
+    choice: Inspector gains a 'selection' binding kind for multi-object selections showing aggregate counts (selected, upstream, downstream, shared) and the object list; binding is null when selection is empty so the inspector returns to its idle closed state
+    rationale: Reuses the existing binding pattern (contextual inspector); idle-on-empty already exists via the same mechanism, satisfying requirement 3 without new chrome
+    confidence: high
+    references:
+      - inspector
+  - id: D5-camera
+    choice: Aggregate camera fit fits all selected objects plus their union impact neighbors once per aggregate selection change
+    rationale: Union impact can extend beyond the current viewport; the existing fitCanvas already computes neighbor sets, extended to the selection set
+    confidence: medium
+    references:
+      - canvas
+      - impact
+rejected:
+  - option: Render shared impact as a separate overlay layer (halo/badge outside the node chip system)
+    reason: Adds a second visual grammar competing with the established impact chips; noisier and more code for the same signal
+  - option: Dedicated multi-select toolbar/mode button next to Browse/Inspect/Focus/Trace
+    reason: Requirement is a selection state, not a mode; a mode would force users to switch context and risks conflicting with trace
+  - option: BFS transitive impact closure over multiple hops
+    reason: The requirement defines impact as the direct upstream dependencies and downstream dependents of selected objects (matching the existing single-select deriveImpact scope); transitive closure would change established single-select semantics too
+  - option: Separate aggregate summary bar under the canvas
+    reason: Permanent chrome for a transient state violates Signal over Chrome; the inspector is the established detail surface
+unresolved: []

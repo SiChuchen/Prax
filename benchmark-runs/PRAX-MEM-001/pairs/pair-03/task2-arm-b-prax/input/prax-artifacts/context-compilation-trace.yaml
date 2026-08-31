@@ -1,0 +1,37 @@
+version: "0.1"
+session_id: ds_20260831100402_9e0584e7
+task_ref: architecture-workbench, inspector, fixture-workbench
+selected:
+  - ref: product_relationships
+    reason:
+      - sel-obj:canvas->object
+      - sel-rel:canvas->relationship
+      - obj-rel:object->relationship
+      - flow-obj:flow->object
+      - sel-impact:object->impact
+  - ref: region_relationships
+    reason: []
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-CANVAS-WORKSPACE
+  - ref: unresolved
+    reason: []
+  - ref: corrections
+    reason:
+      - corr_canvas_impact_grammar
+  - ref: validation-plan@1
+    reason:
+      - delta_conformance
+      - untouched_surface_regression
+      - pattern_consistency
+      - authority_consistency
+      - requirement_alignment
+excluded:
+  - ref: correction:corr_probe_settings_001
+    reason: scope_mismatch
+  - ref: region_relationships
+    reason: sdir_delta carries region changes, not region relationships
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata
