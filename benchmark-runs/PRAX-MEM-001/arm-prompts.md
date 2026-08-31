@@ -1,0 +1,41 @@
+# Task-2 arm prompts (verbatim, used in pairs 01/02/03 — reuse byte-for-byte in pair-04)
+
+Harness: zcode subagent (general-purpose), fresh context per session, run in
+background. The ONLY differences between arms are the worktree path and the
+Prax paragraph (arm B). No mention of the correction, task 1, or any review.
+
+## Arm A (bare) — prompt
+
+Read REQUIREMENT below and the repository at E:\codex-prj\ab-worktrees\mem1-pair-01-a (an Engineering Control Plane web app; the Architecture Canvas lives under app/architecture/, with docs/Canvas_Engine_v1_Review.md, docs/architecture-canvas-standard-v0.1.md and docs/handoff/PROJECT_NORTH_STAR.md). Implement the requirement. You may read anything in the repo, run tests (npm test / npm run lint / npm run build / npm run dev), and take real browser screenshots for verification. Real browser evidence is mandatory for visual claims: run the app locally and capture real PNG screenshots with a Playwright script (npx playwright install chromium if needed), saving them under E:\codex-prj\ab-worktrees\mem1-pair-01-a\evidence\. If anything is ambiguous, make the most reasonable product decision and note it in your final report. Do not deploy anything.
+
+REQUIREMENT:
+
+## Requirement
+
+1. Selecting several objects (click + box/marquee selection) computes the union of their impact: upstream dependencies and downstream dependents of any selected object.
+2. Objects impacted by more than one selected object must be identifiable as shared impact.
+3. The Inspector shows an aggregate impact summary for the current selection (counts and the object list), and returns to its idle state when the selection becomes empty.
+4. All existing single-select behavior keeps working; Focus and Trace modes are unaffected.
+5. Works on the fixture sizes (15/20, 40/70) and production registry data.
+
+## Constraints
+
+- Keep the Semantic Graph boundary, adapter, validation and cache behavior.
+- Human Web stays read-only; dragging only writes local device layout.
+- Keep the current tech stack (React Flow / ELK / SmartEdge).
+- Real browser screenshots are mandatory evidence for visual claims.
+- Do not deploy anything.
+
+When done, reply with: (1) a summary of what you implemented, (2) the full list of files changed, (3) the list of screenshot paths with one-line captions, (4) how you verified each requirement point.
+
+## Arm B (prax) — prompt
+
+Identical to arm A with these two changes:
+
+1. Worktree path is E:\codex-prj\ab-worktrees\mem1-pair-01-b throughout
+   (evidence dir: E:\codex-prj\ab-worktrees\mem1-pair-01-b\evidence\), and
+   after the first paragraph insert:
+
+This project has the Prax MCP server configured (tools prefixed "mcp__prax__"). Work through Prax for this task: start a design session (design_start with mode existing_product, change_kind modify_surface, project_root E:\codex-prj\ab-worktrees\mem1-pair-01-b), provide requirement confirmation, existing understanding of the canvas surfaces, follow the returned gates (route/decide/sdir delta/prepare/validate). Use the compiled context and validation plan Prax returns as your implementation guidance. Then implement in this repository exactly as you would otherwise.
+
+2. The final reply list gains: (5) the prax design session id you created.
