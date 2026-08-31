@@ -1,0 +1,429 @@
+version: "0.1"
+events:
+  - question: 新增 pricing 页（add_surface）在既有 Prax 营销站上应采用什么结构模式？页面含 framing headline、三列 tier 卡、分组特性矩阵、FAQ 手风琴，且必须与已批准 shell（header/footer/token）集成
+    routed_at: 2026-08-30T10:39:38.587Z
+    result:
+      status: PASS
+      candidate_domains: []
+      principles:
+        - id: P-22
+          type: principle
+          name: Signal over Chrome
+          one_line_use: Keep controls and decoration quieter than the information users came to understand.
+          triggers:
+            - signal_to_noise
+            - density
+            - chrome
+            - toolbar
+            - architecture
+            - data
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform:
+              - web_desktop
+            density:
+              - compact
+              - regular
+            phase:
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=manage_lifecycle and domain_id=unknown match this entry's scope
+            trigger: scope_and_lifecycle
+            scope_match:
+              - platform:web_desktop
+              - density:regular
+            confidence: medium
+        - id: P-01
+          type: principle
+          name: Perceptual Grouping
+          one_line_use: Group related product objects so structure is visible before detail is read.
+          triggers:
+            - grouping
+            - architecture
+            - canvas
+            - relationships
+            - dense_information
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform:
+              - web_desktop
+            density: []
+            phase:
+              - routing
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=manage_lifecycle and domain_id=unknown match this entry's scope
+            trigger: scope_and_lifecycle
+            scope_match:
+              - platform:web_desktop
+            confidence: low
+        - id: P-03
+          type: principle
+          name: Visual Hierarchy
+          one_line_use: Make importance and reading order evident without relying on decoration.
+          triggers:
+            - hierarchy
+            - importance
+            - attention
+            - architecture
+            - toolbar
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform:
+              - web_desktop
+            density: []
+            phase:
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=manage_lifecycle and domain_id=unknown match this entry's scope
+            trigger: scope_and_lifecycle
+            scope_match:
+              - platform:web_desktop
+            confidence: low
+        - id: P-10
+          type: principle
+          name: Match the Product Mental Model
+          one_line_use: Organize the interface around user-recognized objects and tasks, not backend records.
+          triggers:
+            - mental_model
+            - product_objects
+            - backend_leak
+            - architecture
+            - settings
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform: []
+            density: []
+            phase:
+              - product_framing
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=manage_lifecycle and domain_id=unknown match this entry's scope
+            trigger: scope_and_lifecycle
+            scope_match:
+              - generic
+            confidence: low
+        - id: P-26
+          type: principle
+          name: Visibility of System Status
+          one_line_use: Expose meaningful progress, readiness, selection, and failure states.
+          triggers:
+            - status
+            - loading
+            - empty
+            - ready
+            - error
+            - selected
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform: []
+            density: []
+            phase:
+              - decision
+              - sdir
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=manage_lifecycle and domain_id=unknown match this entry's scope
+            trigger: scope_and_lifecycle
+            scope_match:
+              - generic
+            confidence: low
+      heuristics:
+        - id: H-13
+          type: heuristic
+          name: Structured Density
+          one_line_use: Professional tools may be dense when groups, hierarchy, and interaction remain legible.
+          triggers:
+            - density
+            - professional_tool
+            - data
+            - architecture
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform:
+              - web_desktop
+            density:
+              - compact
+              - regular
+            phase:
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=manage_lifecycle and domain_id=unknown match this entry's scope
+            trigger: scope_and_lifecycle
+            scope_match:
+              - platform:web_desktop
+              - density:regular
+            confidence: medium
+        - id: H-01
+          type: heuristic
+          name: Task-first Entry
+          one_line_use: The first view should make the primary user task obvious.
+          triggers:
+            - primary_task
+            - entry
+            - navigation
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform: []
+            density: []
+            phase:
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=manage_lifecycle and domain_id=unknown match this entry's scope
+            trigger: scope_and_lifecycle
+            scope_match:
+              - generic
+            confidence: low
+        - id: H-02
+          type: heuristic
+          name: Object Language
+          one_line_use: Use the same stable names for product objects across navigation, actions, and detail.
+          triggers:
+            - labels
+            - product_objects
+            - naming
+            - backend_leak
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform: []
+            density: []
+            phase:
+              - product_framing
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=manage_lifecycle and domain_id=unknown match this entry's scope
+            trigger: scope_and_lifecycle
+            scope_match:
+              - generic
+            confidence: low
+        - id: H-07
+          type: heuristic
+          name: State Completeness
+          one_line_use: Define loading, empty, ready, selected, and error behavior before implementation.
+          triggers:
+            - states
+            - loading
+            - empty
+            - ready
+            - selected
+            - error
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform: []
+            density: []
+            phase:
+              - sdir
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=manage_lifecycle and domain_id=unknown match this entry's scope
+            trigger: scope_and_lifecycle
+            scope_match:
+              - generic
+            confidence: low
+      patterns:
+        - id: PAT-RESOURCE-MANAGEMENT
+          type: pattern
+          name: Resource Management
+          one_line_use: Inventory, status, and lifecycle actions for a set of managed product objects.
+          triggers:
+            - resources
+            - inventory
+            - status
+            - create
+            - archive
+          scope:
+            user_type: []
+            task_type:
+              - manage
+              - administer
+            domain: []
+            platform:
+              - web_desktop
+            density: []
+            phase:
+              - decision
+          lifecycle:
+            status: reviewed
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=manage_lifecycle and domain_id=unknown match this entry's scope
+            trigger: scope_and_lifecycle
+            scope_match:
+              - task_type:manage_lifecycle
+              - platform:web_desktop
+            confidence: medium
+        - id: PAT-WORKSPACE
+          type: pattern
+          name: Workspace
+          one_line_use: A persistent surface for iterative, object-centered work.
+          triggers:
+            - workspace
+            - iterative_work
+            - professional_tool
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform:
+              - web_desktop
+            density:
+              - compact
+              - regular
+            phase:
+              - decision
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=manage_lifecycle and domain_id=unknown match this entry's scope
+            trigger: scope_and_lifecycle
+            scope_match:
+              - platform:web_desktop
+              - density:regular
+            confidence: medium
+        - id: PAT-APPLICATION-SHELL
+          type: pattern
+          name: Application Shell
+          one_line_use: Stable global navigation and utilities around a changing work region.
+          triggers:
+            - navigation
+            - multi_area
+            - application
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform:
+              - web_desktop
+            density: []
+            phase:
+              - decision
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=manage_lifecycle and domain_id=unknown match this entry's scope
+            trigger: scope_and_lifecycle
+            scope_match:
+              - platform:web_desktop
+            confidence: low
+      platform_profile:
+        - id: WEB-DESKTOP
+          type: platform_convention
+          name: Web Desktop Professional Tool
+          one_line_use: Pointer-and-keyboard conventions for large-viewport, information-dense work.
+          triggers:
+            - web
+            - desktop
+            - pointer
+            - keyboard
+            - large_viewport
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform:
+              - web_desktop
+            density: []
+            phase:
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=manage_lifecycle and domain_id=unknown match this entry's scope; natural-language trigger 'web' supports it
+            trigger: web
+            scope_match:
+              - platform:web_desktop
+            confidence: high
+      excluded:
+        - id: PAT-CANVAS-WORKSPACE
+          reason: domain scope architecture does not match canonical domain_id unknown
+        - id: PAT-LIST-DETAIL
+          reason: task scope browse, inspect does not match canonical task_type manage_lifecycle
+        - id: PAT-LIST-DETAIL-INSPECTOR
+          reason: domain scope architecture, data does not match canonical domain_id unknown
+        - id: PAT-DATA-EXPLORER
+          reason: domain scope data, logs does not match canonical domain_id unknown
+        - id: PAT-SETTINGS-SECTIONS
+          reason: domain scope settings does not match canonical domain_id unknown
+      confidence: medium

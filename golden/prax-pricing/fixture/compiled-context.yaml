@@ -1,0 +1,128 @@
+version: "0.1"
+session_id: ds_20260830103431_85ce10c7
+task:
+  surfaces:
+    - prax-pricing
+  primary: prax-pricing
+product_relationships:
+  - id: rel-header-pricing
+    source: shell-header
+    target: pricing-page
+    type: navigates_to
+    direction: forward
+    meaning: header nav 新增 pricing 链接，营销站任一页可到达定价页
+    importance: primary
+  - id: rel-page-cards
+    source: pricing-page
+    target: tier-cards
+    type: contains
+    direction: forward
+    meaning: 定价页首屏内容为三列 tier 卡
+    importance: primary
+  - id: rel-page-matrix
+    source: pricing-page
+    target: feature-matrix
+    type: contains
+    direction: forward
+    meaning: tier 卡之下是分组特性矩阵，承载细节对比
+    importance: primary
+  - id: rel-page-faq
+    source: pricing-page
+    target: faq-accordion
+    type: contains
+    direction: forward
+    meaning: 矩阵之后为 FAQ 手风琴，处理长尾疑问
+    importance: supporting
+  - id: rel-page-footer
+    source: pricing-page
+    target: shell-footer
+    type: contains
+    direction: forward
+    meaning: 页面以标准 shell footer 收尾
+    importance: supporting
+  - id: rel-header-home
+    source: shell-header
+    target: landing-home-sections
+    type: contains
+    direction: forward
+    meaning: shell-header 包裹并标识 prax-landing-home 的线性内容区
+    importance: supporting
+region_relationships: []
+decisions:
+  primary_structure: PAT-APPLICATION-SHELL
+  density_intent: regular
+  major_choice_ids:
+    - structure
+    - shell-integration
+    - tier-composition
+    - matrix
+    - faq
+    - tone
+must_preserve:
+  - "已批准 landing token：#fafaf7 / #111110 / #55534e / #e4e2dc、白色卡片、黑色主按钮"
+  - shell header/footer 结构与 wordmark
+  - Inter + Roboto Mono 字体搭配
+  - :focus-visible 可见焦点环
+  - prax-landing-home 内容不动（header nav 增加 pricing 入口除外）
+regression_points:
+  - "已批准 landing token：#fafaf7 / #111110 / #55534e / #e4e2dc、白色卡片、黑色主按钮"
+  - shell header/footer 结构与 wordmark
+  - Inter + Roboto Mono 字体搭配
+  - :focus-visible 可见焦点环
+  - prax-landing-home 内容不动（header nav 增加 pricing 入口除外）
+unresolved:
+  - Support tier 是否在任何时点展示具体价格——本次以无编造数字 + FAQ/contact 指引处理，最终定价表述待运营者决定
+  - support-tier-pricing-display
+corrections:
+  - id: corr-pricing-shell-width-stretch
+    check_id: product_model_alignment
+    intended: "Any shell child centered via horizontal auto margins (header, footer inner) must declare an explicit width (e.g. width: 100%) inside the flex column so the auto margin centers instead of shrinking; verify with a full-page runtime screenshot against the approved representation before declaring done."
+representation:
+  provider: penpot
+  file_key: 317f08f6-f8f6-8199-8008-8ffe053a4bd9
+  approved_anchor:
+    round: 2
+    sdir_digest: cec4aba85fa2e64f9ed4037272c8c0be8e11e322985e794d12ca02a09cdfc351
+    screenshot_digests:
+      - ref: rep-evidence/round-2/workspace.png
+        sha256: 37ae5caa1efb4bdaede15403dbc4fa6a810aef34acf3f91dd41d46bc1ad271f5
+      - ref: rep-evidence/round-2/framing.png
+        sha256: 94df8bc3e81a8b2d7adc726b61345208a86fbe0d9310027b228a71114eed790b
+      - ref: rep-evidence/round-2/tiers.png
+        sha256: 228279e85a9cffc8ff46cb1dafc712091db09c92c002ee5a83116182ba5ac413
+      - ref: rep-evidence/round-2/matrix.png
+        sha256: b52fa9f421e8fd217aefe1cb1b8cb6a664c7756d8dc63e66f1469365f046d547
+      - ref: rep-evidence/round-2/faq.png
+        sha256: 594892380004d0c2673cc927a6d380d5eb1cf99182d36c413a21a034e0ce4d0d
+  region_frames:
+    - region: workspace
+      node_id: 368337e1-465e-8012-8008-901778a90357
+      name: workspace
+    - region: framing 区：免费/付费分界陈述（首屏焦点）
+      node_id: 368337e1-465e-8012-8008-90176c5b1f1b
+      name: framing 区：免费 / 付费分界陈述（首屏焦点）
+    - region: tiers 三列 tier 卡（Local OSS / Support / Managed Cloud planned）
+      node_id: 368337e1-465e-8012-8008-90176ca7b0c3
+      name: tiers 三列 tier 卡（Local OSS / Support / Managed Cloud planned）
+    - region: matrix 分组特性矩阵（runtime/knowledge/support）
+      node_id: 368337e1-465e-8012-8008-901776614ecc
+      name: matrix 分组特性矩阵（runtime / knowledge / support）
+    - region: faq 手风琴（五问，含默认展开）
+      node_id: 368337e1-465e-8012-8008-9017781004ff
+      name: faq 手风琴（五问，含默认展开）
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - design_representation_coverage
+    - representation_runtime_drift
+    - untouched_surface_regression
+    - pattern_consistency
+    - authority_consistency
+    - requirement_alignment
+  regression_check_ids:
+    - product_model_alignment

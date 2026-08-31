@@ -304,3 +304,316 @@ a {
 .site-footer .mono-footnote {
   font-size: 12px;
 }
+
+/* Pricing page — PRAX-PRICING-001 (ds_20260830103431_85ce10c7), realized
+   from the round-2 approved penpot representation (file
+   317f08f6-f8f6-8199-8008-8ffe053a4bd9). Tokens inherited unchanged. */
+
+/* corr-pricing-shell-width-stretch: every shell child centered via auto
+   margins declares width:100% so it stretches in the flex column instead of
+   shrinking to content. */
+.pricing-framing,
+.pricing-tiers,
+.pricing-matrix-section,
+.pricing-faq,
+.pricing-footer {
+  width: 100%;
+  max-width: var(--content-width);
+  margin: 0 auto;
+}
+
+.pricing-framing {
+  padding: 120px 0 60px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.pricing-title {
+  font-size: 52px;
+  line-height: 60px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0 0 40px;
+}
+
+.pricing-lede {
+  font-size: 19px;
+  line-height: 30px;
+  color: var(--muted);
+  max-width: 760px;
+  margin: 0 0 56px;
+}
+
+.pricing-chips {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  padding: 0;
+  margin: 0;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  padding: 12px 20px;
+  border-radius: 8px;
+}
+
+.chip-solid {
+  background: var(--ink);
+  color: #fff;
+}
+
+.chip-outline {
+  background: var(--card);
+  border: 1px solid var(--hairline);
+  color: var(--muted);
+}
+
+.pricing-tiers {
+  padding: 96px 0 116px;
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+}
+
+.tier-card {
+  background: var(--card);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  padding: 28px;
+  min-height: 452px;
+  display: flex;
+  flex-direction: column;
+}
+
+.tier-n {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin: 0 0 16px;
+  display: flex;
+  align-items: center;
+}
+
+.tier-badge {
+  margin-left: auto;
+  font-size: 10px;
+  border: 1px solid var(--hairline);
+  border-radius: 11px;
+  padding: 3px 10px;
+  background: var(--bg);
+}
+
+.tier-name {
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0 0 26px;
+}
+
+.tier-price {
+  font-size: 30px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+
+.tier-note {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin: 0;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.tier-bullets {
+  list-style: none;
+  padding: 0;
+  margin: 24px 0 0;
+}
+
+.tier-bullets li {
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--muted);
+  margin: 0 0 12px;
+}
+
+.tier-dot {
+  color: var(--ink);
+  margin-right: 10px;
+}
+
+.tier-cta {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.tier-cta-solid {
+  background: var(--ink);
+  color: #fff;
+}
+
+.tier-cta-solid:hover {
+  opacity: 0.88;
+}
+
+.tier-cta-outline {
+  background: var(--card);
+  border: 1px solid var(--ink);
+  color: var(--ink);
+}
+
+.tier-cta-outline:hover {
+  opacity: 0.88;
+}
+
+.tier-cta-disabled {
+  background: var(--hairline);
+  color: var(--muted);
+}
+
+.pricing-matrix-section {
+  padding: 0 0 116px;
+}
+
+.pricing-matrix {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.pricing-matrix th,
+.pricing-matrix td {
+  padding: 12px 16px 12px 0;
+  vertical-align: baseline;
+}
+
+.pricing-matrix thead th {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.pricing-matrix th:first-child {
+  width: 41%;
+}
+
+.pricing-matrix tbody tr.matrix-group th {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-top: 36px;
+  padding-bottom: 14px;
+}
+
+.pricing-matrix tbody tr:not(.matrix-group) th {
+  font-size: 15px;
+  font-weight: 400;
+}
+
+.pricing-matrix tbody tr:not(.matrix-group) th,
+.pricing-matrix tbody tr:not(.matrix-group) td {
+  border-bottom: 1px solid var(--hairline);
+}
+
+.matrix-yes {
+  color: var(--ink);
+}
+
+.matrix-no {
+  color: var(--muted);
+}
+
+.matrix-planned {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.pricing-faq {
+  padding: 0 0 96px;
+}
+
+.pricing-faq-item {
+  border-top: 1px solid var(--hairline);
+}
+
+.pricing-faq-item:last-child {
+  border-bottom: 1px solid var(--hairline);
+}
+
+.pricing-faq-item summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px 0;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+}
+
+.pricing-faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-mark {
+  font-size: 18px;
+  color: var(--muted);
+}
+
+.faq-mark::before {
+  content: "+";
+}
+
+.pricing-faq-item[open] .faq-mark::before {
+  content: "−";
+}
+
+.pricing-faq-item > p {
+  margin: 0;
+  padding: 0 0 24px;
+  font-size: 15px;
+  line-height: 24px;
+  color: var(--muted);
+  max-width: 760px;
+}
+
+.mono-link-current {
+  color: var(--ink);
+}
+
+.pricing-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--hairline);
+  margin-top: 96px;
+  padding: 30px 0 34px;
+}

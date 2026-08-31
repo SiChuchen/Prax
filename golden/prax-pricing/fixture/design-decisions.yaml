@@ -1,0 +1,95 @@
+session_id: ds_20260830103431_85ce10c7
+primary_structure:
+  pattern: PAT-APPLICATION-SHELL
+  rationale:
+    - 形式采纳路由返回的 PAT-APPLICATION-SHELL：本次 'multiple durable work areas share identity and utilities' 真实成立——营销站已有 home 与新 pricing 两个持久面共享 header/footer/token 身份，无需 landing 那轮的单面语义收窄
+    - KB 域缺口第二次复现（domain_id=unknown、product_archetypes=unknown，无 marketing/editorial 域）：接受缺口后，L1 检视排除 RESOURCE-MANAGEMENT（无 peer 资源生命周期操作）与 WORKSPACE（does_not_apply 'task is short and linear' 命中），APPLICATION-SHELL 是唯一剩余结构候选
+    - 四个内容区与 requirement section 1:1（framing/tiers/matrix/faq），workspace 区由 pattern 模板提供，coverage 可确定性通过；集成侧由 integration 计划承载（header nav 新增入口）
+  confidence: high
+information_hierarchy:
+  primary:
+    - framing 区：免费/付费分界陈述（首屏焦点）
+  secondary:
+    - tiers 三列 tier 卡（Local OSS / Support / Managed Cloud planned）
+    - matrix 分组特性矩阵（runtime/knowledge/support）
+    - faq 手风琴（五问，含默认展开）
+density:
+  intent: regular
+  strategy:
+    - 沿用 1120px 内容容器，区块间距较 landing 收紧（regular 密度）
+    - tier 卡三列等宽，卡内信息上限：名称+状态徽标+一段定位+主行动
+    - 矩阵全宽行式：三组分组标题行 + ≥8 特性行，hairline 分隔，✓/— mono 记号
+    - FAQ 单列窄栏（≈720px）避免长行
+  avoid:
+    - 多栏正文长段落
+    - 弹窗、倒计时、任何制造紧迫感的元素
+    - 矩阵隐藏列（tab 切换）
+major_choices:
+  - id: structure
+    choice: 纵向线性单页定价结构（framing→tiers→matrix→faq），运行于继承的静态 shell 内，页内不做多栏切换
+    rationale: 定价评估自上而下推进：先分界陈述、后概览、再细节、最后长尾问答；四区与 requirement section 1:1，覆盖检查可确定性通过
+    confidence: high
+    references:
+      - pricing-page
+      - tier-cards
+      - feature-matrix
+      - faq-accordion
+      - 在特性矩阵中对比三档（Local OSS / Support / Managed Cloud planned），判断当下自托管是否够用
+      - developer-tool product website
+  - id: shell-integration
+    choice: shell 集成：header nav 增加 'pricing' mono 链接（home 与 pricing 互达，wordmark 回首页），footer 标准收尾，landing 已批准 token 原样继承不做任何改值
+    rationale: add_surface 的硬约束是与已批准 shell 零漂移；'multiple durable work areas share identity and utilities' 本次真实成立（两处 surface 共享 shell），不需要再收窄语义
+    confidence: high
+    references:
+      - shell-header
+      - shell-footer
+      - pricing-page
+      - 从 landing header 进入定价页并可返回首页
+      - integration fidelity with approved landing shell and tokens
+  - id: tier-composition
+    choice: tier 卡三列等宽：Local OSS（Free now）、Support（Paid support）、Managed Cloud（Planned），每卡 = 名称 + 状态徽标 + 一段机制定位 + 单一行动；managed cloud 明确标 'planned' 且不出现编造数字
+    rationale: 三档地位不对等（免费在售/付费在售/未上线），状态徽标把时间性显式化，替代价格锚定的营销手法；无 dark pattern 要求由构成层面保证
+    confidence: medium
+    references:
+      - tier-cards
+      - 读 framing headline 弄清现在免费什么、将来付费什么
+      - honesty over persuasion (no invented pricing, no dark patterns)
+  - id: matrix
+    choice: 特性矩阵为全宽行式表：runtime/knowledge/support 三个分组标题行 + ≥8 特性行，hairline 行分隔，三列档位用 ✓/— mono 记号，1280px 无横向滚动
+    rationale: 对比任务要求三档同时可见可扫读；行式 + 分组标题是纯静态表最可扫读的形态；hairline + mono 记号复用既有 token 不引入新视觉变量
+    confidence: medium
+    references:
+      - feature-matrix
+      - matrix readability at 1280px
+      - 在特性矩阵中对比三档（Local OSS / Support / Managed Cloud planned），判断当下自托管是否够用
+  - id: faq
+    choice: FAQ 用原生 details/summary 手风琴：五问（self-host 要求、数据本地性、license、roadmap、contact），第一条默认展开，全键盘可操作，焦点环继承 :focus-visible
+    rationale: 原生 details/summary 零 JS 且天然键盘可及，符合静态页 runtime_dependency_low；默认展开一条让访客立刻看到答案长什么样，降低全部收起时的空屏感
+    confidence: high
+    references:
+      - faq-accordion
+      - keyboard-operable FAQ
+      - 按需展开 FAQ：self-host 要求、数据本地性、license、roadmap、contact
+  - id: tone
+    choice: 文案语气：机制陈述为主，free/paid 边界一句话说死；不出现倒计时、弹窗、虚假社会证明；未来定价一律 'planned' 或 FAQ/contact 指引，不编造数字
+    rationale: 受众对营销话术免疫（landing 已验证的语气基线）；定价页的信任来自诚实而非紧迫感，golden case 明令禁止 dark pattern 与编造定价
+    confidence: high
+    references:
+      - pricing-page
+      - honesty over persuasion (no invented pricing, no dark patterns)
+      - 读 framing headline 弄清现在免费什么、将来付费什么
+rejected:
+  - option: PAT-RESOURCE-MANAGEMENT（资源管理结构）
+    reason: L1 检视：applies_when 要求 'users create, review, and retire peer resources'——定价页没有任何资源生命周期操作，语义完全不符
+  - option: PAT-WORKSPACE（工作区结构）
+    reason: L1 检视：does_not_apply_when 'the task is short and linear' 直接命中——定价阅读是短线性任务，非迭代式对象操作
+  - option: tier 卡下方用 tab 切换看各档矩阵
+    reason: 对比任务要求三档同时可见可扫读；tab 隐藏列迫使记忆比较，违背 matrix readability 目标
+  - option: 矩阵不做分组、8+ 行平铺
+    reason: 12 行平铺缺乏扫读锚点；三组分组标题行以零成本提供结构
+unresolved:
+  - id: support-tier-pricing-display
+    impact: low
+    affects:
+      - tier-cards
+      - feature-matrix

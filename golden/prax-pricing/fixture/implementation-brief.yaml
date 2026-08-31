@@ -1,0 +1,85 @@
+version: "0.1"
+platform_profile: WEB-DESKTOP
+framework: react
+sdir_ref: screen.sdir.yaml
+decision_ref: design-decisions.yaml
+approved_patterns:
+  - PAT-APPLICATION-SHELL
+approved_component_contracts:
+  - WORKSPACE
+  - STATE-FEEDBACK
+states_required:
+  - loading
+  - empty
+  - ready
+  - selected
+  - error
+capability_gaps: []
+validation_plan_ref:
+  artifact: validation-plan.yaml
+  revision: 1
+validation_requirements:
+  - semantic_conformance
+  - state_completeness
+  - product_model_alignment
+  - keyboard
+  - hierarchy_review
+  - design_representation_coverage
+  - representation_runtime_drift
+  - untouched_surface_regression
+  - pattern_consistency
+  - authority_consistency
+  - requirement_alignment
+realization:
+  mode: figma_first
+  provider: penpot
+  provider_contract_version: official-mcp-2026-08
+  representation_artifact_ref: representation-artifact.yaml
+  review:
+    round: 2
+    decided_at: 2026-08-30T15:38:59.712Z
+    screenshot_digests:
+      - ref: rep-evidence/round-2/workspace.png
+        sha256: 37ae5caa1efb4bdaede15403dbc4fa6a810aef34acf3f91dd41d46bc1ad271f5
+      - ref: rep-evidence/round-2/framing.png
+        sha256: 94df8bc3e81a8b2d7adc726b61345208a86fbe0d9310027b228a71114eed790b
+      - ref: rep-evidence/round-2/tiers.png
+        sha256: 228279e85a9cffc8ff46cb1dafc712091db09c92c002ee5a83116182ba5ac413
+      - ref: rep-evidence/round-2/matrix.png
+        sha256: b52fa9f421e8fd217aefe1cb1b8cb6a664c7756d8dc63e66f1469365f046d547
+      - ref: rep-evidence/round-2/faq.png
+        sha256: 594892380004d0c2673cc927a6d380d5eb1cf99182d36c413a21a034e0ce4d0d
+  provider_refs:
+    file_key: 317f08f6-f8f6-8199-8008-8ffe053a4bd9
+    frames:
+      - node_id: 368337e1-465e-8012-8008-901778a90357
+        name: workspace
+        sdir_region: workspace
+      - node_id: 368337e1-465e-8012-8008-90176c5b1f1b
+        name: framing 区：免费 / 付费分界陈述（首屏焦点）
+        sdir_region: framing 区：免费/付费分界陈述（首屏焦点）
+      - node_id: 368337e1-465e-8012-8008-90176ca7b0c3
+        name: tiers 三列 tier 卡（Local OSS / Support / Managed Cloud planned）
+        sdir_region: tiers 三列 tier 卡（Local OSS / Support / Managed Cloud planned）
+      - node_id: 368337e1-465e-8012-8008-901776614ecc
+        name: matrix 分组特性矩阵（runtime / knowledge / support）
+        sdir_region: matrix 分组特性矩阵（runtime/knowledge/support）
+      - node_id: 368337e1-465e-8012-8008-9017781004ff
+        name: faq 手风琴（五问，含默认展开）
+        sdir_region: faq 手风琴（五问，含默认展开）
+  sdir_digest: cec4aba85fa2e64f9ed4037272c8c0be8e11e322985e794d12ca02a09cdfc351
+mode_plan:
+  integration_plan:
+    alignment_points:
+      - PAT-APPLICATION-SHELL 收窄为静态站 shell：header（wordmark+nav+主 CTA）+ 线性内容区 + footer
+      - Token 集：#fafaf7 底、#111110 墨、#55534e 次级、#e4e2dc 发丝线、白色卡片、黑色主按钮
+      - Inter（正文）+ Roboto Mono（eyebrow、代码、脚注）双字体
+      - 1120px 内容容器，desktop 1280 优先
+      - mono eyebrow 大写标签置于 section 标题上方
+      - 全站单一主 CTA 'Get started'（github.com/SiChuchen/Prax，新标签）
+      - :focus-visible 2px 实线 outline
+    neighbors:
+      - prax-pricing
+    implementation_order:
+      - prax-landing-home
+      - prax-pricing

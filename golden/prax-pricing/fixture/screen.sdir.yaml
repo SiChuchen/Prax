@@ -1,0 +1,77 @@
+version: "0.1"
+screen:
+  id: application_shell_screen
+  intent:
+    primary_task: 在特性矩阵中对比三档（Local OSS / Support / Managed Cloud planned），判断当下自托管是否够用
+    secondary_tasks:
+      - 读 framing headline 弄清现在免费什么、将来付费什么
+      - 按需展开 FAQ：self-host 要求、数据本地性、license、roadmap、contact
+      - 从 landing header 进入定价页并可返回首页
+  archetype:
+    pattern_ref: PAT-APPLICATION-SHELL
+  density_intent: regular
+  regions:
+    - id: framing 区：免费/付费分界陈述（首屏焦点）
+      role: experimental:framing 区：免费/付费分界陈述（首屏焦点）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: tiers 三列 tier 卡（Local OSS / Support / Managed Cloud planned）
+      role: experimental:tiers 三列 tier 卡（Local OSS / Support / Managed Cloud planned）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: matrix 分组特性矩阵（runtime/knowledge/support）
+      role: experimental:matrix 分组特性矩阵（runtime/knowledge/support）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: faq 手风琴（五问，含默认展开）
+      role: experimental:faq 手风琴（五问，含默认展开）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: workspace
+      role: dominant_workspace
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - preserve_context
+  relationships: []
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved:
+    - id: support-tier-pricing-display
+      question: support-tier-pricing-display
+      impact: low
+      affects:
+        - tier-cards
+        - feature-matrix
+  rejected_alternatives:
+    - option: PAT-RESOURCE-MANAGEMENT（资源管理结构）
+      reason: L1 检视：applies_when 要求 'users create, review, and retire peer resources'——定价页没有任何资源生命周期操作，语义完全不符
+    - option: PAT-WORKSPACE（工作区结构）
+      reason: L1 检视：does_not_apply_when 'the task is short and linear' 直接命中——定价阅读是短线性任务，非迭代式对象操作
+    - option: tier 卡下方用 tab 切换看各档矩阵
+      reason: 对比任务要求三档同时可见可扫读；tab 隐藏列迫使记忆比较，违背 matrix readability 目标
+    - option: 矩阵不做分组、8+ 行平铺
+      reason: 12 行平铺缺乏扫读锚点；三组分组标题行以零成本提供结构

@@ -1,0 +1,29 @@
+version: "0.1"
+user_quote:
+  - '"继续跑 PRAX-PRICING-001，按记忆里的交接手册走" (user, conversation, 2026-08-30) — authorizing execution of PRAX-PRICING-001 per golden/prax-pricing/requirement.md'
+  - '"Add a pricing page to the Prax site (apps/prax-landing), reachable from the header shell."'
+  - "\"…the page must say honestly that the runtime is free and self-hosted today, with a 'support the project' tier and a placeholder managed-cloud tier marked 'planned'… an FAQ accordion of five answers… inherits the approved landing tokens (#FAFAF7, ink #111110, mono accents, black primary buttons)… no dark patterns, no fake countdowns.\""
+restatement: '在既有 Prax 营销站（apps/prax-landing，已批准 shell 与 token）上新增 pricing 页面：如实的 framing headline（runtime 当前免费、本地自托管，设 support-the-project tier 与标 "planned" 的 managed-cloud 占位 tier）、三列 tier 对比 + ≥8 行分三组（runtime/knowledge/support）特性矩阵、5 条 FAQ 手风琴（含一个默认展开态）、标准 shell footer；header 可达。视觉语言在组件级仍是新领域（tier 卡构成、矩阵样式、FAQ 交互），但必须无漂移地继承已批准 landing token（#FAFAF7 底 / #111110 墨 / mono 点缀 / 黑色主按钮 / Inter+Roboto Mono）。受众不变（工程负责人），语气精确，无 dark pattern、无虚假倒计时、不编造定价。按 Methodology §18.2 figma_first：Figma 建稿 → 人审 round → 批准后实现 → 验证至 COMPLETE。'
+boundaries:
+  in_scope:
+    - pricing 页面新增（apps/prax-landing 内）：framing headline（如实陈述 runtime 当前免费自托管）
+    - 三列 tier 对比（Local OSS / Support / Managed Cloud planned）+ 特性矩阵（≥8 行，分 runtime/knowledge/support 三组）
+    - FAQ 手风琴 5 条（self-host 要求、数据本地性、license、roadmap、contact），键盘可操作
+    - 与既有 shell 集成：header 入口、标准 footer、landing 已批准 token 原样继承
+    - figma_first 落地：Figma 建稿 → 人审批准（round 制）→ 实现 → 验证至 COMPLETE
+  out_of_scope:
+    - 真实支付流程与账单系统
+    - Managed Cloud 的实际实现（仅 planned 占位，不得编造定价数字）
+    - prax-landing-home 内容改动（header 导航链接除外）
+    - dashboard / wizard 等其他 surface
+    - 移动端深度适配（desktop 1280px 优先）
+  scope_complete: true
+open_questions: []
+confirmation:
+  status: requirement_is_sufficient
+  evidence:
+    - type: task_brief
+      ref: golden/prax-pricing/requirement.md
+    - type: conversation_message
+      ref: user message "继续跑 PRAX-PRICING-001，按记忆里的交接手册走" (2026-08-30, authorizing execution per the session handover manual)
+  confirmed_at: 2026-08-30T10:34:02Z

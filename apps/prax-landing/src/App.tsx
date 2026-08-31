@@ -46,21 +46,31 @@ const FEATURES = [
   },
 ];
 
-// primary-cta-destination resolved (session ds_20260829190800_0ced9700):
-// the project repository is the one real next step for a fresh evaluator.
-const CTA_HREF = "https://github.com/SiChuchen/Prax";
-const CTA_EXTERNAL = { target: "_blank", rel: "noopener" } as const;
+import { useEffect, useState } from "react";
+import { CTA_HREF, CTA_EXTERNAL } from "./links";
+import { PricingPage } from "./PricingPage";
 
-function Header() {
+// rel-header-pricing (ds_20260830103431_85ce10c7): the header nav gains a
+// pricing entry; the home page itself is otherwise untouched.
+function Header({ current }: { current: "home" | "pricing" }) {
   return (
     <header className="shell-header">
-      <a className="wordmark" href="/">
+      <a className="wordmark" href={current === "home" ? "/" : "#/"}>
         Prax
       </a>
       <nav className="shell-nav" aria-label="Site">
         <a className="mono-link" href="#docs">
           docs · github
         </a>
+        {current === "home" ? (
+          <a className="mono-link" href="#/pricing">
+            pricing
+          </a>
+        ) : (
+          <span className="mono-link mono-link-current" aria-current="page">
+            pricing
+          </span>
+        )}
         <a className="button button-small" href={CTA_HREF} {...CTA_EXTERNAL}>
           Get started
         </a>
@@ -156,9 +166,16 @@ function ClosingCta() {
 }
 
 export function App() {
+  const [hash, setHash] = useState(() => window.location.hash);
+  useEffect(() => {
+    const onHashChange = () => setHash(window.location.hash);
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, []);
+  if (hash.startsWith("#/pricing")) return <PricingPage />;
   return (
     <div className="page">
-      <Header />
+      <Header current="home" />
       <main>
         <Hero />
         <HowItWorks />

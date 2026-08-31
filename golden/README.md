@@ -38,7 +38,7 @@ evidence; implementation in `apps/prax-dashboard/`. The mid-chain
 `design_correct` probe awaits an MCP reconnect (tool shipped mid-session);
 service-level coverage in tests/correction-ingestion.test.ts.
 
-### 2. PRAX-PRICING-001 — existing_product + add_surface + figma_first (`prax-pricing/`) — next
+### 2. PRAX-PRICING-001 — existing_product + add_surface + figma_first (`prax-pricing/`) — DONE (penpot)
 
 Second figma_first case (Gate D: n=2 before treating the realization gate as
 stable) and the first add_surface lifecycle. Pricing/comparison page on the
@@ -46,11 +46,16 @@ landing site: genuinely editorial (visual uncertainty, stakeholder approval,
 spatial exploration all honestly hold), and it must integrate with the
 existing shell + tokens (integration_plan path never run live).
 
-2026-08-30: the draft phase hit the Figma Starter MCP quota wall (session
-`ds_20260830103431_85ce10c7`, frames 1:2-1:6 created in file
-`IMABm8SeaCNXn5MuCDK0yS`, content population blocked). Per ADR-004 the case
-resumes on any registered provider (`figma | penpot | pen`) with no gate
-bypass; provider adapter guide: `docs/realization-providers.md`.
+**2026-08-31 PASS** — first multi-provider realization: re-proposed
+figma_first with provider `penpot` (ADR-004) after the Figma Starter MCP
+quota wall, self-hosted penpot drove the full draft → review → prepare →
+validate chain (11/11 checks, zero warnings, phase COMPLETE). Honest
+two-round human review recorded (round 1 rejected on a real rendering
+defect, round 2 approved); `design_correct` correction exercised live as a
+`correction_regressions` obligation; drift check with exactly two verified
+refs. Fixture: `golden/prax-pricing/fixture/` (33 files incl. both review
+rounds + runtime snapshots). Provider adapter guide:
+`docs/realization-providers.md`.
 
 ### 3. PRAX-WIZARD-001 — greenfield + direct_code (`prax-wizard/`)
 

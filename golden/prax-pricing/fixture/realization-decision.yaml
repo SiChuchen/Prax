@@ -1,0 +1,25 @@
+version: "0.1"
+realization_mode: figma_first
+provider: penpot
+provider_contract_version: official-mcp-2026-08
+conditions:
+  - id: greenfield
+    holds: false
+    basis: existing_product 会话:apps/prax-landing 已存在且 shell/token/首页构成硬约束,新面必须集成而非从零定义
+  - id: high_visual_uncertainty
+    holds: true
+    basis: requirement 原文 'the tier-card composition, comparison-matrix styling, and FAQ interaction are new visual territory — brand language is still unsettled at the component level'
+  - id: marketing_editorial
+    holds: true
+    basis: marketing/editorial 定价页:视觉表达(tier 卡构成、矩阵样式)是页面价值的主要载体,与 landing 同域
+  - id: stakeholder_visual_approval
+    holds: true
+    basis: golden case 明确 'stakeholder visual approval required (round-based like PRAX-LANDING-001)';submit_draft → 人审 round → submit_review 为 prepare 前置
+  - id: spatial_exploration_value
+    holds: true
+    basis: tier 卡三列构成、8+ 行 × 3 组矩阵的间距与对齐有真实空间探索价值,先在画布排布可避免实现返工
+  - id: runtime_dependency_low
+    holds: true
+    basis: 静态页 + 原生 details/summary 手风琴,无运行时状态、无数据获取;表现基准可完全由静态稿承载
+proposed_at: 2026-08-30T13:39:01.634Z
+overridden: false

@@ -1,0 +1,71 @@
+round: 2
+status: approved
+provider_refs_verified:
+  file_key: 317f08f6-f8f6-8199-8008-8ffe053a4bd9
+  frame_node_ids:
+    - 368337e1-465e-8012-8008-901778a90357
+    - 368337e1-465e-8012-8008-90176c5b1f1b
+    - 368337e1-465e-8012-8008-90176ca7b0c3
+    - 368337e1-465e-8012-8008-901776614ecc
+    - 368337e1-465e-8012-8008-9017781004ff
+evidence:
+  - type: screenshot
+    ref: rep-evidence/round-2/workspace.png
+    sha256: 37ae5caa1efb4bdaede15403dbc4fa6a810aef34acf3f91dd41d46bc1ad271f5
+    collected_at: 2026-08-30T15:38:59.712Z
+  - type: screenshot
+    ref: rep-evidence/round-2/framing.png
+    sha256: 94df8bc3e81a8b2d7adc726b61345208a86fbe0d9310027b228a71114eed790b
+    collected_at: 2026-08-30T15:38:59.712Z
+  - type: screenshot
+    ref: rep-evidence/round-2/tiers.png
+    sha256: 228279e85a9cffc8ff46cb1dafc712091db09c92c002ee5a83116182ba5ac413
+    collected_at: 2026-08-30T15:38:59.712Z
+  - type: screenshot
+    ref: rep-evidence/round-2/matrix.png
+    sha256: b52fa9f421e8fd217aefe1cb1b8cb6a664c7756d8dc63e66f1469365f046d547
+    collected_at: 2026-08-30T15:38:59.712Z
+  - type: screenshot
+    ref: rep-evidence/round-2/faq.png
+    sha256: 594892380004d0c2673cc927a6d380d5eb1cf99182d36c413a21a034e0ce4d0d
+    collected_at: 2026-08-30T15:38:59.712Z
+  - type: human_decision
+    actor_type: human
+    actor_ref: user
+    source_type: conversation_message
+    source_ref: sess_e10b22c7
+    quote: 这次确实可以
+    confirmed_at: 2026-08-30T15:38:59.712Z
+decided_at: 2026-08-30T15:38:59.712Z
+sdir_digest_at_review: cec4aba85fa2e64f9ed4037272c8c0be8e11e322985e794d12ca02a09cdfc351
+version: "0.1"
+history:
+  - round: 1
+    status: rejected
+    provider_refs_verified:
+      file_key: 317f08f6-f8f6-8199-8008-8ffe053a4bd9
+      frame_node_ids:
+        - d4d67d6c-caa2-80fd-8008-9002899d2c3d
+        - d4d67d6c-caa2-80fd-8008-90025a3c0971
+        - d4d67d6c-caa2-80fd-8008-90025b1152f6
+        - d4d67d6c-caa2-80fd-8008-9000335970c6
+        - d4d67d6c-caa2-80fd-8008-9002735cb33b
+    feedback:
+      text: "用户 round 1 原话「这里有问题」+ 截图: workspace 全页 framing 区标题第二行 The rest is optional. 被裁只剩 The、正文首行被裁断、白色块遮挡。根因: 早期失败构建的残留节点(根下游离文本x3、100x100 白色空 board)与 workspace 内两个文本节点丢失。处理: 整页清空后以 v3 构建器重建全部 5 region board, 读回校验通过。"
+      region_annotations:
+        - sdir_region: framing 区：免费/付费分界陈述（首屏焦点）
+          note: "round-1 驳回: 标题第二行被裁为 The、正文第一行被裁断、白色块遮挡; 根因为早期失败构建残留(根下游离节点+100x100 白板)与 workspace 丢节点。已整页重建, round-2 待审。"
+    evidence:
+      - type: screenshot
+        ref: rep-evidence/round-1/round1-user-feedback.png
+        sha256: 7be09f025073ed8ec355cca13c8bd9c09a3b64408dd5601100624a66b7042c43
+        collected_at: 2026-08-30T15:36:49.544Z
+      - type: human_decision
+        actor_type: human
+        actor_ref: user
+        source_type: conversation_message
+        source_ref: sess_e10b22c7
+        quote: 这里有问题
+        confirmed_at: 2026-08-30T15:36:49.544Z
+    decided_at: 2026-08-30T15:36:49.544Z
+    sdir_digest_at_review: cec4aba85fa2e64f9ed4037272c8c0be8e11e322985e794d12ca02a09cdfc351

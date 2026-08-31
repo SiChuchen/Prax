@@ -1,0 +1,102 @@
+user:
+  primary_role: 评估 Prax 团队前端设计工作流的工程负责人
+  expertise: expert
+  familiarity: medium
+goal:
+  primary: 弄清 Prax 现在哪些免费、将来哪些付费、三者 tier 差别何在，并判断自托管是否满足团队约束
+tasks:
+  primary: 在特性矩阵中对比三档（Local OSS / Support / Managed Cloud planned），判断当下自托管是否够用
+  secondary:
+    - 读 framing headline 弄清现在免费什么、将来付费什么
+    - 按需展开 FAQ：self-host 要求、数据本地性、license、roadmap、contact
+    - 从 landing header 进入定价页并可返回首页
+product_objects:
+  - id: pricing-page
+    user_name: 定价页
+    purpose: 诚实陈述 free-now vs paid-later，并承载 tier 对比与 FAQ
+  - id: tier-cards
+    user_name: Tier 卡（三列）
+    purpose: 一屏呈现 Local OSS / Support / Managed Cloud (planned) 三档定位
+  - id: feature-matrix
+    user_name: 特性对比矩阵
+    purpose: 跨三档逐行对比能力，按 runtime/knowledge/support 分组，1280px 无横向滚动
+  - id: faq-accordion
+    user_name: FAQ 手风琴
+    purpose: 回答五个高频运营问题（self-host 要求、数据本地性、license、roadmap、contact）
+  - id: shell-header
+    user_name: 站点 header
+    purpose: 持续身份层，nav 提供 pricing 入口并可返回首页
+  - id: shell-footer
+    user_name: 站点 footer
+    purpose: 标准收尾身份层
+relationships:
+  - id: rel-header-pricing
+    source: shell-header
+    target: pricing-page
+    type: navigates_to
+    direction: forward
+    meaning: header nav 新增 pricing 链接，营销站任一页可到达定价页
+    condition: always
+    importance: primary
+  - id: rel-page-cards
+    source: pricing-page
+    target: tier-cards
+    type: contains
+    direction: forward
+    meaning: 定价页首屏内容为三列 tier 卡
+    condition: always
+    importance: primary
+  - id: rel-page-matrix
+    source: pricing-page
+    target: feature-matrix
+    type: contains
+    direction: forward
+    meaning: tier 卡之下是分组特性矩阵，承载细节对比
+    condition: always
+    importance: primary
+  - id: rel-page-faq
+    source: pricing-page
+    target: faq-accordion
+    type: contains
+    direction: forward
+    meaning: 矩阵之后为 FAQ 手风琴，处理长尾疑问
+    condition: always
+    importance: supporting
+  - id: rel-page-footer
+    source: pricing-page
+    target: shell-footer
+    type: contains
+    direction: forward
+    meaning: 页面以标准 shell footer 收尾
+    condition: always
+    importance: supporting
+mental_model_hypothesis:
+  summary: 开源惯例定价模型：runtime 今天免费且自托管；付费以 support 与 planned managed cloud 的形式出现；页面平实陈述，让对比矩阵承载差异比较，不制造购买压力
+  confidence: high
+  evidence:
+    - user_requirement
+    - existing_product
+primary_success_definition: 访客在一屏内能说出：现在什么免费、将来什么付费、三个 tier 差在哪——全程无编造定价、无 dark pattern、与已批准 landing token 零漂移
+open_questions:
+  - Support tier 是否在任何时点展示具体价格——本次以无编造数字 + FAQ/contact 指引处理，最终定价表述待运营者决定
+existing_product:
+  stable_user_concepts:
+    - tier（定价档位）
+    - 自托管 runtime
+    - 特性对比矩阵
+    - FAQ 手风琴
+    - header 导航
+  stable_patterns:
+    - PAT-APPLICATION-SHELL 收窄为静态站 shell（header+线性内容+footer）
+    - mono eyebrow + section title 的区块模式
+    - 单一主 CTA 'Get started'（github.com/SiChuchen/Prax）
+    - Inter + Roboto Mono、#fafaf7/#111110/#e4e2dc token 集、黑色主按钮、白色卡片
+  current_user_pain_points:
+    - 评估 OSS 产品时常见痛点：定价页含糊、免费与付费边界不清、隐藏 dark pattern
+  current_constraints:
+    - 与已批准 landing shell/token 零漂移是硬约束
+    - 定价页必须从 header 可达
+    - desktop 1280 优先
+  legacy_debt:
+    - 品牌语言在组件级未定案（tier 卡/矩阵/FAQ 无既有组件语汇）
+    - landing header flex 塌缩教训已入库 correction

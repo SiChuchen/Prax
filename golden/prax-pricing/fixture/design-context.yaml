@@ -1,0 +1,69 @@
+user:
+  expertise: expert
+  familiarity: medium
+task:
+  primary: 在特性矩阵中对比三档 tier，判断当下自托管是否够用
+  modes:
+    - read
+    - compare
+    - navigate
+  frequency: low
+domain:
+  type: developer-tool product website
+  entities:
+    - pricing page
+    - tier cards
+    - feature matrix
+    - FAQ accordion
+    - shell header
+    - shell footer
+information:
+  volume: medium
+  relationship_complexity: low
+  change_rate: medium
+  comparison_need: high
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: none
+  error_cost: low
+priorities:
+  - honesty over persuasion (no invented pricing, no dark patterns)
+  - integration fidelity with approved landing shell and tokens
+  - matrix readability at 1280px
+  - keyboard-operable FAQ
+density_intent: regular
+confidence:
+  overall: high
+unknowns:
+  - id: support-tier-pricing-display
+    impact: low
+    affects:
+      - tier-cards
+      - feature-matrix
+classification:
+  version: "1"
+  task_type: manage_lifecycle
+  domain_id: unknown
+  interaction_mode: collection_with_contextual_detail
+  product_type: unknown
+  primary_object_type: pricing-page
+  secondary_object_types:
+    - tier-cards
+    - feature-matrix
+    - faq-accordion
+    - shell-header
+    - shell-footer
+  confidence: medium
+  evidence:
+    - task_type=manage_lifecycle ← token 'manage' in context.task and frame.tasks
+    - interaction_mode=collection_with_contextual_detail ← token 'compare' in context.task, frame.tasks, and context.priorities
+    - primary_object_type=pricing-page ← most referenced product object in the Product Frame
+  open_questions:
+    - domain_id could not be classified from the provided context; refine the context fields or record a custom classification
+    - product_type could not be derived; record the intended audience and product kind

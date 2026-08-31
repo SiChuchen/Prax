@@ -1,0 +1,51 @@
+version: "0.1"
+session_id: ds_20260830103431_85ce10c7
+task_ref: prax-pricing
+selected:
+  - ref: product_relationships
+    reason:
+      - rel-header-pricing:shell-header->pricing-page
+      - rel-page-cards:pricing-page->tier-cards
+      - rel-page-matrix:pricing-page->feature-matrix
+      - rel-page-faq:pricing-page->faq-accordion
+      - rel-page-footer:pricing-page->shell-footer
+      - rel-header-home:shell-header->landing-home-sections
+  - ref: region_relationships
+    reason: []
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-APPLICATION-SHELL
+  - ref: unresolved
+    reason:
+      - Support tier 是否在任何时点展示具体价格——本次以无编造数字 + FAQ/contact 指引处理，最终定价表述待运营者决定
+      - support-tier-pricing-display
+  - ref: corrections
+    reason:
+      - corr-pricing-shell-width-stretch
+  - ref: representation
+    reason:
+      - workspace->368337e1-465e-8012-8008-901778a90357
+      - framing 区：免费/付费分界陈述（首屏焦点）->368337e1-465e-8012-8008-90176c5b1f1b
+      - tiers 三列 tier 卡（Local OSS / Support / Managed Cloud planned）->368337e1-465e-8012-8008-90176ca7b0c3
+      - matrix 分组特性矩阵（runtime/knowledge/support）->368337e1-465e-8012-8008-901776614ecc
+      - faq 手风琴（五问，含默认展开）->368337e1-465e-8012-8008-9017781004ff
+  - ref: validation-plan@1
+    reason:
+      - semantic_conformance
+      - state_completeness
+      - product_model_alignment
+      - keyboard
+      - hierarchy_review
+      - design_representation_coverage
+      - representation_runtime_drift
+      - untouched_surface_regression
+      - pattern_consistency
+      - authority_consistency
+      - requirement_alignment
+excluded:
+  - ref: correction:corr-landing-header-flex-collapse
+    reason: scope_mismatch
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata

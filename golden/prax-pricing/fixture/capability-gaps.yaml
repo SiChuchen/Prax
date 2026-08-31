@@ -1,0 +1,49 @@
+needs:
+  - id: n1-nav-integration
+    product_action: header nav 提供 pricing 入口，home 与 pricing 双向可达（wordmark 回首页）
+    required_experience:
+      - 任一营销页一键进入定价页
+      - 返回路径与既有导航习惯一致
+    capabilities:
+      - static multi-page links
+      - existing shell-header markup
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯静态链接组合，复用既有 shell-header 结构，新增一个 mono nav 链接；无后端依赖
+  - id: n2-matrix-compare
+    product_action: 三档 tier 特性同屏可扫读对比（≥8 行 × 3 组分组），1280px 无横向滚动
+    required_experience:
+      - 三列档位同时可见
+      - 行内对齐的 ✓/— 记号
+      - 分组标题锚定扫读
+    capabilities:
+      - semantic HTML table/grid
+      - CSS grid within 1120px container
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 静态 grid/表格 + hairline 行分隔即可承载，无交互运行时依赖
+  - id: n3-faq-keyboard
+    product_action: 五条 FAQ 答案按需展开/收起，全键盘可操作，一条默认展开
+    required_experience:
+      - Tab 聚焦 summary、Enter/Space 切换
+      - 可见焦点环
+      - 无 JS 也能工作
+    capabilities:
+      - native details/summary
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 原生 details/summary + open 属性实现默认展开，零 JS、零依赖，天然满足键盘可及与 :focus-visible
+  - id: n4-honest-planned-badging
+    product_action: managed cloud 档位以 'planned' 占位呈现，不出现编造价格数字或紧迫感元素
+    required_experience:
+      - 状态徽标区分 Free now / Paid support / Planned
+      - 无倒计时、无弹窗
+    capabilities:
+      - static content + badge styling
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯静态文案与徽标样式，语义层面已由 decide 的 tier-composition/tone 两条 major choice 锁定

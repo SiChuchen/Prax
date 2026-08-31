@@ -1,0 +1,80 @@
+version: "0.1"
+current_objects:
+  - id: shell-header
+    user_name: 站点 header
+    purpose: 持续身份层：Prax wordmark（回首页）+ 'docs · github' mono 链接 + 黑色 'Get started' 主按钮
+    evidence_refs:
+      - apps/prax-landing/src/App.tsx
+  - id: shell-footer
+    user_name: 站点 footer
+    purpose: 收尾身份层：mono footnote 两行（产品签名 + docs·github·mcp）
+    evidence_refs:
+      - apps/prax-landing/src/App.tsx
+  - id: landing-home-sections
+    user_name: 首页内容区
+    purpose: hero / how-it-works 三段 / capabilities / 收尾 CTA 的线性叙事区，全部使用 mono eyebrow + section-title 模式
+    evidence_refs:
+      - apps/prax-landing/src/App.tsx
+current_relationships:
+  - id: rel-header-home
+    source: shell-header
+    target: landing-home-sections
+    type: contains
+    direction: forward
+    meaning: shell-header 包裹并标识 prax-landing-home 的线性内容区
+    condition: always
+    importance: primary
+    evidence_refs:
+      - apps/prax-landing/src/App.tsx
+current_surfaces:
+  - id: prax-landing-home
+    purpose: 营销首页：hero + how-it-works 三段 + capabilities + 收尾 CTA，运行于静态 shell 之下，已人审批准（round 1 approved, file FVsFvRYZyAWv0Z4JXO9tyZ）
+    evidence_refs:
+      - apps/prax-landing/src/App.tsx
+      - golden/prax-landing/fixture/representation-artifact.yaml
+  - id: prax-pricing
+    purpose: 本次新增面：定价页（framing headline + 三列 tier 卡 + 分组特性矩阵 + FAQ 手风琴，运行于继承的 shell 之下）；尚未实现，是本会话的 change target（add_surface，服务端记录为 integration neighbor）
+    evidence_refs: []
+established_patterns:
+  - PAT-APPLICATION-SHELL 收窄为静态站 shell：header（wordmark+nav+主 CTA）+ 线性内容区 + footer
+  - Token 集：#fafaf7 底、#111110 墨、#55534e 次级、#e4e2dc 发丝线、白色卡片、黑色主按钮
+  - Inter（正文）+ Roboto Mono（eyebrow、代码、脚注）双字体
+  - 1120px 内容容器，desktop 1280 优先
+  - mono eyebrow 大写标签置于 section 标题上方
+  - 全站单一主 CTA 'Get started'（github.com/SiChuchen/Prax，新标签）
+  - :focus-visible 2px 实线 outline
+user_habits:
+  - 工程负责人扫读机制陈述、跳过营销话术
+  - 评估 OSS 定价页时关注 free-vs-paid 表述是否诚实
+  - 期望从 header 导航发现子页面
+constraints_and_debt:
+  - 品牌语言在组件级仍未定案——tier 卡构成、矩阵样式、FAQ 交互是本次的新视觉领域
+  - 禁止编造定价声明；managed cloud 为 'planned' 占位
+  - 无 dark pattern、无虚假倒计时
+  - Landing 教训（correction corr-landing-header-flex-collapse）：flex column 下经 auto margin 居中的子元素必须显式 width，否则塌缩
+change_targets:
+  - prax-pricing
+actual_usage: []
+pain_points: []
+must_preserve:
+  - "已批准 landing token：#fafaf7 / #111110 / #55534e / #e4e2dc、白色卡片、黑色主按钮"
+  - shell header/footer 结构与 wordmark
+  - Inter + Roboto Mono 字体搭配
+  - :focus-visible 可见焦点环
+  - prax-landing-home 内容不动（header nav 增加 pricing 入口除外）
+must_replace: []
+free_to_reconsider:
+  - tier 卡构成与视觉处理
+  - 对比矩阵样式
+  - FAQ 交互模式
+  - 新页内区块排序
+migration_notes: []
+design_authorities:
+  - golden/prax-pricing/requirement.md
+  - apps/prax-landing/src/styles.css (approved landing tokens)
+  - golden/prax-landing/fixture/ (approved shell conventions)
+surface_context:
+  density: regular
+  user_expertise: expert
+  destructive_actions: none
+  task_frequency: low
