@@ -1,0 +1,60 @@
+version: "0.1"
+session_id: ds_20260831145445_f482e397
+task:
+  surfaces: []
+  primary: 三步完成配置并排队（填 Target → 配 Arms → 复核 Review → Queue run）
+product_relationships:
+  - id: rel_step_target_form_step_arms_form
+    source: step_target_form
+    target: step_arms_form
+    type: leads_to
+    direction: forward
+    meaning: 逐步推进：下一步在前一步有效前不可进入
+    importance: primary
+  - id: rel_step_arms_form_review_summary
+    source: step_arms_form
+    target: review_summary
+    type: derives_from
+    direction: forward
+    meaning: Review 汇总由步骤 1-2 的值计算得出（只读）
+    importance: primary
+  - id: rel_step_target_form_draft_store
+    source: step_target_form
+    target: draft_store
+    type: persists_to
+    direction: forward
+    meaning: 任意字段变更即持久化；后退导航保值
+    importance: supporting
+  - id: rel_review_summary_submit_feedback
+    source: review_summary
+    target: submit_feedback
+    type: leads_to
+    direction: forward
+    meaning: Queue run 触发 submitting 态并以成功横幅结束
+    importance: supporting
+region_relationships: []
+decisions:
+  primary_structure: PAT-SETTINGS-SECTIONS
+  density_intent: compact
+  major_choice_ids:
+    - per_step_validation
+    - arm_distinct_inline
+    - draft_mirror_persistence
+    - deterministic_submit
+    - keyboard_first_controls
+must_preserve: []
+regression_points: []
+unresolved: []
+corrections: []
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - settings_grouping
+    - safe_change
+    - requirement_alignment
+  regression_check_ids: []

@@ -57,13 +57,34 @@ refs. Fixture: `golden/prax-pricing/fixture/` (33 files incl. both review
 rounds + runtime snapshots). Provider adapter guide:
 `docs/realization-providers.md`.
 
-### 3. PRAX-WIZARD-001 — greenfield + direct_code (`prax-wizard/`)
+### 3. PRAX-WIZARD-001 — greenfield + direct_code (`prax-wizard/`) — **DONE 2026-08-31, PASS — 四案全毕**
 
 Multi-step wizard form with validation, the hardest state machine: per-step
 validation, error/selected states, keyboard-only completable, resumable
 draft. Functional assertions are fully deterministic (FrontendBench-style
 interactive scenarios). Exercises the state_model impact flag and
 STATE-FEEDBACK component contract.
+
+Session `ds_20260831145445_f482e397`, validation COMPLETE 8/8, zero
+warnings. Every golden observation held: direct_code proposed before
+prepare; plan free of representation checks, gained settings_grouping +
+safe_change; the state machine is real and scripted — 43/43 deterministic
+Playwright assertions on a pure keyboard path (per-step gating, arm-equality
+inline error, 4100-char over-limit counter, blind-off consequence note,
+stepper, reload→resume prompt restores values, submitting + success banner,
+no keyboard trap, focus-visible, aria-live). The queue-execution backend gap
+advances under an explicit compromise (simulated, disclosed). Component
+contract: SETTINGS-NAVIGATION / SETTINGS-SECTION / CHANGE-FEEDBACK (the
+suite brief's "STATE-FEEDBACK" wording was approximate; CHANGE-FEEDBACK
+honestly carries queue status on a configuration surface). Bonus finding in
+the fixture README: the first session classified the domain with novel
+vocabulary ("benchmark_operations") — routing excluded the fitting
+SETTINGS-SECTIONS pattern AND the disclosure gate made it uninspectable
+(KNOWLEDGE_NOT_ROUTED); the canonical settings classification routes at
+high confidence. Same vocabulary-divergence family as MEM-001, one layer
+up. Implementation: `apps/prax-wizard/`; fixture:
+`golden/prax-wizard/fixture/` (17 artifacts + rep-evidence incl. the
+assertion script and run log).
 
 ### Cross-case probes (fold into the runs above)
 

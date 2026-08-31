@@ -1,0 +1,38 @@
+version: "0.1"
+session_id: ds_20260831145445_f482e397
+task_ref: 三步完成配置并排队（填 Target → 配 Arms → 复核 Review → Queue run）
+selected:
+  - ref: product_relationships
+    reason:
+      - rel_step_target_form_step_arms_form:step_target_form->step_arms_form
+      - rel_step_arms_form_review_summary:step_arms_form->review_summary
+      - rel_step_target_form_draft_store:step_target_form->draft_store
+      - rel_review_summary_submit_feedback:review_summary->submit_feedback
+  - ref: region_relationships
+    reason: []
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-SETTINGS-SECTIONS
+  - ref: unresolved
+    reason: []
+  - ref: corrections
+    reason: []
+  - ref: validation-plan@1
+    reason:
+      - semantic_conformance
+      - state_completeness
+      - product_model_alignment
+      - keyboard
+      - hierarchy_review
+      - settings_grouping
+      - safe_change
+      - requirement_alignment
+excluded:
+  - ref: correction:corr-landing-header-flex-collapse
+    reason: scope_mismatch
+  - ref: correction:corr-pricing-shell-width-stretch
+    reason: scope_mismatch
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata

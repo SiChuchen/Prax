@@ -1,0 +1,78 @@
+user:
+  primary_role: Prax benchmark operator (single, expert)
+  expertise: expert
+  familiarity: high
+goal:
+  primary: 配置并排队一次 A/B 基准复制：输入零歧义、错误在发生的那一步就地内联暴露、草稿任意时点可恢复
+tasks:
+  primary: 三步完成配置并排队（填 Target → 配 Arms → 复核 Review → Queue run）
+  secondary:
+    - 中断后 reload 恢复草稿
+    - 全程仅键盘完成（含步进器/开关/下拉）
+    - 复核并确认盲评后果
+product_objects:
+  - id: step_target_form
+    user_name: Step 1 Target 表单
+    purpose: 受测 surface 选择 + 需求文本（必填、4000 上限、实时计数）
+  - id: step_arms_form
+    user_name: Step 2 Arms 表单
+    purpose: 臂 A/臂 B 模型下拉（相等即内联错误）+ 复制数 1-6 步进器 + 盲评开关（关闭显后果说明）
+  - id: review_summary
+    user_name: Step 3 Review 汇总
+    purpose: 由步骤 1-2 计算的只读汇总 + Queue run 主操作（全步有效才可用）
+  - id: draft_store
+    user_name: 草稿存储
+    purpose: localStorage 持久化全部已输入值 + reload 恢复提示
+  - id: submit_feedback
+    user_name: 提交反馈
+    purpose: Queue run 的 submitting 态与确定性成功横幅（无后端）
+relationships:
+  - source: step_target_form
+    target: step_arms_form
+    type: leads_to
+    direction: forward
+    meaning: 逐步推进：下一步在前一步有效前不可进入
+    condition: 当前步骤有效且点击 Next
+    importance: primary
+    id: rel_step_target_form_step_arms_form
+  - source: step_arms_form
+    target: review_summary
+    type: derives_from
+    direction: forward
+    meaning: Review 汇总由步骤 1-2 的值计算得出（只读）
+    condition: 到达 Step 3 时
+    importance: primary
+    id: rel_step_arms_form_review_summary
+  - source: step_target_form
+    target: draft_store
+    type: persists_to
+    direction: forward
+    meaning: 任意字段变更即持久化；后退导航保值
+    condition: 任意输入时点
+    importance: supporting
+    id: rel_step_target_form_draft_store
+  - source: review_summary
+    target: submit_feedback
+    type: leads_to
+    direction: forward
+    meaning: Queue run 触发 submitting 态并以成功横幅结束
+    condition: 点击 Queue run
+    importance: supporting
+    id: rel_review_summary_submit_feedback
+mental_model_hypothesis:
+  summary: 操作者以"填表→即时校验→下一步→最终复核→排队"的线性向导心智使用；错误属于发生它的那一步并就地摘要；草稿是随时可离开又回来的工作面，reload 后恢复提示先于一切。
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: 三步仅用键盘零鼠标完成；两臂模型相同时在 Step 2 就地内联报错且 Next 禁用；reload 后恢复提示出现且全部值还原；Queue run 在任一步无效时禁用；排队显示 submitting 态并以成功横幅确定性结束；错误经 aria-live 宣告且每个控件焦点可见。
+open_questions: []
+existing_product:
+  stable_user_concepts: []
+  stable_patterns:
+    - instrument-panel 向导惯例：步头/表单区/步骤导航（同 dashboard 的 token 家族）
+  current_user_pain_points: []
+  current_constraints:
+    - 单桌面视口 1280-1680px
+    - 无后端，排队为确定性模拟
+  legacy_debt: []

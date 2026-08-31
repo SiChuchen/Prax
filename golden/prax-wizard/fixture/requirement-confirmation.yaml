@@ -1,0 +1,29 @@
+version: "0.1"
+user_quote:
+  - '"Phase 4：PRAX-WIZARD-001(golden 套件最后案例)" (user execution plan, 2026-08-31)'
+  - golden/prax-wizard/requirement.md (queued golden case)
+restatement: 为 Prax 操作者建三步基准运行配置向导（Target/Arms/Review）：逐步校验、内联首错摘要、Next 禁用逻辑；两臂模型必须不同（相同即内联报错）；复制数 1-6 步进器（默认 3）；盲评开关默认开、关闭时显示后果说明；Review 为只读汇总 + Queue run 主操作（全部步骤有效前禁用）；后退导航保值；全键盘可操作 + 可见焦点 + aria-live 错误宣告；localStorage 草稿持久化 + reload 出现恢复提示；排队动作为 submitting 态 + 确定性模拟成功横幅（无后端）；暗色 instrument-panel 钉死 token（同 dashboard），无图表无营销文案。
+boundaries:
+  in_scope:
+    - 三步向导（逐步校验/内联错误/aria-live 宣告）
+    - 全键盘操作 + 可见焦点 + 无键盘陷阱
+    - localStorage 草稿持久化与 reload 恢复提示
+    - submitting 态 + 确定性成功横幅（无后端）
+    - 钉死 token 的暗色紧凑视觉（同 dashboard）
+  out_of_scope:
+    - 后端/真实排队执行
+    - 图表
+    - 营销文案
+    - 移动端适配
+  scope_complete: true
+open_questions: []
+confirmation:
+  status: requirement_is_sufficient
+  evidence:
+    - type: task_brief
+      ref: golden/prax-wizard/requirement.md (self-sufficient golden case brief)
+    - type: conversation_message
+      ref: "user execution plan (2026-08-31): Phase 4 PRAX-WIZARD-001 per golden/README.md queue order"
+    - type: conversation_message
+      ref: "second attempt: first session ds_20260831145232_5c68410c misclassified the domain with novel vocabulary (benchmark_operations), routing excluded the fitting pattern and its inspection; restarted with the KB-canonical settings classification"
+  confirmed_at: 2026-08-31T15:10:00Z

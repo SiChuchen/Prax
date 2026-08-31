@@ -1,0 +1,155 @@
+plan_revision: 1
+evidence:
+  submitted_by: PRAX-WIZARD-001 golden run (operator agent)
+  collected_at: 2026-08-31T15:20:00Z
+  items:
+    - check_id: product_model_alignment
+      outcome: pass
+      source: implementation review against product-frame.yaml + screenshots
+      notes: "Product objects keep their frame names end-to-end: step header names Target/Arms/Review; labels name real artifacts (Surface under test / Arm A model / Arm B model / Replicate count / Blind review); Review 是只读派生汇总；resume/draft/Queue run 与 frame 对象一一对应，无后端结构泄漏。"
+      artifact_refs:
+        - apps/prax-wizard/src/App.tsx
+        - apps/prax-wizard/evidence/shots/05-step3-review.png
+    - check_id: keyboard
+      outcome: pass
+      source: Playwright deterministic suite (real keyboard path, viewport 1280x860)
+      notes: "43/43 scripted assertions green in real Chromium: full happy path keyboard-only (Tab/arrow keys/Home/End/Enter/Space — select 通过 ArrowDown/Home/End 驱动，步进器 Enter，开关 Space)；首次 Tab 即达 surface select 且 :focus-visible outline 计算样式非 none；22 连 Tab 焦点循环无陷阱；aria-live 宣告步骤切换与错误。"
+      artifact_refs:
+        - apps/prax-wizard/evidence/wizard-checks.mjs
+        - apps/prax-wizard/evidence/run.log
+        - apps/prax-wizard/evidence/shots/01-step1-empty.png
+        - apps/prax-wizard/evidence/shots/03-step2-arm-equal-error.png
+    - check_id: hierarchy_review
+      outcome: pass
+      source: screenshot + CSS review
+      notes: 当前步表单为主视觉权重（panel 内唯一大区块）；步头/计数器/提示为 muted 11px 支持层；主操作 Queue run 为唯一 accent 实底按钮；无图表无营销装饰；密度 compact 与 token 家族同 dashboard。
+      artifact_refs:
+        - apps/prax-wizard/src/styles.css
+        - apps/prax-wizard/evidence/shots/05-step3-review.png
+    - check_id: settings_grouping
+      outcome: pass
+      source: screen structure review
+      notes: 三个 SETTINGS-SECTION 即三个用户目标分组（选靶→配臂→复核），而非后端配置对象平铺；字段顺序跟任务顺序；盲评后果说明紧跟开关（关闭时出现）。
+      artifact_refs:
+        - apps/prax-wizard/src/App.tsx
+        - apps/prax-wizard/evidence/shots/04-step2-blind-off-note.png
+    - check_id: safe_change
+      outcome: pass
+      source: scripted assertions 11-12 + screenshots
+      notes: 变更状态显式：dirty 即写 localStorage（草稿态）；Next/Queue 在无效时禁用；首错内联摘要 role=alert；Queue run 提交态（Queueing… + aria-busy）与成功横幅 role=status 确定性出现；排队后草稿清除；无后端在 UI 与横幅中显式声明。
+      artifact_refs:
+        - apps/prax-wizard/evidence/wizard-checks.mjs
+        - apps/prax-wizard/evidence/run.log
+        - apps/prax-wizard/evidence/shots/06-submitting.png
+        - apps/prax-wizard/evidence/shots/07-success-banner.png
+    - check_id: requirement_alignment
+      outcome: pass
+      source: 43/43 scripted assertions + screenshots
+      notes: 需求逐点核对：三步结构✓；surface select + textarea 必填 + 4000 实时计数（4100 超限报错断言）✓；两臂相等内联错误✓；复制数 1-6 步进器默认 3✓；盲评默认开 + 关闭后果说明✓；Review 只读汇总 + Queue run 全步有效才可用✓；后退保值（reload 恢复后 Back 可用且值保留）✓；localStorage 草稿 + reload 恢复提示（可拒绝）✓；submitting + 确定性成功横幅无后端✓；键盘全程 + aria-live + 可见焦点✓。
+      artifact_refs:
+        - apps/prax-wizard/evidence/wizard-checks.mjs
+        - apps/prax-wizard/evidence/run.log
+        - apps/prax-wizard/evidence/shots/02-step1-valid.png
+        - apps/prax-wizard/evidence/shots/08-reload-resume-prompt.png
+evaluation:
+  status: PASS
+  checks:
+    - id: semantic_conformance
+      label: Semantic conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR is valid, semantic, and aligned to the approved pattern.
+      evidence_required: false
+    - id: state_completeness
+      label: State completeness
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Required loading, empty, ready, and error states exist.
+      evidence_required: false
+    - id: product_model_alignment
+      label: Product model alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: User-facing structure and language preserve the Product Frame.
+      evidence_required: true
+    - id: keyboard
+      label: Keyboard operability
+      kind: empirical
+      profile: keyboard_accessibility
+      facet: behavioral
+      requirement: Primary work and selection are operable with keyboard and visible focus.
+      evidence_required: true
+    - id: hierarchy_review
+      label: Hierarchy review
+      kind: assistive
+      profile: semantic_integrity
+      facet: visual_hierarchy
+      requirement: Visual prominence follows SDIR importance rather than implementation convenience.
+      evidence_required: true
+    - id: settings_grouping
+      label: Settings grouping
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: Sections follow user goals rather than backend configuration objects.
+      evidence_required: true
+    - id: safe_change
+      label: Safe change
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Save, dirty, success, and error behavior is explicit.
+      evidence_required: true
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+  findings:
+    - check_id: semantic_conformance
+      kind: deterministic
+      outcome: pass
+      message: SDIR is valid, semantic, and aligned to the approved pattern.
+      source: prax-validator
+    - check_id: state_completeness
+      kind: deterministic
+      outcome: pass
+      message: Required loading, empty, ready, and error states exist.
+      source: prax-validator
+    - check_id: product_model_alignment
+      kind: assistive
+      outcome: pass
+      message: "Product objects keep their frame names end-to-end: step header names Target/Arms/Review; labels name real artifacts (Surface under test / Arm A model / Arm B model / Replicate count / Blind review); Review 是只读派生汇总；resume/draft/Queue run 与 frame 对象一一对应，无后端结构泄漏。"
+      source: implementation review against product-frame.yaml + screenshots
+    - check_id: keyboard
+      kind: empirical
+      outcome: pass
+      message: "43/43 scripted assertions green in real Chromium: full happy path keyboard-only (Tab/arrow keys/Home/End/Enter/Space — select 通过 ArrowDown/Home/End 驱动，步进器 Enter，开关 Space)；首次 Tab 即达 surface select 且 :focus-visible outline 计算样式非 none；22 连 Tab 焦点循环无陷阱；aria-live 宣告步骤切换与错误。"
+      source: Playwright deterministic suite (real keyboard path, viewport 1280x860)
+    - check_id: hierarchy_review
+      kind: assistive
+      outcome: pass
+      message: 当前步表单为主视觉权重（panel 内唯一大区块）；步头/计数器/提示为 muted 11px 支持层；主操作 Queue run 为唯一 accent 实底按钮；无图表无营销装饰；密度 compact 与 token 家族同 dashboard。
+      source: screenshot + CSS review
+    - check_id: settings_grouping
+      kind: assistive
+      outcome: pass
+      message: 三个 SETTINGS-SECTION 即三个用户目标分组（选靶→配臂→复核），而非后端配置对象平铺；字段顺序跟任务顺序；盲评后果说明紧跟开关（关闭时出现）。
+      source: screen structure review
+    - check_id: safe_change
+      kind: deterministic
+      outcome: pass
+      message: 变更状态显式：dirty 即写 localStorage（草稿态）；Next/Queue 在无效时禁用；首错内联摘要 role=alert；Queue run 提交态（Queueing… + aria-busy）与成功横幅 role=status 确定性出现；排队后草稿清除；无后端在 UI 与横幅中显式声明。
+      source: scripted assertions 11-12 + screenshots
+    - check_id: requirement_alignment
+      kind: assistive
+      outcome: pass
+      message: 需求逐点核对：三步结构✓；surface select + textarea 必填 + 4000 实时计数（4100 超限报错断言）✓；两臂相等内联错误✓；复制数 1-6 步进器默认 3✓；盲评默认开 + 关闭后果说明✓；Review 只读汇总 + Queue run 全步有效才可用✓；后退保值（reload 恢复后 Back 可用且值保留）✓；localStorage 草稿 + reload 恢复提示（可拒绝）✓；submitting + 确定性成功横幅无后端✓；键盘全程 + aria-live + 可见焦点✓。
+      source: 43/43 scripted assertions + screenshots
+  missing_evidence: []
+  warnings: []

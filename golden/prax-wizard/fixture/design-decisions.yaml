@@ -1,0 +1,82 @@
+session_id: ds_20260831145445_f482e397
+primary_structure:
+  pattern: PAT-SETTINGS-SECTIONS
+  rationale:
+    - 路由高置信命中（task configure_preferences × domain preferences × web_desktop）
+    - L2 契约适配：goal-based grouping（三步即三个目标分组：Target/Arms/Review）+ explicit change status（submit_feedback 承载 submitting/成功）
+    - does_not_apply_when 条款不触发：本任务非空间亦非迭代工作面
+    - 线性三步固定顺序，交叉搜索无需求（tradeoff 条款不触发）
+  confidence: high
+information_hierarchy:
+  primary:
+    - step_target_form
+    - step_arms_form
+    - review_summary
+  secondary:
+    - submit_feedback
+    - draft_store
+  override:
+    basis: SETTINGS-SECTIONS 的可搜索 section 导航在固定顺序三步流中退化为步头（step_target_form → step_arms_form → review_summary 的线性 leads_to 关系）；不变的是目标分组与显式变更状态（submit_feedback 承载 CHANGE-FEEDBACK）
+    evidence_refs:
+      - step_target_form
+      - step_arms_form
+      - review_summary
+      - draft_store
+    risks:
+      - 步头弱于可搜索导航——仅三步且顺序固定，可搜索性无意义
+      - 若未来步骤增多需重审为真 section 导航
+    accepted_by: agent
+density:
+  intent: compact
+  strategy:
+    - 步头常驻、当前步高亮
+    - 每步一个目标分组（分组先于字段）
+    - 标签命名真实工件（surface/model/replicate count/blind review）
+    - 暗色 instrument-panel token（同 dashboard）
+  avoid:
+    - 营销装饰
+    - 每字段一卡的松散布局
+    - 图表
+major_choices:
+  - id: per_step_validation
+    choice: per-step 校验：Next 在当前步无效时禁用，首错内联摘要于步骤顶部，aria-live 宣告
+    rationale: 错误属于发生它的那一步；禁用+摘要比提交后批量报错更早暴露
+    confidence: high
+    references:
+      - step_target_form
+      - step_arms_form
+  - id: arm_distinct_inline
+    choice: 两臂模型相等约束在 Step 2 就地内联报错（不等到 Review）
+    rationale: 约束属于 Arms 步；Review 只汇总不新错
+    confidence: high
+    references:
+      - step_arms_form
+  - id: draft_mirror_persistence
+    choice: 草稿=受控状态镜像 localStorage，任意字段变更即写；reload 后先显示恢复提示（可拒绝=清空重来）
+    rationale: 草稿是任意时点可离开的工作面；恢复提示先于一切
+    confidence: high
+    references:
+      - draft_store
+  - id: deterministic_submit
+    choice: Queue run 为同步状态机内的 submitting 态 + 固定时长后的确定性成功横幅，无网络层
+    rationale: 无后端；反馈必须诚实（submitting 可见、结果确定）
+    confidence: high
+    references:
+      - submit_feedback
+      - review_summary
+  - id: keyboard_first_controls
+    choice: 全键盘：原生 select/textarea/button/stepper(±button)/switch(role=switch)；焦点样式全局 :focus-visible
+    rationale: 原生控件免陷阱；步进器与开关用 button 语义
+    confidence: high
+    references:
+      - step_target_form
+      - step_arms_form
+      - review_summary
+rejected:
+  - option: PAT-WORKSPACE
+    reason: 持久对象工作面与线性一次性配置流不合；首会话路由曾因其成为未知域的次优候选
+  - option: PAT-DATA-EXPLORER
+    reason: 无浏览/比较集合任务；被域排除
+  - option: 单页长表单（无步骤）
+    reason: 三步逐步校验已定；一次性长表会把错误暴露推迟到提交
+unresolved: []

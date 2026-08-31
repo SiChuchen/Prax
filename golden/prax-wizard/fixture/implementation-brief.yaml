@@ -1,0 +1,42 @@
+version: "0.1"
+platform_profile: WEB-DESKTOP
+framework: react
+sdir_ref: screen.sdir.yaml
+decision_ref: design-decisions.yaml
+approved_patterns:
+  - PAT-SETTINGS-SECTIONS
+approved_component_contracts:
+  - SETTINGS-NAVIGATION
+  - SETTINGS-SECTION
+  - CHANGE-FEEDBACK
+states_required:
+  - loading
+  - empty
+  - ready
+  - selected
+  - error
+capability_gaps:
+  - id: n4-queue-execution
+    product_action: 真实排队并执行基准复制
+    required_experience:
+      - 排队后可追踪
+    capabilities:
+      - none — 无排队执行后端
+    status: gap
+    resolution:
+      type: explicit_compromise
+      notes: 显式妥协：无后端；按需求为确定性模拟（submitting 态 + 固定时长后成功横幅），不放任何假装真实的追踪 UI
+validation_plan_ref:
+  artifact: validation-plan.yaml
+  revision: 1
+validation_requirements:
+  - semantic_conformance
+  - state_completeness
+  - product_model_alignment
+  - keyboard
+  - hierarchy_review
+  - settings_grouping
+  - safe_change
+  - requirement_alignment
+realization:
+  mode: direct_code

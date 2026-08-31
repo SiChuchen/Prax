@@ -1,0 +1,46 @@
+needs:
+  - id: n1-wizard-forms
+    product_action: 三步表单渲染与逐步校验（含臂模型相等内联错误、计数器、步进器、盲评开关后果说明）
+    required_experience:
+      - 错误就地内联
+      - Next 禁用逻辑
+    capabilities:
+      - static html/css
+      - react controlled components
+      - bundled model list fixture
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 受控组件 + 每步校验函数；首错摘要步骤顶部 aria-live
+  - id: n2-draft-resume
+    product_action: 草稿持久化与 reload 恢复提示（可拒绝=清空重来）
+    required_experience:
+      - 任意时点可离开可回来
+    capabilities:
+      - localStorage
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 受控状态镜像 localStorage，字段变更即写；载入时检测到草稿先显恢复提示
+  - id: n3-keyboard-a11y
+    product_action: 全键盘完成（含步进器/开关/下拉）+ 可见焦点 + 错误 aria-live 宣告 + 无键盘陷阱
+    required_experience:
+      - keyboard_equivalent
+    capabilities:
+      - semantic html
+      - focus-visible
+      - aria-live
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 原生 select/textarea/button + role=switch + ±button 步进器；全局 :focus-visible
+  - id: n4-queue-execution
+    product_action: 真实排队并执行基准复制
+    required_experience:
+      - 排队后可追踪
+    capabilities:
+      - none — 无排队执行后端
+    status: gap
+    resolution:
+      type: explicit_compromise
+      notes: 显式妥协：无后端；按需求为确定性模拟（submitting 态 + 固定时长后成功横幅），不放任何假装真实的追踪 UI

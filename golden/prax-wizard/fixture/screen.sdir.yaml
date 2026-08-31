@@ -1,0 +1,82 @@
+version: "0.1"
+screen:
+  id: settings_sections_screen
+  intent:
+    primary_task: 三步完成配置并排队（填 Target → 配 Arms → 复核 Review → Queue run）
+    secondary_tasks:
+      - 中断后 reload 恢复草稿
+      - 全程仅键盘完成（含步进器/开关/下拉）
+      - 复核并确认盲评后果
+  archetype:
+    pattern_ref: PAT-SETTINGS-SECTIONS
+  density_intent: compact
+  regions:
+    - id: step_target_form
+      role: experimental:step_target_form
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: step_arms_form
+      role: experimental:step_arms_form
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: review_summary
+      role: experimental:review_summary
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: submit_feedback
+      role: experimental:submit_feedback
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: draft_store
+      role: experimental:draft_store
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: settings_navigation
+      role: primary_navigation
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent:
+        - preserve_context
+    - id: settings
+      role: configuration_sections
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - hierarchical_flow
+  relationships: []
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved: []
+  rejected_alternatives:
+    - option: PAT-WORKSPACE
+      reason: 持久对象工作面与线性一次性配置流不合；首会话路由曾因其成为未知域的次优候选
+    - option: PAT-DATA-EXPLORER
+      reason: 无浏览/比较集合任务；被域排除
+    - option: 单页长表单（无步骤）
+      reason: 三步逐步校验已定；一次性长表会把错误暴露推迟到提交

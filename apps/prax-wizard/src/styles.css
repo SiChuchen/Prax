@@ -1,0 +1,340 @@
+/* Tokens — pinned like the dashboard (direct_code: instrument-panel density,
+   same palette family as apps/prax-dashboard). */
+:root {
+  --bg: #101014;
+  --panel: #17171c;
+  --ink: #e8e8ec;
+  --muted: #9a9aa5;
+  --accent: #5b8af5;
+  --fail: #e5484d;
+  --pass: #46a758;
+  --warn: #e0c684;
+  --hairline: #26262e;
+  --font-sans: "Inter", -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "Roboto Mono", ui-monospace, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mono { font-family: var(--font-mono); }
+
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.wizard {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 20px 16px 32px;
+  display: grid;
+  gap: 12px;
+}
+
+.wizard-head h1 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.wizard-sub {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+/* resume prompt — precedes everything on reload */
+.resume-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--panel);
+  border: 1px solid var(--warn);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.resume-actions { display: flex; gap: 8px; }
+
+/* step indicator (SETTINGS-NAVIGATION) */
+.steps {
+  list-style: none;
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+}
+
+.steps li {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--panel);
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: var(--muted);
+}
+
+.steps li.step-current {
+  border-color: var(--accent);
+  color: var(--ink);
+}
+
+.steps li.step-done { color: var(--ink); }
+
+.step-index {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-size: 11px;
+}
+
+.step-current .step-index {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0c0c10;
+}
+
+.step-name { font-weight: 500; }
+
+/* panel (SETTINGS-SECTION) */
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  padding: 16px;
+  display: grid;
+  gap: 14px;
+}
+
+.step-heading {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.error-summary {
+  margin: 0;
+  color: var(--fail);
+  border: 1px solid var(--fail);
+  border-radius: 6px;
+  padding: 6px 10px;
+  background: rgba(229, 72, 77, 0.08);
+}
+
+.form-grid { display: grid; gap: 14px; }
+
+.field { display: grid; gap: 4px; }
+
+.field-label {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+select, textarea {
+  width: 100%;
+  background: #0d0d11;
+  color: var(--ink);
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  padding: 7px 9px;
+  font: inherit;
+}
+
+textarea { resize: vertical; }
+
+select:focus-visible, textarea:focus-visible { border-color: var(--accent); }
+
+.char-counter {
+  justify-self: end;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.char-counter.over { color: var(--fail); font-weight: 500; }
+
+.field-error { color: var(--fail); font-size: 12px; }
+
+/* stepper */
+.stepper-field { border: none; margin: 0; padding: 0; }
+
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stepper button {
+  width: 26px;
+  height: 26px;
+  background: #0d0d11;
+  color: var(--ink);
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.stepper button:disabled { color: var(--muted); cursor: not-allowed; }
+
+.stepper-value { font-size: 14px; min-width: 18px; text-align: center; }
+
+.stepper-hint { color: var(--muted); font-size: 11px; }
+
+/* switch */
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  color: var(--ink);
+  font: inherit;
+  padding: 0;
+  cursor: pointer;
+}
+
+.switch-track {
+  width: 32px;
+  height: 18px;
+  border-radius: 9px;
+  background: #0d0d11;
+  border: 1px solid var(--hairline);
+  position: relative;
+  transition: background 120ms;
+}
+
+.switch.on .switch-track { background: var(--accent); border-color: var(--accent); }
+
+.switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--ink);
+  transition: transform 120ms;
+}
+
+.switch.on .switch-thumb { transform: translateX(14px); }
+
+.switch-label { font-size: 12px; }
+
+.consequence-note {
+  margin: 2px 0 0;
+  color: var(--warn);
+  font-size: 12px;
+}
+
+/* review */
+.review { margin: 0; display: grid; gap: 8px; }
+
+.review > div {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 10px;
+  border-bottom: 1px solid var(--hairline);
+  padding-bottom: 8px;
+}
+
+.review dt {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.review dd { margin: 0; }
+
+/* nav */
+.step-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+button.primary, button.secondary, .success-banner button, .resume-banner button {
+  font: inherit;
+  border-radius: 6px;
+  padding: 7px 14px;
+  cursor: pointer;
+}
+
+button.primary {
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: #0c0c10;
+  font-weight: 600;
+}
+
+button.primary:disabled, .resume-banner button:disabled {
+  background: #1d1d24;
+  border-color: var(--hairline);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+button.secondary, .resume-banner button.secondary {
+  background: none;
+  border: 1px solid var(--hairline);
+  color: var(--ink);
+}
+
+button.secondary:disabled { color: var(--muted); cursor: not-allowed; }
+
+.sim-note { color: var(--muted); font-size: 11px; margin: 0; }
+
+/* success banner (CHANGE-FEEDBACK) */
+.success-banner {
+  background: var(--panel);
+  border: 1px solid var(--pass);
+  border-radius: 8px;
+  padding: 18px;
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
+.success-banner h2 {
+  margin: 0;
+  color: var(--pass);
+  font-size: 14px;
+}
+
+.success-banner p { margin: 0; }
+
+.success-banner button {
+  background: none;
+  border: 1px solid var(--hairline);
+  color: var(--ink);
+}
