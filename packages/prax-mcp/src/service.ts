@@ -1288,7 +1288,16 @@ export class PraxService {
         ...(intentLiteArtifact?.surfaces ?? []),
       ]),
     ];
-    const relevant = relevantCorrections(corrections, { surfaces: scopeSurfaces });
+    const relevant = relevantCorrections(corrections, {
+      surfaces: scopeSurfaces,
+      // MEM-001 pair-02: session surface ids may share no vocabulary with a
+      // seeded correction's scope; the declared purposes of the change-target
+      // surfaces still name it ("canvas stage ... Inspector"). Purposes of
+      // non-change-target surfaces stay out of the matching domain.
+      surfaceDescriptions: (understanding?.current_surfaces ?? [])
+        .filter((surface) => scopeSurfaces.includes(surface.id))
+        .map((surface) => surface.purpose),
+    });
     const regressionObligations = relevant.map((correction) => ({
       correction_id: correction.id,
       check_id: correction.regression.check_id,
