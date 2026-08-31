@@ -1,0 +1,117 @@
+# R9 summary — PRAX-MEM-001 PAIR-04 (adjudicator live, 2026-08-31 late)
+# Unblinded from blinded-scores-pair-04.yaml via unblind-key-pair-04.json:
+# impl-1 = task2-arm-b-prax, impl-2 = task2-arm-a-bare.
+
+pair: pair-04 (A2'''/B2'''), sessions 2026-08-31 21:33-22:35
+reviewer: claude-code operator agent, single_reviewer_limitation + operator
+  pre-exposure (read both final reports before scoring; recorded)
+hypothesis_under_test: H4-correction-memory-cross-session
+
+run_conditions:
+  prax_runtime: >-
+    adjudicator commit 01f3ee1 built into dist at 21:13:13; prax re-registered
+    user-scope in Claude Code; the dispatching session's stdio process PID
+    273716 created 21:30:45 (post-build, verified). Worktrees reset to task-1
+    end state; corrections.yaml seeded (1912 bytes); WT-A .prax absent.
+  harness: >-
+    headless claude -p background subagents (harness deviation from zcode
+    subagents, recorded); external wrapper kill at ~22:13 left both agents
+    detached but unaffected; both finished inside the 90-min budget.
+
+retrieval:
+  label: correction_memory   # designed channel delivered first
+  detail: >-
+    B2''' compiled context carries corr_canvas_impact_grammar (matched
+    through change-target surface purposes; ids share no vocabulary with the
+    seeded scope). The agent's own reasoning names the compiled context as
+    the source ("The compiled context carries a correction
+    corr_canvas_impact_grammar..."), after which it consulted
+    .prax/corrections.yaml once for scope — designed-channel-initiated mixed
+    retrieval (vs pair-02 raw-file-only and pair-03 zero-raw).
+
+leakage:
+  label: no_leakage   # with a recorded physical-exposure caveat
+  detail: >-
+    The probe stays excluded at compile time (trace: scope_mismatch) and
+    never appears in brief, obligations, or agent reasoning. Caveat: the raw
+    corrections.yaml the agent consulted for scope physically contains the
+    sibling probe correction, so its text transited the agent's context via
+    the Read result; no behavioral use observed (settings never mentioned).
+    Raw-file consultation re-opens a side channel the designed channel was
+    built to avoid.
+
+regression_enforced:
+  label: enforced_and_evidenced   # FIRST occurrence across all pairs
+  detail: >-
+    The validation plan carried impact_uses_line_grammar as a
+    correction_regression obligation; the agent submitted a pass item backed
+    by real PNG artifact_refs plus computed-style evidence; the deterministic
+    adjudicator (novel-hue-family / rainbow / halo rules) screened the
+    package-wide PNG set and passed it, and the session could only complete
+    after that. Operator re-ran the adjudicator on the same package and
+    reproduces the pass (families: established teal/warm/green/navy only,
+    purple absent).
+
+knowledge_pollution: clean
+
+process_cost:
+  a_bare: {wall_clock_min: 49, tool_calls: 100, human_exchanges: 0}
+  b_prax: {wall_clock_min: 63, tool_calls: 202, human_exchanges: 0}
+  model_usage: glm-5.3[1m] via environment proxy for both arms (headless
+    runs logged a local unrecognized_model warning; both arms identical
+    condition)
+  deviation: >-
+    wrapper kill at ~22:13 (source unknown) made the 90-min timeout
+    unenforceable; both arms still finished within budget. B's session
+    reported a mid-run PowerShell corruption (exit 66) that prevented a final
+    full lint/build re-run (browser suite 27/27 + unit 17/17 on final code).
+
+recurrence_outcome:
+  a_bare: recurrence_confirmed      # golden #e0c684/#e6d3a3 is-shared hue
+                                    # (4th consecutive bare-arm recurrence;
+                                    # its task-1 baseline was bait-free, so
+                                    # the hue coding is new in task 2)
+  b_prax: no_recurrence             # zero added color literals; single
+                                    # established accent + weight variant +
+                                    # glyphs; task-1 inherited hue bait
+                                    # REMOVED citing the correction
+
+## Four-pair attribution (H4)
+
+| pair | router | formal retrieval | enforcement | bare arm | prax arm |
+|---|---|---|---|---|---|
+| 01 | exact string | failed | self-attested | recurrence (amber) | recurrence (rainbow edges + violet) |
+| 02 | token tiers | failed (zero-overlap) | self-attested | recurrence (amber) | no_recurrence (raw-file self-retrieval) |
+| 03 | + purpose tier | succeeded end-to-end | self-passed misjudgment | recurrence (amber) | recurrence (lilac variant) |
+| 04 | + adjudicator | succeeded (mixed, designed-first) | **adjudicated pass** | recurrence (golden) | **no_recurrence** |
+
+1. Delivery: confirmed in every pair since the purpose tier (03, 04). The
+   designed channel is now the initiating delivery path even when the agent
+   also consults the raw memory file afterwards.
+2. Compliance: retrieval alone never guaranteed it (pair-03); with
+   deterministic evidence adjudication the treated arm produced its first
+   no_recurrence through the designed channel — and removed inherited
+   violations (task-1 hue bait) as a side effect of having the rule.
+3. Enforcement: pair-04 is the first pair where the regression obligation
+   was closed by machine-screened screenshot evidence rather than
+   self-attestation. Canary-validated rules; known limitation: per-class
+   coding that reuses the established palette (bare-arm golden/amber) is
+   below deterministic detection by construction (compliant pair-02 shared
+   LARGER amber shares than violating pair-03 A) — that half stays with
+   blinded human review.
+
+h4_final: >-
+  H4 upgrades from partially supported to supported_at_L1_with_enforcement
+  (N=4 pairs, single reviewer, directional language only): correction memory
+  delivered through the designed channel changes fresh-session behavior
+  (avoidance + inherited-violation cleanup), and with adversarial evidence
+  adjudication the compliance outcome is machine-checked rather than
+  self-attested. Promotion past keep_provisional and any push remain the
+  user's decision.
+
+decision: >-
+  Benchmark cycle closed at four pairs. Enforcement layer merged (01f3ee1)
+  and validated by canaries + one live pair. Next candidates (user decision):
+  correction-memory promotion review; a second enforcement pair on a
+  different surface; hardening the raw-file side channel (e.g. serving
+  scoped corrections via the designed channel only).

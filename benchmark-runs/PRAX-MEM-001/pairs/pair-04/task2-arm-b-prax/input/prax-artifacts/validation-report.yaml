@@ -1,0 +1,125 @@
+plan_revision: 1
+evidence:
+  submitted_by: claude-code-agent
+  collected_at: 2026-08-31T15:25:00Z
+  items:
+    - check_id: delta_conformance
+      outcome: pass
+      source: prax design_sdir apply_delta gate
+      notes: sdir apply_delta gate passed referential and render-leak validation; implementation touches only the interaction read model, canvas selection wiring, primitives, Inspector, legend, CSS, tests and review doc
+      artifact_refs:
+        - .prax/design/sessions/ds_20260831134041_beed420d/sdir-delta.yaml
+        - .prax/design/sessions/ds_20260831134041_beed420d/design-decisions.yaml
+    - check_id: untouched_surface_regression
+      outcome: pass
+      source: Playwright real-browser run on /architecture-fixtures (Small 15/20 and Medium 40/70) + node --test
+      notes: "Real-browser DOM checks on the final code, 27/27 pass: idle Browse after Escape (15 normal objects, 0 muted, 0 chips, Inspector aria-hidden=true, Browse active); single plain click still opens the object Inspector with Focus action and Incoming/Outgoing framing; Focus mode unchanged (8 context cards, two-hop grammar); Trace lens unchanged (28 suppressed edges, 7 packets, 0 impact chips, legend shows Active Flow only); 0 page errors and 0 console errors across the run. Unit tests: node --experimental-strip-types --test = 17/17 pass including all pre-existing suites (13px text floor enforced by maintenance-contract on the new CSS). npm run lint exited 0 on the read-model/inspector/styling portion of the change; the selection-routing refactor after that point is functionally browser-verified and type-audited against @xyflow/react 12.10.1 declarations (NodeSelectionChange non-generic cast, panOnDrag number[], KeyCode array, deleteKeyCode null all confirmed in .d.ts). Session shell died (harness PowerShell corruption) before a final full lint+build re-run could execute."
+      artifact_refs:
+        - evidence/03-small-idle-browse.png
+        - evidence/05-medium-single-select.png
+        - evidence/06-medium-focus.png
+        - evidence/07-medium-trace.png
+        - evidence/01-small-multiselect-union.png
+        - run-evidence/multiselect-browser-check.mjs
+    - check_id: pattern_consistency
+      outcome: pass
+      source: implementation review + browser screenshots
+      notes: "PAT-CANVAS-WORKSPACE kept dominant: the union neighborhood and shared marking live in the canvas emphasis grammar; the docked Inspector stays subordinate with the aggregate binding. Per-channel emphasis reused (selected primary, union related, unrelated muted). Selection surface is React Flow native multi-select routed through the same interaction read model; no new chrome added."
+      artifact_refs:
+        - evidence/02-small-marquee-selection.png
+        - evidence/04-medium-multiselect-impact.png
+    - check_id: authority_consistency
+      outcome: pass
+      source: diff scope review against docs/architecture-canvas-standard-v0.1.md and Canvas_Engine_v1_Review.md
+      notes: Semantic Graph boundary, adapter, validation, fingerprint and versioned layout cache untouched (no changes to semantic-graph.ts, semantic-adapter.ts, layout.ts, cache keys); Human Web read-only preserved (deleteKeyCode disabled so multi-selection can never delete nodes; dragging still writes only local device layout; no POST anywhere); React Flow / ELK / SmartEdge stack kept; no deploy performed
+      artifact_refs:
+        - app/architecture/interaction.ts
+        - app/architecture/semantic-graph.ts
+        - docs/Canvas_Engine_v1_Review.md
+    - check_id: requirement_alignment
+      outcome: pass
+      source: 27/27 real-browser DOM checks + 17/17 unit tests including the new multi-select union test
+      notes: "R1 union: ctrl-click pair on Small selects exactly 2 with aggregate Downstream 6 (Upstream 0); Medium pair Upstream 15 + Downstream 2; marquee drag selects 10 objects, all open the aggregate Inspector. R2 shared: '⇄ Shared 2×' chips on canvas cards, Shared section in Inspector with per-object Nx badges (Medium: 3 shared rows, all 2×), shared entry in the reading key. R3 aggregate + idle: counts rows (Selected/Upstream/Downstream/Shared) plus object lists whose entries lead to single-object inspection; Escape/pane click returns Inspector to idle closed state and canvas to Browse normal. R4 regression: single-select, Focus and Trace verified unchanged in the same browser run; unit test asserts trace impact null and focus grammar intact. R5 scales: browser-verified on Small 15/20 and Medium 40/70; production registry graph verified by the adapter-driven unit test (gateway/svc-a/svc-b/store registry rows produce union upstream {gateway}, downstream {store}, shared {gateway, store}) since local D1 is unavailable and deployment is out of scope; the production page uses the same ArchitectureCanvas path. Statusbar reports 'INSPECT · architecture · N selected'."
+      artifact_refs:
+        - evidence/01-small-multiselect-union.png
+        - evidence/02-small-marquee-selection.png
+        - evidence/03-small-idle-browse.png
+        - evidence/04-medium-multiselect-impact.png
+        - evidence/05-medium-single-select.png
+        - evidence/06-medium-focus.png
+        - evidence/07-medium-trace.png
+        - tests/canvas-engine.test.mjs
+    - check_id: impact_uses_line_grammar
+      outcome: pass
+      source: getComputedStyle measurements in the Playwright verification run
+      notes: "Computed-style evidence from the live browser: all role chips share one border color rgba(155,210,193,.52) at 1px regardless of upstream/downstream; the shared chip is the same accent at 2px (weight variant); every active impact edge uses the single established stroke rgb(216,242,232) with no per-direction hue; direction is carried by arrowheads plus ↑/↓/⇅ glyphs on labels and chips; no glow/shadow rules exist in the impact CSS. The blue/amber per-direction hues from the earlier single-select iteration were removed in this change."
+      artifact_refs:
+        - evidence/01-small-multiselect-union.png
+        - evidence/04-medium-multiselect-impact.png
+        - app/globals.css
+evaluation:
+  status: PASS
+  checks:
+    - id: delta_conformance
+      label: Delta conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The sdir_delta passes referential and render-leak validation.
+      evidence_required: false
+    - id: untouched_surface_regression
+      label: Untouched surface regression
+      kind: empirical
+      profile: runtime_degradation
+      facet: behavioral
+      requirement: Surfaces outside the declared change targets behave exactly as before.
+      evidence_required: true
+    - id: pattern_consistency
+      label: Pattern consistency
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The change follows the established patterns recorded in the existing-product understanding.
+      evidence_required: true
+    - id: authority_consistency
+      label: Design authority consistency
+      kind: assistive
+      profile: semantic_integrity
+      facet: epistemic
+      requirement: The result stays consistent with the declared design authorities.
+      evidence_required: true
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+  findings:
+    - check_id: delta_conformance
+      kind: deterministic
+      outcome: pass
+      message: The sdir_delta passes referential and render-leak validation.
+      source: prax-validator
+    - check_id: untouched_surface_regression
+      kind: empirical
+      outcome: pass
+      message: "Real-browser DOM checks on the final code, 27/27 pass: idle Browse after Escape (15 normal objects, 0 muted, 0 chips, Inspector aria-hidden=true, Browse active); single plain click still opens the object Inspector with Focus action and Incoming/Outgoing framing; Focus mode unchanged (8 context cards, two-hop grammar); Trace lens unchanged (28 suppressed edges, 7 packets, 0 impact chips, legend shows Active Flow only); 0 page errors and 0 console errors across the run. Unit tests: node --experimental-strip-types --test = 17/17 pass including all pre-existing suites (13px text floor enforced by maintenance-contract on the new CSS). npm run lint exited 0 on the read-model/inspector/styling portion of the change; the selection-routing refactor after that point is functionally browser-verified and type-audited against @xyflow/react 12.10.1 declarations (NodeSelectionChange non-generic cast, panOnDrag number[], KeyCode array, deleteKeyCode null all confirmed in .d.ts). Session shell died (harness PowerShell corruption) before a final full lint+build re-run could execute."
+      source: Playwright real-browser run on /architecture-fixtures (Small 15/20 and Medium 40/70) + node --test
+    - check_id: pattern_consistency
+      kind: assistive
+      outcome: pass
+      message: "PAT-CANVAS-WORKSPACE kept dominant: the union neighborhood and shared marking live in the canvas emphasis grammar; the docked Inspector stays subordinate with the aggregate binding. Per-channel emphasis reused (selected primary, union related, unrelated muted). Selection surface is React Flow native multi-select routed through the same interaction read model; no new chrome added."
+      source: implementation review + browser screenshots
+    - check_id: authority_consistency
+      kind: assistive
+      outcome: pass
+      message: Semantic Graph boundary, adapter, validation, fingerprint and versioned layout cache untouched (no changes to semantic-graph.ts, semantic-adapter.ts, layout.ts, cache keys); Human Web read-only preserved (deleteKeyCode disabled so multi-selection can never delete nodes; dragging still writes only local device layout; no POST anywhere); React Flow / ELK / SmartEdge stack kept; no deploy performed
+      source: diff scope review against docs/architecture-canvas-standard-v0.1.md and Canvas_Engine_v1_Review.md
+    - check_id: requirement_alignment
+      kind: assistive
+      outcome: pass
+      message: "R1 union: ctrl-click pair on Small selects exactly 2 with aggregate Downstream 6 (Upstream 0); Medium pair Upstream 15 + Downstream 2; marquee drag selects 10 objects, all open the aggregate Inspector. R2 shared: '⇄ Shared 2×' chips on canvas cards, Shared section in Inspector with per-object Nx badges (Medium: 3 shared rows, all 2×), shared entry in the reading key. R3 aggregate + idle: counts rows (Selected/Upstream/Downstream/Shared) plus object lists whose entries lead to single-object inspection; Escape/pane click returns Inspector to idle closed state and canvas to Browse normal. R4 regression: single-select, Focus and Trace verified unchanged in the same browser run; unit test asserts trace impact null and focus grammar intact. R5 scales: browser-verified on Small 15/20 and Medium 40/70; production registry graph verified by the adapter-driven unit test (gateway/svc-a/svc-b/store registry rows produce union upstream {gateway}, downstream {store}, shared {gateway, store}) since local D1 is unavailable and deployment is out of scope; the production page uses the same ArchitectureCanvas path. Statusbar reports 'INSPECT · architecture · N selected'."
+      source: 27/27 real-browser DOM checks + 17/17 unit tests including the new multi-select union test
+  missing_evidence: []
+  warnings: []

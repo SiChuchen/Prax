@@ -1,0 +1,1107 @@
+diff --git a/app/architecture/architecture-canvas.tsx b/app/architecture/architecture-canvas.tsx
+index f40fbd6..15da479 100644
+--- a/app/architecture/architecture-canvas.tsx
++++ b/app/architecture/architecture-canvas.tsx
+@@ -1,6 +1,6 @@
+ "use client";
+ 
+-import { type ReactFlowInstance, useEdgesState, useNodesState } from "@xyflow/react";
++import { type NodeChange, type ReactFlowInstance, useEdgesState, useNodesState } from "@xyflow/react";
+ import Link from "next/link";
+ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+ import ArchitectureCanvasKernel from "./canvas-kernel";
+@@ -8,7 +8,7 @@ import FlowPanel from "./flow-panel";
+ import { atRevision } from "./flow-projection";
+ import Inspector from "./inspector";
+ import { bindInspector } from "./inspector-binding";
+-import { deriveCanvasView, type CanvasInteractionState, type CanvasSelection } from "./interaction";
++import { deriveCanvasView, selectionObjectIds, type CanvasInteractionState, type CanvasSelection } from "./interaction";
+ import { layoutSemanticGraph, type CanvasLayout } from "./layout";
+ import { projectSemanticGraph, type CanvasNode, type CanvasObjectNode, type CanvasRelationshipEdge } from "./projection";
+ import { adaptArchitectureToSemanticGraph } from "./semantic-adapter";
+@@ -178,7 +178,7 @@ export default function ArchitectureCanvas({
+   const fingerprint = useMemo(() => semanticGraphFingerprint(graph), [graph]);
+   const storageKey = useMemo(() => layoutStorageKey(graph), [graph]);
+   const view = useMemo(() => deriveCanvasView(graph, interaction), [graph, interaction]);
+-  const inspectorBinding = useMemo(() => bindInspector(graph, interaction.selection), [graph, interaction.selection]);
++  const inspectorBinding = useMemo(() => bindInspector(graph, interaction.selection, view.impact), [graph, interaction.selection, view.impact]);
+   const projection = useMemo(() => layout ? projectSemanticGraph(graph, layout, view) : { nodes: [], edges: [] }, [graph, layout, view]);
+   const searchResults = useMemo(() => interaction.searchQuery.trim()
+     ? graph.objects.filter((object) => view.searchMatches.has(object.id)).slice(0, 8)
+@@ -197,8 +197,15 @@ export default function ArchitectureCanvas({
+         if (relationship.sourceObjectId === state.selection.id) targetObjectIds.add(relationship.targetObjectId);
+         if (relationship.targetObjectId === state.selection.id) targetObjectIds.add(relationship.sourceObjectId);
+       }
++    } else if ((state.mode === "focus" || state.mode === "inspect") && state.selection?.kind === "objects") {
++      for (const id of state.selection.ids) targetObjectIds.add(id);
++      for (const relationship of graph.relationships) {
++        if (state.selection.ids.includes(relationship.sourceObjectId)) targetObjectIds.add(relationship.targetObjectId);
++        if (state.selection.ids.includes(relationship.targetObjectId)) targetObjectIds.add(relationship.sourceObjectId);
++      }
+     } else if (state.mode === "inspect" && state.selection?.kind === "relationship") {
+-      const relationship = graph.relationships.find((candidate) => candidate.id === state.selection?.id);
++      const selectedRelationshipId = state.selection.id;
++      const relationship = graph.relationships.find((candidate) => candidate.id === selectedRelationshipId);
+       if (relationship) {
+         targetObjectIds.add(relationship.sourceObjectId);
+         targetObjectIds.add(relationship.targetObjectId);
+@@ -275,7 +282,11 @@ export default function ArchitectureCanvas({
+ 
+   useEffect(() => {
+     if (!layout) return undefined;
+-    const selectionKey = interaction.selection ? `${interaction.selection.kind}:${interaction.selection.id}` : "none";
++    const selectionKey = interaction.selection
++      ? interaction.selection.kind === "objects"
++        ? `objects:${interaction.selection.ids.join(",")}`
++        : `${interaction.selection.kind}:${interaction.selection.id}`
++      : "none";
+     const cameraIntent = `${layout.fingerprint}:${interaction.mode}:${interaction.activeFlowId ?? "none"}:${selectionKey}:${inspectorBinding ? "docked" : "open"}`;
+     if (cameraIntentRef.current === cameraIntent) return undefined;
+     cameraIntentRef.current = cameraIntent;
+@@ -290,6 +301,7 @@ export default function ArchitectureCanvas({
+     const selection = interaction.selection;
+     const valid = !selection
+       || (selection.kind === "object" && availableObjects.has(selection.id))
++      || (selection.kind === "objects" && selection.ids.length > 0 && selection.ids.every((id) => availableObjects.has(id)))
+       || (selection.kind === "relationship" && availableRelationships.has(selection.id))
+       || (selection.kind === "flow" && availableFlows.has(selection.id));
+     if (!valid || (interaction.activeFlowId && !availableFlows.has(interaction.activeFlowId))) {
+@@ -301,11 +313,19 @@ export default function ArchitectureCanvas({
+ 
+   const select = useCallback((selection: CanvasSelection) => {
+     setInteraction((current) => {
+-      if (!selection) return { ...current, mode: "browse", selection: null, activeFlowId: null };
+-      if (selection.kind === "flow") return { ...current, mode: "trace", selection, activeFlowId: selection.id };
+-      if (current.mode === "trace") return { ...current, selection };
+-      if (current.mode === "focus" && selection.kind === "object") return { ...current, selection, activeFlowId: null };
+-      return { ...current, mode: "inspect", selection, activeFlowId: null };
++      const normalized: CanvasSelection = selection?.kind === "objects" && selection.ids.length <= 1
++        ? selection.ids.length === 1 ? { kind: "object", id: selection.ids[0] } : null
++        : selection;
++      if (!normalized) return { ...current, mode: "browse", selection: null, activeFlowId: null };
++      if (normalized.kind === "flow") return { ...current, mode: "trace", selection: normalized, activeFlowId: normalized.id };
++      if (normalized.kind === "objects") {
++        const ids = [...new Set(normalized.ids)];
++        if (current.mode === "trace") return { ...current, selection: { kind: "objects", ids } };
++        return { ...current, mode: "inspect", selection: { kind: "objects", ids }, activeFlowId: null };
++      }
++      if (current.mode === "trace") return { ...current, selection: normalized };
++      if (current.mode === "focus" && normalized.kind === "object") return { ...current, selection: normalized, activeFlowId: null };
++      return { ...current, mode: "inspect", selection: normalized, activeFlowId: null };
+     });
+   }, []);
+ 
+@@ -313,6 +333,55 @@ export default function ArchitectureCanvas({
+     setInteraction((current) => ({ ...current, mode: "focus", selection: { kind: "object", id: objectId }, activeFlowId: null }));
+   }, []);
+ 
++  // React Flow (shift-click and Shift-drag marquee) owns multi-selection; mirror it into interaction state.
++  const objectSelectionRef = useRef<Set<string>>(new Set());
++
++  const applyObjectSelection = useCallback((ids: ReadonlySet<string>) => {
++    setInteraction((current) => {
++      const currentIds = selectionObjectIds(current.selection);
++      const sameSelection = currentIds.length === ids.size && currentIds.every((id) => ids.has(id));
++      if (sameSelection) return current;
++      if (ids.size === 0) return { ...current, mode: "browse", selection: null, activeFlowId: null };
++      if (ids.size === 1) {
++        const [id] = ids;
++        if (current.mode === "trace") return { ...current, selection: { kind: "object", id } };
++        if (current.mode === "focus") return { ...current, selection: { kind: "object", id }, activeFlowId: null };
++        return { ...current, mode: "inspect", selection: { kind: "object", id }, activeFlowId: null };
++      }
++      // Focus and Trace stay single-object; a multi attempt moves the single anchor instead.
++      if (current.mode === "focus" || current.mode === "trace") {
++        const nextId = [...ids].find((id) => !currentIds.includes(id)) ?? [...ids][ids.size - 1];
++        return current.mode === "trace"
++          ? { ...current, selection: { kind: "object", id: nextId } }
++          : { ...current, selection: { kind: "object", id: nextId }, activeFlowId: null };
++      }
++      return { ...current, mode: "inspect", selection: { kind: "objects", ids: [...ids] }, activeFlowId: null };
++    });
++  }, []);
++
++  const handleNodesChange = useCallback((changes: NodeChange<CanvasNode>[]) => {
++    // The projection owns node lifecycle, so keyboard removals are ignored (read-only Human Web).
++    const applied = changes.filter((change) => change.type !== "remove");
++    const selectionChanges = applied.filter((change) => change.type === "select");
++    if (selectionChanges.length > 0) {
++      const next = new Set(objectSelectionRef.current);
++      for (const change of selectionChanges) {
++        if (change.selected) next.add(change.id);
++        else next.delete(change.id);
++      }
++      objectSelectionRef.current = next;
++      applyObjectSelection(next);
++    }
++    onNodesChange(applied);
++  }, [applyObjectSelection, onNodesChange]);
++
++  useEffect(() => {
++    const ids = new Set(selectionObjectIds(interaction.selection));
++    const current = objectSelectionRef.current;
++    const inSync = current.size === ids.size && [...ids].every((id) => current.has(id));
++    if (!inSync) objectSelectionRef.current = ids;
++  }, [interaction.selection]);
++
+   useEffect(() => {
+     const onKeyDown = (event: KeyboardEvent) => {
+       const target = event.target as HTMLElement | null;
+@@ -420,9 +489,12 @@ export default function ArchitectureCanvas({
+             onEdgeClick={(edge) => select({ kind: "relationship", id: edge.id })}
+             onEdgesChange={onEdgesChange}
+             onInit={(instance) => { instanceRef.current = instance; }}
+-            onNodeClick={(node) => select({ kind: "object", id: node.id })}
++            onNodeClick={(node, event) => {
++              if (event?.shiftKey || event?.ctrlKey || event?.metaKey || event?.altKey) return;
++              select({ kind: "object", id: node.id });
++            }}
+             onNodeDragStop={handleNodeDragStop}
+-            onNodesChange={onNodesChange}
++            onNodesChange={handleNodesChange}
+             onPaneClick={handlePaneClick}
+             onViewportChange={(viewport) => setInteraction((current) => Math.abs(current.zoom - viewport.zoom) < 0.015 ? current : { ...current, zoom: viewport.zoom })}
+           >
+@@ -431,8 +503,9 @@ export default function ArchitectureCanvas({
+               <span><i className="relationship-key" /> Relationship</span>
+               {view.impact && <span>▲ 上游 Upstream</span>}
+               {view.impact && <span>▼ 下游 Downstream</span>}
++              {view.impact && view.impact.rootIds.length > 1 && <span className="shared-impact-key">✕ 共享 Shared</span>}
+               {interaction.mode === "trace" && <span><i className="trace-key" /> Active Flow</span>}
+-              <em>{interaction.mode === "trace" ? "动画表示语义顺序，不代表实时流量" : view.impact ? "▲ 表示被选中对象依赖的上游，▼ 表示受其影响的下游；数字为跳数" : "拖动只调整本机视图，不改变架构关系"}</em>
++              <em>{interaction.mode === "trace" ? "动画表示语义顺序，不代表实时流量" : view.impact && view.impact.rootIds.length > 1 ? "多选聚合影响：✕ 表示同时受多个选中对象影响；数字为跳数。Shift/Ctrl+点击 加选，Shift+拖拽 框选" : view.impact ? "▲ 表示被选中对象依赖的上游，▼ 表示受其影响的下游；数字为跳数" : "拖动只调整本机视图，不改变架构关系"}</em>
+             </div>
+           </ArchitectureCanvasKernel>
+ 
+diff --git a/app/architecture/architecture-node.tsx b/app/architecture/architecture-node.tsx
+index e8252e0..78d563a 100644
+--- a/app/architecture/architecture-node.tsx
++++ b/app/architecture/architecture-node.tsx
+@@ -55,6 +55,9 @@ export default function ObjectNode({ data, selected }: NodeProps<ArchitectureFlo
+         ? `下游依赖，${impact.depth} 跳`
+         : `双向依赖，${impact.depth} 跳`
+     : "";
++  const sharedLabel = impact?.shared && impact.contributors
++    ? `，共享影响（${impact.contributors} 个选中对象）`
++    : "";
+ 
+   return (
+     <article
+@@ -67,9 +70,10 @@ export default function ObjectNode({ data, selected }: NodeProps<ArchitectureFlo
+         <Handle className="semantic-port" id={`source-${side}`} key={`source-${side}`} position={POSITION[side]} type="source" />,
+       ])}
+       {impact && (
+-        <span aria-label={impactLabel} className={`object-impact-chip role-${impact.role}`}>
++        <span aria-label={impactLabel + sharedLabel} className={`object-impact-chip role-${impact.role}${impact.shared ? " is-shared" : ""}`}>
+           <b>{impactGlyphs}</b>
+           <i>{impact.depth}</i>
++          {impact.shared && <em aria-hidden="true">✕{impact.contributors}</em>}
+         </span>
+       )}
+       {impactTotals && (
+diff --git a/app/architecture/canvas-kernel.tsx b/app/architecture/canvas-kernel.tsx
+index 7de4e9b..a3fdc0d 100644
+--- a/app/architecture/canvas-kernel.tsx
++++ b/app/architecture/canvas-kernel.tsx
+@@ -13,7 +13,7 @@ import {
+   type Viewport,
+ } from "@xyflow/react";
+ import { SmartEdgeProvider } from "@tisoap/react-flow-smart-edge";
+-import type { ReactNode } from "react";
++import type { MouseEvent as ReactMouseEvent, ReactNode } from "react";
+ import RelationshipEdge from "./architecture-edge";
+ import ObjectNode from "./architecture-node";
+ import RegionNode from "./region-node";
+@@ -31,7 +31,7 @@ type CanvasKernelProps = {
+   onNodesChange: (changes: NodeChange<CanvasNode>[]) => void;
+   onEdgesChange: (changes: EdgeChange<CanvasRelationshipEdge>[]) => void;
+   onInit: (instance: ReactFlowInstance<CanvasNode, CanvasRelationshipEdge>) => void;
+-  onNodeClick: (node: CanvasObjectNode) => void;
++  onNodeClick: (node: CanvasObjectNode, event?: ReactMouseEvent) => void;
+   onEdgeClick: (edge: CanvasRelationshipEdge) => void;
+   onNodeDragStop: (node: CanvasObjectNode) => void;
+   onPaneClick: () => void;
+@@ -74,6 +74,7 @@ export default function ArchitectureCanvasKernel({
+         elevateEdgesOnSelect
+         maxZoom={1.85}
+         minZoom={0.16}
++        multiSelectionKeyCode={["Shift", "Control", "Meta"]}
+         nodeTypes={nodeTypes}
+         nodes={nodes}
+         nodesConnectable={false}
+@@ -82,7 +83,7 @@ export default function ArchitectureCanvasKernel({
+         onEdgesChange={onEdgesChange}
+         onInit={onInit}
+         onMoveEnd={(_, viewport) => onViewportChange(viewport)}
+-        onNodeClick={(_, node) => { if (node.type === "object") onNodeClick(node as CanvasObjectNode); }}
++        onNodeClick={(event, node) => { if (node.type === "object") onNodeClick(node as CanvasObjectNode, event); }}
+         onNodeDragStop={(_, node) => { if (node.type === "object") onNodeDragStop(node as CanvasObjectNode); }}
+         onNodesChange={onNodesChange}
+         onPaneClick={onPaneClick}
+diff --git a/app/architecture/inspector-binding.ts b/app/architecture/inspector-binding.ts
+index bbbb2a8..d50a569 100644
+--- a/app/architecture/inspector-binding.ts
++++ b/app/architecture/inspector-binding.ts
+@@ -7,7 +7,7 @@ import {
+   type SemanticRelationship,
+   type SemanticState,
+ } from "./semantic-graph";
+-import type { CanvasSelection } from "./interaction";
++import type { CanvasImpact, CanvasSelection, ImpactRole } from "./interaction";
+ 
+ type InspectorBase = {
+   id: string;
+@@ -28,6 +28,31 @@ export type ObjectInspectorBinding = InspectorBase & {
+   flows: SemanticFlow[];
+ };
+ 
++export type ImpactObjectRow = {
++  id: string;
++  name: string;
++  objectType: SemanticObject["objectType"];
++  role: ImpactRole;
++  depth: number;
++  contributors: number;
++  shared: boolean;
++  regionName: string;
++};
++
++export type ObjectsInspectorBinding = InspectorBase & {
++  kind: "objects";
++  objects: SemanticObject[];
++  regionCount: number;
++  aggregate: {
++    upstreamCount: number;
++    downstreamCount: number;
++    sharedCount: number;
++    upstream: ImpactObjectRow[];
++    downstream: ImpactObjectRow[];
++    shared: ImpactObjectRow[];
++  };
++};
++
+ export type RelationshipInspectorBinding = InspectorBase & {
+   kind: "relationship";
+   relationship: SemanticRelationship;
+@@ -43,9 +68,49 @@ export type FlowInspectorBinding = InspectorBase & {
+   relationships: SemanticRelationship[];
+ };
+ 
+-export type InspectorBinding = ObjectInspectorBinding | RelationshipInspectorBinding | FlowInspectorBinding;
++export type InspectorBinding =
++  | ObjectInspectorBinding
++  | ObjectsInspectorBinding
++  | RelationshipInspectorBinding
++  | FlowInspectorBinding;
++
++const SEVERITY_RANK: Record<SemanticState["severity"], number> = {
++  neutral: 0,
++  positive: 1,
++  attention: 2,
++  critical: 3,
++};
++
++function impactRow(graph: SemanticGraph, id: string, impact: CanvasImpact): ImpactObjectRow | null {
++  const object = graph.objects.find((candidate) => candidate.id === id);
++  if (!object) return null;
++  const upstreamDepth = impact.upstream.get(id);
++  const downstreamDepth = impact.downstream.get(id);
++  const depth = upstreamDepth !== undefined && downstreamDepth !== undefined
++    ? Math.min(upstreamDepth, downstreamDepth)
++    : upstreamDepth ?? downstreamDepth;
++  const role = impact.objectRoles.get(id) ?? "both";
++  const contributors = new Set([
++    ...(impact.upstreamRoots.get(id) ?? []),
++    ...(impact.downstreamRoots.get(id) ?? []),
++  ]).size;
++  return {
++    id,
++    name: object.name,
++    objectType: object.objectType,
++    role,
++    depth: depth ?? 1,
++    contributors,
++    shared: impact.sharedObjectIds.has(id),
++    regionName: graph.regions.find((region) => region.id === object.regionId)?.name ?? "Unscoped",
++  };
++}
+ 
+-export function bindInspector(graph: SemanticGraph, selection: CanvasSelection): InspectorBinding | null {
++function sortRows(rows: ImpactObjectRow[]) {
++  return [...rows].sort((left, right) => left.depth - right.depth || left.name.localeCompare(right.name));
++}
++
++export function bindInspector(graph: SemanticGraph, selection: CanvasSelection, impact: CanvasImpact | null = null): InspectorBinding | null {
+   if (!selection) return null;
+   const index = indexSemanticGraph(graph);
+   if (selection.kind === "object") {
+@@ -71,6 +136,50 @@ export function bindInspector(graph: SemanticGraph, selection: CanvasSelection):
+       flows,
+     };
+   }
++  if (selection.kind === "objects") {
++    const objects = selection.ids
++      .map((id) => index.objectById.get(id))
++      .filter((object): object is SemanticObject => Boolean(object));
++    if (objects.length === 0) return null;
++    const regions = new Set(objects.map((object) => object.regionId));
++    const aggregateRows = impact
++      ? sortRows([...impact.objectRoles.keys()]
++        .map((id) => impactRow(graph, id, impact))
++        .filter((row): row is ImpactObjectRow => Boolean(row)))
++      : [];
++    const upstream = aggregateRows.filter((row) => row.role === "upstream" || row.role === "both");
++    const downstream = aggregateRows.filter((row) => row.role === "downstream" || row.role === "both");
++    const shared = aggregateRows.filter((row) => row.shared);
++    const states = objects.map((object) => object.state);
++    const uniqueStates = new Set(states.map((state) => state.value));
++    const worstSeverity = states.reduce<SemanticState["severity"]>(
++      (worst, state) => (SEVERITY_RANK[state.severity] > SEVERITY_RANK[worst] ? state.severity : worst),
++      "neutral",
++    );
++    const state: SemanticState = uniqueStates.size === 1
++      ? states[0]
++      : { value: "mixed", label: "Mixed", severity: worstSeverity, source: "knowledge" };
++    return {
++      kind: "objects",
++      id: `objects:${selection.ids.join(",")}`,
++      title: `${objects.length} Objects`,
++      typeLabel: "objects",
++      summary: `聚合影响：${upstream.length} 上游 · ${downstream.length} 下游 · ${shared.length} 共享。`,
++      state,
++      location: `${regions.size} region${regions.size === 1 ? "" : "s"}`,
++      raw: { selection: selection.ids },
++      objects,
++      regionCount: regions.size,
++      aggregate: {
++        upstreamCount: upstream.length,
++        downstreamCount: downstream.length,
++        sharedCount: shared.length,
++        upstream,
++        downstream,
++        shared,
++      },
++    };
++  }
+   if (selection.kind === "relationship") {
+     const relationship = index.relationshipById.get(selection.id);
+     if (!relationship) return null;
+diff --git a/app/architecture/inspector.tsx b/app/architecture/inspector.tsx
+index 654dd5b..07f4e87 100644
+--- a/app/architecture/inspector.tsx
++++ b/app/architecture/inspector.tsx
+@@ -1,7 +1,7 @@
+ "use client";
+ 
+ import type { CanvasImpact, CanvasMode, CanvasSelection } from "./interaction";
+-import type { InspectorBinding } from "./inspector-binding";
++import type { ImpactObjectRow, InspectorBinding } from "./inspector-binding";
+ import type { SemanticRelationship } from "./semantic-graph";
+ 
+ const TYPE_COPY: Record<string, string> = {
+@@ -15,6 +15,12 @@ const TYPE_COPY: Record<string, string> = {
+   dependency: "Dependency",
+ };
+ 
++const ROLE_GLYPH: Record<string, string> = {
++  upstream: "▲",
++  downstream: "▼",
++  both: "▲▼",
++};
++
+ function maxDepth(depths: Map<string, number>) {
+   return depths.size === 0 ? 0 : Math.max(...depths.values());
+ }
+@@ -42,6 +48,39 @@ function RelationshipList({
+   );
+ }
+ 
++function ImpactList({
++  label,
++  rows,
++  onSelect,
++}: {
++  label: string;
++  rows: ImpactObjectRow[];
++  onSelect: (selection: CanvasSelection) => void;
++}) {
++  if (rows.length === 0) return <p className="inspector-empty">无。</p>;
++  return (
++    <>
++      <small className="inspector-section-label">{label} · {rows.length}</small>
++      <div className="inspector-impact-list">
++        {rows.slice(0, 12).map((row) => (
++          <button
++            className={row.shared ? "shared" : ""}
++            key={row.id}
++            onClick={() => onSelect({ kind: "object", id: row.id })}
++            title={`${row.regionName} · ${row.contributors} 个选中对象`}
++            type="button"
++          >
++            <b aria-hidden="true">{ROLE_GLYPH[row.role] ?? "▲▼"}{row.shared ? `✕${row.contributors}` : ""}</b>
++            <span>{row.name}</span>
++            <small>{row.depth} 跳</small>
++          </button>
++        ))}
++        {rows.length > 12 && <em className="inspector-list-overflow">+{rows.length - 12} 更多</em>}
++      </div>
++    </>
++  );
++}
++
+ export default function Inspector({
+   binding,
+   impact,
+@@ -63,7 +102,7 @@ export default function Inspector({
+         <>
+           <header className="inspector-heading">
+             <div>
+-              <small>{TYPE_COPY[binding.typeLabel] ?? binding.typeLabel}</small>
++              <small>{binding.kind === "objects" ? "Multi-select" : TYPE_COPY[binding.typeLabel] ?? binding.typeLabel}</small>
+               <strong>{binding.title}</strong>
+             </div>
+             <button aria-label="Close Inspector" onClick={onClose} type="button">×</button>
+@@ -92,6 +131,15 @@ export default function Inspector({
+                 <div><dt>Technology</dt><dd>{String(binding.object.metadata.technology || "Not declared")}</dd></div>
+               </dl>
+             )}
++            {binding.kind === "objects" && (
++              <dl className="inspector-facts">
++                <div><dt>Selected</dt><dd>{binding.objects.length} objects</dd></div>
++                <div><dt>Regions</dt><dd>{binding.regionCount}</dd></div>
++                <div><dt>Upstream</dt><dd>▲ {binding.aggregate.upstreamCount}（最深 {impact ? maxDepth(impact.upstream) : 0} 跳）</dd></div>
++                <div><dt>Downstream</dt><dd>▼ {binding.aggregate.downstreamCount}（最深 {impact ? maxDepth(impact.downstream) : 0} 跳）</dd></div>
++                <div><dt>Shared impact</dt><dd>✕ {binding.aggregate.sharedCount}</dd></div>
++              </dl>
++            )}
+             {binding.kind === "relationship" && (
+               <div className="inspector-endpoints">
+                 <button onClick={() => binding.source && onSelect({ kind: "object", id: binding.source.id })} type="button"><small>From</small><strong>{binding.source?.name ?? binding.relationship.sourceObjectId}</strong></button>
+@@ -106,7 +154,7 @@ export default function Inspector({
+             <summary>Relations</summary>
+             {binding.kind === "object" && (
+               <>
+-                {impact && impact.rootId === binding.id && (
++                {impact && impact.rootIds.includes(binding.id) && (
+                   <p className="inspector-impact-summary">
+                     依赖影响 <b>▲ {impact.upstream.size} 上游</b>（最深 {maxDepth(impact.upstream)} 跳）
+                     <b>▼ {impact.downstream.size} 下游</b>（最深 {maxDepth(impact.downstream)} 跳）
+@@ -118,6 +166,28 @@ export default function Inspector({
+                 <RelationshipList direction="out" onSelect={onSelect} relationships={binding.outgoing} />
+               </>
+             )}
++            {binding.kind === "objects" && (
++              <>
++                <p className="inspector-impact-summary">
++                  聚合影响 <b>▲ {binding.aggregate.upstreamCount} 上游</b>
++                  <b>▼ {binding.aggregate.downstreamCount} 下游</b>
++                  <b className="shared">✕ {binding.aggregate.sharedCount} 共享</b>
++                </p>
++                <small className="inspector-section-label">Selected · {binding.objects.length}</small>
++                <div className="inspector-impact-list">
++                  {binding.objects.map((object) => (
++                    <button key={object.id} onClick={() => onSelect({ kind: "object", id: object.id })} title={object.summary || object.name} type="button">
++                      <b aria-hidden="true">◆</b>
++                      <span>{object.name}</span>
++                      <small>{TYPE_COPY[object.objectType]}</small>
++                    </button>
++                  ))}
++                </div>
++                <ImpactList label="共享影响 Shared" rows={binding.aggregate.shared} onSelect={onSelect} />
++                <ImpactList label="上游依赖 Upstream" rows={binding.aggregate.upstream} onSelect={onSelect} />
++                <ImpactList label="下游依赖 Downstream" rows={binding.aggregate.downstream} onSelect={onSelect} />
++              </>
++            )}
+             {binding.kind === "relationship" && <p>{binding.flows.length > 0 ? `Used by ${binding.flows.map((flow) => flow.name).join(", ")}.` : "Not part of a named Flow."}</p>}
+             {binding.kind === "flow" && (
+               <div className="inspector-object-list">
+diff --git a/app/architecture/interaction.ts b/app/architecture/interaction.ts
+index 5746dc6..18921eb 100644
+--- a/app/architecture/interaction.ts
++++ b/app/architecture/interaction.ts
+@@ -6,6 +6,7 @@ export type SemanticZoomLevel = "landscape" | "architecture" | "component" | "op
+ 
+ export type CanvasSelection =
+   | { kind: "object"; id: string }
++  | { kind: "objects"; ids: string[] }
+   | { kind: "relationship"; id: string }
+   | { kind: "flow"; id: string }
+   | null;
+@@ -19,11 +20,14 @@ export type RegionEmphasis = "active" | "normal" | "muted";
+ export type ImpactRole = "upstream" | "downstream" | "both";
+ 
+ export type CanvasImpact = {
+-  rootId: string;
++  rootIds: string[];
+   upstream: Map<string, number>;
+   downstream: Map<string, number>;
++  upstreamRoots: Map<string, string[]>;
++  downstreamRoots: Map<string, string[]>;
+   objectRoles: Map<string, ImpactRole>;
+   relationshipRoles: Map<string, ImpactRole>;
++  sharedObjectIds: Set<string>;
+ };
+ 
+ export type CanvasInteractionState = {
+@@ -92,18 +96,47 @@ function walkImpactDirection(
+   }
+ }
+ 
+-function deriveImpact(graph: SemanticGraph, index: SemanticGraphIndex, rootId: string): CanvasImpact {
++function keepMinDepth(depths: Map<string, number>, id: string, depth: number) {
++  const known = depths.get(id);
++  if (known === undefined || depth < known) depths.set(id, depth);
++}
++
++function attributeRoot(attribution: Map<string, string[]>, id: string, rootId: string) {
++  const roots = attribution.get(id) ?? [];
++  if (!roots.includes(rootId)) roots.push(rootId);
++  attribution.set(id, roots);
++}
++
++function deriveImpact(graph: SemanticGraph, index: SemanticGraphIndex, rootIds: string[]): CanvasImpact {
++  const roots = new Set(rootIds);
+   const upstream = new Map<string, number>();
+   const downstream = new Map<string, number>();
+-  walkImpactDirection(index, rootId, "incoming", upstream);
+-  walkImpactDirection(index, rootId, "outgoing", downstream);
++  const upstreamRoots = new Map<string, string[]>();
++  const downstreamRoots = new Map<string, string[]>();
++
++  for (const rootId of rootIds) {
++    const rootUpstream = new Map<string, number>();
++    const rootDownstream = new Map<string, number>();
++    walkImpactDirection(index, rootId, "incoming", rootUpstream);
++    walkImpactDirection(index, rootId, "outgoing", rootDownstream);
++    for (const [id, depth] of rootUpstream) {
++      if (roots.has(id)) continue;
++      keepMinDepth(upstream, id, depth);
++      attributeRoot(upstreamRoots, id, rootId);
++    }
++    for (const [id, depth] of rootDownstream) {
++      if (roots.has(id)) continue;
++      keepMinDepth(downstream, id, depth);
++      attributeRoot(downstreamRoots, id, rootId);
++    }
++  }
+ 
+   const objectRoles = new Map<string, ImpactRole>();
+   for (const id of upstream.keys()) objectRoles.set(id, "upstream");
+   for (const id of downstream.keys()) objectRoles.set(id, mergeImpactRole(objectRoles.get(id), "downstream"));
+ 
+-  const downstreamSources = new Set<string>([rootId, ...downstream.keys()]);
+-  const upstreamTargets = new Set<string>([rootId, ...upstream.keys()]);
++  const downstreamSources = new Set<string>([...roots, ...downstream.keys()]);
++  const upstreamTargets = new Set<string>([...roots, ...upstream.keys()]);
+   const relationshipRoles = new Map<string, ImpactRole>();
+   for (const relationship of graph.relationships) {
+     const orientations: Array<[string, string]> = relationship.direction === "bidirectional"
+@@ -117,7 +150,19 @@ function deriveImpact(graph: SemanticGraph, index: SemanticGraphIndex, rootId: s
+     if (role) relationshipRoles.set(relationship.id, role);
+   }
+ 
+-  return { rootId, upstream, downstream, objectRoles, relationshipRoles };
++  const sharedObjectIds = new Set<string>();
++  for (const id of objectRoles.keys()) {
++    const contributors = new Set([...(upstreamRoots.get(id) ?? []), ...(downstreamRoots.get(id) ?? [])]);
++    if (contributors.size >= 2) sharedObjectIds.add(id);
++  }
++
++  return { rootIds: [...rootIds], upstream, downstream, upstreamRoots, downstreamRoots, objectRoles, relationshipRoles, sharedObjectIds };
++}
++
++export function selectionObjectIds(selection: CanvasSelection): string[] {
++  if (selection?.kind === "object") return [selection.id];
++  if (selection?.kind === "objects") return selection.ids;
++  return [];
+ }
+ 
+ export function deriveCanvasView(graph: SemanticGraph, interaction: CanvasInteractionState): CanvasViewModel {
+@@ -143,19 +188,20 @@ export function deriveCanvasView(graph: SemanticGraph, interaction: CanvasIntera
+     }
+   }
+ 
+-  const selectedObjectId = interaction.selection?.kind === "object" && ["inspect", "focus"].includes(interaction.mode)
+-    ? interaction.selection.id
+-    : null;
+-  const impact = selectedObjectId !== null && index.objectById.has(selectedObjectId)
+-    ? deriveImpact(graph, index, selectedObjectId)
++  const selectedObjectIds = selectionObjectIds(interaction.selection)
++    .filter((id) => index.objectById.has(id));
++  const impact = ["inspect", "focus"].includes(interaction.mode) && selectedObjectIds.length > 0
++    ? deriveImpact(graph, index, selectedObjectIds)
+     : null;
+ 
+-  if (interaction.mode === "inspect" && interaction.selection?.kind === "object" && impact) {
+-    const selectedId = interaction.selection.id;
+-    focusObjectIds.add(selectedId);
+-    objectEmphasis.set(selectedId, "primary");
++  if (interaction.mode === "inspect" && impact && selectedObjectIds.length > 0) {
++    const selectedIds = new Set(selectedObjectIds);
++    for (const id of selectedIds) {
++      focusObjectIds.add(id);
++      objectEmphasis.set(id, "primary");
++    }
+     for (const object of graph.objects) {
+-      if (object.id === selectedId) continue;
++      if (selectedIds.has(object.id)) continue;
+       const upstreamDepth = impact.upstream.get(object.id);
+       const downstreamDepth = impact.downstream.get(object.id);
+       const depth = upstreamDepth !== undefined && downstreamDepth !== undefined
+@@ -169,7 +215,7 @@ export function deriveCanvasView(graph: SemanticGraph, interaction: CanvasIntera
+         relationshipEmphasis.set(relationship.id, "muted");
+         continue;
+       }
+-      const touchesRoot = relationship.sourceObjectId === selectedId || relationship.targetObjectId === selectedId;
++      const touchesRoot = selectedIds.has(relationship.sourceObjectId) || selectedIds.has(relationship.targetObjectId);
+       relationshipEmphasis.set(relationship.id, touchesRoot ? "active" : "related");
+       if (touchesRoot) activeRelationshipIds.add(relationship.id);
+     }
+@@ -271,7 +317,7 @@ export function visibleObjectIds(graph: SemanticGraph, view: CanvasViewModel) {
+   if (view.zoomLevel !== "landscape") return new Set(graph.objects.map((object) => object.id));
+   return new Set(graph.objects
+     .filter((object) => {
+-      if (view.impact && (object.id === view.impact.rootId || view.impact.objectRoles.has(object.id))) return true;
++      if (view.impact && (view.impact.rootIds.includes(object.id) || view.impact.objectRoles.has(object.id))) return true;
+       const emphasis = view.objectEmphasis.get(object.id) ?? "normal";
+       const important = object.importance.level === "critical" || object.importance.level === "high";
+       if (view.mode === "trace") return important || emphasis === "primary" || emphasis === "related";
+diff --git a/app/architecture/projection.ts b/app/architecture/projection.ts
+index f888d33..0967b32 100644
+--- a/app/architecture/projection.ts
++++ b/app/architecture/projection.ts
+@@ -80,7 +80,28 @@ export function projectSemanticGraph(
+           view.impact.downstream.get(object.id) ?? Number.MAX_SAFE_INTEGER,
+         )
+         : Number.MAX_SAFE_INTEGER;
+-      const isImpactRoot = view.impact?.rootId === object.id;
++      const isImpactRoot = view.impact?.rootIds.includes(object.id) ?? false;
++      const isSharedImpact = view.impact?.sharedObjectIds.has(object.id) ?? false;
++      const impactContributors = isSharedImpact && view.impact
++        ? new Set([
++          ...(view.impact.upstreamRoots.get(object.id) ?? []),
++          ...(view.impact.downstreamRoots.get(object.id) ?? []),
++        ]).size
++        : undefined;
++      let impactTotals: { upstream: number; downstream: number } | undefined;
++      if (isImpactRoot) {
++        const directUpstream = new Set<string>();
++        const directDownstream = new Set<string>();
++        for (const relationship of index.incomingByObjectId.get(object.id) ?? []) {
++          const other = relationship.sourceObjectId === object.id ? relationship.targetObjectId : relationship.sourceObjectId;
++          if (other !== object.id) directUpstream.add(other);
++        }
++        for (const relationship of index.outgoingByObjectId.get(object.id) ?? []) {
++          const other = relationship.sourceObjectId === object.id ? relationship.targetObjectId : relationship.sourceObjectId;
++          if (other !== object.id) directDownstream.add(other);
++        }
++        impactTotals = { upstream: directUpstream.size, downstream: directDownstream.size };
++      }
+       return {
+         id: object.id,
+         type: "object",
+@@ -96,18 +117,14 @@ export function projectSemanticGraph(
+             .filter((step) => step.objectId === object.id)
+             .map((step) => ({ sequence: step.sequence, role: step.role, title: step.title })),
+           impact: impactRole !== undefined && impactDepth !== Number.MAX_SAFE_INTEGER
+-            ? { role: impactRole, depth: impactDepth }
+-            : undefined,
+-          impactTotals: isImpactRoot && view.impact
+-            ? {
+-              upstream: [...view.impact.upstream.values()].filter((depth) => depth === 1).length,
+-              downstream: [...view.impact.downstream.values()].filter((depth) => depth === 1).length,
+-            }
++            ? { role: impactRole, depth: impactDepth, shared: isSharedImpact || undefined, contributors: impactContributors }
+             : undefined,
++          impactTotals,
+         },
+         draggable: true,
+         selectable: true,
+-        selected: view.selection?.kind === "object" && view.selection.id === object.id,
++        selected: (view.selection?.kind === "object" && view.selection.id === object.id)
++          || (view.selection?.kind === "objects" && view.selection.ids.includes(object.id)),
+         zIndex: view.objectEmphasis.get(object.id) === "primary" ? 30 : 10,
+         style: { width: rect.width, height: rect.height },
+       };
+diff --git a/app/architecture/types.ts b/app/architecture/types.ts
+index 4422a2e..5b091ac 100644
+--- a/app/architecture/types.ts
++++ b/app/architecture/types.ts
+@@ -139,7 +139,7 @@ export type ObjectNodeData = Record<string, unknown> & {
+   incomingCount: number;
+   outgoingCount: number;
+   flowSteps: Array<{ sequence: number; role: string; title: string }>;
+-  impact?: { role: ImpactRole; depth: number };
++  impact?: { role: ImpactRole; depth: number; shared?: boolean; contributors?: number };
+   impactTotals?: { upstream: number; downstream: number };
+ };
+ 
+diff --git a/app/globals.css b/app/globals.css
+index 76e031b..0a8e4a8 100644
+--- a/app/globals.css
++++ b/app/globals.css
+@@ -970,6 +970,20 @@ button:focus-visible, select:focus-visible, a:focus-visible {
+ .object-impact-chip b { color: var(--map-focus); font-weight: 680; }
+ .object-impact-chip i { font-style: normal; }
+ .object-impact-chip.role-root { border-color: rgba(216,242,232,.6); color: var(--map-focus-strong); }
++.object-impact-chip.is-shared { border-color: rgba(224,198,132,.65); color: #e6d3a3; }
++.object-impact-chip.is-shared b { color: #e0c684; }
++.object-impact-chip.is-shared em { color: #e0c684; font-style: normal; font-weight: 680; }
++.canvas-reading-key .shared-impact-key { color: #e0c684; }
++.inspector-impact-summary b.shared { color: #e0c684; }
++.inspector-impact-list { display: grid; }
++.inspector-impact-list button { align-items: center; background: transparent; border: 0; border-top: 1px solid var(--map-line); color: var(--map-text-soft); display: grid; font-size: .8125rem; gap: 6px; grid-template-columns: 46px minmax(0,1fr) auto; min-height: 35px; padding: 5px 0; text-align: left; }
++.inspector-impact-list button:hover span { color: var(--map-focus-strong); }
++.inspector-impact-list button.shared span { color: #e6d3a3; }
++.inspector-impact-list b { color: var(--map-focus); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 650; white-space: nowrap; }
++.inspector-impact-list button.shared b { color: #e0c684; }
++.inspector-impact-list span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
++.inspector-impact-list small { color: var(--map-text-muted); }
++.inspector-list-overflow { color: var(--map-text-muted); display: block; font-size: .8125rem; padding: 4px 0; }
+ .object-node.zoom-architecture .object-impact-chip, .object-node.zoom-landscape .object-impact-chip { top: calc(-29px - (var(--label-scale) - 1) * 32px); transform: translate(-50%, 0) scale(var(--label-scale)); transform-origin: center bottom; }
+ .semantic-port { background: var(--map-focus) !important; border: 0 !important; height: 6px !important; opacity: 0; transition: opacity 100ms ease; width: 6px !important; }
+ .object-node:hover .semantic-port, .object-node.is-selected .semantic-port { opacity: .28; }
+diff --git a/evidence/01-small-multi-shiftclick-inspect.png b/evidence/01-small-multi-shiftclick-inspect.png
+new file mode 100644
+index 0000000..b4948e6
+Binary files /dev/null and b/evidence/01-small-multi-shiftclick-inspect.png differ
+diff --git a/evidence/02-small-multi-marquee.png b/evidence/02-small-multi-marquee.png
+new file mode 100644
+index 0000000..45b7acc
+Binary files /dev/null and b/evidence/02-small-multi-marquee.png differ
+diff --git a/evidence/03-small-inspector-idle-after-clear.png b/evidence/03-small-inspector-idle-after-clear.png
+new file mode 100644
+index 0000000..1a0dfcf
+Binary files /dev/null and b/evidence/03-small-inspector-idle-after-clear.png differ
+diff --git a/evidence/04-medium-multi-shared-impact.png b/evidence/04-medium-multi-shared-impact.png
+new file mode 100644
+index 0000000..c7dae04
+Binary files /dev/null and b/evidence/04-medium-multi-shared-impact.png differ
+diff --git a/evidence/05-registry-ecp-core-multi.png b/evidence/05-registry-ecp-core-multi.png
+new file mode 100644
+index 0000000..d485396
+Binary files /dev/null and b/evidence/05-registry-ecp-core-multi.png differ
+diff --git a/evidence/06-small-single-inspect-regression.png b/evidence/06-small-single-inspect-regression.png
+new file mode 100644
+index 0000000..48ec55f
+Binary files /dev/null and b/evidence/06-small-single-inspect-regression.png differ
+diff --git a/evidence/07-small-focus-single.png b/evidence/07-small-focus-single.png
+new file mode 100644
+index 0000000..4d1fce7
+Binary files /dev/null and b/evidence/07-small-focus-single.png differ
+diff --git a/evidence/08-small-trace-flow.png b/evidence/08-small-trace-flow.png
+new file mode 100644
+index 0000000..87a3fd0
+Binary files /dev/null and b/evidence/08-small-trace-flow.png differ
+diff --git a/evidence/capture-multi-impact.mjs b/evidence/capture-multi-impact.mjs
+new file mode 100644
+index 0000000..fdb48da
+--- /dev/null
++++ b/evidence/capture-multi-impact.mjs
+@@ -0,0 +1,237 @@
++import pw from "file:///E:/codex-prj/ab-worktrees/mem1-pair-01-a/.sites-runtime/npm-cache/_npx/9833c18b2d85bc59/node_modules/playwright/index.mjs";
++import { register } from "node:module";
++register(new URL("../tests/cloudflare-loader.mjs", import.meta.url), import.meta.url);
++const { SMALL_CANVAS_FIXTURE } = await import("../app/architecture/fixtures.ts");
++const { deriveCanvasView } = await import("../app/architecture/interaction.ts");
++
++const BASE = "http://localhost:5199";
++const OUT = "E:/codex-prj/ab-worktrees/mem1-pair-01-a/evidence";
++const results = [];
++const note = (name, ok, detail) => { results.push({ name, ok, detail: String(detail) }); if (!ok) console.error("FAIL:", name, detail); else console.log("ok:", name, detail); };
++const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
++const digitsAfter = (text, marker, span = 40) => {
++  const i = text.indexOf(marker);
++  if (i < 0) return null;
++  const m = text.slice(i, i + span).match(new RegExp("[0-9]+"));
++  return m ? Number(m[0]) : null;
++};
++
++// Expected multi-impact, computed in Node from the same semantic-graph code the app uses.
++const impactOf = (a, b) => deriveCanvasView(SMALL_CANVAS_FIXTURE, {
++  mode: "inspect", selection: { kind: "objects", ids: [a, b] }, activeFlowId: null, zoom: 0.9, searchQuery: "",
++}).impact;
++let P = null;
++for (let i = 0; i < SMALL_CANVAS_FIXTURE.objects.length && !P; i++) {
++  for (let j = i + 1; j < SMALL_CANVAS_FIXTURE.objects.length && !P; j++) {
++    const impact = impactOf(SMALL_CANVAS_FIXTURE.objects[i].id, SMALL_CANVAS_FIXTURE.objects[j].id);
++    if (impact.sharedObjectIds.size > 0) P = { a: SMALL_CANVAS_FIXTURE.objects[i].id, b: SMALL_CANVAS_FIXTURE.objects[j].id, impact };
++  }
++}
++if (!P) throw new Error("fixture has no shared pair");
++console.log("model pair:", P.a, "+", P.b, "| upstream", P.impact.upstream.size, "downstream", P.impact.downstream.size, "shared", P.impact.sharedObjectIds.size);
++
++const browser = await pw.chromium.launch({ executablePath: "C:/Users/SiChuchen/AppData/Local/ms-playwright/chromium-1234/chrome-win64/chrome.exe" });
++const context = await browser.newContext({ viewport: { width: 1680, height: 940 } });
++const page = await context.newPage();
++const consoleErrors = [];
++page.on("pageerror", (e) => consoleErrors.push("pageerror: " + e.message));
++page.on("console", (m) => { if (m.type() === "error") consoleErrors.push(m.text()); });
++
++const inspectorText = async () => (await page.locator(".canvas-inspector").innerText().catch(() => ""));
++const selectedCount = async () => await page.locator(".object-node.is-selected").count();
++const sharedChipCount = async () => await page.locator(".object-impact-chip.is-shared").count();
++const statusMode = async () => (await page.locator(".canvas-statusbar span").first().innerText());
++const fitAll = async () => { await page.locator('.react-flow__controls-button[title="Fit View"]').click(); await sleep(1100); };
++const nodePoint = (id) => page.evaluate((nodeId) => {
++  const el = document.querySelector('.react-flow__node[data-id="' + nodeId + '"]');
++  if (!el) return null;
++  const r = el.getBoundingClientRect();
++  const spots = [[14, 14], [r.width - 14, 14], [14, r.height - 14], [r.width - 14, r.height - 14], [r.width / 2, 12]];
++  for (const [dx, dy] of spots) {
++    const x = r.x + Math.min(Math.max(dx, 2), r.width - 2);
++    const y = r.y + Math.min(Math.max(dy, 2), r.height - 2);
++    const hit = document.elementFromPoint(x, y);
++    if (hit && el.contains(hit)) return { x: Math.round(x), y: Math.round(y) };
++  }
++  return null;
++}, id);
++const modClick = async (id, mod) => {
++  const p = await nodePoint(id);
++  if (!p) throw new Error("node not clickable: " + id);
++  await page.keyboard.down(mod);
++  await page.mouse.click(p.x, p.y);
++  await page.keyboard.up(mod);
++};
++const panePoint = () => page.evaluate(() => {
++  const el = document.querySelector(".react-flow__pane");
++  const r = el.getBoundingClientRect();
++  const spots = [[r.width * 0.18, r.height * 0.12], [r.width * 0.1, r.height * 0.2], [r.width * 0.25, r.height * 0.1], [r.width * 0.05, r.height * 0.4]];
++  for (const [dx, dy] of spots) {
++    const x = r.x + dx, y = r.y + dy;
++    const hit = document.elementFromPoint(x, y);
++    if (hit === el) return { x: Math.round(x), y: Math.round(y), w: Math.round(r.width), h: Math.round(r.height) };
++  }
++  return null;
++});
++
++async function openCanvas(url) {
++  await page.goto(url, { waitUntil: "domcontentloaded" });
++  await page.waitForSelector(".object-node", { timeout: 45000 });
++  await sleep(2500);
++  await fitAll();
++}
++
++// ========== A: small fixture, Shift+click multi-select ==========
++await openCanvas(BASE + "/architecture-fixtures");
++await modClick(P.a, "Shift");
++await sleep(350);
++await modClick(P.b, "Shift");
++await sleep(900);
++await fitAll();
++const textA = await inspectorText();
++note("A1 shift-click multi selection", (await selectedCount()) === 2, "selected: " + (await selectedCount()));
++note("A2 aggregate inspector", /MULTI-SELECT/.test(textA.toUpperCase()) && /2 Objects/.test(textA), textA.slice(0, 50).replace(/[\n]/g, " "));
++note("A3 aggregate counts shown", /Upstream/.test(textA) && /Downstream/.test(textA) && /Shared impact/.test(textA), "labels present");
++const domShared = digitsAfter(textA, "Shared impact");
++const domDown = digitsAfter(textA, "Downstream");
++note("A4 shared count matches model", domShared === P.impact.sharedObjectIds.size, "DOM " + domShared + " vs model " + P.impact.sharedObjectIds.size);
++note("A5 downstream count matches model", domDown === P.impact.downstream.size, "DOM " + domDown + " vs model " + P.impact.downstream.size);
++note("A6 shared chips on canvas", (await sharedChipCount()) === P.impact.sharedObjectIds.size, "is-shared chips: " + (await sharedChipCount()));
++note("A7 shared legend", (await page.locator(".canvas-reading-key .shared-impact-key").count()) === 1, "legend present");
++const rows = await page.locator(".inspector-impact-list button").count();
++note("A8 impacted object list", rows >= P.impact.sharedObjectIds.size, "list rows: " + rows);
++await page.screenshot({ path: OUT + "/01-small-multi-shiftclick-inspect.png" });
++
++// ========== B: Ctrl+click also adds; then marquee ==========
++await page.keyboard.press("Escape");
++await sleep(400);
++await page.locator(".canvas-modes button", { hasText: "Browse" }).click();
++await sleep(600);
++await fitAll();
++await modClick(P.a, "Control");
++await sleep(300);
++await modClick(P.b, "Control");
++await sleep(800);
++note("B0 ctrl+click adds too", (await selectedCount()) === 2, "selected: " + (await selectedCount()));
++await page.keyboard.press("Escape");
++await sleep(500);
++const pane = await panePoint();
++if (!pane) throw new Error("no pane point");
++await page.keyboard.down("Shift");
++await page.mouse.move(pane.x, pane.y);
++await page.mouse.down();
++await page.mouse.move(pane.x + Math.round(pane.w * 0.7), pane.y + Math.round(pane.h * 0.7), { steps: 16 });
++await page.mouse.up();
++await page.keyboard.up("Shift");
++await sleep(1000);
++await fitAll();
++const marqueeCount = await selectedCount();
++const textB = await inspectorText();
++note("B1 marquee multi selection", marqueeCount >= 3, "selected via Shift+drag marquee: " + marqueeCount);
++note("B2 marquee aggregate inspector", marqueeCount >= 3 && new RegExp(marqueeCount + " Objects").test(textB) && /MULTI-SELECT/.test(textB.toUpperCase()), textB.slice(0, 60).replace(/[\n]/g, " "));
++await page.screenshot({ path: OUT + "/02-small-multi-marquee.png" });
++
++// ========== C: empty selection returns Inspector to idle ==========
++const paneClick = await panePoint();
++await page.mouse.click(paneClick.x, paneClick.y);
++await sleep(800);
++const idle = await page.locator(".canvas-inspector").evaluate((el) => el.getAttribute("aria-hidden") === "true" && !el.classList.contains("open"));
++note("C1 inspector idle on empty selection", idle, "aria-hidden and closed");
++note("C2 mode back to browse", /BROWSE/.test(await statusMode()), await statusMode());
++await page.screenshot({ path: OUT + "/03-small-inspector-idle-after-clear.png" });
++
++// ========== D: single-select regression ==========
++await fitAll();
++await modClick(P.a, "Shift").then(async () => page.keyboard.press("Escape")).catch(() => {});
++await sleep(400);
++const plainPoint = await nodePoint(P.a);
++await page.mouse.click(plainPoint.x, plainPoint.y);
++await sleep(1100);
++const textD = await inspectorText();
++note("D1 single select inspector", !/MULTI-SELECT/.test(textD.toUpperCase()) && /Ingress Service 001/.test(textD), textD.slice(0, 40).replace(/[\n]/g, " "));
++note("D2 no shared chips in single mode", (await sharedChipCount()) === 0, "shared chips: " + (await sharedChipCount()));
++await page.screenshot({ path: OUT + "/06-small-single-inspect-regression.png" });
++
++// ========== E: Focus unaffected ==========
++await page.locator(".canvas-modes button", { hasText: "Focus" }).click();
++await sleep(1100);
++note("E1 focus mode works", /FOCUS/.test(await statusMode()), await statusMode());
++await page.keyboard.press("f");
++await sleep(900);
++note("E2 keyboard F keeps focus", /FOCUS/.test(await statusMode()), await statusMode());
++await page.screenshot({ path: OUT + "/07-small-focus-single.png" });
++
++// ========== F: Trace unaffected ==========
++await page.locator(".canvas-modes button", { hasText: "Trace" }).click();
++await sleep(600);
++const lensButtons = await page.locator(".flow-lens-list button").count();
++if (lensButtons > 0) await page.locator(".flow-lens-list button").first().click();
++await sleep(1600);
++note("F1 trace mode works", /TRACE/.test(await statusMode()), await statusMode() + " (flow lens buttons: " + lensButtons + ")");
++await page.screenshot({ path: OUT + "/08-small-trace-flow.png" });
++
++// ========== G: medium fixture (40 objects / 70 relationships) ==========
++await page.locator(".canvas-modes button", { hasText: "Browse" }).click();
++await page.selectOption("select[aria-label='Stress fixture']", "medium");
++await sleep(3500);
++await fitAll();
++const mediumStatus = await page.locator(".canvas-statusbar").innerText();
++const mediumIds = await page.evaluate(() => [...document.querySelectorAll('.react-flow__node[data-id]')].filter((n) => n.querySelector('.object-node')).map((n) => n.dataset.id));
++note("G1 medium fixture loads", /40 Objects/.test(mediumStatus) && /70 Relationships/.test(mediumStatus), mediumStatus.replace(/[\n]/g, " | ").slice(0, 70));
++let gOk = -1;
++const chosenG = [];
++try {
++  for (let k = 0; k < 3; k++) {
++    await fitAll();
++    const clickable = [];
++    for (const id of mediumIds) {
++      if (!chosenG.includes(id) && await nodePoint(id)) clickable.push(id);
++    }
++    if (clickable.length === 0) throw new Error("no clickable medium node");
++    chosenG.push(clickable[0]);
++    await modClick(clickable[0], "Shift");
++    await sleep(800);
++  }
++  await fitAll();
++  gOk = await selectedCount();
++} catch (e) { console.error("G click error", String(e).slice(0, 120)); }
++const textG = await inspectorText();
++note("G2 medium multi select", gOk === 3, "selected: " + gOk);
++note("G3 medium aggregate inspector", /3 Objects/.test(textG) && /MULTI-SELECT/.test(textG.toUpperCase()), textG.slice(0, 60).replace(/[\n]/g, " "));
++note("G4 medium shared data present", digitsAfter(textG, "Shared impact") !== null, "shared count: " + digitsAfter(textG, "Shared impact"));
++await page.screenshot({ path: OUT + "/04-medium-multi-shared-impact.png" });
++
++// ========== H: production registry data (ecp-core) ==========
++await openCanvas(BASE + "/projects/ecp-core");
++const regStatus = await page.locator(".canvas-statusbar").innerText();
++const regIds = await page.evaluate(() => [...document.querySelectorAll('.react-flow__node[data-id]')].filter((n) => n.querySelector('.object-node')).map((n) => n.dataset.id));
++note("H1 registry canvas renders", regIds.length > 0, regStatus.replace(/[\n]/g, " | ").slice(0, 80));
++let hOk = -1;
++const chosenH = [];
++try {
++  for (let k = 0; k < 2; k++) {
++    await fitAll();
++    const clickable = [];
++    for (const id of regIds) {
++      if (!chosenH.includes(id) && await nodePoint(id)) clickable.push(id);
++    }
++    if (clickable.length === 0) throw new Error("no clickable registry node");
++    chosenH.push(clickable[0]);
++    await modClick(clickable[0], "Shift");
++    await sleep(800);
++  }
++  await fitAll();
++  hOk = await selectedCount();
++} catch (e) { console.error("H click error", String(e).slice(0, 120)); }
++const textH = await inspectorText();
++note("H2 registry multi select", hOk === 2, "selected: " + hOk);
++note("H3 registry aggregate inspector", /MULTI-SELECT/.test(textH.toUpperCase()) && /2 Objects/.test(textH), textH.slice(0, 60).replace(/[\n]/g, " "));
++note("H4 registry aggregate counts", digitsAfter(textH, "Shared impact") !== null && digitsAfter(textH, "Downstream") !== null,
++  "up " + digitsAfter(textH, "Upstream") + " down " + digitsAfter(textH, "Downstream") + " shared " + digitsAfter(textH, "Shared impact"));
++await page.screenshot({ path: OUT + "/05-registry-ecp-core-multi.png" });
++
++note("Z1 no console errors", consoleErrors.length === 0, consoleErrors.slice(0, 3).join(" || ").slice(0, 250) || "clean");
++await browser.close();
++const failed = results.filter((r) => !r.ok);
++console.log(JSON.stringify({ total: results.length, passed: results.length - failed.length, failed: failed.length }));
++if (failed.length > 0) process.exit(1);
+diff --git a/tests/canvas-engine.test.mjs b/tests/canvas-engine.test.mjs
+index 2f4ab59..e3b4b84 100644
+--- a/tests/canvas-engine.test.mjs
++++ b/tests/canvas-engine.test.mjs
+@@ -180,6 +180,64 @@ test("implements discrete semantic zoom and readable Focus / Trace emphasis", ()
+   assert.ok([...trace.relationshipEmphasis.values()].includes("suppressed"));
+ });
+ 
++test("multi-select impact unions closures and flags shared dependents", () => {
++  const view = (mode, selection) => deriveCanvasView(SMALL_CANVAS_FIXTURE, { mode, selection, activeFlowId: null, zoom: .9, searchQuery: "" });
++
++  let pair = null;
++  let sharedId = null;
++  for (let i = 0; i < SMALL_CANVAS_FIXTURE.objects.length && !pair; i += 1) {
++    for (let j = i + 1; j < SMALL_CANVAS_FIXTURE.objects.length && !pair; j += 1) {
++      const a = SMALL_CANVAS_FIXTURE.objects[i].id;
++      const b = SMALL_CANVAS_FIXTURE.objects[j].id;
++      const impactA = view("inspect", { kind: "object", id: a }).impact;
++      const impactB = view("inspect", { kind: "object", id: b }).impact;
++      if (!impactA || !impactB) continue;
++      const reachA = new Set([...impactA.upstream.keys(), ...impactA.downstream.keys()]);
++      const overlap = [...reachA].find((id) => (impactB.upstream.has(id) || impactB.downstream.has(id)) && id !== a && id !== b);
++      if (overlap) { pair = [a, b]; sharedId = overlap; }
++    }
++  }
++  assert.ok(pair, "Small fixture must contain a pair with overlapping impact");
++
++  const singleA = view("inspect", { kind: "object", id: pair[0] });
++  const singleB = view("inspect", { kind: "object", id: pair[1] });
++  const multi = view("inspect", { kind: "objects", ids: pair });
++  assert.ok(multi.impact);
++  assert.deepEqual(multi.impact.rootIds, pair);
++  assert.equal(singleA.impact.sharedObjectIds.size, 0, "A single root can never produce shared impact");
++
++  const expectedUpstream = new Set([...singleA.impact.upstream.keys(), ...singleB.impact.upstream.keys()]);
++  const expectedDownstream = new Set([...singleA.impact.downstream.keys(), ...singleB.impact.downstream.keys()]);
++  for (const id of pair) { expectedUpstream.delete(id); expectedDownstream.delete(id); }
++  assert.deepEqual(new Set(multi.impact.upstream.keys()), expectedUpstream, "Upstream must be the union of both closures minus the anchors");
++  assert.deepEqual(new Set(multi.impact.downstream.keys()), expectedDownstream, "Downstream must be the union of both closures minus the anchors");
++
++  assert.ok(multi.impact.sharedObjectIds.has(sharedId), "Overlapping dependent must be flagged as shared impact");
++  for (const id of multi.impact.sharedObjectIds) {
++    const contributors = new Set([...(multi.impact.upstreamRoots.get(id) ?? []), ...(multi.impact.downstreamRoots.get(id) ?? [])]);
++    assert.ok(contributors.size >= 2, "Shared impact must be attributed to at least two selected roots");
++  }
++  assert.equal(multi.objectEmphasis.get(pair[0]), "primary");
++  assert.equal(multi.objectEmphasis.get(pair[1]), "primary");
++  assert.notEqual(multi.objectEmphasis.get(sharedId), "muted", "Shared dependents must stay readable");
++
++  const binding = bindInspector(SMALL_CANVAS_FIXTURE, { kind: "objects", ids: pair }, multi.impact);
++  assert.equal(binding?.kind, "objects");
++  assert.equal(binding?.aggregate.upstreamCount, multi.impact.upstream.size);
++  assert.equal(binding?.aggregate.downstreamCount, multi.impact.downstream.size);
++  assert.equal(binding?.aggregate.sharedCount, multi.impact.sharedObjectIds.size);
++  assert.ok(binding?.aggregate.shared.some((row) => row.id === sharedId));
++
++  assert.equal(bindInspector(SMALL_CANVAS_FIXTURE, null), null, "Empty selection must return the Inspector to idle");
++  assert.equal(view("browse", null).impact, null, "No selection means no impact lens");
++
++  const landscape = deriveCanvasView(SMALL_CANVAS_FIXTURE, { mode: "inspect", selection: { kind: "objects", ids: pair }, activeFlowId: null, zoom: .24, searchQuery: "" });
++  const landscapeVisible = visibleObjectIds(SMALL_CANVAS_FIXTURE, landscape);
++  for (const id of [...pair, ...landscape.impact.objectRoles.keys()]) {
++    assert.ok(landscapeVisible.has(id), "Landscape must keep multi impact objects visible");
++  }
++});
++
+ test("keeps the default Browse camera inside the readable Architecture band", () => {
+   const browseFit = canvasFitOptions("browse");
+   assert.equal(browseFit.minZoom, CANVAS_VIEWPORT_CONTRACT.browse.minZoom);

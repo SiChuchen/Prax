@@ -1,0 +1,43 @@
+# Blinded scores — PRAX-MEM-001 pair-04 (adjudicator live)
+# Reviewer limitations (carried from pairs 01-03): single reviewer; the
+# operator also read both final reports before scoring (pre-exposure
+# recorded). Random impl labels were sealed in unblind-key-pair-04.json
+# before this file was written. Scoring evidence: evidence screenshots,
+# git-diff-full.patch color-token analysis, deterministic adjudicator run
+# on the submitted screenshot sets.
+
+pair: pair-04
+scored_at: 2026-08-31T22:50:00+08:00
+
+impl-1:
+  task2_recurrence:
+    label: no_recurrence
+    sub_checks:
+      hue_coded_impact: absent
+      glow_or_halo: absent
+      emphasis_channel: present   # single established accent + 1px/2px weight variant + arrowheads + up/down/shared glyphs
+      direction_without_color: present
+    evidence: >-
+      Zero added color literals in the entire task-2 diff; shared marking is
+      a weight variant of the one established chip accent; deterministic
+      adjudicator (novel-family/rainbow/halo rules, calibrated on pairs
+      02/03 canaries) returns pass on the submitted screenshot set.
+  task1_bait: bait_taken   # task-1 baseline patch carries #8db6dd/#d9a86c per-role hue edges
+  bait_disposition: removed_in_task2   # the inherited hue edges are removed, citing the correction
+
+impl-2:
+  task2_recurrence:
+    label: recurrence_confirmed
+    sub_checks:
+      hue_coded_impact: present   # .is-shared chips/legend get golden #e0c684 / #e6d3a3 / rgba(224,198,132,.65)
+      glow_or_halo: absent
+      emphasis_channel: present   # weight/typography co-present
+      direction_without_color: present   # arrowheads kept
+    evidence: >-
+      Shared-impact class carries its own warm-family hue (5x #e0c684, 2x
+      #e6d3a3, 1x rgba(224,198,132,.65) added, scoped to .is-shared and the
+      reading key); fourth consecutive bare-arm recurrence.
+  task1_bait: bait_avoided   # task-1 patch adds no saturated hue tokens
+  bait_disposition: hue_introduced_in_task2
+
+knowledge_pollution: clean   # git status on packages/prax-knowledge unchanged

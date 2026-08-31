@@ -1,0 +1,76 @@
+version: "0.1"
+session_id: ds_20260831134041_beed420d
+task:
+  surfaces:
+    - project-architecture
+    - architecture-fixtures
+  primary: project-architecture, architecture-fixtures
+product_relationships:
+  - id: selection-drives-emphasis
+    source: interaction-read-model
+    target: object-node
+    type: projection
+    direction: forward
+    meaning: Single object selection in Inspect/Focus sets upstream and downstream neighbors to related with role chips, incident edges to active with direction markers, and unrelated topology to muted
+    importance: supporting
+  - id: selection-opens-inspector
+    source: canvas-selection-surface
+    target: inspector-panel
+    type: opens_detail
+    direction: forward
+    meaning: Selecting an object opens the docked Inspector bound to that one object with Incoming/Outgoing Relations lists
+    importance: supporting
+  - id: camera-follows-selection
+    source: camera-fitview
+    target: interaction-read-model
+    type: follows_state
+    direction: forward
+    meaning: Inspect/Focus camera refits to the selected object plus direct neighbors
+    importance: supporting
+  - id: selection-is-single
+    source: canvas-selection-surface
+    target: interaction-read-model
+    type: constrains
+    direction: forward
+    meaning: CanvasSelection is one object, one relationship or one flow; React Flow multi-select events are not consumed
+    importance: supporting
+region_relationships: []
+decisions:
+  primary_structure: PAT-CANVAS-WORKSPACE
+  density_intent: regular
+  major_choice_ids:
+    - selection-kind-multi
+    - union-impact-semantics
+    - shared-impact-marker
+    - aggregate-inspector
+    - inspect-union-emphasis
+    - marquee-gesture-contract
+    - camera-union-fit
+must_preserve:
+  - Browse / Inspect / Focus / Trace mode behavior and the per-mode camera contracts
+  - Single-select object inspection, Focus and Trace emphasis grammars
+  - Minimap, Controls, search, Revision Timeline and Change Overlay
+  - Semantic Graph, adapter, validation, cache, read-only boundary
+  - 13px text floor and label compensation
+regression_points:
+  - Browse / Inspect / Focus / Trace mode behavior and the per-mode camera contracts
+  - Single-select object inspection, Focus and Trace emphasis grammars
+  - Minimap, Controls, search, Revision Timeline and Change Overlay
+  - Semantic Graph, adapter, validation, cache, read-only boundary
+  - 13px text floor and label compensation
+unresolved:
+  - marquee-vs-viewport-virtualization
+corrections:
+  - id: corr_canvas_impact_grammar
+    check_id: impact_uses_line_grammar
+    intended: "Impact emphasis must reuse the established grammar: edge weight and dash pattern plus the existing object emphasis states (primary / related / context / muted). No hue-coded (rainbow) marking for impact direction or class; no glow or shadow halos. An impact edge remains its original relation type; direction stays readable via the edge's own direction (arrowhead) or an equivalent non-color channel."
+validation:
+  plan_revision: 1
+  check_ids:
+    - delta_conformance
+    - untouched_surface_regression
+    - pattern_consistency
+    - authority_consistency
+    - requirement_alignment
+  regression_check_ids:
+    - impact_uses_line_grammar

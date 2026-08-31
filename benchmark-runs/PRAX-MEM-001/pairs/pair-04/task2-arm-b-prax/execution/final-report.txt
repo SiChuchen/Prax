@@ -1,0 +1,63 @@
+All done — here is the final report.
+
+---
+
+## 1. What I implemented
+
+**Multi-select union impact on the Architecture Canvas**, built on the existing single-select impact emphasis already present (uncommitted) in this worktree:
+
+- **Selection surface** (`canvas-kernel.tsx`, `architecture-canvas.tsx`): React Flow v12 native multi-selection — marquee/box drag on empty canvas (left button), modifier-click (Shift/Ctrl/Cmd) to add/remove, plain click unchanged. Panning moved to right/middle-button drag; wheel zoom, Controls and Minimap untouched. Region nodes became pointer-transparent (`style.pointerEvents: "none"`), otherwise they swallow every marquee start. `deleteKeyCode={null}` keeps the read-only contract (Backspace could otherwise delete nodes from local state). Selection events are routed through node `select` changes in a wrapped `onNodesChange` — **not** `onSelectionChange`, which ping-pongs against the controlled nodes replacement and crash-loops (found and verified in-browser).
+- **Union impact read model** (`interaction.ts`): `CanvasSelection` gains a `{kind:"objects", ids}` variant; `deriveImpact` now takes the selected set — upstream/downstream are the union over all selected objects, intra-selection relationships excluded, selected objects never in their own impact sets; single-select is the `length===1` case and is bit-for-bit unchanged. Inspect-mode emphasis generalized (selected set primary, union neighborhood related, rest muted). Focus/Trace branches untouched (plus one defensive fallback).
+- **Shared impact**: each impacted object tracks which selected objects reach it; `≥2` sources ⇒ shared, marked with a `⇄ Shared N×` chip (weight variant) on the card and listed first in the Inspector.
+- **Aggregate Inspector** (`inspector-binding.ts`, `inspector.tsx`): new `kind:"objects"` binding — "N objects selected" heading, Selected/Upstream/Downstream/Shared counts, and Shared/Upstream/Downstream/Selection object lists whose entries lead to single-object inspection. Empty selection returns the Inspector to idle and the canvas to Browse.
+- **Line-grammar compliance**: the session carried project correction `corr_canvas_impact_grammar` (no hue-coded direction, no glow), so the blue/amber impact hues from the previous iteration were removed — one established accent, direction via arrowheads + ↑/↓/⇄ glyphs, shared via border weight (verified by computed-style checks).
+- Camera fits the selection union + direct neighbors under the existing per-mode contract; statusbar shows "N selected"; legend gains the Shared entry; review doc updated.
+
+**Product decisions noted**: multi-selection lands in Inspect (Trace keeps its lens if objects are selected inside it); marquee reach is viewport-bound on virtualized large graphs (the named 15/20 and 40/70 scales render fully); pan gesture changed from left-drag to right/middle-drag (all camera affordances remain).
+
+## 2. Files changed (this session)
+
+| File | Change |
+|---|---|
+| `app/architecture/interaction.ts` | `objects` selection kind; multi-subject `deriveImpact` + `impactSources`/`sharedObjectIds`; union inspect emphasis; defensive Focus fallback |
+| `app/architecture/types.ts` | `impactSubjectCount` node data |
+| `app/architecture/projection.ts` | multi-`selected` flags, `impactSubjectCount`, neutral impact markers, Region `pointerEvents:"none"` |
+| `app/architecture/architecture-node.tsx` | shared-impact chip + aria |
+| `app/architecture/inspector-binding.ts` | `ObjectsInspectorBinding` aggregate binding |
+| `app/architecture/inspector.tsx` | aggregate counts + ObjectList sections |
+| `app/architecture/canvas-kernel.tsx` | marquee/modifier/delete-key/pane-context props; modifier-click guard |
+| `app/architecture/architecture-canvas.tsx` | `handleNodesChange` selection routing, union camera fit, validity, legend, statusbar |
+| `app/globals.css` | neutral line-grammar impact styles, shared chip, impact list styles, legend |
+| `tests/canvas-engine.test.mjs` | new test "multi-object selection computes the union of impact with shared impact" |
+| `docs/Canvas_Engine_v1_Review.md` | "2026-08-31 multi-select union impact" section |
+| `evidence/01–07*.png` | new browser evidence |
+| `run-evidence/multiselect-browser-check.mjs`, `run-evidence/workers-shim.ts`, `vite.evidence.config.mts` | evidence tooling |
+
+(Pre-existing uncommitted edits to `architecture-edge.tsx` etc. from the prior session remain in the tree; I didn't modify `architecture-edge.tsx`.)
+
+## 3. Screenshots (all real, captured via Playwright against a local dev server)
+
+- `evidence/01-small-multiselect-union.png` — Small 15/20, Ctrl-clicked pair: union impact (Downstream 6), `⇄ Shared 2×` chip, aggregate Inspector and legend.
+- `evidence/02-small-marquee-selection.png` — Small: marquee drag selected 10 objects; "10 objects selected" aggregate with Shared 4 (3×/2× badges).
+- `evidence/03-small-idle-browse.png` — After Escape: Inspector closed (idle), all 15 objects normal Browse emphasis.
+- `evidence/04-medium-multiselect-impact.png` — Medium 40/70 pair: Selected 2 / Upstream 15 / Downstream 2 / Shared 3 with per-object 2× badges.
+- `evidence/05-medium-single-select.png` — Single plain click still opens the object Inspector (regression).
+- `evidence/06-medium-focus.png` — Focus mode unchanged (two-hop context grammar).
+- `evidence/07-medium-trace.png` — Trace lens unchanged (suppressed edges, packets, no impact chips).
+
+## 4. Requirement verification
+
+1. **Union impact** — 27/27 real-browser DOM checks (`run-evidence/multiselect-browser-check.mjs`): ctrl-click pair = exactly 2 selected, Small union Downstream 6, Medium Upstream 15 + Downstream 2, marquee = 10 selected; unit test asserts union = set-union minus selection.
+2. **Shared impact identifiable** — `⇄ Shared 2×` chips on cards, Inspector "SHARED IMPACT" list with N× badges (Medium: 3), legend entry; unit test asserts `impactSources ≥ 2` for every shared object.
+3. **Aggregate summary + idle** — counts and lists verified in screenshots 01/02/04; Escape/pane click ⇒ `aria-hidden=true`, 0 chips, 15 normal objects, Browse active (screenshot 03); `bindInspector(graph, null) === null` unit-asserted.
+4. **Single-select / Focus / Trace unaffected** — same browser run: plain-click object binding, Focus 8 context cards, Trace 28 suppressed + 7 packets + 0 impact chips; unit tests assert trace `impact === null` and focus grammar; 17/17 unit tests pass.
+5. **Scales** — Small 15/20 and Medium 40/70 browser-verified; production registry data covered by the adapter-driven unit test (union upstream {gateway}, downstream {store}, shared {gateway, store}) — local D1 is unavailable and deployment was out of scope, and the production page renders through the identical `ArchitectureCanvas` path.
+
+## 5. Prax design session
+
+**`ds_20260831134041_beed420d`** (existing_product / modify_surface; full gate chain start→confirm→frame→route→inspect→decide→sdir delta→prepare→validate: 5/5 checks PASS + `corr_canvas_impact_grammar` regression PASS, phase COMPLETE).
+
+## Caveats you should know
+
+- **The harness PowerShell shell died mid-session** (console corruption after a Playwright run — exit 66, zero output, foreground/background/subagents all affected). Consequently: `npm run lint` and the full `npm test` (production build) **were not re-run on the very final tree**. What did run on final or near-final code: `node --test` 17/17 pass, `tsc --noEmit` clean for `app/` (pre-refactor), lint exit 0 (pre-refactor), and the browser suite 27/27 on the final code. I audited the post-refactor code against the actual `@xyflow/react` 12.10.1 `.d.ts` (fixed one non-generic `NodeSelectionChange` cast that would have failed the build). Please run `npm test` once in a fresh terminal to confirm.
+- Three temp files couldn't be deleted/moved: `run-evidence/probe-selection.mjs`, `run-evidence/probe-loop.mjs` (debug probes — safe to delete) and `vite.evidence.config.mts` (intended to move under `run-evidence/`).

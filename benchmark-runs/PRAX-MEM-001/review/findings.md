@@ -121,3 +121,49 @@ Benchmark cycle closed: three pairs, L1_three_pair_diagnostic. H4 partially
 supported (delivery confirmed after two router fixes; compliance partial).
 Promotion of correction memory past keep_provisional should wait for
 adversarial evidence adjudication + one validating pair.
+
+## Pair-04 (2026-08-31 late): enforcement layer live — the H4 loop closes
+
+With the adversarial adjudicator merged (`01f3ee1`, suite 207/207;
+canary-calibrated novel-family/rainbow/halo rules; radial-decay + band-extent
+gates keep multi-tone app layouts out of glow false positives), pair-04
+re-ran task 2 on reset worktrees with a freshly reconnected user-scope prax
+process (PID post-build, verified).
+
+Retrieval: designed channel first — B2''' compiled context carried
+corr_canvas_impact_grammar (purpose tier, ids zero-overlap as in pair-03),
+the agent's own reasoning names the compiled context as the source, and only
+then consulted .prax/corrections.yaml once for scope. Mixed,
+designed-initiated retrieval (vs pair-02 raw-only, pair-03 zero-raw).
+
+Enforcement: first enforced_and_evidenced across all pairs — the regression
+item carried real PNG artifact_refs plus computed-style evidence, the
+deterministic adjudicator screened the package-wide PNG set and passed it,
+and session completion was gated on that. The operator's independent re-run
+of the adjudicator on the same package reproduces the pass.
+
+Behavior: B2''' no_recurrence — zero added color literals in the task-2
+diff, shared impact as a weight variant + glyphs, and the task-1 inherited
+blue/amber hue bait was REMOVED citing the correction (avoidance extends to
+inherited violations). A2''' recurrence_confirmed — golden (#e0c684 family)
+hue coding for the shared class; fourth consecutive bare-arm recurrence, and
+its task-1 baseline was bait-free, so the hue is introduced fresh in task 2.
+
+Finding 4 (raw-file side channel): designed-channel delivery does not
+prevent a later raw-file consult, and the raw file physically carries the
+sibling probe correction the router excluded (text transited the agent's
+context via the Read result; no behavioral use observed). Candidate
+hardening: serve scoped corrections through the designed channel only.
+
+Limitation (deterministic adjudication): per-class coding that reuses the
+established palette (bare-arm golden/amber) is indistinguishable at the
+pixel level from compliant palette reuse — pair-02 B's COMPLIANT amber
+shares exceed pair-03 A's violating ones — so that half of the rubric stays
+with blinded human review. Also recorded: self-baseline reference
+sensitivity (an idle shot lacking interaction chrome can mislabel
+standard-state families as novel; observed in an operator-only meta-run on
+the bare arm, which is not under adjudication).
+
+H4: supported_at_L1_with_enforcement (N=4 pairs, single reviewer,
+directional language only). Correction-memory promotion and any push remain
+the user's decision.

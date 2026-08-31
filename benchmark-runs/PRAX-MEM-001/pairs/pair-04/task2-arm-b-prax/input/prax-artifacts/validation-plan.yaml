@@ -1,0 +1,49 @@
+version: "0.1"
+revision: 1
+session_id: ds_20260831134041_beed420d
+derived_from:
+  artifact_digests:
+    product_frame: 0f21b9e388e64b030be4cd734b2454d453bce9116950da4d33cbb9f3181138b2
+    design_context: 18c416e4baa690439d034f8854ff040c4587b7313ab0750f8741e2ec246babf9
+    design_decisions: 813adc2b336918938663d27143ab10d8b3c9e408ae23f559be191d8c9b575784
+    existing_understanding: 4c9efdad9039ac33a716012ee17859e670af7849e06b275c2f27bf9194433008
+plan:
+  version: "0.1"
+  pattern_ref: PAT-CANVAS-WORKSPACE
+  checks:
+    - id: delta_conformance
+      label: Delta conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The sdir_delta passes referential and render-leak validation.
+      evidence_required: false
+    - id: untouched_surface_regression
+      label: Untouched surface regression
+      kind: empirical
+      profile: runtime_degradation
+      facet: behavioral
+      requirement: Surfaces outside the declared change targets behave exactly as before.
+      evidence_required: true
+    - id: pattern_consistency
+      label: Pattern consistency
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The change follows the established patterns recorded in the existing-product understanding.
+      evidence_required: true
+    - id: authority_consistency
+      label: Design authority consistency
+      kind: assistive
+      profile: semantic_integrity
+      facet: epistemic
+      requirement: The result stays consistent with the declared design authorities.
+      evidence_required: true
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+history: []

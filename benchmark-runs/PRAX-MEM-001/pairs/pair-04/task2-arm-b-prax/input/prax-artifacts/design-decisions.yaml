@@ -1,0 +1,98 @@
+session_id: ds_20260831134041_beed420d
+primary_structure:
+  pattern: PAT-CANVAS-WORKSPACE
+  rationale:
+    - Multi-object impact is a spatial question about one dominant canvas; the union neighborhood and shared-impact marking must live in the canvas emphasis grammar itself
+    - "PAT-LIST-DETAIL-INSPECTOR stays supporting: the aggregate binding complements canvas emphasis rather than replacing the workspace"
+    - "PAT-LIST-DETAIL does not apply: relationships among items are the primary object, not sequential scanning"
+  confidence: high
+information_hierarchy:
+  primary:
+    - architecture
+    - dominant_workspace
+    - union impact neighborhood of the selected object set at full emphasis
+    - shared-impact marking for objects impacted by more than one selected object
+  secondary:
+    - aggregate impact counts and object lists in the docked Inspector
+    - reading-key entries explaining upstream, downstream and shared treatments while a multi-selection is active
+    - unrelated topology receded but still readable
+density:
+  intent: regular
+  strategy:
+    - "Reuse the per-channel emphasis grammar: selected set primary, union upstream/downstream related with role chips, shared impact marked by a distinct chip and border treatment, unrelated topology muted"
+    - Reuse the docked Inspector slot for the aggregate binding instead of adding a new panel
+    - Keep the 13px meaningful-text floor via existing label compensation for chips at Architecture zoom
+  avoid:
+    - glow effects and per-relationship-type rainbow colors
+    - animated packets for impact (reserved for Trace)
+    - new permanent chrome or a second floating summary panel competing with the canvas
+major_choices:
+  - id: selection-kind-multi
+    choice: "Extend CanvasSelection with a multi-object variant and consume React Flow native multi-select: modifier-click adds/removes one object, marquee/box drag on the canvas selects a visible group; a single unmodified click keeps today's single-select path exactly"
+    rationale: Native React Flow v12 selection gives marquee and modifier semantics without new geometry code; keeping single-select routing through the existing click path makes regression risk near zero
+    confidence: high
+    references:
+      - canvas-selection-surface
+      - interaction-read-model
+      - canvas-kernel
+  - id: union-impact-semantics
+    choice: Union impact is the set-union of the existing direct upstream/downstream derivation per selected object; relationships between two selected objects are excluded from impact sets; selected objects never appear in their own impact sets
+    rationale: Reuses the exact single-subject derivation semantics (bidirectional counts both ways) so single-select behavior and tests stay the source of truth; union-then-subtract keeps the aggregate honest
+    confidence: high
+    references:
+      - interaction-read-model
+      - relationship-edge
+  - id: shared-impact-marker
+    choice: Each impacted object tracks how many selected objects impact it; objects impacted by more than one selected object are marked shared with a distinct chip, border treatment and count on the canvas card
+    rationale: Shared impact is the coupling signal between selected objects; it needs its own stable marker, not a color shift of the role chips, so it stays readable when an object is both upstream and shared
+    confidence: high
+    references:
+      - object-node
+      - reading-key
+      - interaction-read-model
+  - id: aggregate-inspector
+    choice: "The docked Inspector gains an aggregate binding for multi-selection: identity line with selection count, counts for upstream/downstream/shared, and object lists (selection, shared, upstream, downstream) where each entry selects that object; empty selection returns the Inspector to its idle closed state"
+    rationale: The Inspector is already the reading companion of canvas emphasis; the aggregate binding answers counts plus membership in one place without new chrome
+    confidence: high
+    references:
+      - inspector-panel
+      - interaction-read-model
+  - id: inspect-union-emphasis
+    choice: "Multi-selection lands in Inspect mode with union emphasis: all selected objects primary, union neighborhood related with role chips, incident union edges active with direction markers, everything else muted; Trace keeps its lens when objects are selected inside it, and Focus keeps its single-subject grammar untouched"
+    rationale: Mirrors the established single-object inspect grammar so the reading model stays one grammar; Focus and Trace emphasis code paths are not modified
+    confidence: high
+    references:
+      - interaction-read-model
+      - mode-switcher
+      - object-node
+  - id: marquee-gesture-contract
+    choice: Marquee selects by left-drag on empty canvas; panning moves to right/middle-button drag, wheel zoom and the existing Controls/Minimap stay; the change is applied on both fixture and production surfaces through the same kernel
+    rationale: "Diagram-tool convention: empty-canvas drag selects, node drag still moves the local view layout; all existing camera affordances remain available"
+    confidence: medium
+    references:
+      - canvas-kernel
+      - camera-fitview
+  - id: camera-union-fit
+    choice: The Inspect camera fits the union of selected objects plus their direct neighbors, reusing the existing per-mode zoom clamp contract
+    rationale: Same contract as single-object inspect, generalized to a set
+    confidence: high
+    references:
+      - camera-fitview
+      - interaction-read-model
+rejected:
+  - option: Transitive union closure over all ancestors and descendants
+    reason: Breaks at-a-glance reading on 40/70 graphs and diverges from the frozen single-subject direct-neighbor semantics
+  - option: One inspector card per selected object stacked or tabbed
+    reason: Turns a union question into N single questions and competes with the canvas for the dominant role
+  - option: A separate floating selection-summary toolbar
+    reason: Adds permanent chrome; the docked Inspector slot already exists for selection reading
+  - option: Representing shared impact only by blending the two role colors
+    reason: Fails for colorblind operators and is ambiguous with the existing both-directions treatment; a named shared marker is explicit
+  - option: Computing union impact in the Semantic Graph layer or a new derived graph
+    reason: The constraint freezes the Semantic Graph boundary; impact is an interaction read-model projection, not graph truth
+unresolved:
+  - id: marquee-vs-viewport-virtualization
+    impact: low
+    affects:
+      - canvas-kernel
+      - canvas-selection-surface

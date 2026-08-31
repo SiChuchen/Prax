@@ -1,0 +1,63 @@
+全部完成。最终 git 状态干净，工作已提交。以下是最终报告：
+
+---
+
+# 实施报告：多选聚合影响(Multi-Select Impact)
+
+## (1) 实现内容摘要
+
+**核心机制**
+- `CanvasSelection` 扩展 `{ kind: "objects"; ids: string[] }`,多选时进入 Inspect 模式的聚合影响视图
+- `deriveImpact` 泛化为多根:每个选中对象独立做上/下游 BFS 闭包,合并为**并集**(深度取最小),选中对象本身作为锚点不计入受影响集合
+- **共享影响归因**:每个受影响对象记录 `upstreamRoots`/`downstreamRoots`(哪些选中对象影响到它);被 ≥2 个不同选中对象影响的 → `sharedObjectIds`,画布上显示金色 `✕N` 徽章(N=贡献者数),Inspector 有专门的共享列表,图例新增金色 `✕ 共享 Shared`
+- **Inspector 聚合摘要**:新增 `kind: "objects"` 绑定,Overview 显示 Selected/Regions/Upstream(含最深跳数)/Downstream/Shared impact 计数,Relations 区列出选中对象清单 + 共享/上游/下游对象列表(可点击钻取单个对象);选择清空时回到 idle(aria-hidden 关闭)
+- **选择管道**:React Flow 的框选与修饰键点击通过 `handleNodesChange` 的 select-change 镜像进 interaction state(带防抖等价性守卫);显式设置 `multiSelectionKeyCode={["Shift","Control","Meta"]}`(v12 在 Windows 默认只有 Ctrl,会导致 Shift+点击静默替换选择);键盘删除节点(Backspace)的 remove change 被丢弃(Human Web 只读)
+- Focus/Trace 保持单对象:多选尝试在这两个模式下只移动单锚点;单选行为路径完全未变
+
+**产品决策**(需求未明确处的合理取舍)
+- 共享影响定义为"被 ≥2 个**不同**选中对象影响(上游或下游任一方向)"——包括 X 是 A 的上游同时是 B 的下游的情形
+- 框选用 Shift+拖拽(拖拽仍平移画布,保留现有浏览习惯),点击加选支持 Shift/Ctrl/Meta
+- 顺带恢复了工作区里被未提交删除的 `tests/canvas-engine.test.mjs`(恢复后全部通过,删除并无必要);上一会话遗留的单对象 impact 改动已单独提交(9cd5430)再叠加本次改动(9fe2e4f)
+
+## (2) 变更文件清单
+
+```
+app/architecture/interaction.ts          多根 impact 推导 + objects 选择类型 + selectionObjectIds
+app/architecture/types.ts                ObjectNodeData.impact 增加 shared/contributors
+app/architecture/projection.ts           每根独立 direct 徽章、共享徽章数据、多选 selected 标记
+app/architecture/architecture-node.tsx   金色 ✕N 共享徽章 + aria-label
+app/architecture/architecture-canvas.tsx 选择同步管道、多选 fit/校验/相机意图、阅读图例
+app/architecture/canvas-kernel.tsx       multiSelectionKeyCode + 点击事件转发
+app/architecture/inspector-binding.ts    objects 聚合绑定(计数+排序行列表)
+app/architecture/inspector.tsx           聚合面板(Overview 计数 + Selected/Shared/Up/Down 列表)
+app/globals.css                          金色共享徽章/图例/Inspector 列表样式
+tests/canvas-engine.test.mjs             恢复 + 新增多选 impact 测试(并集=单选并集、共享归因、idle、landscape 可见性)
+evidence/capture-multi-impact.mjs        Playwright 采集脚本
+evidence/*.png × 8                       截图证据
+```
+约束核对:`semantic-graph.ts`/`semantic-adapter.ts`/布局缓存键均未改动;拖拽仍只写本机 layout;技术栈未变;未部署任何东西。
+
+## (3) 截图路径与说明
+
+| 路径 | 说明 |
+|---|---|
+| `evidence/01-small-multi-shiftclick-inspect.png` | Small(15/20):Shift+点选 2 个对象,聚合 Inspector(▲0/▼13/✕13)+ 画布金色 ✕ 徽章 |
+| `evidence/02-small-multi-marquee.png` | Small:Shift+拖拽框选 6 个对象,聚合摘要 4 上游/9 下游/9 共享 |
+| `evidence/03-small-inspector-idle-after-clear.png` | 清空选择后 Inspector 关闭回到 idle、Browse 模式、无任何 impact 徽章 |
+| `evidence/04-medium-multi-shared-impact.png` | Medium(40/70):3 选 → 15 上游/37 下游/37 共享,画布大量金色 ✕3 徽章 |
+| `evidence/05-registry-ecp-core-multi.png` | 生产 Registry(ecp-core r2,D1 数据,12 对象/21 关系):2 选 → 1 上游/10 下游/9 共享 |
+| `evidence/06-small-single-inspect-regression.png` | 单选回归:单对象 Inspector 正常、无共享徽章 |
+| `evidence/07-small-focus-single.png` | Focus 模式(含 F 键)不受影响 |
+| `evidence/08-small-trace-flow.png` | Trace 模式经 flow-lens 选择 Flow 正常 |
+
+## (4) 各需求点验证方式
+
+1. **多选并集影响** — 单测:多选 upstream/downstream 集合 ≡ 两个单选闭包的并集(锚点剔除);浏览器:27/27 断言,DOM 计数与 Node 侧同一份模型代码算出的期望值逐项相等(13=13)
+2. **共享影响可识别** — 单测:sharedObjectIds 内每个对象归因 ≥2 根、存在 pair 且含该对象;浏览器:金色 ✕ 徽章 DOM 计数=模型值;截图 01/04/05 经图像分析器人工核对(金色 ✕13/✕3/✕2 徽章、图例、Inspector 共享列表)
+3. **聚合摘要 + idle** — 浏览器:Overview 各行存在且计数匹配;pane 点击清空后 `aria-hidden=true` 且无 `open` 类、状态栏回 BROWSE(截图 03 分析确认)
+4. **单选/Focus/Trace 不受影响** — 单测:单选 impact shared=0、focus/trace emphasis 断言全部原样通过;浏览器:单选 Inspector 正常(D1/D2)、Focus 按钮+F 键(E1/E2)、Trace 流选择(F1)均通过
+5. **数据规模** — Small 15/20 与 Medium 40/70 fixture 页 + 生产 Registry `/projects/ecp-core`(12 对象/21 关系,r2)全部实测通过;全程 0 console error
+
+**质量门**:`npm run lint` ✅ · `node --test tests/*.test.mjs` 16/16 ✅ · `npm run build`(vinext)✅ · `tsc --noEmit` 仅 3 个**既有**的 cloudflare 环境类型报错(db/worker,与本次改动无关,改动前即存在)。
+
+**遗留说明**:vite 临时配置 `vite.fixture.config.ts` + `cf-shim.mjs` 与上一会话的 `run-evidence-*.png` 保持未跟踪(按项目记忆的 dev-server 绕行约定);dev 服务器(端口 5199)已停止。
