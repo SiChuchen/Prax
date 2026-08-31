@@ -1,5 +1,5 @@
-import { join } from "node:path";
-import { mkdir, writeFile } from "node:fs/promises";
+import { isAbsolute, join } from "node:path";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { stringify } from "yaml";
 import {
   KnowledgeStore,
@@ -61,10 +61,13 @@ import {
 } from "prax-runtime";
 import { patternSurfaceContract, SdirEngine, validateSdirDelta, type Sdir, type SdirDelta } from "prax-sdir";
 import {
+  AdjudicationError,
   PraxValidator,
+  adjudicateScreenshots,
   PersistedValidationPlanSchema,
   type PersistedValidationPlan,
   type ValidationEvidence,
+  type ValidationFinding,
 } from "prax-validator";
 import type {
   DesignContextInput,
@@ -1390,8 +1393,24 @@ export class PraxService {
       ...(representationReviewForEvaluation === undefined ? {} : { representationReview: representationReviewForEvaluation }),
       ...(representationArtifactForEvaluation === undefined || sdirArtifact === undefined ? {} : { sdirDigest: contentDigest(sdirArtifact) }),
     });
+    // MEM-001 pair-03 finding 3: correction-regression evidence must not be
+    // self-attested. Visual-language corrections get deterministic screenshot
+    // adjudication of every PNG referenced anywhere in the evidence package —
+    // the correction governs the surface, not a single check.
+    const adjudication = await this.adjudicateCorrectionEvidence(session, evidence, relevant);
+    const unevidencedRegressions = regressionCheckIds.filter((checkId) => {
+      const hasPassItem = evidence?.items.some((item) => item.check_id === checkId && item.outcome === "pass") ?? false;
+      if (!hasPassItem) return true;
+      return adjudication?.visualCheckIds.has(checkId) === true && adjudication.outcome !== "pass";
+    });
+    const finalMissing = [...new Set([...evaluation.missing_evidence, ...unevidencedRegressions])];
+    let status = evaluation.status;
+    if (adjudication?.outcome === "fail") status = "BLOCK";
+    else if (adjudication !== undefined && adjudication.outcome !== "pass" && status === "PASS") status = "EXPAND";
+    const mergedFindings = [...evaluation.findings, ...(adjudication?.findings ?? [])];
     const now = this.sessions.nowIso();
-    const updated = evaluation.status === "PASS"
+    const complete = evaluation.status === "PASS" && finalMissing.length === 0;
+    const updated = complete
       ? { ...advanceSession(session, "validate", now), phase: "COMPLETE" as const, current_gate: { name: "complete" } }
       : touch(session, now);
     await this.sessions.commit(updated, [
@@ -1400,18 +1419,21 @@ export class PraxService {
         value: {
           plan_revision: persistedPlan.revision,
           ...(evidence === undefined ? {} : { evidence }),
-          evaluation,
+          evaluation: {
+            ...evaluation,
+            ...(status !== evaluation.status ? { status } : {}),
+            findings: mergedFindings,
+            missing_evidence: finalMissing,
+          },
         },
       },
       ...(planChanged ? [{ key: "validationPlan" as const, value: persistedPlan }] : []),
     ]);
-    const unevidencedRegressions = regressionCheckIds.filter(
-      (checkId) => !evidence?.items.some((item) => item.check_id === checkId && item.outcome === "pass"),
-    );
-    const finalMissing = [...new Set([...evaluation.missing_evidence, ...unevidencedRegressions])];
     return {
       ...evaluation,
-      ...(finalMissing.length > evaluation.missing_evidence.length ? { missing_evidence: finalMissing } : {}),
+      ...(status !== evaluation.status ? { status } : {}),
+      findings: mergedFindings,
+      missing_evidence: finalMissing,
       ...(regressionObligations.length === 0 ? {} : { correction_regressions: regressionObligations }),
       ...(planChanged
         ? {
@@ -1422,8 +1444,127 @@ export class PraxService {
           }
         : {}),
       phase: updated.phase,
-      ...(evaluation.status === "PASS" && finalMissing.length === 0 ? {} : { next: nextTool("design_validate") }),
+      ...(complete ? {} : { next: nextTool("design_validate") }),
     };
+  }
+
+  private async adjudicateCorrectionEvidence(
+    session: DesignSession,
+    evidence: ValidationEvidence | undefined,
+    relevant: Correction[],
+  ): Promise<
+    | undefined
+    | {
+        outcome: "pass" | "fail" | "needs_reference" | "no_pngs" | "unreadable" | "undecodable";
+        visualCheckIds: Set<string>;
+        findings: ValidationFinding[];
+      }
+  > {
+    const visual = relevant.filter((correction) => correction.finding.type.startsWith("visual_language"));
+    if (visual.length === 0) return undefined;
+    const visualCheckIds = new Set(visual.map((correction) => correction.regression.check_id));
+    const findingsFor = (outcome: "fail" | "inconclusive", message: string): ValidationFinding[] =>
+      [...visualCheckIds].map((checkId) => ({
+        check_id: checkId,
+        kind: "deterministic" as const,
+        outcome,
+        message,
+        source: "prax-validator/adjudicator",
+      }));
+
+    const pngRefs = [
+      ...new Set(
+        (evidence?.items ?? [])
+          .flatMap((item) => item.artifact_refs ?? [])
+          .filter((ref) => ref.toLowerCase().endsWith(".png")),
+      ),
+    ];
+    if (pngRefs.length === 0) {
+      return {
+        outcome: "no_pngs",
+        visualCheckIds,
+        findings: findingsFor(
+          "inconclusive",
+          "correction regression requires browser screenshot evidence: no PNG artifact_refs were found in the submitted evidence (code review alone is self-attestation); submit screenshots of the corrected surfaces",
+        ),
+      };
+    }
+
+    const images: Array<{ name: string; data: Uint8Array }> = [];
+    const unreadable: string[] = [];
+    for (const ref of pngRefs) {
+      const candidates = isAbsolute(ref) ? [ref] : [join(session.project_root, ref)];
+      let bytes: Buffer | undefined;
+      for (const candidate of candidates) {
+        try {
+          bytes = await readFile(candidate);
+          break;
+        } catch {
+          // try the next resolution root
+        }
+      }
+      if (bytes === undefined) {
+        unreadable.push(ref);
+        continue;
+      }
+      images.push({ name: ref, data: new Uint8Array(bytes) });
+    }
+    if (unreadable.length > 0) {
+      return {
+        outcome: "unreadable",
+        visualCheckIds,
+        findings: findingsFor(
+          "inconclusive",
+          `correction regression could not read referenced screenshot(s): ${unreadable.join(", ")}`,
+        ),
+      };
+    }
+
+    try {
+      const report = adjudicateScreenshots(images);
+      if (report.verdict === "needs_reference") {
+        return {
+          outcome: "needs_reference",
+          visualCheckIds,
+          findings: findingsFor(
+            "inconclusive",
+            "correction regression requires a baseline/reference (idle) screenshot alongside the impact screenshots for deterministic palette adjudication; a single image cannot establish the established palette",
+          ),
+        };
+      }
+      if (report.verdict === "fail") {
+        const summary = report.violations
+          .slice(0, 5)
+          .map((violation) => {
+            const family = violation.family === undefined ? "" : ` family ${violation.family},`;
+            const samples =
+              violation.sampleHex.length === 0 ? "" : `, samples ${violation.sampleHex.join(" ")}`;
+            return `${violation.type}/${violation.kind} in ${violation.image}:${family} ${violation.pixelTotal}px, max blob ${violation.maxBlobPx}px${samples}, confidence ${violation.confidence.toFixed(2)}`;
+          })
+          .join("; ");
+        return {
+          outcome: "fail",
+          visualCheckIds,
+          findings: findingsFor(
+            "fail",
+            `correction regression failed deterministic screenshot adjudication: ${summary}`,
+          ),
+        };
+      }
+      return { outcome: "pass", visualCheckIds, findings: [] };
+    } catch (error) {
+      if (error instanceof AdjudicationError) {
+        return {
+          outcome: "undecodable",
+          visualCheckIds,
+          findings: findingsFor(
+            "inconclusive",
+            `correction regression screenshot could not be decoded for adjudication: ${error.message}`,
+          ),
+        };
+      }
+      throw error;
+    }
   }
 
   public async designCorrect(input: DesignCorrectInput): Promise<PraxOutput> {
