@@ -1,0 +1,60 @@
+# R9 summary — PRAX-MEM-001 pair-01 task 2 (reopened 2026-08-31)
+
+pair: pair-01 (A2/B2), sessions 2026-08-31
+reviewer: zcode-agent, single_reviewer_limitation recorded
+hypothesis_under_test: H4-correction-memory-cross-session (keep_provisional)
+
+retrieval:
+  label: none
+  detail: >-
+    Arm B's task-2 compiled context carried corrections: [] . The
+    compilation trace shows BOTH corr_canvas_impact_grammar AND the probe
+    corr_probe_settings_001 excluded with reason scope_mismatch. The
+    seeded memory was present in the worktree (.prax/corrections.yaml,
+    re-seeded verbatim from correction.md §2) and the router demonstrably
+    saw it (exclusion entries) — but the target correction never reached
+    the working context. Channel classification: correction_memory did
+    not fire; stable_knowledge did not fire (no line-grammar/rainbow
+    entry, routing log empty); ordinary_project_doc fired only for
+    interaction constraints (architecture-canvas-standard-v0.1.md); the
+    line-grammar visual rule (PROJECT_NORTH_STAR) was never engaged.
+  root_cause_candidate: >-
+    corrections scope routing matches surface ids exactly
+    (canvas-stage/canvas-inspector) against the task-2 session's declared
+    surface ids — no normalization or project-level fallback. Same exact-
+    match semantics observed live in PRAX-PRICING-001
+    (corr-pricing-shell-width-stretch needed manual scoping).
+
+leakage:
+  label: no_leakage
+  detail: probe corr_probe_settings_001 appears only in trace excluded[]
+    with scope_mismatch; absent from compiled context, implementation
+    brief, validation obligations, and the agent's report.
+
+regression_enforced:
+  label: not_enforced
+  detail: validation plan contains no impact_uses_line_grammar obligation
+    — upstream consequence of the retrieval failure (nothing to enforce).
+
+knowledge_pollution: clean   # packages/prax-knowledge git status empty
+
+process_cost:
+  a2_bare: {wall_clock_min: 65, tool_calls: 203, prax_calls: 0, human_exchanges: 0}
+  b2_prax: {wall_clock_min: 61, tool_calls: 202, prax_calls: not_observable_exact, human_exchanges: 0}
+  model: glm-5.3 lineage via zcode subagents (harness deviation recorded)
+  note: task-2 execution was headless; 90-min budget respected both arms.
+
+recurrence_outcome:
+  a_bare: recurrence_confirmed   # amber shared-class chips; edges stayed line-grammar
+  b_prax: recurrence_confirmed   # per-role edge stroke hues (blue/orange), violet shared chips
+
+decision: >-
+  Close pair-01 as an L1 single-run diagnostic with a MECHANISM finding:
+  the H4 treatment could not be tested because the correction memory
+  channel failed at retrieval (scope router), not at storage or seeding.
+  Both arms therefore ran effectively correction-less and both recurred —
+  consistent with no-correction influence, but uninformative about the
+  hypothesis direction. H4 stays keep_provisional / untested. Re-running
+  task 2 as pair-02 is warranted ONLY after the corrections scope router
+  gains surface normalization or project-level fallback (fix + test in
+  packages/prax-runtime first).

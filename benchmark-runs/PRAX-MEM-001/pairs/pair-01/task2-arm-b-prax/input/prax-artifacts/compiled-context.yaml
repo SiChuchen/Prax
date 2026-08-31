@@ -1,0 +1,46 @@
+version: "0.1"
+session_id: ds_20260831032103_94c73e2f
+task:
+  surfaces:
+    - architecture_canvas
+    - canvas_inspector
+    - fixture_workbench
+  primary: architecture_canvas, canvas_inspector, fixture_workbench
+product_relationships: []
+region_relationships: []
+decisions:
+  primary_structure: PAT-CANVAS-WORKSPACE
+  density_intent: regular
+  major_choice_ids:
+    - selection-model
+    - impact-semantics
+    - shared-marking
+    - marquee-interaction
+    - selection-sync
+    - inspector-aggregate
+must_preserve:
+  - Single-object select → Inspect mode → one-hop impact emphasis (upstream blue / downstream amber)
+  - bindInspector(graph, selection) contract used by tests
+  - deriveCanvasView(graph, interaction) pure function contract
+  - Focus two-hop context grammar and Trace flow lens behavior
+  - ELK layout caching by fingerprint plus localStorage device-local drag positions
+  - Human Web read-only interaction boundary
+regression_points:
+  - Single-object select → Inspect mode → one-hop impact emphasis (upstream blue / downstream amber)
+  - bindInspector(graph, selection) contract used by tests
+  - deriveCanvasView(graph, interaction) pure function contract
+  - Focus two-hop context grammar and Trace flow lens behavior
+  - ELK layout caching by fingerprint plus localStorage device-local drag positions
+  - Human Web read-only interaction boundary
+unresolved:
+  - selection-mode-partial-vs-full
+corrections: []
+validation:
+  plan_revision: 1
+  check_ids:
+    - delta_conformance
+    - untouched_surface_regression
+    - pattern_consistency
+    - authority_consistency
+    - requirement_alignment
+  regression_check_ids: []

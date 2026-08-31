@@ -1,0 +1,63 @@
+# PRAX-MEM-001 pair-01 task-2 findings (2026-08-31)
+
+Protocol §6 attribution. Single reviewer; claim ceiling L1_single_run_diagnostic.
+
+## Finding 1 (mechanism, blocking for H4): corrections scope router drops
+the target correction
+
+The seeded correction memory existed in the arm-B worktree
+(.prax/corrections.yaml, re-seeded verbatim from the frozen source) and the
+routing layer saw it — the task-2 compilation trace records both
+`corr_canvas_impact_grammar` (target) and `corr_probe_settings_001` (probe)
+as excluded, `reason: scope_mismatch`. The compiled context shipped
+`corrections: []`, the validation plan carried no
+`impact_uses_line_grammar` regression, and the agent never engaged the
+visual-language rule (its artifacts cite the canvas-standard interaction
+doc but contain no line-grammar/rainbow reference).
+
+The probe behaved CORRECTLY (settings scope excluded from a canvas task);
+the target failed because task-2's declared surface ids did not
+byte-match the seeded scope surfaces (`canvas-stage`, `canvas-inspector`).
+Corrections routing currently requires exact surface-id matching; a
+task that extends a surface under new ids silently loses its memory.
+The same exact-match semantics were observed in PRAX-PRICING-001, where
+the correction only survived because it was manually scoped to the exact
+surface ids.
+
+Attribution: prax-runtime corrections router (mechanism), not the agent,
+not the seeding, not the model.
+
+## Finding 2 (behavioral, both arms): recurrence_confirmed
+
+- Arm A (bare): shared impact marked with amber-hued chips/borders
+  (rgba(225,179,107,.62)); direction on edges stayed non-color
+  (monochrome strokes, ▲▼ glyphs). recurrence per rubric (hue for a
+  shared class), milder in degree.
+- Arm B (prax): edges stroked per impact role (upstream blue
+  #8db6dd / downstream orange #d9a86c / both khaki), impact chips
+  colored per role, shared class violet (#b7a6dd). This is the loud
+  rainbow pattern the correction prohibits — but note arm B's baseline
+  already contained hue edges from the task-1 bait (the correction was
+  delivered without rework by protocol), so part of this is inherited;
+  the violet shared chip is new in task 2.
+
+Because arm B's correction never reached its working context, the pair
+is behaviorally "bare vs bare". Both recurred — consistent with
+no-correction influence — and the contrast is uninformative about H4's
+direction.
+
+## Disposition
+
+- Pair-01 closed: L1 diagnostic, mechanism finding (Finding 1).
+- H4: remains keep_provisional / untested.
+- Prerequisite for pair-02: fix the corrections scope router (surface-id
+  normalization or project-level fallback + regression test in
+  packages/prax-runtime), re-seed, re-run task 2 on fresh sessions.
+
+## Deviations carried from the reopening (REOPENED.md)
+
+prax runtime advanced between task 1 and task 2 (5b33653 → d7dc2e2, adds
+agent-facing design_correct); corrections.yaml re-seeded from frozen
+source; MCP registration via project .mcp.json; harness = zcode subagents
+(user decision, this session) instead of claude-code interactive
+sessions; agent transcripts = final reports + events.ndjson (no jsonl).

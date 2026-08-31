@@ -1,0 +1,121 @@
+plan_revision: 1
+evidence:
+  submitted_by: ZCode agent (implementation + evidence capture)
+  collected_at: 2026-08-31T12:40:00Z
+  items:
+    - check_id: delta_conformance
+      outcome: pass
+      source: code review of implemented delta against sdir-delta.yaml
+      notes: "All four planned region changes were implemented in the declared order: canvas-viewport multi-select + aggregate impact emphasis with shared chips; inspector selection binding with counts + lists + Clear selection (Esc); reading-key Shared legend rendered only when shared impact exists; commandbar/mode buttons preserved (Focus stays disabled for multi-selection, verified in browser). No render-level fields were introduced into the SDIR; no new mode, chrome or overlay was added."
+      artifact_refs:
+        - .prax/design/sessions/ds_20260831032103_94c73e2f/sdir-delta.yaml
+        - app/architecture/interaction.ts
+        - app/architecture/inspector-binding.ts
+        - app/architecture/inspector.tsx
+        - app/architecture/projection.ts
+        - app/architecture/architecture-node.tsx
+        - app/globals.css
+    - check_id: untouched_surface_regression
+      outcome: pass
+      source: node --test tests/canvas-engine.test.mjs (10/10 canvas tests, 19/19 total suite) + Playwright screenshots
+      notes: "npm test passes 19/19 including all pre-existing canvas-engine tests (single-object inspect impact sets, Focus two-hop context grammar, Trace owns emphasis with impact null, ELK determinism/layout/cache, fixture budgets). Browser evidence: single-select inspect unchanged (02, one-hop upstream/downstream chips + object inspector), Focus mode after Escape+f (08, two-hop context grammar intact), Trace flow lens (09, animated semantic order, no impact emphasis), back to Browse (10, all emphasis normal, inspector idle). deriveCanvasView outputs for single-object and flow selections are produced by unchanged code paths."
+      artifact_refs:
+        - tests/canvas-engine.test.mjs
+        - evidence/02-small-single-select-inspect-unchanged.png
+        - evidence/08-medium-focus-mode-unchanged.png
+        - evidence/09-medium-trace-mode-unchanged.png
+        - evidence/10-medium-browse-after-trace.png
+    - check_id: pattern_consistency
+      outcome: pass
+      source: Playwright screenshots + DOM state capture (capture-log.json)
+      notes: "The change extends the established selection-driven grammar rather than adding chrome: PAT-CANVAS-WORKSPACE kept (canvas dominant, no new mode/overlay); contextual inspector pattern kept (selection binding reuses facts dl + object-list styling + idle-on-null binding); direction color grammar (upstream blue / downstream amber) reused with shared as an additional badge layered on top; reading-key legend only appears when the state exists. Browser evidence: aggregate inspector sections render with existing section grammar; shared chips + legend appear only when shared impact exists (03/04/07 show them, 02/05/08/09/10 do not)."
+      artifact_refs:
+        - evidence/03-small-multi-select-aggregate-impact.png
+        - evidence/04-small-marquee-box-selection.png
+        - evidence/07-medium-multi-select-aggregate-impact.png
+        - evidence/capture-log.json
+    - check_id: authority_consistency
+      outcome: pass
+      source: constraint review against docs/architecture-canvas-standard-v0.1.md interaction boundary table + code inspection
+      notes: "The Architecture Canvas Standard interaction boundary is respected: multi-select writes nothing canonical; node dragging still writes only device-local layout (handleNodeDragStop unchanged, localStorage only); Human Web stays read-only (statusbar 'Human Read Model · 只读' unchanged). Canvas Engine v1 review constraints kept: Semantic Graph boundary, adapter, validation and ELK layout cache untouched; stack stays React Flow / ELK / SmartEdge (marquee + multi-select use React Flow native selectionKeyCode/multiSelectionKeyCode/onSelectionChange)."
+      artifact_refs:
+        - docs/architecture-canvas-standard-v0.1.md
+        - docs/Canvas_Engine_v1_Review.md
+        - app/architecture/architecture-canvas.tsx
+    - check_id: requirement_alignment
+      outcome: pass
+      source: Playwright real-browser evidence (1680x950, Chromium) + node:test suite
+      notes: "Point 1 (union impact): ctrl/cmd-click and shift-drag marquee multi-select produce the union of one-hop upstream/downstream across selected objects — verified in browser (03: 3 selected -> 0 upstream/5 downstream; 04: marquee 10 selected -> 5 upstream/4 downstream; 07 medium 40/70: 3 selected -> 15/15) and by unit tests asserting the union equals the per-object union minus the selection. Point 2 (shared impact): objects impacted by >1 selected object carry a 'Shared ×N' chip + is-shared-impact class + Inspector shared list with counts (04 shows 5 shared, 07 shows 15 shared; unit tests assert exact shared sets on small/medium/large/complex fixtures and a registry adapter graph). Point 3 (Inspector aggregate summary + idle on empty): aggregate section with Selected/Upstream/Downstream/Shared counts and object lists; Escape/pane-click/close empties the selection and the inspector returns to its closed idle state (05). Point 4 (single-select/Focus/Trace unchanged): 02/08/09 + untouched code paths + pre-existing tests pass. Point 5 (fixture sizes + production data): verified on small 15/20 and medium 40/70 in the browser and on LARGE/COMPLEX fixtures plus an adaptArchitectureToSemanticGraph production-shaped registry graph in unit tests."
+      artifact_refs:
+        - evidence/03-small-multi-select-aggregate-impact.png
+        - evidence/04-small-marquee-box-selection.png
+        - evidence/05-small-deselected-idle-inspector.png
+        - evidence/07-medium-multi-select-aggregate-impact.png
+        - tests/canvas-engine.test.mjs
+        - evidence/capture-log.json
+evaluation:
+  status: PASS
+  checks:
+    - id: delta_conformance
+      label: Delta conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The sdir_delta passes referential and render-leak validation.
+      evidence_required: false
+    - id: untouched_surface_regression
+      label: Untouched surface regression
+      kind: empirical
+      profile: runtime_degradation
+      facet: behavioral
+      requirement: Surfaces outside the declared change targets behave exactly as before.
+      evidence_required: true
+    - id: pattern_consistency
+      label: Pattern consistency
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The change follows the established patterns recorded in the existing-product understanding.
+      evidence_required: true
+    - id: authority_consistency
+      label: Design authority consistency
+      kind: assistive
+      profile: semantic_integrity
+      facet: epistemic
+      requirement: The result stays consistent with the declared design authorities.
+      evidence_required: true
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+  findings:
+    - check_id: delta_conformance
+      kind: deterministic
+      outcome: pass
+      message: The sdir_delta passes referential and render-leak validation.
+      source: prax-validator
+    - check_id: untouched_surface_regression
+      kind: empirical
+      outcome: pass
+      message: "npm test passes 19/19 including all pre-existing canvas-engine tests (single-object inspect impact sets, Focus two-hop context grammar, Trace owns emphasis with impact null, ELK determinism/layout/cache, fixture budgets). Browser evidence: single-select inspect unchanged (02, one-hop upstream/downstream chips + object inspector), Focus mode after Escape+f (08, two-hop context grammar intact), Trace flow lens (09, animated semantic order, no impact emphasis), back to Browse (10, all emphasis normal, inspector idle). deriveCanvasView outputs for single-object and flow selections are produced by unchanged code paths."
+      source: node --test tests/canvas-engine.test.mjs (10/10 canvas tests, 19/19 total suite) + Playwright screenshots
+    - check_id: pattern_consistency
+      kind: assistive
+      outcome: pass
+      message: "The change extends the established selection-driven grammar rather than adding chrome: PAT-CANVAS-WORKSPACE kept (canvas dominant, no new mode/overlay); contextual inspector pattern kept (selection binding reuses facts dl + object-list styling + idle-on-null binding); direction color grammar (upstream blue / downstream amber) reused with shared as an additional badge layered on top; reading-key legend only appears when the state exists. Browser evidence: aggregate inspector sections render with existing section grammar; shared chips + legend appear only when shared impact exists (03/04/07 show them, 02/05/08/09/10 do not)."
+      source: Playwright screenshots + DOM state capture (capture-log.json)
+    - check_id: authority_consistency
+      kind: assistive
+      outcome: pass
+      message: "The Architecture Canvas Standard interaction boundary is respected: multi-select writes nothing canonical; node dragging still writes only device-local layout (handleNodeDragStop unchanged, localStorage only); Human Web stays read-only (statusbar 'Human Read Model · 只读' unchanged). Canvas Engine v1 review constraints kept: Semantic Graph boundary, adapter, validation and ELK layout cache untouched; stack stays React Flow / ELK / SmartEdge (marquee + multi-select use React Flow native selectionKeyCode/multiSelectionKeyCode/onSelectionChange)."
+      source: constraint review against docs/architecture-canvas-standard-v0.1.md interaction boundary table + code inspection
+    - check_id: requirement_alignment
+      kind: assistive
+      outcome: pass
+      message: "Point 1 (union impact): ctrl/cmd-click and shift-drag marquee multi-select produce the union of one-hop upstream/downstream across selected objects — verified in browser (03: 3 selected -> 0 upstream/5 downstream; 04: marquee 10 selected -> 5 upstream/4 downstream; 07 medium 40/70: 3 selected -> 15/15) and by unit tests asserting the union equals the per-object union minus the selection. Point 2 (shared impact): objects impacted by >1 selected object carry a 'Shared ×N' chip + is-shared-impact class + Inspector shared list with counts (04 shows 5 shared, 07 shows 15 shared; unit tests assert exact shared sets on small/medium/large/complex fixtures and a registry adapter graph). Point 3 (Inspector aggregate summary + idle on empty): aggregate section with Selected/Upstream/Downstream/Shared counts and object lists; Escape/pane-click/close empties the selection and the inspector returns to its closed idle state (05). Point 4 (single-select/Focus/Trace unchanged): 02/08/09 + untouched code paths + pre-existing tests pass. Point 5 (fixture sizes + production data): verified on small 15/20 and medium 40/70 in the browser and on LARGE/COMPLEX fixtures plus an adaptArchitectureToSemanticGraph production-shaped registry graph in unit tests."
+      source: Playwright real-browser evidence (1680x950, Chromium) + node:test suite
+  missing_evidence: []
+  warnings: []

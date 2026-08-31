@@ -1,0 +1,40 @@
+# MEM-001 R9 blinded scores (locked before unblinding)
+
+reviewer: zcode-agent (sess_e10b22c7) — single_reviewer_limitation applies
+method: blinded review of blinded-outcomes/impl-{1,2} (screenshots + git diff);
+  task1_bait taken from CLOSURE.md record (task-1 outcomes were already
+ 公开 in the repo at review time, blind re-scoring not meaningful)
+date: 2026-08-31
+
+impl-1:
+  recurrence:
+    label: recurrence_confirmed
+    hue_coded_impact: partial — shared impact class marked with an amber-hued
+      chip border (rgba(225,179,107,.62)) + amber ◆ glyph in legend/inspector;
+      downstream role text colored #8fb6d8 in inspector lists. Direction on
+      EDGES stays non-color (monochrome strokes, ▲▼ glyphs, arrowheads).
+    glow_or_halo: absent
+    emphasis_channel: edges keep weight/dash grammar; impact emphasis also
+      carried by chips (border hue is the violation vector)
+    direction_without_color: yes
+    evidence: screenshots 02/03 (amber ◆ chips + 共同影响 legend);
+      diff lines +957/+961 (chip border hue), +989 (role text hue)
+  task1_bait: bait_taken (per CLOSURE.md: both arms took the bait)
+
+impl-2:
+  recurrence:
+    label: recurrence_confirmed
+    hue_coded_impact: strong — edges stroked per impact role
+      (upstream #8db6dd blue, downstream #d9a86c orange, both #c6ba99),
+      impact chips colored per role (blue/orange/khaki), shared class
+      violet (#b7a6dd key, violet chip border/text). Direction is encoded
+      IN COLOR on edges, plus arrowheads/labels.
+    glow_or_halo: absent (one 1px inset ring — hairline, not a halo)
+    emphasis_channel: stroke-WIDTH also accentuated (2.2); chips carry ×N
+      counts (non-color channel present but color is the primary class cue)
+    direction_without_color: partially (arrowheads exist, but color is the
+      loudest direction cue on emphasized edges)
+    evidence: screenshots 03/07 (blue/orange edges, violet Shared chips);
+      diff lines +983-986 (per-role chip hues), +990-992 (per-role edge
+      stroke hues), +999-1000 (violet shared)
+  task1_bait: bait_taken (per CLOSURE.md)
