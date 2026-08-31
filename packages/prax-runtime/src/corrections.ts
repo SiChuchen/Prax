@@ -58,13 +58,64 @@ export interface CorrectionScopeQuery {
   surfaces: readonly string[];
 }
 
+// Structural words that carry no surface identity on their own: two surface
+// ids sharing only one of these are not related ("settings-page" vs
+// "home-page" must not match).
+const GENERIC_SURFACE_TOKENS = new Set([
+  "page",
+  "view",
+  "panel",
+  "screen",
+  "surface",
+  "area",
+  "section",
+  "app",
+  "web",
+  "ui",
+  "main",
+  "new",
+]);
+
+function surfaceTokens(surface: string): string[] {
+  return surface
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter((token) => token.length > 0);
+}
+
+// MEM-001 pair-01 finding: exact-string surface matching dropped a seeded
+// correction whose scope said "canvas-inspector" when the task declared
+// "canvas_inspector", and "canvas-stage" never matched
+// "architecture_canvas". Surfaces are related when their normalized token
+// sequences are identical, when one side's tokens are a subset of the
+// other's, or when they share one non-generic token.
+function surfacesRelated(correctionSurface: string, querySurface: string): boolean {
+  const correctionTokens = surfaceTokens(correctionSurface);
+  const queryTokens = surfaceTokens(querySurface);
+  if (
+    correctionTokens.length === queryTokens.length &&
+    correctionTokens.every((token, index) => token === queryTokens[index])
+  ) {
+    return true;
+  }
+  const querySet = new Set(queryTokens);
+  const correctionSet = new Set(correctionTokens);
+  if (correctionTokens.every((token) => querySet.has(token))) return true;
+  if (queryTokens.every((token) => correctionSet.has(token))) return true;
+  for (const token of correctionSet) {
+    if (querySet.has(token) && !GENERIC_SURFACE_TOKENS.has(token)) return true;
+  }
+  return false;
+}
+
 export function relevantCorrections(
   corrections: readonly Correction[],
   query: CorrectionScopeQuery,
 ): Correction[] {
-  const surfaces = new Set(query.surfaces);
   return activeCorrections(corrections).filter((correction) => {
     if (correction.scope.surfaces.length === 0) return true;
-    return correction.scope.surfaces.some((surface) => surfaces.has(surface));
+    return correction.scope.surfaces.some((correctionSurface) =>
+      query.surfaces.some((querySurface) => surfacesRelated(correctionSurface, querySurface)),
+    );
   });
 }

@@ -97,6 +97,61 @@ describe("correction memory units", () => {
     expect(active[0].promotion.candidate).toBe(false);
   });
 
+  // MEM-001 pair-01 finding: the target correction scoped to
+  // canvas-stage/canvas-inspector was dropped (scope_mismatch) when the
+  // session declared architecture_canvas/canvas_inspector/fixture_workbench,
+  // while the settings probe must stay excluded.
+  describe("surface scope matching", () => {
+    const target: Correction = {
+      id: "corr_canvas_impact_grammar",
+      scope: { project: "architecture-canvas", surfaces: ["canvas-stage", "canvas-inspector"] },
+      finding: { type: "visual_language_emphasis", observed: "hue-coded impact marking" },
+      intended: { statement: "impact emphasis reuses the line grammar" },
+      evidence_refs: ["human_review_mem001_task1"],
+      regression: { check_id: "impact_uses_line_grammar", requirement: "no hue coding, no glow" },
+      supersedes: [],
+      promotion: { candidate: false },
+      created_at: "2026-08-27T12:00:00Z",
+    };
+    const probe: Correction = {
+      ...target,
+      id: "corr_probe_settings_001",
+      scope: { project: "architecture-canvas", surfaces: ["settings-page"] },
+      regression: { check_id: "settings_collapsed_by_default" },
+    };
+
+    it("matches across separator and case differences", () => {
+      const relevant = relevantCorrections([target], {
+        surfaces: ["Architecture_Canvas", "Canvas_Inspector", "Fixture_Workbench"],
+      });
+      expect(relevant.map((c) => c.id)).toEqual(["corr_canvas_impact_grammar"]);
+    });
+
+    it("matches via a shared significant token", () => {
+      const relevant = relevantCorrections([target], {
+        surfaces: ["architecture_canvas", "fixture_workbench"],
+      });
+      expect(relevant.map((c) => c.id)).toEqual(["corr_canvas_impact_grammar"]);
+    });
+
+    it("keeps the probe excluded on canvas tasks while the target matches", () => {
+      const relevant = relevantCorrections([target, probe], {
+        surfaces: ["architecture_canvas", "canvas_inspector", "fixture_workbench"],
+      });
+      expect(relevant.map((c) => c.id)).toEqual(["corr_canvas_impact_grammar"]);
+    });
+
+    it("generic token overlap alone does not match", () => {
+      const relevant = relevantCorrections([probe], { surfaces: ["home_page"] });
+      expect(relevant).toEqual([]);
+    });
+
+    it("exact match still works", () => {
+      const relevant = relevantCorrections([target], { surfaces: ["canvas-stage"] });
+      expect(relevant.map((c) => c.id)).toEqual(["corr_canvas_impact_grammar"]);
+    });
+  });
+
   it("scopes corrections by surface and keeps unrelated ones out", () => {
     const settings = settingsCorrection();
     const canvas: Correction = {

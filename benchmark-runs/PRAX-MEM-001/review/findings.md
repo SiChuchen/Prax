@@ -61,3 +61,13 @@ agent-facing design_correct); corrections.yaml re-seeded from frozen
 source; MCP registration via project .mcp.json; harness = zcode subagents
 (user decision, this session) instead of claude-code interactive
 sessions; agent transcripts = final reports + events.ndjson (no jsonl).
+
+## Postscript (2026-08-31): Finding 1 fixed
+
+`relevantCorrections` (packages/prax-runtime/src/corrections.ts) now matches
+surfaces by normalized token identity: separator/case-insensitive exact
+match, token-subset in either direction, or one shared non-generic token
+(generic structural words stoplisted). The MEM-001 scenario is covered by
+five new unit tests in tests/correction-memory.test.ts ("surface scope
+matching"); target correction now reaches canvas tasks while the settings
+probe stays excluded. Full suite 182/182. Pair-02 prerequisite satisfied.
