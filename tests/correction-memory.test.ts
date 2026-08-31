@@ -150,6 +150,40 @@ describe("correction memory units", () => {
       const relevant = relevantCorrections([target], { surfaces: ["canvas-stage"] });
       expect(relevant.map((c) => c.id)).toEqual(["corr_canvas_impact_grammar"]);
     });
+
+    // pair-02 finding: a session may name surfaces with zero lexical overlap
+    // with the seeded scope (project-architecture / architecture-fixtures),
+    // but its surface PURPOSES still describe the canvas stage and inspector.
+    it("matches through declared surface purposes when ids diverge", () => {
+      const relevant = relevantCorrections([target, probe], {
+        surfaces: ["project-architecture", "architecture-fixtures"],
+        surfaceDescriptions: [
+          "Production registry Architecture Canvas page: command bar, canvas stage with Regions/Objects/Relationships, reading key, docked Inspector, status bar",
+          "Fixture workbench for QA at 15/20 and 40/70 scales",
+        ],
+      });
+      expect(relevant.map((c) => c.id)).toEqual(["corr_canvas_impact_grammar"]);
+    });
+
+    it("probe stays excluded even when a purpose shares only a generic token", () => {
+      const relevant = relevantCorrections([probe], {
+        surfaces: ["project-architecture"],
+        surfaceDescriptions: ["Architecture Canvas page with docked panels"],
+      });
+      expect(relevant).toEqual([]);
+    });
+
+    it("a purpose description naming the correction's own surface matches it", () => {
+      // Function-level contract: descriptions participate fully as matching
+      // domain. Scoping WHICH descriptions are passed (change-target
+      // surfaces only) is the context compiler's responsibility — covered
+      // by the compiler-level test in context-compilation.test.ts.
+      const relevant = relevantCorrections([probe], {
+        surfaces: [],
+        surfaceDescriptions: ["Settings page: sections for profile, tokens and telemetry"],
+      });
+      expect(relevant.map((c) => c.id)).toEqual(["corr_probe_settings_001"]);
+    });
   });
 
   it("scopes corrections by surface and keeps unrelated ones out", () => {

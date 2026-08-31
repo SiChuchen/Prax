@@ -56,6 +56,11 @@ export function activeCorrections(corrections: readonly Correction[]): Correctio
 
 export interface CorrectionScopeQuery {
   surfaces: readonly string[];
+  // Free-text descriptions of those surfaces (declared purposes). Pair-02
+  // finding: a session may name a surface with zero lexical overlap to the
+  // seeded scope ("project-architecture" vs "canvas-stage") while the
+  // surface's purpose text still names it ("canvas stage ... Inspector").
+  surfaceDescriptions?: readonly string[];
 }
 
 // Structural words that carry no surface identity on their own: two surface
@@ -77,9 +82,11 @@ const GENERIC_SURFACE_TOKENS = new Set([
 ]);
 
 function surfaceTokens(surface: string): string[] {
+  // CJK ranges are kept as tokens — purposes and scope ids may be written
+  // in Chinese ("配置" must tokenize to ["配置"], not to nothing).
   return surface
     .toLowerCase()
-    .split(/[^a-z0-9]+/)
+    .split(/[^a-z0-9\u3400-\u9fff]+/)
     .filter((token) => token.length > 0);
 }
 
@@ -92,6 +99,10 @@ function surfaceTokens(surface: string): string[] {
 function surfacesRelated(correctionSurface: string, querySurface: string): boolean {
   const correctionTokens = surfaceTokens(correctionSurface);
   const queryTokens = surfaceTokens(querySurface);
+  // Vacuous-truth guard: a string with no tokens (pure punctuation, or an
+  // empty result from tokenization) must not match anything through the
+  // subset/containment checks below.
+  if (correctionTokens.length === 0 || queryTokens.length === 0) return false;
   if (
     correctionTokens.length === queryTokens.length &&
     correctionTokens.every((token, index) => token === queryTokens[index])
@@ -112,10 +123,12 @@ export function relevantCorrections(
   corrections: readonly Correction[],
   query: CorrectionScopeQuery,
 ): Correction[] {
+  const descriptions = query.surfaceDescriptions ?? [];
   return activeCorrections(corrections).filter((correction) => {
     if (correction.scope.surfaces.length === 0) return true;
     return correction.scope.surfaces.some((correctionSurface) =>
-      query.surfaces.some((querySurface) => surfacesRelated(correctionSurface, querySurface)),
+      query.surfaces.some((querySurface) => surfacesRelated(correctionSurface, querySurface)) ||
+      descriptions.some((description) => surfacesRelated(correctionSurface, description)),
     );
   });
 }

@@ -123,6 +123,70 @@ describe("task-scoped context compilation", () => {
     expect(trace.excluded).toContainEqual({ ref: "correction:corr_billing_001", reason: "scope_mismatch" });
   });
 
+  it("matches corrections through change-target surface purposes only (MEM-001 pair-02)", () => {
+    // Surface ids may diverge completely from a seeded correction's scope
+    // vocabulary (project-architecture vs canvas-stage) while the declared
+    // PURPOSE of the change-target surface still names it. Purposes of
+    // surfaces outside the change targets must not become matching domain.
+    const understanding = {
+      ...architectureUnderstanding(["project-architecture", "architecture-fixtures"]),
+      current_surfaces: [
+        {
+          id: "project-architecture",
+          purpose:
+            "Production registry Architecture Canvas page: command bar, canvas stage with Regions/Objects/Relationships, reading key, docked Inspector, status bar",
+          evidence_refs: ["app/projects/project-architecture"],
+        },
+        {
+          id: "architecture-fixtures",
+          purpose: "Fixture workbench for QA at 15/20 and 40/70 scales",
+          evidence_refs: ["app/architecture-fixtures"],
+        },
+        {
+          id: "settings-page",
+          purpose: "Settings page: sections for profile, tokens and telemetry",
+          evidence_refs: ["app/settings"],
+        },
+      ],
+    };
+    const canvasCorrection: Correction = {
+      id: "corr_canvas_impact_grammar",
+      scope: { project: "architecture-canvas", surfaces: ["canvas-stage", "canvas-inspector"] },
+      finding: { type: "visual_language_emphasis", observed: "hue-coded impact marking" },
+      intended: { statement: "impact emphasis reuses the line grammar" },
+      evidence_refs: ["human_review_mem001_task1"],
+      regression: { check_id: "impact_uses_line_grammar" },
+      supersedes: [],
+      promotion: { candidate: false },
+      created_at: "2026-08-27T12:00:00.000Z",
+    };
+    const probe: Correction = {
+      ...canvasCorrection,
+      id: "corr_probe_settings_001",
+      scope: { project: "architecture-canvas", surfaces: ["settings-page"] },
+      regression: { check_id: "settings_collapsed_by_default" },
+    };
+    const session: DesignSession = {
+      id: "ds_purpose", project_root: "/tmp/p", mode: "existing_product", phase: "IMPLEMENTATION_READY",
+      created_at: "2026-08-31T00:00:00.000Z", updated_at: "2026-08-31T00:00:00.000Z", revision: 3,
+      requirement_ref: "requirement.md",
+      completed_gates: ["confirm", "framing", "context", "route", "decide", "sdir", "reconcile", "realize"],
+      current_gate: { name: "prepare" }, disclosures: [], routing_history: [], artifacts: {},
+      unresolved: [], warnings: [], design_authorities: [],
+    };
+    const { compiled, trace } = compileContext({
+      session,
+      understanding,
+      planRevision: 1,
+      planCheckIds: ["delta_conformance"],
+      corrections: [canvasCorrection, probe],
+    });
+    expect(compiled.task.surfaces).toEqual(["project-architecture", "architecture-fixtures"]);
+    expect(compiled.corrections.map((c) => c.id)).toEqual(["corr_canvas_impact_grammar"]);
+    expect(compiled.validation.regression_check_ids).toEqual(["impact_uses_line_grammar"]);
+    expect(trace.excluded).toContainEqual({ ref: "correction:corr_probe_settings_001", reason: "scope_mismatch" });
+  });
+
   it("preserves unresolved material unknowns from decisions and manifest", async () => {
     const root = await mkdtemp(join(tmpdir(), "prax-cc-"));
     cleanup.push(root);

@@ -156,7 +156,17 @@ export function compileContext(input: CompileContextInput): {
     type: relationship.type,
   }));
 
-  const relevant = relevantCorrections(input.corrections, { surfaces });
+  const relevant = relevantCorrections(input.corrections, {
+    surfaces,
+    // Purposes of the change-target surfaces only: they describe what the
+    // task actually touches. Purposes of unrelated declared surfaces stay
+    // out of the matching domain so a correction scoped to them (the
+    // MEM-001 settings probe pattern) cannot leak in through its own
+    // vocabulary.
+    surfaceDescriptions: (understanding?.current_surfaces ?? [])
+      .filter((surface) => surfaces.includes(surface.id))
+      .map((surface) => surface.purpose),
+  });
   const excludedCorrections = input.corrections.filter(
     (correction) => !relevant.some((active) => active.id === correction.id),
   );
