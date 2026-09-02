@@ -776,3 +776,26 @@ export function frameUnderstandingAlignment(
   }
   return warnings;
 }
+
+/**
+ * SDIR_REPRESENTATION_DRIFT cross-check (spec §6.3): for 0.2 artifacts, the
+ * decided representation primary and the SDIR representation primary must
+ * agree — drift is a REVIEW (the portfolio was decided upstream, the SDIR
+ * must carry it). No-op for 0.1 artifacts (compatibility discipline).
+ */
+export function checkSdirRepresentationDrift(
+  sdir: unknown,
+  decisions: unknown,
+): { code: "SDIR_REPRESENTATION_DRIFT"; message: string } | undefined {
+  const sdir02 = sdir as { version?: string; screen?: { representation?: { primary?: { type?: string } } } };
+  const decisions02 = decisions as { version?: string; representation?: { primary?: { type?: string } } };
+  if (sdir02?.version !== "0.2" || decisions02?.version !== "0.2") return undefined;
+  const sdirPrimary = sdir02.screen?.representation?.primary?.type;
+  const decidedPrimary = decisions02.representation?.primary?.type;
+  if (sdirPrimary === undefined || decidedPrimary === undefined) return undefined;
+  if (sdirPrimary === decidedPrimary) return undefined;
+  return {
+    code: "SDIR_REPRESENTATION_DRIFT",
+    message: `SDIR representation.primary ('${sdirPrimary}') disagrees with the decided representation.primary ('${decidedPrimary}') — the portfolio was decided at design_decide; re-run decide or carry the decision into the SDIR.`,
+  };
+}

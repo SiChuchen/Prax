@@ -29,6 +29,7 @@ import {
   validatePropose,
   validateReview,
   verifyEvidenceFile,
+  checkSdirRepresentationDrift,
   NEXT_TOOL_BY_GATE,
   PraxRuntimeError,
   sessionPolicy,
@@ -661,8 +662,10 @@ export class PraxService {
     if (input.mode === "validate" && input.sdir !== undefined && sdirDone) {
       const decisions = await this.requireArtifact<DesignDecisions>(session, "designDecisions");
       const validation = this.sdirEngine.validate(input.sdir, decisions);
+      const drift = validation.status === "PASS" ? checkSdirRepresentationDrift(validation.value ?? input.sdir, decisions) : undefined;
       return {
-        status: validation.status,
+        status: validation.status === "PASS" && drift !== undefined ? "REVIEW" : validation.status,
+        ...(drift !== undefined ? { code: drift.code, issues: [drift.message] } : {}),
         schema_errors: validation.schema_errors,
         semantic_errors: validation.semantic_errors,
         semantic_issues: validation.semantic_issues,
@@ -734,6 +737,15 @@ export class PraxService {
       ? this.sdirEngine.generate(frame, context, decisions)
       : input.sdir;
     const validation = this.sdirEngine.validate(candidate, decisions);
+    const gateDrift = validation.status === "PASS" ? checkSdirRepresentationDrift(validation.value ?? candidate, decisions) : undefined;
+    if (gateDrift !== undefined) {
+      return {
+        status: "REVIEW",
+        code: gateDrift.code,
+        issues: [gateDrift.message],
+        next: nextTool("design_sdir"),
+      };
+    }
     if (validation.status !== "PASS" || validation.value === undefined) {
       return {
         status: validation.status,

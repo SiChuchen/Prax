@@ -14,7 +14,7 @@ import {
   RealizationModeSchema,
   RequirementConfirmationSchema,
 } from "prax-runtime";
-import { SdirDeltaSchema, SdirSchema } from "prax-sdir";
+import { SdirDeltaSchema, SdirClientSchema as SdirSchema } from "prax-sdir";
 import { ValidationEvidenceSchema } from "prax-validator";
 
 const SessionId = z.string().trim().min(1).describe("Explicit persisted Prax design_session_id");
