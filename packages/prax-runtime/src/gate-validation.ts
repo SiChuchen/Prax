@@ -194,6 +194,19 @@ export function validateProductFrame(
 
   const issues: string[] = [];
   const warnings: string[] = [];
+  const codes: string[] = [];
+
+  // spec §6.2: a 0.2 frame carries all three product-model blocks
+  if (parsed.data.version === "0.2") {
+    const missingBlocks: string[] = [];
+    if (parsed.data.jtbd === undefined) missingBlocks.push("jtbd");
+    if (parsed.data.primary_object === undefined) missingBlocks.push("primary_object");
+    if (parsed.data.task_model === undefined) missingBlocks.push("task_model");
+    if (missingBlocks.length > 0) {
+      codes.push("FRAME_PRODUCT_MODEL_INCOMPLETE");
+      issues.push(`0.2 product frame is missing required blocks: ${missingBlocks.join(", ")}.`);
+    }
+  }
 
   const normalized = normalizeRelationshipIds(parsed.data.relationships);
   parsed.data.relationships = normalized.value as ProductFrame["relationships"];
@@ -232,6 +245,7 @@ export function validateProductFrame(
         "Translate these into concepts users recognize, or record a structured justified_override (rationale, user_evidence, risks, accepted_by) showing the backend terms are established product concepts.",
       ],
       warnings,
+      ...(codes.length > 0 ? { codes } : {}),
       value: parsed.data,
     };
   }
@@ -252,6 +266,7 @@ export function validateProductFrame(
     status: issues.length === 0 ? (warnings.length === 0 ? "PASS" : "WARN") : "EXPAND",
     issues,
     warnings,
+    ...(codes.length > 0 ? { codes } : {}),
     value: parsed.data,
   };
 }

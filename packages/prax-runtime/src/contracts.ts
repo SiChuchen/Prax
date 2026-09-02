@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { JTBD_VERBS, OBJECT_TYPES } from "prax-sdir";
 
 export const PRAX_VERSION = "0.1.0";
 
@@ -109,7 +110,29 @@ export const ProductRelationshipSchema = z.object({
 });
 export type ProductRelationship = z.infer<typeof ProductRelationshipSchema>;
 
+const FrameJtbdSchema = z.object({
+  verb: z.enum(JTBD_VERBS),
+  target: NonEmptyStringSchema,
+  success: NonEmptyStringSchema,
+});
+
+const FramePrimaryObjectSchema = z.object({
+  type: z.enum(OBJECT_TYPES),
+  label: NonEmptyStringSchema.optional(),
+});
+
+const FrameTaskModelSchema = z.object({
+  frequency: z.enum(["low", "medium", "high"]),
+  reversibility: z.enum(["reversible", "costly", "irreversible"]),
+  consequence: z.enum(["low", "medium", "high"]),
+  expertise: z.enum(["novice", "mixed", "expert"]),
+});
+
 export const ProductFrameSchema = z.object({
+  version: z.literal("0.2").optional(),
+  jtbd: FrameJtbdSchema.optional(),
+  primary_object: FramePrimaryObjectSchema.optional(),
+  task_model: FrameTaskModelSchema.optional(),
   user: z.object({
     primary_role: NonEmptyStringSchema,
     expertise: z.enum(["novice", "intermediate", "expert", "mixed"]),
@@ -153,6 +176,13 @@ export const ProductFrameSchema = z.object({
       legacy_debt: z.array(NonEmptyStringSchema).default([]),
     })
     .optional(),
+}).superRefine((frame, ctx) => {
+  if (frame.version !== "0.2" && (frame.jtbd !== undefined || frame.primary_object !== undefined || frame.task_model !== undefined)) {
+    ctx.addIssue({
+      code: "custom",
+      message: "0.2 product-model blocks (jtbd / primary_object / task_model) require an explicit version: '0.2'",
+    });
+  }
 });
 export type ProductFrame = z.infer<typeof ProductFrameSchema>;
 
