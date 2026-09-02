@@ -51,6 +51,9 @@ export const ValidationEvidenceItemSchema = z.object({
     "Concrete artifacts backing an empirical claim (screenshot paths, run logs). " +
     "Empty means self-attestation, which is not independently verifiable.",
   ),
+  measurement_receipt: NonEmpty.refine((r) => r.startsWith("validation-evidence/"), {
+    message: "measurement receipts must live under validation-evidence/ relative to the session directory",
+  }).optional(),
 });
 
 export const ValidationEvidenceSchema = z.object({
@@ -66,6 +69,7 @@ export interface ValidationFinding {
   outcome: "pass" | "fail" | "inconclusive";
   message: string;
   source: string;
+  provenance: "measured" | "attested";
 }
 
 export interface ValidationEvaluation {
@@ -98,6 +102,15 @@ export const ARTIFACT_CHECK_DEFAULT_SEVERITY: Record<ArtifactCheckId, "warning" 
   "a11y.focus_order": "warning",
   "a11y.target_size": "error",
   "type.min_projected_size": "warning",
+};
+
+// Spec §5.4: validator check id -> measured catalog ids it accepts receipts for.
+// Lookup semantics: absent key ≡ empty mapping (not enforced).
+export const CHECK_MEASUREMENT_MAP: Record<string, readonly ArtifactCheckId[]> = {
+  readability: ["a11y.contrast", "type.min_projected_size"],
+  keyboard: ["a11y.focus_order"],
+  regression_check: ["layout.overflow"],
+  untouched_surface_regression: ["layout.overflow", "layout.responsive_collision"],
 };
 
 export const MeasurementReceiptCheckSchema = z.object({

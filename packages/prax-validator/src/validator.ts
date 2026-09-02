@@ -235,6 +235,7 @@ export class PraxValidator {
             ? [...sdirValidation.schema_errors, ...sdirValidation.semantic_errors].join("; ")
             : input.plan.checks.find((candidate) => candidate.id === check)!.requirement,
           source: "prax-validator",
+          provenance: "measured",
         });
       }
     }
@@ -252,6 +253,7 @@ export class PraxValidator {
               ? input.plan.checks.find((candidate) => candidate.id === "delta_conformance")!.requirement
               : deltaValidation.semantic_errors.join("; "),
         source: "prax-validator",
+          provenance: "measured",
       });
     }
 
@@ -293,6 +295,7 @@ export class PraxValidator {
           failure ??
           input.plan.checks.find((candidate) => candidate.id === "design_representation_coverage")!.requirement,
         source: "prax-validator",
+          provenance: "measured",
       });
     }
 
@@ -313,6 +316,7 @@ export class PraxValidator {
           outcome: evidence.outcome,
           message: evidence.notes,
           source: evidence.source,
+          provenance: "attested",
         });
       }
     }
