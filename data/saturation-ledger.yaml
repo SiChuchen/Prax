@@ -1,0 +1,38 @@
+version: "0.1"
+# Pattern saturation ledger (research §46; Phase 4 F3). Five counters per
+# 30-sample band; bands 1-4 seeded from the v0.1 research observations.
+# Saturation rule: new_pattern_rate falls for two consecutive bands and
+# drops below 5% → the layer is saturated (stop expanding, deepen
+# combinations and boundaries instead).
+bands:
+  - band: 1-30
+    total_coded: 30
+    new_primitives: 18
+    new_compositions: 9
+    new_boundaries: 3
+    new_pattern_rate: 1.00
+    note: "大量新增模式（§46 观察）"
+  - band: 31-60
+    total_coded: 60
+    new_primitives: 6
+    new_compositions: 12
+    new_boundaries: 4
+    new_pattern_rate: 0.37
+    note: "仍有新组合（§46）"
+  - band: 61-90
+    total_coded: 90
+    new_primitives: 2
+    new_compositions: 10
+    new_boundaries: 5
+    new_pattern_rate: 0.19
+    note: "新增 Primitive 减少（§46）"
+  - band: 91-120
+    total_coded: 120
+    new_primitives: 1
+    new_compositions: 11
+    new_boundaries: 8
+    new_pattern_rate: 0.17
+    note: "主要新增是组合/边界而不是全新 Primitive（§46）——v2026-09 词表
+      首批增补（understand/architecture）即来自该带的边界样本"
+# next band: 121-150 — inter-rater pilot 的 30 页新样本填入；双编码分歧
+# 归因中的"词表缺项"进 new_primitives，"边界样本"进 new_boundaries。
