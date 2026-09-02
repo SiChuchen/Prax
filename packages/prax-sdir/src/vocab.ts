@@ -79,3 +79,14 @@ export const SDIR_VOCAB = {
 export const JTBD_VERBS = SDIR_VOCAB.jtbd_verbs;
 export const OBJECT_TYPES = SDIR_VOCAB.object_types;
 export const REPRESENTATION_PRIMITIVES = SDIR_VOCAB.representation_primitives;
+
+/**
+ * Default-shell detection vocabulary (spec §6.3). The four negative-knowledge
+ * terms are composition/disclosure/detail mechanisms, not representation
+ * primitives — only `cards` can appear in representation.primary.type, so
+ * detection must also scan decision free text (with fixed CJK synonyms).
+ */
+export const SHELL_TERMS = {
+  terms: ["dashboard", "cards", "tabs", "modal"],
+  synonyms: ["仪表盘", "卡片", "标签页", "模态"],
+} as const;

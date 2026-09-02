@@ -19,7 +19,9 @@ import {
   type RequirementConfirmation,
   zodIssues,
 } from "./contracts.js";
+import { SHELL_TERMS } from "prax-sdir";
 import { classifyDesignContext } from "./classification.js";
+export { SHELL_TERMS };
 import { classifyIntentImpact } from "./change-impact.js";
 
 export function validateRequirementConfirmation(input: unknown): ArtifactValidation<RequirementConfirmation> {
@@ -453,6 +455,69 @@ export function validateDesignDecisions(
     codes.push("DECISION_SESSION_MISMATCH");
     issues.push("design_decisions.session_id does not match design_session_id.");
   }
+
+  // ── representation portfolio rules (spec §6.3) ──
+  if (parsed.data.version === "0.2") {
+    const missingBlocks: string[] = [];
+    if (parsed.data.information_shape === undefined) missingBlocks.push("information_shape");
+    if (parsed.data.representation === undefined) missingBlocks.push("representation");
+    if (missingBlocks.length > 0) {
+      codes.push("DECISION_SHAPE_MISSING");
+      issues.push(`0.2 design decisions are missing required blocks: ${missingBlocks.join(", ")}.`);
+    }
+  }
+
+  const representation = parsed.data.representation;
+  if (representation !== undefined) {
+    // SHELL_TERMS detection (spec §6.3 mechanism, pinned)
+    const scannedText = [
+      representation.primary.reason,
+      ...representation.supporting.map((entry) => entry.reason),
+      ...representation.rejected.map((entry) => entry.option),
+      ...parsed.data.major_choices.flatMap((choice) => [choice.choice, choice.rationale, ...choice.references]),
+    ].join("\n");
+    const wordBoundary = new RegExp(
+      "(?:^|[^a-z0-9_])(" + [...SHELL_TERMS.terms].join("|") + ")(?![a-z0-9_])",
+      "i",
+    );
+    const synonymHit = [...SHELL_TERMS.synonyms].some((synonym) => scannedText.includes(synonym));
+    const shellTriggered =
+      representation.primary.type === "cards" || wordBoundary.test(scannedText) || synonymHit;
+
+    if (shellTriggered) {
+      const justification = representation.justification_vs_shape;
+      const shapeVariables = [
+        "cardinality",
+        "relationality",
+        "hierarchy",
+        "temporality",
+        "density",
+        "dimensionality",
+        "spatiality",
+        "volatility",
+        "uncertainty",
+        "comparison_need",
+      ];
+      const referencesShape =
+        justification !== undefined && shapeVariables.some((variable) => justification.includes(variable));
+      if (!referencesShape) {
+        codes.push("DECISION_DEFAULT_SHELL_UNJUSTIFIED");
+        issues.push(
+          "Default-shell representation detected (dashboard / cards / tabs / modal). " +
+            (justification === undefined
+              ? "representation.justification_vs_shape is required."
+              : "justification_vs_shape must reference at least one information_shape variable (cardinality, relationality, …).") +
+            " Negative knowledge mandates argumentation, not prohibition (research §48C).",
+        );
+      }
+    }
+
+    if (representation.rejected.length === 0) {
+      warnings.push(
+        "DECISION_NO_REJECTED_REPRESENTATION: the representation portfolio declares no rejected option; every decided portfolio names what it declined (PRAX-P-005).",
+      );
+    }
+  }
   if (!context.routedPatternIds.has(chosen)) {
     codes.push("DECISION_PATTERN_NOT_ROUTED");
     issues.push(`Chosen Pattern ${chosen} was not returned by the Design Router.`);
@@ -493,8 +558,11 @@ export function validateDesignDecisions(
     warnings.push("The primary structure decision has low confidence.");
   }
 
+  // DECISION_DEFAULT_SHELL_UNJUSTIFIED is a REVIEW (argumentation demanded,
+  // never prohibition — spec §6.3 / §12 decision 7); other issues stay EXPAND
+  const reviewOnly = issues.length > 0 && codes.includes("DECISION_DEFAULT_SHELL_UNJUSTIFIED");
   return {
-    status: issues.length === 0 ? (warnings.length === 0 ? "PASS" : "WARN") : "EXPAND",
+    status: issues.length === 0 ? (warnings.length === 0 ? "PASS" : "WARN") : reviewOnly ? "REVIEW" : "EXPAND",
     issues,
     warnings,
     codes,

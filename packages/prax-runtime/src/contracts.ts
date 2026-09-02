@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { JTBD_VERBS, OBJECT_TYPES } from "prax-sdir";
+import { JTBD_VERBS, OBJECT_TYPES, REPRESENTATION_PRIMITIVES } from "prax-sdir";
 
 export const PRAX_VERSION = "0.1.0";
 
@@ -377,8 +377,35 @@ export const HierarchyOverrideSchema = z.object({
 });
 export type HierarchyOverride = z.infer<typeof HierarchyOverrideSchema>;
 
+const DecisionInformationShapeSchema = z.object({
+  cardinality: z.enum(["one", "few", "many", "unbounded"]),
+  relationality: z.enum(["low", "medium", "high"]),
+  hierarchy: z.enum(["low", "medium", "high"]),
+  temporality: z.enum(["low", "medium", "high"]),
+  density: z.enum(["low", "medium", "high"]),
+  dimensionality: z.enum(["low", "medium", "high"]).default("medium"),
+  spatiality: z.enum(["none", "conceptual", "physical"]).default("none"),
+  volatility: z.enum(["low", "medium", "high"]).default("medium"),
+  uncertainty: z.enum(["low", "medium", "high"]).default("low"),
+  comparison_need: z.enum(["none", "optional", "required"]).default("none"),
+});
+
+const DecisionRepresentationSchema = z.object({
+  primary: z.object({ type: z.enum(REPRESENTATION_PRIMITIVES), reason: NonEmptyStringSchema }),
+  supporting: z
+    .array(z.object({ type: z.enum(REPRESENTATION_PRIMITIVES), reason: NonEmptyStringSchema }))
+    .max(4)
+    .default([]),
+  rejected: z.array(z.object({ option: NonEmptyStringSchema, reason: NonEmptyStringSchema })).default([]),
+  // required only when the SHELL_TERMS detection fires (gate-level rule)
+  justification_vs_shape: NonEmptyStringSchema.optional(),
+});
+
 export const DesignDecisionsSchema = z.object({
   session_id: NonEmptyStringSchema,
+  version: z.literal("0.2").optional(),
+  information_shape: DecisionInformationShapeSchema.optional(),
+  representation: DecisionRepresentationSchema.optional(),
   primary_structure: z.object({
     pattern: NonEmptyStringSchema,
     rationale: z.array(NonEmptyStringSchema).min(1),
