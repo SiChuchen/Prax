@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>a11y.focus_order fixture</title>
+  <style>
+    body { margin: 0; font-family: sans-serif; }
+    .inversion-stage { position: relative; height: 90px; margin-bottom: 24px; }
+    .visually-lower { position: absolute; top: 50px; left: 0; }
+    .visually-upper { position: absolute; top: 0; left: 0; }
+    .ghost-link { outline: none; box-shadow: none; }
+  </style>
+</head>
+<body>
+  <!-- positive case: tab order contradicts the visual reading order -->
+  <section id="inversion-region" class="inversion-stage" aria-label="positive inversion case">
+    <button class="visually-lower" id="tab-first-dom">First in tab order, visually second</button>
+    <button class="visually-upper" id="tab-second-dom">Second in tab order, visually first</button>
+  </section>
+
+  <!-- positive case: focus lands on an element with no visible indicator -->
+  <section id="missing-indicator-region" aria-label="positive indicator case">
+    <p><a class="ghost-link" id="ghost-link" href="#nowhere">A link whose focus indicator was removed</a></p>
+  </section>
+
+  <!-- negative case: DOM order matches visual order, default focus rings intact -->
+  <section id="clean-region" aria-label="negative case">
+    <button id="clean-first">Clean first</button>
+    <button id="clean-second">Clean second</button>
+  </section>
+</body>
+</html>
