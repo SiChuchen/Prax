@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>text.truncation fixture</title>
+  <style>
+    body { margin: 0; font-family: sans-serif; }
+    .clipped { width: 200px; white-space: nowrap; overflow: hidden; }
+    .ellipsis { width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .title-carried { width: 200px; white-space: nowrap; overflow: hidden; }
+    .truncation-intended { width: 200px; white-space: nowrap; overflow: hidden; }
+    .wrapping { width: 200px; }
+  </style>
+</head>
+<body>
+  <!-- positive case: text clipped with no ellipsis, no title, no opt-out -->
+  <section id="truncated-region" aria-label="positive case">
+    <div class="clipped" id="clipped-text">This sentence is deliberately clipped without an ellipsis marker</div>
+  </section>
+
+  <!-- negative case: ellipsis declares truncation intent -->
+  <section id="ellipsis-region" aria-label="ellipsis exemption">
+    <div class="ellipsis" id="ellipsis-text">This sentence declares truncation via ellipsis</div>
+  </section>
+
+  <!-- negative case: title attribute carries the full text -->
+  <section id="title-region" aria-label="title exemption">
+    <div class="title-carried" id="title-text" title="This sentence is fully carried by the title attribute">This sentence is fully carried by the title attribute</div>
+  </section>
+
+  <!-- negative case: explicit opt-out class -->
+  <section id="intended-region" aria-label="class exemption">
+    <div class="truncation-intended" id="intended-text">This truncation is explicitly intended by the author</div>
+  </section>
+
+  <!-- negative case: ordinary wrapping text -->
+  <section id="fitting-region" aria-label="wrapping text">
+    <p class="wrapping" id="wrapping-text">This paragraph wraps normally and never overflows its container.</p>
+  </section>
+</body>
+</html>
