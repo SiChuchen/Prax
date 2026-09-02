@@ -4,7 +4,7 @@ import { readFile, stat } from "node:fs/promises";
 import { extname, isAbsolute, join, resolve } from "node:path";
 import { spawn, type ChildProcess } from "node:child_process";
 import { chromium } from "playwright";
-import { ARTIFACT_CHECK_IDS, type ArtifactCheckId, type MeasurementReceipt } from "prax-validator";
+import { ARTIFACT_CHECK_DEFAULT_SEVERITY, ARTIFACT_CHECK_IDS, type ArtifactCheckId, type MeasurementReceipt } from "prax-validator";
 import type { CheckOutcome } from "./checks/layout.overflow.js";
 import { run as layoutOverflow } from "./checks/layout.overflow.js";
 import { run as layoutResponsiveCollision } from "./checks/layout.responsive_collision.js";
@@ -148,7 +148,7 @@ function skippedOutcome(id: ArtifactCheckId, reason: string): CheckOutcome {
   return {
     id,
     status: "skipped",
-    severity: id === "a11y.contrast" || id === "a11y.target_size" ? "error" : "warning",
+    severity: ARTIFACT_CHECK_DEFAULT_SEVERITY[id],
     subject: `check ${id}`,
     measured: {},
     threshold: {},

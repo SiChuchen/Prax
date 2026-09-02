@@ -106,14 +106,19 @@ export const ARTIFACT_CHECK_IDS = [
 ] as const;
 export type ArtifactCheckId = (typeof ARTIFACT_CHECK_IDS)[number];
 
-// Default severity per ADR-005 decision 6: warning-born; the two WCAG
-// normative checks are error-born (zero overkill risk).
+// Severity at birth per ADR-005 decision 6: checks are warning-born, the two
+// WCAG normative checks are error-born (zero overkill risk). PROMOTED to
+// error on 2026-09-02 after zero-overkill calibration on every runnable
+// golden app (landing/dashboard/wizard — Phase 4 F5, the first accreting-gate
+// instance, spec §8.1): layout.overflow, layout.responsive_collision,
+// text.truncation, a11y.focus_order. type.min_projected_size stays warning —
+// spec §5.3 pins it advisory (density-linked thresholds deferred).
 export const ARTIFACT_CHECK_DEFAULT_SEVERITY: Record<ArtifactCheckId, "warning" | "error"> = {
-  "layout.overflow": "warning",
-  "layout.responsive_collision": "warning",
-  "text.truncation": "warning",
+  "layout.overflow": "error",
+  "layout.responsive_collision": "error",
+  "text.truncation": "error",
   "a11y.contrast": "error",
-  "a11y.focus_order": "warning",
+  "a11y.focus_order": "error",
   "a11y.target_size": "error",
   "type.min_projected_size": "warning",
 };

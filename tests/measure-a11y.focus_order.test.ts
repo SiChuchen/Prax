@@ -24,7 +24,7 @@ describe("a11y.focus_order check (Task A2.5)", () => {
     const outcome = await run(page, { viewport: { width: 1280, height: 860, label: "desktop" }, screenshotDir });
 
     expect(outcome.status).toBe("fail");
-    expect(outcome.severity).toBe("warning");
+    expect(outcome.severity).toBe("error"); // promoted 2026-09-02 (F5 accreting gate)
     const measured = outcome.measured as {
       stops: number;
       sequence: string[];

@@ -24,7 +24,7 @@ describe("layout.responsive_collision check (Task A2.2)", () => {
     const outcome = await run(page, { viewport: { width: 1280, height: 860, label: "desktop" }, screenshotDir });
 
     expect(outcome.status).toBe("fail");
-    expect(outcome.severity).toBe("warning");
+    expect(outcome.severity).toBe("error"); // promoted 2026-09-02 (F5 accreting gate)
     expect(outcome.subject).toBeTruthy();
     expect((outcome.measured as Record<string, unknown>).collisions).toBe(1);
     const pairs = (outcome.measured as { pairs: Array<{ a: string; b: string }> }).pairs;

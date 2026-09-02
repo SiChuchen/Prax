@@ -31,7 +31,7 @@ describe("layout.overflow check (Task A2.1)", () => {
     const outcome = await run(page, ctx);
 
     expect(outcome.status).toBe("fail");
-    expect(outcome.severity).toBe("warning");
+    expect(outcome.severity).toBe("error"); // promoted 2026-09-02 (F5 accreting gate)
     expect(outcome.subject).toBe("document.documentElement");
     expect((outcome.measured as Record<string, unknown>).overflow_px).toBe(14);
     expect((outcome.measured as Record<string, unknown>).inner_width).toBe(1280);
