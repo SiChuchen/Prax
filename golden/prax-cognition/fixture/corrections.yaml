@@ -1,0 +1,80 @@
+version: "0.1"
+corrections:
+  - id: correction-cognition-sdir-budget
+    scope:
+      project: E:/codex-prj/ecp-worktrees/ecp-cognition
+      surfaces:
+        - canvas_workspace_screen
+    finding:
+      type: gate_gap
+      observed: "golden case #6 (ds_20260902113424_16f6a971): sdir 0.2 的
+        generate_from_decisions 自动产出不含 complexity_budget 块；会话进入 validate gate 后
+        design_sdir 仅 accept
+        mode=validate（lint，不落盘），mode=generate_from_decisions 被
+        GATE_NOT_SATISFIED 拒绝——SDIR 落盘后无合法 MCP 路径补写 complexity_budget。validator
+        对该块的缺失仅给 advisory warning（presence-only check），readiness 仍可全绿。"
+    intended:
+      statement: SDIR 0.2 自动生成应包含 complexity_budget 十计数块（或 validate
+        模式允许声明式补写并落盘），使任务书要求的 0.2 载荷可经由合法链路径满足而非仅 advisory。
+    evidence_refs:
+      - .prax/design/sessions/ds_20260902113424_16f6a971/screen.sdir.yaml
+      - prax-validator/src/validator.ts STRUCTURE_CHECKS (passed=true, absence
+        advisory)
+    regression:
+      check_id: complexity_budget_declared
+      requirement: SDIR 0.2 declares a complexity_budget block (values are not judged).
+    supersedes: []
+    promotion:
+      candidate: false
+    created_at: 2026-09-02T12:40:12.246Z
+  - id: correction-prax-measure-entry-cli
+    scope:
+      project: E:/codex-prj/ecp-worktrees/ecp-cognition
+      surfaces: []
+    finding:
+      type: tooling_gap
+      observed: 'golden case #6：prax-measure CLI 只解析
+        --app/--out/--serve/--viewports，不透传 runMeasurement 已支持的 options.entry（默认
+        "/"）。多入口应用（如 ECP 新增 /cognition 面）无法用 CLI 测目标路由，只能以 node 直接调
+        runMeasurement API 并自行传 entry/serve。'
+    intended:
+      statement: prax-measure CLI 增加 --entry <path> 透传 runMeasurement 的 entry
+        参数，使非根路由的产物测量可直接走 CLI。
+    evidence_refs:
+      - packages/prax-measure/bin/prax-measure.mjs
+      - packages/prax-measure/dist/runner.js (options.entry)
+    regression:
+      check_id: layout.overflow
+      requirement: 六项 error 档检查须覆盖目标入口路由而非仅 " /"。
+    supersedes: []
+    promotion:
+      candidate: false
+    created_at: 2026-09-02T12:40:21.658Z
+  - id: correction-ecp-measure-env-shim
+    scope:
+      project: E:/codex-prj/ecp-worktrees/ecp-cognition
+      surfaces: []
+    finding:
+      type: environment_gap
+      observed: "golden case #6 测量环境：ECP（vinext + @cloudflare/vite-plugin）在本机 Windows
+        上，生产 workerd bundle（wrangler dev）与 vite dev 的 RSC runner 均报 _Worker is
+        not a constructor，vinext start 纯 node 报 ERR_UNSUPPORTED_ESM_URL_SCHEME
+        cloudflare:。唯一可测路径：无 cloudflare 插件的 vite 管线 + cloudflare:workers 别名到
+        node:sqlite shim（e2e-shim/），SSR 传入初始数据保证 load 时刻即 ready 态。另：prax-measure
+        各 check 在 page load 时刻即测，client 端 fetch 未完成时会测到 loading 态（空 select 塌缩
+        12px、disabled 按钮 opacity 拉低对比），SSR 初始数据是可靠测量前提。"
+    intended:
+      statement: ECP 浏览器测量的标准环境 = shim vite 管线 + SSR 初始数据 + runMeasurement API 指定
+        entry；修复 vinext 生产 workerd RSC 引导（上游）后可切换到真实产物测量。
+    evidence_refs:
+      - /tmp/ecp-wrangler.log (wrangler dev _Worker is not a constructor)
+      - /tmp/ecp-dev.log (vite dev 同错)
+      - /tmp/ecp-start.log (vinext start ERR_UNSUPPORTED_ESM_URL_SCHEME
+        cloudflare:)
+    regression:
+      check_id: a11y.contrast
+      requirement: 对比测量须针对 ready 态产物而非 loading 骨架。
+    supersedes: []
+    promotion:
+      candidate: false
+    created_at: 2026-09-02T12:40:37.416Z

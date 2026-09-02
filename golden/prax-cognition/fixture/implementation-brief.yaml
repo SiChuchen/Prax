@@ -1,0 +1,57 @@
+version: "0.1"
+platform_profile: WEB-DESKTOP
+framework: react
+sdir_ref: screen.sdir.yaml
+decision_ref: design-decisions.yaml
+approved_patterns:
+  - PAT-CANVAS-WORKSPACE
+approved_component_contracts:
+  - ARCHITECTURE-CANVAS
+  - CONTEXTUAL-INSPECTOR
+  - CANVAS-TOOLBAR
+  - STATE-FEEDBACK
+states_required:
+  - loading
+  - empty
+  - ready
+  - selected
+  - error
+capability_gaps: []
+validation_plan_ref:
+  artifact: validation-plan.yaml
+  revision: 1
+validation_requirements:
+  - semantic_conformance
+  - state_completeness
+  - product_model_alignment
+  - keyboard
+  - hierarchy_review
+  - representation_decided
+  - state_ownership_declared
+  - acceptance_contract_present
+  - complexity_budget_declared
+  - relationship_trace
+  - context_preservation
+  - canvas_signal_hierarchy
+  - destructive_recovery
+  - untouched_surface_regression
+  - pattern_consistency
+  - authority_consistency
+  - requirement_alignment
+representation_portfolio_ref: compiled-context.yaml#representation_portfolio
+state_ownership_ref: compiled-context.yaml#state_ownership
+acceptance_ref: compiled-context.yaml#acceptance
+realization:
+  mode: direct_code
+mode_plan:
+  integration_plan:
+    alignment_points:
+      - Architecture Canvas + Inspector（React Flow 画布 + 右侧检视面板）
+      - 卡片目录列表 + 分类筛选（Control Plane）
+      - 中文界面文案 + 状态徽标（稳定/正在变化/需要关注）
+    neighbors: []
+    implementation_order:
+      - control-plane-home
+      - project-detail
+      - architecture-fixtures
+      - maintenance-console

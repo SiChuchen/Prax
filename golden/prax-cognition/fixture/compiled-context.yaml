@@ -1,0 +1,115 @@
+version: "0.1"
+session_id: ds_20260902113424_16f6a971
+task:
+  surfaces: []
+  primary: 查看项目当前真实状态与最近变化，理解变化原因，决定是否或何处需要干预
+product_relationships:
+  - id: rel-project-entity
+    source: project
+    target: architecture_entity
+    type: composes
+    direction: forward
+    meaning: 项目由架构实体组成，构成认知画布的结构
+    importance: primary
+  - id: rel-project-change
+    source: project
+    target: change
+    type: accumulates
+    direction: forward
+    meaning: 项目积累变化，构成时间线的内容
+    importance: primary
+  - id: rel-change-event
+    source: change
+    target: engineering_event
+    type: evidenced_by
+    direction: forward
+    meaning: 变化由工程事件佐证
+    importance: primary
+  - id: rel-change-decision
+    source: change
+    target: reconciliation_decision
+    type: justified_by
+    direction: forward
+    meaning: 变化的原因由对账决策说明
+    importance: primary
+  - id: rel-session-event
+    source: agent_session
+    target: engineering_event
+    type: emits
+    direction: forward
+    meaning: Agent 会话产生工程事件
+    importance: supporting
+region_relationships:
+  - id: region_rel_architecture_inspector
+    source: architecture
+    target: inspector
+    type: selection_drives_contextual_detail
+decisions:
+  primary_structure: PAT-CANVAS-WORKSPACE
+  density_intent: regular
+  major_choice_ids:
+    - choice-canvas-primary
+    - choice-timeline-coupled
+    - choice-inspector-contextual
+    - choice-agents-as-attribution
+must_preserve:
+  - control-plane-home
+  - project-detail
+  - architecture-fixtures
+  - maintenance-console
+regression_points:
+  - control-plane-home
+  - project-detail
+  - architecture-fixtures
+  - maintenance-console
+unresolved:
+  - realtime-refresh
+corrections: []
+representation_portfolio:
+  primary:
+    type: canvas
+    reason: relationality=high + spatiality=conceptual：架构实体与关系是理解“项目现在是什么样”的主对象，空间画布使结构可见且支持 overview+trace 并存（PAT-CANVAS-WORKSPACE），与既有 project-detail 面的画布心智一致
+  supporting:
+    - type: timeline
+      reason: temporality=high：变化时间线回答“发生了什么、何时”，把 volatility=high 的变化流按时间排序，与画布选中对象联动
+    - type: search_results
+      reason: 专家用户高频定位：Search 提供按名称/类型直达对象的入口，服务 Overview-Filter-Detail（H-22）的 filter 环节
+    - type: feed
+      reason: Decisions + Activity：决策与工程事件构成活动流，回答“为什么变化”，承载 reason 追溯
+    - type: chart
+      reason: Metrics：项目进展健康度的量化视图（变化速率、知识缺口数），低维度汇总用图表承载
+  rejected:
+    - option: dashboard
+      reason: dashboard 把关注点拆成等权磁贴，无法承载“选中→下钻证据”的主线，且在高 relationality 下制造假对等，易滑向 universal shell
+    - option: table
+      reason: 表格无法表达实体间的空间关系，relationality=high 下结构不可见
+    - option: tabs
+      reason: 标签切分会切断架构与时间线的并置对照，违背 Preserve Context（P-19）
+state_ownership:
+  - state: selection
+    owner: architecture
+  - state: preview
+    owner: session
+acceptance:
+  - 用户能在几分钟内说出项目当前状态、最近关键变化及其原因，并能定位到执行会话与证据，无需打断 Agent 推进
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - relationship_trace
+    - context_preservation
+    - canvas_signal_hierarchy
+    - destructive_recovery
+    - untouched_surface_regression
+    - pattern_consistency
+    - authority_consistency
+    - requirement_alignment
+  regression_check_ids: []

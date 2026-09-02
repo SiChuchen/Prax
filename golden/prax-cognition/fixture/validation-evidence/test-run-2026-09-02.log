@@ -1,0 +1,127 @@
+
+> engineering-control-plane@0.1.0 test
+> npm run build && node --experimental-strip-types --test tests/*.test.mjs
+
+
+> engineering-control-plane@0.1.0 build
+> bash scripts/build-verified.sh
+
+/usr/bin/timeout
+Running bounded vinext build...
+
+  vinext build  (Vite 8.0.13)
+
+[34m[1/5] analyze client references...[39m
+[2Ktransforming...✓ 264 modules transformed.
+rendering chunks...
+[32m✓ built in 307ms[39m
+[34m[2/5] analyze server references...[39m
+[2Ktransforming...✓ 233 modules transformed.
+rendering chunks...
+[32m✓ built in 242ms[39m
+[34m[3/5] build rsc environment...[39m
+[2Ktransforming...✓ 270 modules transformed.
+rendering chunks...
+computing gzip size...
+[32m✓ built in 380ms[39m
+[34m[4/5] build client environment...[39m
+[2Ktransforming...✓ 243 modules transformed.
+rendering chunks...
+computing gzip size...
+[33m[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.[39m
+[32m✓ built in 918ms[39m
+[34m[5/5] build ssr environment...[39m
+[2Ktransforming...✓ 242 modules transformed.
+rendering chunks...
+computing gzip size...
+[32m✓ built in 871ms[39m
+[0m
+  Route (app)
+  ┌ ? /                     
+  ├ λ /api/agent/events     
+  ├ λ /api/agent/handshake  
+  ├ λ /api/maintenance      
+  ├ λ /api/projects         
+  ├ ? /architecture-fixtures
+  ├ ? /cognition            
+  ├ ? /maintenance          
+  └ ƒ /projects/:projectId  
+
+  λ API  ƒ Dynamic  ? Unknown
+
+  ? Some routes could not be classified. vinext currently uses static analysis
+    and cannot detect dynamic API usage (headers(), cookies(), etc.) at build time.
+    Automatic classification will be improved in a future release.
+
+  Build complete. Run `vinext start` to start the production server.
+
+✔ ships exact reusable stress fixture budgets and difficult topology (4.3138ms)
+✔ adapts canonical Architecture records into a renderer-independent Semantic Graph (15.3478ms)
+✔ implements discrete semantic zoom and readable Focus / Trace emphasis (2.0334ms)
+✔ keeps the default Browse camera inside the readable Architecture band (0.2207ms)
+✔ ELK compound layout is deterministic, non-overlapping and obstacle-safe (8726.9281ms)
+Canvas Engine layout envelope [
+  { objects: 15, relationships: 20, layoutMs: 63.52 },
+  { objects: 40, relationships: 70, layoutMs: 319.26 },
+  { objects: 100, relationships: 180, layoutMs: 4395.33 }
+]
+✔ fixture performance envelope covers the acceptance scales (4778.7402ms)
+✔ publishes the bounded Foundation vocabulary (1.0933ms)
+✔ rejects lifecycle shortcuts and permits evidence-backed transitions (0.1518ms)
+✔ context pack hash is deterministic for identical state and changes with content (1231.2934ms)
+✔ context budget is measured in utf-8 bytes, clamped, and reported honestly under truncation (1478.1537ms)
+✔ context budget is clamped to the contract range from either side (928.861ms)
+✔ handshake at the current revision creates a leased session bound to the context hash (870.9037ms)
+✔ consecutive deltas from a stale revision deliver a patch without full refresh (734.6896ms)
+✔ discontinuous delta history forces a full context refresh (718.6963ms)
+✔ reconciles Agent output without promoting unsupported claims (2.017ms)
+✔ builds a revision-pinned bounded Context Pack (1.0686ms)
+✔ validates project ids and exposes the local Agent adapter (127.1859ms)
+✔ keeps the Human Web read-only and Agent Runtime separate (4.0289ms)
+✔ replayed completion returns the published revision without duplicating it (1255.2307ms)
+✔ expired session lease is rejected and retired without mutation (901.0531ms)
+✔ session pinned to an older revision is rejected as stale (890.1129ms)
+✔ cross-project observation id reuse is denied without mutation (880.3093ms)
+✔ manifest sync against another project is denied (700.3647ms)
+✔ a staged manifest stays noncanonical, widens the gate, and applies atomically at publication (1271.4437ms)
+✔ an architecture observation interrupted mid-chunk resumes by observation id without duplicates (1010.7316ms)
+✔ a legacy session without a lease expiry remains writable (782.2914ms)
+✔ preflight reports duplicate current ACTIVE keys across architecture tables (802.3249ms)
+✔ preflight passes when every current ACTIVE key is unique (712.1479ms)
+✔ accepts records owned by the current Project and Change (0.996ms)
+✔ rejects cross-Project and cross-Change identifier reuse (0.5588ms)
+✔ exact and directory-prefix entries match (0.9023ms)
+✔ a sibling sharing the prefix string is not under the directory (0.3744ms)
+✔ a single glob star never crosses a path separator (0.2127ms)
+✔ glob metacharacters in a protected path are literal, not regex (0.2244ms)
+✔ unrelated entries never match (0.1816ms)
+✔ maximum architecture bundle publishes atomically inside one D1 batch within documented limits (7384.2273ms)
+✔ full model replacement stays atomic and inside limits at the largest fixture (7463.0305ms)
+✔ a mid-batch failure at maximum fixture rolls back the whole publication (4279.1085ms)
+✔ renders development preview metadata (365.5123ms)
+✔ golden publication activates pending state and appends exactly one next Revision (1280.582ms)
+✔ architecture key violation is a publish failure, not a revision conflict (1197.4198ms)
+✔ two racing publishers produce exactly one next Revision and the loser leaves no residue (1332.1032ms)
+✔ late batch failure rolls back the entire publication (977.1627ms)
+✔ denies completion when a required Manifest check is not verified (779.549ms)
+✔ denies completion when gate evidence has failed (755.836ms)
+✔ denies completion when any verification lacks passing evidence (784.7281ms)
+✔ denies completion with an unreconciled observation (719.3192ms)
+✔ denies completion when scope hits a protected path without a recorded decision (697.0046ms)
+✔ publishes when the protected path carries a recorded decision (818.6931ms)
+✔ a decision for one protected path does not authorize another protected scope entry (657.3035ms)
+✔ a sibling scope entry sharing only a prefix string is not gated as protected (750.4315ms)
+✔ denies completion from a stale revision pin (579.0798ms)
+✔ denies completion without a verification policy (666.452ms)
+ℹ tests 53
+ℹ suites 0
+ℹ pass 53
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 20668.3845

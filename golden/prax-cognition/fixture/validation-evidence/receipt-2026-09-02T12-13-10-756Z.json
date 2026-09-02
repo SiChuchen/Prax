@@ -1,0 +1,302 @@
+{
+  "receipt_version": "0.1",
+  "tool": {
+    "name": "prax-measure",
+    "version": "0.1.0"
+  },
+  "target": {
+    "app_root": "E:/codex-prj/ecp-worktrees/ecp-cognition/",
+    "base_url": "http://[::1]:4311",
+    "build_ref": null
+  },
+  "run_at": "2026-09-02T12:13:10.756Z",
+  "viewport_matrix": [
+    {
+      "width": 1280,
+      "height": 860,
+      "label": "desktop"
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "label": "wide"
+    }
+  ],
+  "checks": [
+    {
+      "id": "layout.overflow",
+      "status": "fail",
+      "severity": "error",
+      "subject": "document.documentElement",
+      "measured": {
+        "scroll_width": 1280,
+        "inner_width": 1280,
+        "overflow_px": 0,
+        "element_overflows": 2,
+        "flagged_elements": [
+          "aside",
+          "nav"
+        ],
+        "viewport": "desktop",
+        "per_viewport": [
+          {
+            "viewport": "desktop",
+            "status": "fail"
+          },
+          {
+            "viewport": "wide",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "max_overflow_px": 0,
+        "element_overflow_tolerance_px": 1
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/overflow-1280x860.png",
+          "sha256": "bdbf0cef5d3789c9941e98deff4868c9206b71b281ba76e9fd91e3f38663dac6"
+        },
+        {
+          "ref": "validation-evidence/overflow-1440x900.png",
+          "sha256": "4799c83219eeb951d990e69f2ff230269e05e9c747663db3c49211b48f56e26d"
+        }
+      ],
+      "supported_fixes": [
+        "find the widest row via the flagged elements and remove the fixed-width cause"
+      ]
+    },
+    {
+      "id": "layout.responsive_collision",
+      "status": "pass",
+      "severity": "error",
+      "measured": {
+        "collisions": 0,
+        "pairs": [],
+        "interactive_elements": 7,
+        "viewport": "desktop",
+        "per_viewport": [
+          {
+            "viewport": "desktop",
+            "status": "pass"
+          },
+          {
+            "viewport": "wide",
+            "status": "pass"
+          }
+        ]
+      },
+      "threshold": {
+        "max_collisions": 0
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "text.truncation",
+      "status": "pass",
+      "severity": "error",
+      "measured": {
+        "truncated": 0,
+        "elements": [],
+        "viewport": "desktop",
+        "per_viewport": [
+          {
+            "viewport": "desktop",
+            "status": "pass"
+          },
+          {
+            "viewport": "wide",
+            "status": "pass"
+          }
+        ]
+      },
+      "threshold": {
+        "max_truncated": 0
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "a11y.contrast",
+      "status": "fail",
+      "severity": "error",
+      "subject": "span; small; button; strong",
+      "measured": {
+        "failing": 4,
+        "pairs": [
+          {
+            "selector": "span",
+            "ratio": 1.1,
+            "required": 4.5,
+            "font_px": 16,
+            "bold": false,
+            "foreground": "rgb(237, 242, 241)",
+            "background": "rgb(250,253,252)"
+          },
+          {
+            "selector": "small",
+            "ratio": 1.1,
+            "required": 4.5,
+            "font_px": 13,
+            "bold": false,
+            "foreground": "rgb(237, 242, 241)",
+            "background": "rgb(250,253,252)"
+          },
+          {
+            "selector": "button",
+            "ratio": 2.61,
+            "required": 4.5,
+            "font_px": 16,
+            "bold": false,
+            "foreground": "rgb(120, 137, 142)",
+            "background": "rgb(13,20,24)"
+          },
+          {
+            "selector": "strong",
+            "ratio": 1.1,
+            "required": 3,
+            "font_px": 24,
+            "bold": true,
+            "foreground": "rgb(19, 33, 43)",
+            "background": "rgb(16,23,27)"
+          }
+        ],
+        "viewport": "desktop",
+        "per_viewport": [
+          {
+            "viewport": "desktop",
+            "status": "fail"
+          },
+          {
+            "viewport": "wide",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "normal_min_ratio": 4.5,
+        "large_min_ratio": 3
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/contrast-1280x860.png",
+          "sha256": "ce2859d98a3750271188f6f2cb8baf5891b9b7dbd77938fa87d416776a59d27c"
+        },
+        {
+          "ref": "validation-evidence/contrast-1440x900.png",
+          "sha256": "cbb742520ce11a32b89fd4cb4a4223a74cbd70ce84b062c721e59ddc3620c925"
+        }
+      ],
+      "supported_fixes": [
+        "darken the failing text color (or lighten it against a dark background) until the measured ratio meets the required minimum"
+      ]
+    },
+    {
+      "id": "a11y.focus_order",
+      "status": "pass",
+      "severity": "error",
+      "measured": {
+        "stops": 1,
+        "sequence": [
+          "a"
+        ],
+        "missing_indicators": [],
+        "inversions": [],
+        "viewport": "desktop",
+        "per_viewport": [
+          {
+            "viewport": "desktop",
+            "status": "pass"
+          },
+          {
+            "viewport": "wide",
+            "status": "pass"
+          }
+        ]
+      },
+      "threshold": {
+        "max_missing_focus_indicators": 0,
+        "max_order_inversions": 0
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "a11y.target_size",
+      "status": "fail",
+      "severity": "error",
+      "subject": "select",
+      "measured": {
+        "undersized": 1,
+        "elements": [
+          {
+            "selector": "select",
+            "width": 12,
+            "height": 32
+          }
+        ],
+        "viewport": "desktop",
+        "per_viewport": [
+          {
+            "viewport": "desktop",
+            "status": "fail"
+          },
+          {
+            "viewport": "wide",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "min_target_px": 24
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/target-size-1280x860.png",
+          "sha256": "c062583cde52440323d49cbaea1aad21752e9f87b31f1012bd0b80497e1b98e8"
+        },
+        {
+          "ref": "validation-evidence/target-size-1440x900.png",
+          "sha256": "cbb742520ce11a32b89fd4cb4a4223a74cbd70ce84b062c721e59ddc3620c925"
+        }
+      ],
+      "supported_fixes": [
+        "raise the listed targets to at least 24×24 CSS px, or declare an equivalent alternative control via data-target-alternative"
+      ]
+    },
+    {
+      "id": "type.min_projected_size",
+      "status": "pass",
+      "severity": "warning",
+      "measured": {
+        "min_font_px": 13,
+        "undersized": 0,
+        "elements": [],
+        "viewport": "desktop",
+        "per_viewport": [
+          {
+            "viewport": "desktop",
+            "status": "pass"
+          },
+          {
+            "viewport": "wide",
+            "status": "pass"
+          }
+        ]
+      },
+      "threshold": {
+        "min_projected_px": 12
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    }
+  ],
+  "summary": {
+    "pass": 4,
+    "fail": 3,
+    "skipped": 0,
+    "warnings": 0
+  }
+}

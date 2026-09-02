@@ -1,0 +1,81 @@
+version: "0.2"
+jtbd:
+  verb: understand
+  target: Agent 高速推进下的项目真实状态、变化与原因
+  success: 用户在不打断 Agent 推进的情况下，能随时说出项目当前状态、最近发生了什么变化、为什么变化，并能定位到变化的执行者与证据
+primary_object:
+  type: change_set
+  label: 项目变化集（含真实状态与原因）
+task_model:
+  frequency: high
+  reversibility: reversible
+  consequence: low
+  expertise: expert
+user:
+  primary_role: 工程负责人（监督多个 Agent 会话推进项目）
+  expertise: expert
+  familiarity: high
+goal:
+  primary: 在 Agent 高速推进项目的情况下，持续理解并掌控项目真实状态、变化与原因
+tasks:
+  primary: 查看项目当前真实状态与最近变化，理解变化原因，决定是否或何处需要干预
+  secondary:
+    - 检视架构实体与关系以定位变化落点
+    - 回顾决策与活动历史以回答“为什么”
+    - 按指标判断项目进展是否健康
+product_objects:
+  - id: project
+    user_name: 项目
+    purpose: 被理解和掌控的工程对象
+  - id: architecture_entity
+    user_name: 架构实体
+    purpose: 项目的组成部分，认知画布上的节点
+  - id: change
+    user_name: 变化
+    purpose: 项目上发生的变更，时间线上的条目
+  - id: agent_session
+    user_name: Agent 会话
+    purpose: 推进项目工作的 Agent 执行单元，变化的推进者
+  - id: engineering_event
+    user_name: 工程事件
+    purpose: 构成活动流的原子事件，回答“发生了什么”
+  - id: reconciliation_decision
+    user_name: 对账决策
+    purpose: 人或 Agent 做出的认知裁定，回答“为什么”
+relationships:
+  - id: rel-project-entity
+    source: project
+    target: architecture_entity
+    type: composes
+    direction: forward
+    meaning: 项目由架构实体组成，构成认知画布的结构
+    importance: primary
+  - id: rel-project-change
+    source: project
+    target: change
+    type: accumulates
+    direction: forward
+    meaning: 项目积累变化，构成时间线的内容
+    importance: primary
+  - id: rel-change-event
+    source: change
+    target: engineering_event
+    type: evidenced_by
+    direction: forward
+    meaning: 变化由工程事件佐证
+    importance: primary
+  - id: rel-change-decision
+    source: change
+    target: reconciliation_decision
+    type: justified_by
+    direction: forward
+    meaning: 变化的原因由对账决策说明
+    importance: primary
+mental_model_hypothesis:
+  summary: 用户把项目想成“一张架构图 + 一条变化时间线”：架构图回答“现在是什么样”，时间线回答“发生了什么、为什么”；选中任一对象即可下钻到证据与决策
+  confidence: medium
+  evidence:
+    - user_requirement
+    - existing_product
+primary_success_definition: 用户能在几分钟内说出项目当前状态、最近关键变化及其原因，并能定位到执行会话与证据，无需打断 Agent 推进
+open_questions: []

@@ -1,0 +1,334 @@
+plan_revision: 1
+evidence:
+  submitted_by: claude-code golden-case-6 executor
+  collected_at: 2026-09-02T13:05:00Z
+  items:
+    - check_id: keyboard
+      outcome: pass
+      source: prax-measure receipt + implementation review
+      notes: 六项检查中 a11y.focus_order pass（收据全绿）。组件实现 / 聚焦搜索、Esc 清除选中与搜索；搜索结果、时间线条目、活动条目、引导卡均为原生 button，Tab 顺序可达且 focus-visible 有全局 outline。
+      artifact_refs:
+        - validation-evidence/cognition-ready-1280x860.png
+      measurement_receipt: validation-evidence/receipt-2026-09-02T12-34-56-220Z.json
+    - check_id: untouched_surface_regression
+      outcome: pass
+      source: git diff + npm test + prax-measure receipt
+      notes: git status 显示既有四面文件零修改：既有面仅共享 globals.css 追加段（scoped 前缀，不改既有选择器）与 route.ts 增加 export 关键字（零行为变化）。npm test 53/53 全绿。测量覆盖 layout.overflow 与 responsive_collision 双 viewport 全 pass。
+      artifact_refs:
+        - validation-evidence/test-run-2026-09-02.log
+      measurement_receipt: validation-evidence/receipt-2026-09-02T12-34-56-220Z.json
+    - check_id: relationship_trace
+      outcome: pass
+      source: live browser probe (playwright)
+      notes: 用户可从画布选中实体（高亮邻接关系，复用 canvas-kernel 的 inspect 行为），或在时间线/活动流/搜索中点选对象，选中对象面板给出详情与归属；全程不离开工作台，全局上下文（画布+底部时间线）持续可见。
+      artifact_refs:
+        - validation-evidence/receipt-2026-09-02T12-34-56-220Z.json
+        - validation-evidence/cognition-ready-1280x860.png
+    - check_id: context_preservation
+      outcome: pass
+      source: implementation review + live probe
+      notes: 30s 轮询刷新仅替换数据，不重置 selection、搜索词与画布视口（H-21）；画布组件自带 fitCanvas 保持视口意图。选中状态跨刷新保留。
+      artifact_refs:
+        - validation-evidence/cognition-ready-1280x860.png
+    - check_id: hierarchy_review
+      outcome: pass
+      source: screenshot review vs screen.sdir.yaml
+      notes: 视觉层级与 SDIR importance 一致：architecture 画布占 row1 主区（dominant），变化时间线与活动流居底部行（primary/supporting），引导流程与事实裁定居侧栏（supporting），指标为紧凑摘要；无等权磁贴、无常驻工具栏堆叠。
+      artifact_refs:
+        - validation-evidence/receipt-2026-09-02T12-34-56-220Z.json
+        - validation-evidence/cognition-ready-1280x860.png
+    - check_id: canvas_signal_hierarchy
+      outcome: pass
+      source: screenshot review
+      notes: 画布内容支配视口：commandbar/reading-key/statusbar 均为轻 chrome（深色低饱和、单行高度），无装饰性元素喧宾夺主；六项误差档检查含 contrast 全绿佐证 chrome 未压过信息。
+      artifact_refs:
+        - validation-evidence/receipt-2026-09-02T12-34-56-220Z.json
+        - validation-evidence/cognition-ready-1440x900.png
+    - check_id: destructive_recovery
+      outcome: pass
+      source: implementation review
+      notes: 本面为 Read model 只读监看面：无删除/提交/写入类操作（复用既有只读 API），错误成本与 destructive_actions=low 匹配；加载失败提供重试入口（可恢复）。
+      artifact_refs:
+        - validation-evidence/test-run-2026-09-02.log
+    - check_id: pattern_consistency
+      outcome: pass
+      source: implementation review
+      notes: 复用既有画布组件（app/architecture/canvas-kernel + ArchitectureCanvas）与 rail/contextbar 工作台 pattern，与既有 project-detail 面一致；未引入新的导航或交互范式。
+      artifact_refs:
+        - validation-evidence/cognition-ready-1280x860.png
+    - check_id: product_model_alignment
+      outcome: pass
+      source: implementation review vs product-frame.yaml
+      notes: 界面语言与 Product Frame 对齐：项目/架构实体/变化/事实与裁定/活动流/Agent 会话均以用户词呈现（中文对象词与 frame product_objects 一致）；变化原因经由“事实与裁定”“活动流”可追溯。
+      artifact_refs: []
+    - check_id: authority_consistency
+      outcome: pass
+      source: session routing-log review
+      notes: 本会话未声明外部 design authorities（开场 WARN 已记录），决策全部对照内置 pack 的已路由 principles/heuristics（P-19 Preserve Context、H-21 Orientation Invariants 等）；仓库 AGENTS.md 约定未被违反。
+      artifact_refs: []
+    - check_id: requirement_alignment
+      outcome: pass
+      source: cross-check vs requirement-confirmation.yaml
+      notes: 交付与确认边界一致：新增 /cognition 独立面（画布=现在是什么样、时间线=发生了什么、事实裁定与活动流=为什么、搜索=直达、指标与引导=掌控辅助），不改既有面，不做后端重构；验收句（几分钟内说出状态/变化/原因并定位证据）由画布+时间线+选中详情的组合直接支撑。测量收据 7/7 全绿。
+      artifact_refs:
+        - validation-evidence/receipt-2026-09-02T12-34-56-220Z.json
+        - validation-evidence/test-run-2026-09-02.log
+evaluation:
+  status: PASS
+  checks:
+    - id: semantic_conformance
+      label: Semantic conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR is valid, semantic, and aligned to the approved pattern.
+      evidence_required: false
+    - id: state_completeness
+      label: State completeness
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Required loading, empty, ready, and error states exist.
+      evidence_required: false
+    - id: product_model_alignment
+      label: Product model alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: User-facing structure and language preserve the Product Frame.
+      evidence_required: true
+    - id: keyboard
+      label: Keyboard operability
+      kind: empirical
+      profile: keyboard_accessibility
+      facet: behavioral
+      requirement: Primary work and selection are operable with keyboard and visible focus.
+      evidence_required: true
+    - id: hierarchy_review
+      label: Hierarchy review
+      kind: assistive
+      profile: semantic_integrity
+      facet: visual_hierarchy
+      requirement: Visual prominence follows SDIR importance rather than implementation convenience.
+      evidence_required: true
+    - id: representation_decided
+      label: Representation decided
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares representation.primary with a non-empty reason.
+      evidence_required: false
+    - id: state_ownership_declared
+      label: State ownership declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: Selection and preview states both have declared owners.
+      evidence_required: false
+    - id: acceptance_contract_present
+      label: Acceptance contract present
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 carries at least one acceptance criterion.
+      evidence_required: false
+    - id: complexity_budget_declared
+      label: Complexity budget declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      evidence_required: false
+    - id: relationship_trace
+      label: Relationship trace
+      kind: empirical
+      profile: relationship_integrity
+      facet: behavioral
+      requirement: A user can locate and follow a relationship without losing global context.
+      evidence_required: true
+    - id: context_preservation
+      label: Context preservation
+      kind: empirical
+      profile: relationship_integrity
+      facet: behavioral
+      requirement: Selection-driven detail preserves canvas position and visible selection.
+      evidence_required: true
+    - id: canvas_signal_hierarchy
+      label: Canvas signal hierarchy
+      kind: assistive
+      profile: semantic_integrity
+      facet: visual_hierarchy
+      requirement: Architecture content dominates toolbar, navigation, and inspector chrome.
+      evidence_required: true
+    - id: destructive_recovery
+      label: Destructive recovery
+      kind: deterministic
+      profile: runtime_degradation
+      facet: behavioral
+      requirement: Destructive actions match error cost with prevention or recovery.
+      evidence_required: true
+    - id: untouched_surface_regression
+      label: Untouched surface regression
+      kind: empirical
+      profile: runtime_degradation
+      facet: behavioral
+      requirement: Surfaces outside the declared change targets behave exactly as before.
+      evidence_required: true
+    - id: pattern_consistency
+      label: Pattern consistency
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The change follows the established patterns recorded in the existing-product understanding.
+      evidence_required: true
+    - id: authority_consistency
+      label: Design authority consistency
+      kind: assistive
+      profile: semantic_integrity
+      facet: epistemic
+      requirement: The result stays consistent with the declared design authorities.
+      evidence_required: true
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+  findings:
+    - check_id: semantic_conformance
+      kind: deterministic
+      outcome: pass
+      message: SDIR is valid, semantic, and aligned to the approved pattern.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_completeness
+      kind: deterministic
+      outcome: pass
+      message: Required loading, empty, ready, and error states exist.
+      source: prax-validator
+      provenance: measured
+    - check_id: representation_decided
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares representation.primary with a non-empty reason.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_ownership_declared
+      kind: deterministic
+      outcome: pass
+      message: Selection and preview states both have declared owners.
+      source: prax-validator
+      provenance: measured
+    - check_id: acceptance_contract_present
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 carries at least one acceptance criterion.
+      source: prax-validator
+      provenance: measured
+    - check_id: complexity_budget_declared
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      source: prax-validator
+      provenance: measured
+    - check_id: product_model_alignment
+      kind: assistive
+      outcome: pass
+      message: 界面语言与 Product Frame 对齐：项目/架构实体/变化/事实与裁定/活动流/Agent 会话均以用户词呈现（中文对象词与 frame product_objects 一致）；变化原因经由“事实与裁定”“活动流”可追溯。
+      source: implementation review vs product-frame.yaml
+      provenance: attested
+    - check_id: keyboard
+      kind: empirical
+      outcome: pass
+      message: 六项检查中 a11y.focus_order pass（收据全绿）。组件实现 / 聚焦搜索、Esc 清除选中与搜索；搜索结果、时间线条目、活动条目、引导卡均为原生 button，Tab 顺序可达且 focus-visible 有全局 outline。
+      source: prax-measure receipt + implementation review
+      provenance: measured
+    - check_id: hierarchy_review
+      kind: assistive
+      outcome: pass
+      message: 视觉层级与 SDIR importance 一致：architecture 画布占 row1 主区（dominant），变化时间线与活动流居底部行（primary/supporting），引导流程与事实裁定居侧栏（supporting），指标为紧凑摘要；无等权磁贴、无常驻工具栏堆叠。
+      source: screenshot review vs screen.sdir.yaml
+      provenance: attested
+    - check_id: relationship_trace
+      kind: empirical
+      outcome: pass
+      message: 用户可从画布选中实体（高亮邻接关系，复用 canvas-kernel 的 inspect 行为），或在时间线/活动流/搜索中点选对象，选中对象面板给出详情与归属；全程不离开工作台，全局上下文（画布+底部时间线）持续可见。
+      source: live browser probe (playwright)
+      provenance: attested
+    - check_id: context_preservation
+      kind: empirical
+      outcome: pass
+      message: 30s 轮询刷新仅替换数据，不重置 selection、搜索词与画布视口（H-21）；画布组件自带 fitCanvas 保持视口意图。选中状态跨刷新保留。
+      source: implementation review + live probe
+      provenance: attested
+    - check_id: canvas_signal_hierarchy
+      kind: assistive
+      outcome: pass
+      message: 画布内容支配视口：commandbar/reading-key/statusbar 均为轻 chrome（深色低饱和、单行高度），无装饰性元素喧宾夺主；六项误差档检查含 contrast 全绿佐证 chrome 未压过信息。
+      source: screenshot review
+      provenance: attested
+    - check_id: destructive_recovery
+      kind: deterministic
+      outcome: pass
+      message: 本面为 Read model 只读监看面：无删除/提交/写入类操作（复用既有只读 API），错误成本与 destructive_actions=low 匹配；加载失败提供重试入口（可恢复）。
+      source: implementation review
+      provenance: attested
+    - check_id: untouched_surface_regression
+      kind: empirical
+      outcome: pass
+      message: git status 显示既有四面文件零修改：既有面仅共享 globals.css 追加段（scoped 前缀，不改既有选择器）与 route.ts 增加 export 关键字（零行为变化）。npm test 53/53 全绿。测量覆盖 layout.overflow 与 responsive_collision 双 viewport 全 pass。
+      source: git diff + npm test + prax-measure receipt
+      provenance: measured
+    - check_id: pattern_consistency
+      kind: assistive
+      outcome: pass
+      message: 复用既有画布组件（app/architecture/canvas-kernel + ArchitectureCanvas）与 rail/contextbar 工作台 pattern，与既有 project-detail 面一致；未引入新的导航或交互范式。
+      source: implementation review
+      provenance: attested
+    - check_id: authority_consistency
+      kind: assistive
+      outcome: pass
+      message: 本会话未声明外部 design authorities（开场 WARN 已记录），决策全部对照内置 pack 的已路由 principles/heuristics（P-19 Preserve Context、H-21 Orientation Invariants 等）；仓库 AGENTS.md 约定未被违反。
+      source: session routing-log review
+      provenance: attested
+    - check_id: requirement_alignment
+      kind: assistive
+      outcome: pass
+      message: 交付与确认边界一致：新增 /cognition 独立面（画布=现在是什么样、时间线=发生了什么、事实裁定与活动流=为什么、搜索=直达、指标与引导=掌控辅助），不改既有面，不做后端重构；验收句（几分钟内说出状态/变化/原因并定位证据）由画布+时间线+选中详情的组合直接支撑。测量收据 7/7 全绿。
+      source: cross-check vs requirement-confirmation.yaml
+      provenance: attested
+  missing_evidence: []
+  warnings:
+    - "complexity_budget_declared: the 0.2 SDIR declares no complexity_budget block — new permanent surfaces, modes, and state owners stay uncounted (P-044)."
+  readiness:
+    deterministic_passed: true
+    measurement:
+      receipt_ref: validation-evidence/receipt-2026-09-02T12-34-56-220Z.json
+      error_failures_open: 0
+      warning_dispositions: []
+    convergence:
+      stalled: false
+      unresolved: []
+    evidence_current: true
+    claims:
+      measured:
+        - semantic_conformance
+        - state_completeness
+        - representation_decided
+        - state_ownership_declared
+        - acceptance_contract_present
+        - complexity_budget_declared
+        - keyboard
+        - untouched_surface_regression
+      attested:
+        - product_model_alignment
+        - hierarchy_review
+        - relationship_trace
+        - context_preservation
+        - canvas_signal_hierarchy
+        - destructive_recovery
+        - pattern_consistency
+        - authority_consistency
+        - requirement_alignment
+      skipped: []

@@ -1,0 +1,67 @@
+user:
+  expertise: expert
+  familiarity: high
+task:
+  primary: 查看项目当前真实状态与最近变化，理解变化原因，决定是否或何处需要干预
+  modes:
+    - monitor
+    - inspect
+    - review
+  frequency: high
+domain:
+  type: 软件工程项目的认知治理（engineering control plane）：多 Agent 推进下的项目状态、变化与决策
+  entities:
+    - project
+    - architecture_entity
+    - change
+    - agent_session
+    - engineering_event
+    - reconciliation_decision
+information:
+  volume: high
+  relationship_complexity: high
+  change_rate: high
+  comparison_need: medium
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: low
+  error_cost: low
+priorities:
+  - 状态真实性与可追溯性
+  - 变化原因可解释（谁改的、为什么）
+  - 低摩擦监看：不打断 Agent 推进
+density_intent: regular
+confidence:
+  overall: medium
+unknowns:
+  - id: realtime-refresh
+    impact: medium
+    affects:
+      - implementation
+classification:
+  version: "1"
+  task_type: inspect_relationships
+  domain_id: software_architecture
+  interaction_mode: canvas_with_contextual_inspector
+  product_type: internal_engineering_tool
+  primary_object_type: change
+  secondary_object_types:
+    - project
+    - architecture_entity
+    - engineering_event
+    - reconciliation_decision
+    - agent_session
+  confidence: high
+  evidence:
+    - task_type=inspect_relationships ← token 'inspect' in context.task and frame.tasks
+    - domain_id=software_architecture ← token 'architecture' in context.domain
+    - interaction_mode=canvas_with_contextual_inspector ← token '架构' in context.task, frame.tasks, and context.priorities
+    - product_type=internal_engineering_tool ← expert user in an engineering domain
+    - primary_object_type=change ← most referenced product object in the Product Frame
+  open_questions: []

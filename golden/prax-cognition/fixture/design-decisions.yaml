@@ -1,0 +1,100 @@
+session_id: ds_20260902113424_16f6a971
+version: "0.2"
+information_shape:
+  cardinality: many
+  relationality: high
+  hierarchy: medium
+  temporality: high
+  density: high
+  dimensionality: medium
+  spatiality: conceptual
+  volatility: high
+  uncertainty: medium
+  comparison_need: optional
+representation:
+  primary:
+    type: canvas
+    reason: relationality=high + spatiality=conceptual：架构实体与关系是理解“项目现在是什么样”的主对象，空间画布使结构可见且支持 overview+trace 并存（PAT-CANVAS-WORKSPACE），与既有 project-detail 面的画布心智一致
+  supporting:
+    - type: timeline
+      reason: temporality=high：变化时间线回答“发生了什么、何时”，把 volatility=high 的变化流按时间排序，与画布选中对象联动
+    - type: search_results
+      reason: 专家用户高频定位：Search 提供按名称/类型直达对象的入口，服务 Overview-Filter-Detail（H-22）的 filter 环节
+    - type: feed
+      reason: Decisions + Activity：决策与工程事件构成活动流，回答“为什么变化”，承载 reason 追溯
+    - type: chart
+      reason: Metrics：项目进展健康度的量化视图（变化速率、知识缺口数），低维度汇总用图表承载
+  rejected:
+    - option: dashboard
+      reason: dashboard 把关注点拆成等权磁贴，无法承载“选中→下钻证据”的主线，且在高 relationality 下制造假对等，易滑向 universal shell
+    - option: table
+      reason: 表格无法表达实体间的空间关系，relationality=high 下结构不可见
+    - option: tabs
+      reason: 标签切分会切断架构与时间线的并置对照，违背 Preserve Context（P-19）
+  justification_vs_shape: 逐项推导：cardinality=many → 需要可缩放总览而非逐条列表（canvas）；relationality=high → 主表达必须显式呈现关系（canvas 的边），否决 table/dashboard；temporality=high + volatility=high → 必须有独立的时间线表达与画布并置（timeline），而非把变化塞进卡片流；hierarchy=medium → 分区/分组即可，不需要深层树；density=high + 专家用户 → 支持结构化密度（H-13），但 density_intent=regular 控制永久面板数；spatiality=conceptual → 布局按架构语义聚类而非物理坐标；uncertainty=medium → 画布节点需可标记知识缺口；comparison_need=optional → 不设常驻对比面板。Architecture Canvas 仅作为本面的主表达承载架构关系，不扩展为全产品 universal shell——既有四面（home/detail/fixtures/maintenance）保持原结构。
+primary_structure:
+  pattern: PAT-CANVAS-WORKSPACE
+  rationale:
+    - spatial relationships are central：架构实体关系是“真实状态”的核心
+    - overview and trace must coexist：总览画布与变化追溯需同屏协作
+    - Router high confidence + 与既有 project-detail 画布心智一致，组合 PAT-LIST-DETAIL-INSPECTOR 承载选中下钻，底座为 PAT-WORKSPACE 的持久工作台
+  confidence: high
+information_hierarchy:
+  primary:
+    - architecture
+    - change_timeline
+    - selection_inspector
+  secondary:
+    - decisions_feed
+    - activity
+    - metrics
+    - search
+    - guided_flows
+density:
+  intent: regular
+  strategy:
+    - 画布占主导区域，时间线/活动流为可折叠侧栏
+    - Inspector 仅在选中时展开，不常驻
+    - 指标以紧凑摘要呈现，细节点击展开
+  avoid:
+    - 常驻工具栏堆叠
+    - 等权磁贴 dashboard
+    - 模态打断监看状态
+major_choices:
+  - id: choice-canvas-primary
+    choice: 以 Architecture Canvas 为 primary 表达，而非 dashboard 或 table
+    rationale: relationality=high 且空间关系是用户心智核心；dashboard/table 均被 shape 否决（见 representation.rejected）
+    confidence: high
+    references:
+      - architecture_entity
+      - project
+  - id: choice-timeline-coupled
+    choice: 变化时间线（timeline）与画布并置作为第二表达，选中对象联动过滤
+    rationale: temporality=high：理解“发生了什么”需要时间序，与画布的空间序互补；联动避免两视图各自为政
+    confidence: high
+    references:
+      - change
+      - engineering_event
+  - id: choice-inspector-contextual
+    choice: 选中下钻用 Contextual Inspector pattern 而非跳页或模态
+    rationale: 保住监看的连续性（P-19/H-21），答案在上下文内呈现
+    confidence: high
+    references:
+      - architecture_entity
+      - reconciliation_decision
+  - id: choice-agents-as-attribution
+    choice: Agent 会话与事件仅作为变化条目的归属/证据维度呈现，不做独立 Agent 管理列表
+    rationale: 本面任务是 understand 而非 manage Agent；避免与未来可能的 Agent 管理面职责混淆，控制 complexity budget
+    confidence: medium
+    references:
+      - agent_session
+rejected:
+  - option: PAT-WORKSPACE 单独作主结构
+    reason: workspace 只定义持久性底座，不解决关系呈现；须与 PAT-CANVAS-WORKSPACE 组合并以画布为主导
+  - option: PAT-LIST-DETAIL-INSPECTOR 作主结构（列表主导）
+    reason: 列表把 many 实体压成顺序行，spatiality=conceptual 的结构不可见，仅适合承载 Inspector 部分
+unresolved:
+  - id: realtime-refresh
+    impact: medium
+    affects:
+      - implementation

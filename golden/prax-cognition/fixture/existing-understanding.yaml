@@ -1,0 +1,109 @@
+version: "0.1"
+current_objects:
+  - id: project
+    user_name: 项目
+    purpose: 被理解和掌控的工程对象
+    evidence_refs:
+      - db/schema.ts projects
+  - id: architecture_entity
+    user_name: 架构实体
+    purpose: 项目的组成部分，画布上的节点
+    evidence_refs:
+      - db/schema.ts architecture_entities
+  - id: change
+    user_name: 变化
+    purpose: 项目上发生的变更记录
+    evidence_refs:
+      - db/schema.ts changes
+  - id: agent_session
+    user_name: Agent 会话
+    purpose: 推进项目工作的 Agent 执行单元
+    evidence_refs:
+      - db/schema.ts agent_sessions
+  - id: engineering_event
+    user_name: 工程事件
+    purpose: 构成活动流的原子事件
+    evidence_refs:
+      - db/schema.ts engineering_events
+  - id: fact
+    user_name: 知识事实
+    purpose: 项目认知库中的事实条目及其验证
+    evidence_refs:
+      - db/schema.ts facts, verifications, observations
+  - id: reconciliation_decision
+    user_name: 对账决策
+    purpose: 人或 Agent 做出的认知裁定
+    evidence_refs:
+      - db/schema.ts reconciliation_decisions
+current_relationships:
+  - id: rel-project-entity
+    source: project
+    target: architecture_entity
+    type: composes
+    direction: forward
+    meaning: 项目由架构实体组成
+    importance: primary
+    evidence_refs: []
+  - id: rel-project-change
+    source: project
+    target: change
+    type: accumulates
+    direction: forward
+    meaning: 项目积累变化记录
+    importance: primary
+    evidence_refs: []
+  - id: rel-session-event
+    source: agent_session
+    target: engineering_event
+    type: emits
+    direction: forward
+    meaning: Agent 会话产生工程事件
+    importance: supporting
+    evidence_refs: []
+current_surfaces:
+  - id: control-plane-home
+    purpose: 项目目录主控面：全项目状态汇总（稳定/正在变化/需要关注）、分类筛选与关键计数
+    evidence_refs:
+      - app/control-plane.tsx
+      - app/page.tsx
+  - id: project-detail
+    purpose: 项目详情面：项目架构画布（React Flow）+ 实体 Inspector + 流程面板
+    evidence_refs:
+      - app/projects/[projectId]/page.tsx
+      - app/architecture/architecture-canvas.tsx
+      - app/architecture/inspector.tsx
+  - id: architecture-fixtures
+    purpose: 架构 fixture 工作台：画布布局与交互的样例验证面
+    evidence_refs:
+      - app/architecture-fixtures/page.tsx
+  - id: maintenance-console
+    purpose: 维护控制台：数据维护与治理操作
+    evidence_refs:
+      - app/maintenance/page.tsx
+established_patterns:
+  - Architecture Canvas + Inspector（React Flow 画布 + 右侧检视面板）
+  - 卡片目录列表 + 分类筛选（Control Plane）
+  - 中文界面文案 + 状态徽标（稳定/正在变化/需要关注）
+user_habits: []
+constraints_and_debt:
+  - 既有面为 Next.js + React 19 + Cloudflare Workers 架构
+  - 认知工作台须为新增面，不改动既有面
+change_targets: []
+actual_usage: []
+pain_points:
+  - 项目状态分散在目录与详情页，缺少统一的时间线视角回答“发生了什么、为什么”
+  - 变化与原因（决策、事件）在现有面上不易追溯
+must_preserve:
+  - control-plane-home
+  - project-detail
+  - architecture-fixtures
+  - maintenance-console
+must_replace: []
+free_to_reconsider: []
+migration_notes: []
+design_authorities: []
+surface_context:
+  density: regular
+  user_expertise: expert
+  destructive_actions: low
+  task_frequency: medium

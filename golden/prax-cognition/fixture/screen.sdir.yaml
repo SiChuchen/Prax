@@ -1,0 +1,178 @@
+version: "0.2"
+screen:
+  id: canvas_workspace_screen
+  intent:
+    primary_task: 查看项目当前真实状态与最近变化，理解变化原因，决定是否或何处需要干预
+    secondary_tasks:
+      - 检视架构实体与关系以定位变化落点
+      - 回顾决策与活动历史以回答“为什么”
+      - 按指标判断项目进展是否健康
+  archetype:
+    pattern_ref: PAT-CANVAS-WORKSPACE
+  density_intent: regular
+  regions:
+    - id: architecture
+      role: dominant_workspace
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - spatial_overview
+        - direct_selection
+        - pan_zoom
+    - id: change_timeline
+      role: experimental:change_timeline
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: selection_inspector
+      role: experimental:selection_inspector
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: decisions_feed
+      role: experimental:decisions_feed
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: activity
+      role: experimental:activity
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: metrics
+      role: experimental:metrics
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: search
+      role: experimental:search
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: guided_flows
+      role: experimental:guided_flows
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: navigation
+      role: primary_navigation
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent:
+        - preserve_context
+    - id: toolbar
+      role: supporting_toolbar
+      importance: supporting
+      visibility:
+        condition: task_driven
+      behavior_intent:
+        - keyboard_equivalent
+    - id: inspector
+      role: contextual_inspector
+      importance: contextual
+      visibility:
+        condition: selection_driven
+      behavior_intent:
+        - selection_driven
+        - progressive_inspection
+  relationships:
+    - id: region_rel_architecture_inspector
+      source: architecture
+      target: inspector
+      type: selection_drives_contextual_detail
+  interaction_intents:
+    - spatial_overview
+    - direct_selection
+    - pan_zoom
+    - progressive_inspection
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved:
+    - id: realtime-refresh
+      question: realtime-refresh
+      impact: medium
+      affects:
+        - implementation
+  rejected_alternatives:
+    - option: PAT-WORKSPACE 单独作主结构
+      reason: workspace 只定义持久性底座，不解决关系呈现；须与 PAT-CANVAS-WORKSPACE 组合并以画布为主导
+    - option: PAT-LIST-DETAIL-INSPECTOR 作主结构（列表主导）
+      reason: 列表把 many 实体压成顺序行，spatiality=conceptual 的结构不可见，仅适合承载 Inspector 部分
+  user_job:
+    verb: understand
+    target: Agent 高速推进下的项目真实状态、变化与原因
+    success: 用户在不打断 Agent 推进的情况下，能随时说出项目当前状态、最近发生了什么变化、为什么变化，并能定位到变化的执行者与证据
+  primary_object:
+    type: change_set
+    label: 项目变化集（含真实状态与原因）
+  information_shape:
+    cardinality: many
+    relationality: high
+    hierarchy: medium
+    temporality: high
+    density: high
+    dimensionality: medium
+    spatiality: conceptual
+    volatility: high
+    uncertainty: medium
+    comparison_need: optional
+  representation:
+    primary:
+      type: canvas
+      reason: relationality=high + spatiality=conceptual：架构实体与关系是理解“项目现在是什么样”的主对象，空间画布使结构可见且支持 overview+trace 并存（PAT-CANVAS-WORKSPACE），与既有 project-detail 面的画布心智一致
+    supporting:
+      - type: timeline
+        reason: temporality=high：变化时间线回答“发生了什么、何时”，把 volatility=high 的变化流按时间排序，与画布选中对象联动
+      - type: search_results
+        reason: 专家用户高频定位：Search 提供按名称/类型直达对象的入口，服务 Overview-Filter-Detail（H-22）的 filter 环节
+      - type: feed
+        reason: Decisions + Activity：决策与工程事件构成活动流，回答“为什么变化”，承载 reason 追溯
+      - type: chart
+        reason: Metrics：项目进展健康度的量化视图（变化速率、知识缺口数），低维度汇总用图表承载
+  priority:
+    primary:
+      - architecture
+      - change_timeline
+      - selection_inspector
+    contextual:
+      - decisions_feed
+      - activity
+      - metrics
+      - search
+      - guided_flows
+      - navigation
+      - toolbar
+      - inspector
+  interaction:
+    preview: none
+    inspect: select
+    navigate: none
+    locate: none
+  state_ownership:
+    - state: selection
+      owner: architecture
+    - state: preview
+      owner: session
+  acceptance:
+    - 用户能在几分钟内说出项目当前状态、最近关键变化及其原因，并能定位到执行会话与证据，无需打断 Agent 推进

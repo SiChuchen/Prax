@@ -1,0 +1,79 @@
+needs:
+  - id: need-canvas-structure
+    product_action: 呈现项目架构实体与关系画布，支持选中与高亮
+    required_experience:
+      - 画布渲染
+      - 选中高亮
+      - 缩放平移
+    capabilities:
+      - React Flow 画布内核（app/architecture/canvas-kernel.tsx）
+      - semantic projection（app/architecture/projection.ts）
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 复用既有画布内核与 projection，不新建画布实现；新面自持实例，不改 project-detail 既有画布
+  - id: need-timeline-data
+    product_action: 按时间序呈现项目变化（changes）及其佐证事件（events）与版本（revisions）
+    required_experience:
+      - 时间线排序
+      - 变化条目与画布联动
+    capabilities:
+      - /api/projects 已返回 changes（updatedAt 排序）、events（createdAt）、revisions
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: 客户端合并 changes/events/revisions 为统一时间线序列，按选中对象过滤；无需后端改动
+  - id: need-object-search
+    product_action: 按名称/类型快速定位架构实体、变化、事件
+    required_experience:
+      - 即时搜索
+      - 结果直达选中
+    capabilities:
+      - detail 数据已在客户端，可建内存索引
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: 客户端内存索引（实体/变化/事件三类），选中结果同步画布与 Inspector
+  - id: need-metrics-summary
+    product_action: 聚合项目进展指标（变化速率、知识缺口、活跃会话）
+    required_experience:
+      - 紧凑指标摘要
+    capabilities:
+      - catalog 计数（activeChanges/unknowns/activeAgents）已在 registry
+      - 事件时间分布需客户端聚合
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: registry 计数直读；事件直方图由 events 客户端聚合，首轮不新增后端聚合端点
+  - id: need-decision-trace
+    product_action: 从变化下钻到原因：对账决策、事实与证据链
+    required_experience:
+      - 下钻详情
+      - 证据引用可见
+    capabilities:
+      - detail.facts / evidence 已返回；reconciliation_decisions 表在 db/schema 有模型但 /api/projects 未暴露该明细
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: 首轮以 changes.summary + events + facts + evidence 呈现原因链；reconciliation_decisions 明细接口列为后续迭代（记录为开放项，不阻塞首轮）
+  - id: need-near-realtime-refresh
+    product_action: 在不打断用户的情况下近实时反映 Agent 推进
+    required_experience:
+      - 自动刷新
+      - 刷新不打断选中/视口
+    capabilities:
+      - 无既有推送通道；fetch no-store 模式已有先例
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: 首轮用定时轮询 + 刷新时保留 selection/viewport（H-21 Orientation Invariants）；推送通道列为后续
+  - id: need-guided-flows
+    product_action: 为高频任务（今日该看什么/变化为何发生）提供引导入口
+    required_experience:
+      - 任务导向入口
+    capabilities:
+      - 可由时间线/指标数据派生建议
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: 首轮以静态任务卡片 + 数据驱动高亮实现；不引入向导式表单

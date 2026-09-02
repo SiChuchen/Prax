@@ -1,0 +1,46 @@
+version: "0.1"
+session_id: ds_20260902113424_16f6a971
+task_ref: 查看项目当前真实状态与最近变化，理解变化原因，决定是否或何处需要干预
+selected:
+  - ref: product_relationships
+    reason:
+      - rel-project-entity:project->architecture_entity
+      - rel-project-change:project->change
+      - rel-change-event:change->engineering_event
+      - rel-change-decision:change->reconciliation_decision
+      - rel-session-event:agent_session->engineering_event
+  - ref: region_relationships
+    reason:
+      - region_rel_architecture_inspector
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-CANVAS-WORKSPACE
+  - ref: unresolved
+    reason:
+      - realtime-refresh
+  - ref: corrections
+    reason: []
+  - ref: validation-plan@1
+    reason:
+      - semantic_conformance
+      - state_completeness
+      - product_model_alignment
+      - keyboard
+      - hierarchy_review
+      - representation_decided
+      - state_ownership_declared
+      - acceptance_contract_present
+      - complexity_budget_declared
+      - relationship_trace
+      - context_preservation
+      - canvas_signal_hierarchy
+      - destructive_recovery
+      - untouched_surface_regression
+      - pattern_consistency
+      - authority_consistency
+      - requirement_alignment
+excluded:
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata
