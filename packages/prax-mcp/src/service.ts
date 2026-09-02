@@ -1407,8 +1407,10 @@ export class PraxService {
       (await this.sessions.readArtifact<RepresentationArtifact>(session, "representationArtifact")) ?? undefined;
     const representationReviewForEvaluation =
       (await this.sessions.readArtifact<RepresentationReview>(session, "representationReview")) ?? undefined;
-    const evaluation = this.validator.evaluate({
+    const evaluationSessionDirectory = await this.sessions.artifactDirectory(session.id);
+    const evaluation = await this.validator.evaluate({
       plan,
+      sessionDirectory: evaluationSessionDirectory,
       ...(sdirArtifact === undefined ? {} : { sdir: sdirArtifact }),
       ...(sdirDeltaArtifact === undefined ? {} : { sdirDelta: sdirDeltaArtifact }),
       ...(decisionsArtifact === undefined ? {} : { decisions: decisionsArtifact }),
@@ -1477,9 +1479,18 @@ export class PraxService {
       return consecutive >= 2;
     })();
     if (stalled && status !== "BLOCK") status = "REVIEW";
+    // §5.7 R4: convergence is runtime-tracked truth — the validator leaves a
+    // placeholder that only the service can fill with the real loop state
+    if (evaluation.readiness !== undefined) {
+      evaluation.readiness.convergence = { stalled, unresolved: [] as string[] };
+    }
     const unresolvedFindings = mergedFindings
       .filter((finding) => finding.outcome === "fail" || finding.outcome === "inconclusive")
       .map((finding) => finding.check_id);
+    if (evaluation.readiness !== undefined && stalled) {
+      evaluation.readiness.convergence = { stalled, unresolved: unresolvedFindings };
+    }
+    const evaluationCodes = (evaluation as { codes?: string[] }).codes ?? [];
     const stallWarning =
       stalled && !stalledBefore
         ? `VALIDATION_CONVERGENCE_STALLED: open findings have not reached a new minimum for two consecutive evaluations; unresolved findings (truthful report, not retried indefinitely): [${unresolvedFindings.join(", ")}]`
@@ -1509,9 +1520,15 @@ export class PraxService {
       },
       ...(planChanged ? [{ key: "validationPlan" as const, value: persistedPlan }] : []),
     ]);
+    const outputCode = stalled
+      ? "VALIDATION_CONVERGENCE_STALLED"
+      : status === "BLOCK" || status === "REVIEW" || status === "EXPAND"
+        ? evaluationCodes[0]
+        : undefined;
     return {
       ...evaluation,
       ...(status !== evaluation.status ? { status } : {}),
+      ...(outputCode !== undefined ? { code: outputCode } : {}),
       findings: mergedFindings,
       missing_evidence: finalMissing,
       ...(stalled

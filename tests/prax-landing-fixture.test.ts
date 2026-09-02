@@ -5,6 +5,7 @@ import { parse } from "yaml";
 import { afterEach, expect, it } from "vitest";
 import { FileSessionStore, contentDigest } from "prax-runtime";
 import { PraxService } from "prax-mcp";
+import { writeMeasurementReceiptInto } from "./fixtures.js";
 
 /**
  * Replays the frozen PRAX-LANDING-001 golden fixture
@@ -53,7 +54,7 @@ async function startFixtureSession() {
 }
 
 it("replays the PRAX-LANDING-001 fixture through every gate to COMPLETE with golden digests intact", async () => {
-  const { service } = await startFixtureSession();
+  const { service, sessionDir } = await startFixtureSession();
 
   const frame = await loadFixture("product-frame.yaml");
   const context = await loadFixture("design-context.yaml");
@@ -187,10 +188,20 @@ it("replays the PRAX-LANDING-001 fixture through every gate to COMPLETE with gol
   expect(checkIds).toContain("design_representation_coverage");
   expect(checkIds).toContain("representation_runtime_drift");
 
+  // Phase 1: mapped empirical claims now require receipt coverage (spec §5.4
+  // rule 3); the frozen evidence replays byte-identically and the receipt is
+  // attached as a new evidence file without touching the golden digests.
+  const receiptRef = await writeMeasurementReceiptInto(sessionDir);
+  const evidenceWithReceipt = {
+    ...validationReport.evidence,
+    items: validationReport.evidence.items.map((item) =>
+      item.check_id === "keyboard" ? { ...item, measurement_receipt: receiptRef } : item,
+    ),
+  };
   const submitted = await service.designValidate({
     design_session_id: SESSION_ID,
     mode: "submit_evidence",
-    evidence: validationReport.evidence,
+    evidence: evidenceWithReceipt,
   });
   expect(submitted.status).toBe("PASS");
 

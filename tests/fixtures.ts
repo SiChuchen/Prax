@@ -349,3 +349,55 @@ export function directCodeConditions(): RealizationCondition[] {
     { id: "mature_design_system", holds: false, basis: "no design system yet" },
   ];
 }
+
+// ── Phase 1 measurement fixtures ──
+// A valid all-pass receipt shared by e2e flows whose mapped checks claim pass:
+// the validator requires receipt coverage for them (spec §5.4 rule 3).
+const RECEIPT_PNG_BYTES = Buffer.from([
+  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52,
+]);
+
+export async function writeMeasurementReceiptInto(sessionDirectory: string): Promise<string> {
+  const { mkdir, writeFile } = await import("node:fs/promises");
+  const { join } = await import("node:path");
+  await mkdir(join(sessionDirectory, "validation-evidence"), { recursive: true });
+  await writeFile(join(sessionDirectory, "validation-evidence", "shot.png"), RECEIPT_PNG_BYTES);
+  const receipt = {
+    receipt_version: "0.1",
+    tool: { name: "prax-measure", version: "0.1.0" },
+    target: { app_root: "apps/prax-landing", base_url: "http://127.0.0.1:4390/", build_ref: null },
+    run_at: new Date(Date.now() + 60_000).toISOString(),
+    viewport_matrix: [{ width: 1280, height: 860, label: "desktop" }],
+    checks: [
+      "layout.overflow",
+      "layout.responsive_collision",
+      "text.truncation",
+      "a11y.contrast",
+      "a11y.focus_order",
+      "a11y.target_size",
+      "type.min_projected_size",
+    ].map((id) => ({
+      id,
+      status: "pass",
+      severity: id === "a11y.contrast" || id === "a11y.target_size" ? "error" : "warning",
+      measured: {},
+      threshold: {},
+      evidence_refs: [],
+      supported_fixes: [],
+    })),
+    summary: { pass: 7, fail: 0, skipped: 0, warnings: 0 },
+  };
+  await writeFile(
+    join(sessionDirectory, "validation-evidence", "receipt.json"),
+    `${JSON.stringify(receipt, null, 2)}
+`,
+  );
+  return "validation-evidence/receipt.json";
+}
+
+export async function writeMeasurementReceipt(
+  store: { artifactDirectory(sessionId: string): Promise<string> },
+  sessionId: string,
+): Promise<string> {
+  return writeMeasurementReceiptInto(await store.artifactDirectory(sessionId));
+}

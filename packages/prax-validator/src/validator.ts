@@ -10,6 +10,7 @@ import {
   type ValidationFinding,
   type ValidationPlan,
 } from "./contracts.js";
+import { verifyArtifactEvidence } from "./artifact-evidence.js";
 
 const REQUIREMENT_CHECK: ValidationCheck = {
   id: "requirement_alignment",
@@ -208,7 +209,7 @@ export class PraxValidator {
     return ValidationEvidenceSchema.parse(input);
   }
 
-  public evaluate(input: {
+  public async evaluate(input: {
     plan: ValidationPlan;
     sdir?: Sdir | undefined;
     sdirDelta?: SdirDelta | undefined;
@@ -217,7 +218,8 @@ export class PraxValidator {
     representationArtifact?: RepresentationArtifact | undefined;
     representationReview?: RepresentationReview | undefined;
     sdirDigest?: string | undefined;
-  }): ValidationEvaluation {
+    sessionDirectory?: string | undefined;
+  }): Promise<ValidationEvaluation> {
     const provided = new Map(input.evidence?.items.map((item) => [item.check_id, item]) ?? []);
     const findings: ValidationFinding[] = [];
     const checkIds = new Set(input.plan.checks.map((check) => check.id));
@@ -347,7 +349,7 @@ export class PraxValidator {
     );
     const inconclusive = findings.some((finding) => finding.outcome === "inconclusive");
 
-    const status = deterministicFailure
+    let status: ValidationEvaluation["status"] = deterministicFailure
       ? "BLOCK"
       : reviewFailure
         ? "REVIEW"
@@ -370,6 +372,63 @@ export class PraxValidator {
           `check '${check.id}' passed on agent self-attestation without artifact_refs; cite concrete artifacts (screenshots, run logs) so the claim is verifiable (PRAX-AB-001 finding-01)`,
       );
 
-    return { status, checks: input.plan.checks, findings, missing_evidence: missingEvidence, warnings };
+    // ── measured artifact evidence (Task B4, spec §5.4/§5.7) ──
+    let codes: string[] = [];
+    let readiness: import("./contracts.js").ReviewReadiness | undefined;
+    if (input.sessionDirectory !== undefined && input.evidence !== undefined) {
+      const artifact = await verifyArtifactEvidence({
+        sessionDirectory: input.sessionDirectory,
+        evidence: input.evidence,
+      });
+      for (const finding of findings) {
+        const provenance = artifact.provenanceByCheck.get(finding.check_id);
+        if (provenance !== undefined) finding.provenance = provenance;
+      }
+      for (const missing of artifact.missingEvidence) {
+        if (!missingEvidence.includes(missing)) missingEvidence.push(missing);
+      }
+      warnings.push(...artifact.warnings);
+      codes = artifact.codes;
+      readiness = {
+        deterministic_passed: !findings.some((finding) => finding.kind === "deterministic" && finding.outcome === "fail"),
+        measurement: {
+          receipt_ref: artifact.receiptRefs[0] ?? null,
+          error_failures_open: artifact.errorFailuresOpen,
+          warning_dispositions: [],
+        },
+        convergence: { stalled: false, unresolved: [] }, // the service injects the runtime-tracked state
+        evidence_current: artifact.evidenceCurrent,
+        claims: {
+          // the split reflects every finding's final provenance, not only the
+          // mapped checks — unmapped claims stay attested and are never shown
+          // as measured (spec §5.4)
+          measured: [...new Set(findings.filter((finding) => finding.provenance === "measured").map((finding) => finding.check_id))],
+          attested: [...new Set(findings.filter((finding) => finding.provenance === "attested").map((finding) => finding.check_id))],
+          skipped: artifact.skippedArtifactIds,
+        },
+      };
+      const severity: Record<ValidationEvaluation["status"], number> = { BLOCK: 4, REVIEW: 3, EXPAND: 2, WARN: 1, PASS: 0 };
+      if (severity[artifact.status] > severity[status]) status = artifact.status;
+      // §5.7 R1/R2: a not-green readiness refuses completion — only PASS/WARN
+      // evaluations are downgraded here; worse statuses already refuse it
+      const readinessGreen =
+        readiness.deterministic_passed &&
+        readiness.measurement.error_failures_open === 0 &&
+        readiness.evidence_current;
+      if (!readinessGreen && (status === "PASS" || status === "WARN")) {
+        status = "REVIEW";
+        codes = ["REVIEW_NOT_READY", ...codes];
+      }
+    }
+
+    return {
+      status,
+      checks: input.plan.checks,
+      findings,
+      missing_evidence: missingEvidence,
+      warnings,
+      ...(codes.length > 0 ? { codes } : {}),
+      ...(readiness !== undefined ? { readiness } : {}),
+    };
   }
 }

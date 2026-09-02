@@ -12,6 +12,7 @@ import {
   directCodeConditions,
   figmaFirstConditions,
   requirementConfirmation,
+  writeMeasurementReceipt,
 } from "./fixtures.js";
 
 const cleanup: string[] = [];
@@ -173,6 +174,12 @@ describe("design_realize end to end", () => {
         },
       ],
     };
+    const receiptRef = await writeMeasurementReceipt(store, sessionId);
+    for (const item of evidence.items) {
+      if (["keyboard", "readability", "regression_check", "untouched_surface_regression"].includes(item.check_id)) {
+        (item as Record<string, unknown>).measurement_receipt = receiptRef;
+      }
+    }
     const submitted = await service.designValidate({ design_session_id: sessionId, mode: "submit_evidence", evidence });
     expect(submitted.status).toBe("PASS");
     const evaluated = await service.designValidate({ design_session_id: sessionId, mode: "evaluate" });

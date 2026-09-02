@@ -24,6 +24,14 @@ export interface ArtifactEvidenceResult {
   missingEvidence: string[];
   /** receipt-backed → "measured"; everything else stays "attested" (spec §5.4) */
   provenanceByCheck: Map<string, "measured" | "attested">;
+  /** valid, covering receipts seen (readiness receipt_ref uses the first) */
+  receiptRefs: string[];
+  /** open error-severity receipt failures (spec §5.7 R2) */
+  errorFailuresOpen: number;
+  /** catalog ids skipped in valid receipts (readiness claims.skipped) */
+  skippedArtifactIds: string[];
+  /** false when any receipt went stale (spec §5.7 R3) */
+  evidenceCurrent: boolean;
 }
 
 const RECEIPT_PREFIX = "validation-evidence/";
@@ -199,5 +207,21 @@ export async function verifyArtifactEvidence(input: ArtifactEvidenceInput): Prom
         ? "EXPAND"
         : "PASS";
 
-  return { status, codes, issues, warnings, missingEvidence, provenanceByCheck };
+  const validReceipts = [...loaded.values()].filter((entry) => entry.covering && entry.receipt !== undefined);
+  return {
+    status,
+    codes,
+    issues,
+    warnings,
+    missingEvidence,
+    provenanceByCheck,
+    receiptRefs: validReceipts.map((entry) => entry.ref),
+    errorFailuresOpen: validReceipts.reduce(
+      (count, entry) =>
+        count + entry.receipt!.checks.filter((check) => check.severity === "error" && check.status === "fail").length,
+      0,
+    ),
+    skippedArtifactIds: [...new Set(validReceipts.flatMap((entry) => entry.receipt!.checks.filter((check) => check.status === "skipped").map((check) => check.id)))],
+    evidenceCurrent: !codes.includes("MEASUREMENT_RECEIPT_STALE"),
+  };
 }

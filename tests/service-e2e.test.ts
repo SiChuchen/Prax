@@ -11,6 +11,7 @@ import {
   architectureProductFrame,
   requirementConfirmation,
   directCodeConditions,
+  writeMeasurementReceipt,
 } from "./fixtures.js";
 
 const cleanup: string[] = [];
@@ -78,6 +79,12 @@ it("runs Architecture Canvas end-to-end and supports cross-Agent resume", async 
       notes: `${check.id} passed the shared review rubric.`,
     })),
   };
+  const receiptRef = await writeMeasurementReceipt(store, sessionId);
+  for (const item of evidence.items) {
+    if (["keyboard", "readability", "regression_check", "untouched_surface_regression"].includes(item.check_id)) {
+      (item as Record<string, unknown>).measurement_receipt = receiptRef;
+    }
+  }
   expect((await service.designValidate({ design_session_id: sessionId, mode: "submit_evidence", evidence })).status).toBe("PASS");
   const evaluated = await service.designValidate({ design_session_id: sessionId, mode: "evaluate" });
   expect(evaluated.status).toBe("PASS");

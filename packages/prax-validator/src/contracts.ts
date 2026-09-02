@@ -72,12 +72,26 @@ export interface ValidationFinding {
   provenance: "measured" | "attested";
 }
 
+export interface ReviewReadiness {
+  deterministic_passed: boolean;
+  measurement: {
+    receipt_ref: string | null;
+    error_failures_open: number;
+    warning_dispositions: Array<{ check_id: string; disposition: "accepted" | "deferred"; reason: string }>;
+  };
+  convergence: { stalled: boolean; unresolved: string[] };
+  evidence_current: boolean;
+  claims: { measured: string[]; attested: string[]; skipped: string[] };
+}
+
 export interface ValidationEvaluation {
   status: "PASS" | "WARN" | "REVIEW" | "BLOCK" | "EXPAND";
   checks: ValidationCheck[];
   findings: ValidationFinding[];
   missing_evidence: string[];
   warnings: string[];
+  codes?: string[];
+  readiness?: ReviewReadiness;
 }
 
 

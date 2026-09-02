@@ -5,7 +5,7 @@ import { stringify } from "yaml";
 import { afterEach, expect, it } from "vitest";
 import { FileSessionStore, type Correction } from "prax-runtime";
 import { PraxService, type PraxOutput } from "prax-mcp";
-import { architectureUnderstanding, requirementConfirmation, sdirDelta } from "./fixtures.js";
+import { architectureUnderstanding, requirementConfirmation, sdirDelta, writeMeasurementReceiptInto } from "./fixtures.js";
 
 const cleanup: string[] = [];
 afterEach(async () => {
@@ -176,6 +176,7 @@ it("a visual-language correction regression with compliant screenshots completes
   await copyCanary(projectRoot, "pair-02/task2-arm-b-prax/evidence/screenshots/03-small-multi-shared-impact.png", "03-shared.png");
   await copyCanary(projectRoot, "pair-02/task2-arm-b-prax/evidence/screenshots/05-medium-marquee-shared-impact.png", "05-marquee.png");
 
+  const receiptRef = await writeMeasurementReceiptInto(join(projectRoot, ".prax", "design", "sessions", "ds_adj_2"));
   await service.designValidate({
     design_session_id: "ds_adj_2",
     mode: "submit_evidence",
@@ -183,7 +184,9 @@ it("a visual-language correction regression with compliant screenshots completes
       submitted_by: "operator",
       collected_at: new Date().toISOString(),
       items: [
-        ...planEvidence(plan, { untouched_surface_regression: ["evidence/01-browse.png"] }).items,
+        ...planEvidence(plan, { untouched_surface_regression: ["evidence/01-browse.png"] }).items.map((item) =>
+          item.check_id === "untouched_surface_regression" ? { ...item, measurement_receipt: receiptRef } : item,
+        ),
         {
           check_id: "impact_uses_line_grammar",
           outcome: "pass" as const,

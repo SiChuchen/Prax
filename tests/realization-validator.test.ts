@@ -64,47 +64,49 @@ describe("deterministic representation coverage evaluator (fail-closed)", () => 
     history: [],
   };
 
-  function evaluateWith(art: RepresentationArtifact | undefined, sdirDigest: string | undefined, review: unknown = approvedReview) {
+  async function evaluateWith(art: RepresentationArtifact | undefined, sdirDigest: string | undefined, review: unknown = approvedReview) {
     const plan = validator.plan({ policyContext: { mode: "greenfield" }, realizationMode: "figma_first" });
-    return validator.evaluate({ plan, representationArtifact: art, representationReview: review as never, sdirDigest });
+    return await validator.evaluate({ plan, representationArtifact: art, representationReview: review as never, sdirDigest });
   }
 
-  it("fails closed when the artifact is missing, unapproved, unreviewed, drifted, or uncovered", () => {
-    expect(evaluateWith(undefined, "digest-1").status).toBe("BLOCK");
-    expect(evaluateWith(artifact({ status: "revision_requested" }), "digest-1").status).toBe("BLOCK");
-    expect(evaluateWith(artifact(), "digest-1", undefined).status).toBe("BLOCK");
-    expect(evaluateWith(artifact(), undefined).status).toBe("BLOCK");
-    expect(evaluateWith(artifact(), "different-digest").status).toBe("BLOCK");
+  it("fails closed when the artifact is missing, unapproved, unreviewed, drifted, or uncovered", async () => {
+    expect((await evaluateWith(undefined, "digest-1")).status).toBe("BLOCK");
+    expect((await evaluateWith(artifact({ status: "revision_requested" }), "digest-1")).status).toBe("BLOCK");
+    expect((await evaluateWith(artifact(), "digest-1", undefined)).status).toBe("BLOCK");
+    expect((await evaluateWith(artifact(), undefined)).status).toBe("BLOCK");
+    expect((await evaluateWith(artifact(), "different-digest")).status).toBe("BLOCK");
     expect(
-      evaluateWith(
-        artifact({
-          realization: {
-            provider: "figma",
-            provider_contract_version: "remote-mcp-2026-08",
-            refs: { file_key: "fk", frames: [{ node_id: "n1", name: "Hero", sdir_region: "hero" }] },
-          },
-        }),
-        "digest-1",
+      (
+        await evaluateWith(
+          artifact({
+            realization: {
+              provider: "figma",
+              provider_contract_version: "remote-mcp-2026-08",
+              refs: { file_key: "fk", frames: [{ node_id: "n1", name: "Hero", sdir_region: "hero" }] },
+            },
+          }),
+          "digest-1",
+        )
       ).status,
     ).toBe("BLOCK");
   });
 
-  it("produces a finding for every deterministic check in the plan (no silent passes)", () => {
+  it("produces a finding for every deterministic check in the plan (no silent passes)", async () => {
     const plan = validator.plan({ policyContext: { mode: "greenfield" }, realizationMode: "figma_first", decisions: architectureDecisions("ds_x") });
-    const evaluation = validator.evaluate({ plan, representationArtifact: artifact(), representationReview: approvedReview, sdirDigest: "digest-1" });
+    const evaluation = await validator.evaluate({ plan, representationArtifact: artifact(), representationReview: approvedReview, sdirDigest: "digest-1" });
     const deterministicIds = plan.checks.filter((check) => check.kind === "deterministic").map((check) => check.id);
     const findingIds = evaluation.findings.filter((finding) => finding.kind === "deterministic").map((finding) => finding.check_id);
     expect(deterministicIds.every((id) => findingIds.includes(id))).toBe(true);
   });
 
-  it("passes when approved and fully covered, and the drift check demands two artifact_refs", () => {
-    const evaluation = evaluateWith(artifact(), "digest-1");
+  it("passes when approved and fully covered, and the drift check demands two artifact_refs", async () => {
+    const evaluation = await evaluateWith(artifact(), "digest-1");
     const coverage = evaluation.findings.find((finding) => finding.check_id === "design_representation_coverage");
     expect(coverage).toMatchObject({ kind: "deterministic", outcome: "pass" });
 
     const drift = evaluation.missing_evidence;
     expect(drift).toContain("representation_runtime_drift");
-    const withDriftOneRef = validator.evaluate({
+    const withDriftOneRef = await validator.evaluate({
       plan: validator.plan({ policyContext: { mode: "greenfield" }, realizationMode: "figma_first" }),
       representationArtifact: artifact(),
       representationReview: approvedReview,
