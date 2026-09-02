@@ -1,0 +1,97 @@
+version: "0.1"
+# Product-intelligence benchmark matrix (research §43 verbatim pairs;
+# spec 2026-09-02-phase4-empirical-loop F1). Each cell pins user_job ×
+# information_shape × suggested object_type; implementations are produced per
+# cell by the A/B arms (ab-protocol.md), and prax-measure receipts are the
+# objective evidence layer — the harness adds no parallel measurement code.
+cells:
+  - id: cell-01
+    job_shape: "manage × structured entities"
+    user_job: { verb: manage, target: "结构化实体集合", success: "批量操作无误完成" }
+    information_shape: { cardinality: many, relationality: medium, hierarchy: high, temporality: low, density: high }
+    object_type: entity
+    acceptance_seed: "批量选择与操作零误伤，状态归属显式"
+  - id: cell-02
+    job_shape: "locate × large collection"
+    user_job: { verb: locate, target: "大型集合中的目标", success: "三次交互内定位" }
+    information_shape: { cardinality: unbounded, relationality: low, hierarchy: medium, temporality: low, density: medium }
+    object_type: item
+    acceptance_seed: "定位路径有搜索/过滤支撑且不丢上下文"
+  - id: cell-03
+    job_shape: "compare × multi-attribute items"
+    user_job: { verb: compare, target: "多属性条目", success: "并排比较不靠记忆" }
+    information_shape: { cardinality: few, relationality: medium, hierarchy: low, temporality: low, density: high, comparison_need: required }
+    object_type: item
+    acceptance_seed: "比较状态在同一视图内维持"
+  - id: cell-04
+    job_shape: "monitor × volatile metrics"
+    user_job: { verb: monitor, target: "易变指标", success: "异常在扫视内发现" }
+    information_shape: { cardinality: many, relationality: low, hierarchy: medium, temporality: high, density: high, volatility: high }
+    object_type: metric
+    acceptance_seed: "指标变化可追溯，无闪烁噪声"
+  - id: cell-05
+    job_shape: "understand × relational graph"
+    user_job: { verb: understand, target: "关系结构", success: "依赖与影响可跟随" }
+    information_shape: { cardinality: many, relationality: high, hierarchy: medium, temporality: low, density: medium }
+    object_type: relationship
+    acceptance_seed: "关系跟随不丢失全局上下文"
+  - id: cell-06
+    job_shape: "understand × temporal change"
+    user_job: { verb: understand, target: "随时间演化的状态", success: "变更因果可读" }
+    information_shape: { cardinality: many, relationality: medium, hierarchy: medium, temporality: high, density: medium }
+    object_type: change_set
+    acceptance_seed: "时间结构与变更语义一致"
+  - id: cell-07
+    job_shape: "create × spatial object"
+    user_job: { verb: create, target: "空间对象", success: "落位即意图" }
+    information_shape: { cardinality: many, relationality: medium, hierarchy: low, temporality: low, density: medium, spatiality: physical }
+    object_type: canvas_object
+    acceptance_seed: "空间操作有键盘等价物"
+  - id: cell-08
+    job_shape: "edit × document"
+    user_job: { verb: edit, target: "文档", success: "编辑不破坏结构" }
+    information_shape: { cardinality: one, relationality: low, hierarchy: medium, temporality: medium, density: low }
+    object_type: document
+    acceptance_seed: "结构化编辑与预览一致"
+  - id: cell-09
+    job_shape: "decide × location-sensitive items"
+    user_job: { verb: decide, target: "位置敏感的选项", success: "决策输入同屏可得" }
+    information_shape: { cardinality: few, relationality: medium, hierarchy: low, temporality: low, density: medium, spatiality: physical, comparison_need: required }
+    object_type: location
+    acceptance_seed: "地理语境与决策项同屏"
+  - id: cell-10
+    job_shape: "complete × high-consequence workflow"
+    user_job: { verb: complete, target: "高后果流程", success: "零失误走完全程" }
+    information_shape: { cardinality: one, relationality: low, hierarchy: high, temporality: low, density: low, uncertainty: medium }
+    object_type: workflow
+    acceptance_seed: "不可逆步骤有恢复/确认路径"
+  - id: cell-11
+    job_shape: "communicate × threaded conversation"
+    user_job: { verb: communicate, target: "线程化讨论", success: "回复不串线" }
+    information_shape: { cardinality: many, relationality: high, hierarchy: medium, temporality: high, density: medium }
+    object_type: conversation
+    acceptance_seed: "线程结构显式且可跟随"
+  - id: cell-12
+    job_shape: "learn × interactive concept"
+    user_job: { verb: learn, target: "可交互概念", success: "操作反馈强化理解" }
+    information_shape: { cardinality: one, relationality: medium, hierarchy: low, temporality: low, density: low, dimensionality: high }
+    object_type: media
+    acceptance_seed: "交互与概念变量一一对应"
+  - id: cell-13
+    job_shape: "explore × multidimensional data"
+    user_job: { verb: explore, target: "多维数据", success: "维度切换不重置认知" }
+    information_shape: { cardinality: unbounded, relationality: medium, hierarchy: medium, temporality: low, density: high, dimensionality: high }
+    object_type: dataset
+    acceptance_seed: "过滤/投影状态有归属且可回退"
+  - id: cell-14
+    job_shape: "explain × narrative data"
+    user_job: { verb: explain, target: "叙事化数据", success: "因果链可复述" }
+    information_shape: { cardinality: many, relationality: medium, hierarchy: low, temporality: medium, density: medium }
+    object_type: dataset
+    acceptance_seed: "叙事顺序与数据证据互相引用"
+  - id: cell-15
+    job_shape: "troubleshoot × system evidence"
+    user_job: { verb: troubleshoot, target: "系统证据链", success: "从症状到根因有路径" }
+    information_shape: { cardinality: many, relationality: high, hierarchy: medium, temporality: high, density: high, volatility: high, uncertainty: medium }
+    object_type: event
+    acceptance_seed: "证据关联可跟随，时间序不误导"
