@@ -1,0 +1,347 @@
+version: "0.2"
+# First-batch representation corpus (spec §7.4, research Appendix A rows 1-20).
+# Single-sample evidence, not generalizable rules — intake per
+# docs/knowledge-intake-protocol.md (18 questions verbatim from §52).
+# Verb alignment per the pinned synonym table: read→review, reference→locate,
+# follow→monitor, discover→explore.
+entries:
+  - id: CORPUS-2026-09-001
+    type: product_evidence
+    asset_class: representation
+    stability: C
+    name: Google Search — search_results for locate/decide
+    summary: 搜索/信息检索范式：locate/decide 任务下 information result 采用 search_results 主表达。
+    category: corpus_representation
+    scope: {}
+    triggers: [search, google]
+    trigger_conditions: { task_type: [locate, decide], object_type: [dataset], representation: [search_results], density: [medium], platform: [web_desktop], phase: [decision] }
+    lifecycle: { status: stable }
+    evidence: { authority_initial: C, review_by: "2026-10-01", source_version: "研究 Appendix A #1" }
+    provenance: { source_refs: [research-v0.1-AppendixA-1], authority_category: sample_coding, certainty: medium, recommendation_strength: weak }
+    validation: { mode: assistive, checks: [] }
+    statement: 定位型信息检索任务（locate/decide）以 search_results 为主表达，filters/snippets 为支撑。
+    applies_when: [信息检索, 结果集浏览]
+    rationale: 矩阵行 1：Primary Representation=Search Results，Supporting=filters/snippets，密度 medium。
+  - id: CORPUS-2026-09-002
+    type: product_evidence
+    asset_class: representation
+    stability: C
+    name: Perplexity — chat for explore/learn/decide
+    summary: 探索型问答采用对话+来源组合表达。
+    category: corpus_representation
+    scope: {}
+    triggers: [perplexity, answer engine]
+    trigger_conditions: { task_type: [explore, learn, decide], object_type: [conversation, dataset], representation: [chat, search_results], density: [medium], platform: [web_desktop], phase: [decision] }
+    lifecycle: { status: stable }
+    evidence: { authority_initial: C, review_by: "2026-10-01", source_version: "研究 Appendix A #4" }
+    provenance: { source_refs: [research-v0.1-AppendixA-4], authority_category: sample_coding, certainty: medium, recommendation_strength: weak }
+    validation: { mode: assistive, checks: [] }
+    statement: explore/learn/decide 的 answer+sources 任务用 chat 主表达，sources/follow-up 支撑。
+    applies_when: [问答式探索, 带溯源的知识获取]
+    rationale: 矩阵行 4：Primary=Conversation/Answer，Supporting=sources/follow-up。
+  - id: CORPUS-2026-09-003
+    type: product_evidence
+    asset_class: representation
+    stability: C
+    name: Stack Overflow Search — search_results at high density
+    summary: 高密度问答检索：search_results + filters/tags。
+    category: corpus_representation
+    scope: {}
+    triggers: [stack overflow, qa search]
+    trigger_conditions: { task_type: [locate, troubleshoot], object_type: [dataset], representation: [search_results, list], density: [high], platform: [web_desktop], phase: [decision] }
+    lifecycle: { status: stable }
+    evidence: { authority_initial: C, review_by: "2026-10-01", source_version: "研究 Appendix A #6" }
+    provenance: { source_refs: [research-v0.1-AppendixA-6], authority_category: sample_coding, certainty: medium, recommendation_strength: weak }
+    validation: { mode: assistive, checks: [] }
+    statement: troubleshoot/locate 的 question/answer 任务以 search_results 为主，filters/tags 支撑高密度过滤。
+    applies_when: [高密度问答检索]
+    rationale: 矩阵行 6：密度 high，detail=page。
+  - id: CORPUS-2026-09-004
+    type: product_evidence
+    asset_class: representation
+    stability: C
+    name: Wikipedia Article — document for learn
+    summary: 学习型内容消费以文档为主表达。
+    category: corpus_representation
+    scope: {}
+    triggers: [wikipedia, article]
+    trigger_conditions: { task_type: [learn, review], object_type: [document], representation: [document], density: [medium], platform: [web_desktop], phase: [decision] }
+    lifecycle: { status: stable }
+    evidence: { authority_initial: C, review_by: "2026-10-01", source_version: "研究 Appendix A #7" }
+    provenance: { source_refs: [research-v0.1-AppendixA-7], authority_category: sample_coding, certainty: medium, recommendation_strength: weak }
+    validation: { mode: assistive, checks: [] }
+    statement: learn/reference 的 document 任务用 document 主表达，TOC/references 支撑。
+    applies_when: [长文阅读, 结构化知识消费]
+    rationale: 矩阵行 7：Primary=Document，Supporting=TOC/references，inline/page detail。
+  - id: CORPUS-2026-09-005
+    type: product_evidence
+    asset_class: representation
+    stability: C
+    name: NYT Interactive — document/chart hybrid for explain
+    summary: 解释型叙事采用文档+图表混合主表达。
+    category: corpus_representation
+    scope: {}
+    triggers: [nyt, interactive story]
+    trigger_conditions: { task_type: [explain, explore], object_type: [dataset, document], representation: [document, chart], density: [medium], platform: [web_desktop], phase: [decision] }
+    lifecycle: { status: stable }
+    evidence: { authority_initial: C, review_by: "2026-10-01", source_version: "研究 Appendix A #12" }
+    provenance: { source_refs: [research-v0.1-AppendixA-12], authority_category: sample_coding, certainty: medium, recommendation_strength: weak }
+    validation: { mode: assistive, checks: [] }
+    statement: explain/explore 的 story+data 任务以 Interactive Story（document/chart hybrid）为主，scroll narrative 支撑。
+    applies_when: [数据叙事, 解释型内容]
+    rationale: 矩阵行 12：hybrid Primary（Appendix A 说明 hybrid 合法），inline detail。
+  - id: CORPUS-2026-09-006
+    type: product_evidence
+    asset_class: representation
+    stability: C
+    name: Amazon — grid/list for discover/compare/transact
+    summary: 商品决策范式：grid/list 主表达 + filters/compare。
+    category: corpus_representation
+    scope: {}
+    triggers: [amazon, ecommerce grid]
+    trigger_conditions: { task_type: [explore, compare, transact], object_type: [item], representation: [grid, list], density: [high], platform: [web_desktop], phase: [decision] }
+    lifecycle: { status: stable }
+    evidence: { authority_initial: C, review_by: "2026-10-01", source_version: "研究 Appendix A #13" }
+    provenance: { source_refs: [research-v0.1-AppendixA-13], authority_category: sample_coding, certainty: medium, recommendation_strength: weak }
+    validation: { mode: assistive, checks: [] }
+    statement: discover/compare/transact 的 product 任务用 grid/list 主表达，filters/compare/detail 支撑。
+    applies_when: [商品浏览与比较]
+    rationale: 矩阵行 13：密度 high，detail=page。
+  - id: CORPUS-2026-09-007
+    type: product_evidence
+    asset_class: representation
+    stability: C
+    name: Apple Store — document/detail for decide/transact
+    summary: 低密度决策路径：产品文档式详情页而非网格。
+    category: corpus_representation
+    scope: {}
+    triggers: [apple store, product detail]
+    trigger_conditions: { task_type: [decide, transact], object_type: [item], representation: [document], density: [low], platform: [web_desktop], phase: [decision] }
+    lifecycle: { status: stable }
+    evidence: { authority_initial: C, review_by: "2026-10-01", source_version: "研究 Appendix A #16" }
+    provenance: { source_refs: [research-v0.1-AppendixA-16], authority_category: sample_coding, certainty: medium, recommendation_strength: weak }
+    validation: { mode: assistive, checks: [] }
+    statement: decide/transact 的 product 任务可用 document/detail 主表达（comparison/configurator 支撑）——同一对象类型存在非网格反例。
+    applies_when: [低密度精品决策路径]
+    rationale: 矩阵行 16：密度 low——对象类型相同的反例，反驳"商品必用网格"。
+  - id: CORPUS-2026-09-008
+    type: product_evidence
+    asset_class: representation
+    stability: C
+    name: Shopify Admin — table/list for manage/edit/compare
+    summary: 管理后台范式：table/list 主表达 + bulk actions。
+    category: corpus_representation
+    scope: {}
+    triggers: [shopify admin, admin table]
+    trigger_conditions: { task_type: [manage, edit, compare], object_type: [item], representation: [table, list], density: [high], platform: [web_desktop], phase: [decision] }
+    lifecycle: { status: stable }
+    evidence: { authority_initial: C, review_by: "2026-10-01", source_version: "研究 Appendix A #18" }
+    provenance: { source_refs: [research-v0.1-AppendixA-18], authority_category: sample_coding, certainty: medium, recommendation_strength: weak }
+    validation: { mode: assistive, checks: [] }
+    statement: manage/edit/compare 的 product 任务用 table/list 主表达，filters/bulk actions 支撑——管理任务≠dashboard。
+    applies_when: [商品管理后台]
+    rationale: 矩阵行 18：密度 high，detail=page/panel；反驳 myth-dashboard-default-home 的样本证据。
+  - id: CORPUS-2026-09-009
+    type: product_evidence
+    asset_class: representation
+    stability: C
+    name: Airbnb — list+map for locate/compare/decide
+    summary: 空间决策范式：列表+地图组合主表达。
+    category: corpus_representation
+    scope: {}
+    triggers: [airbnb, list map]
+    trigger_conditions: { task_type: [locate, compare, decide], object_type: [location, item], representation: [list, map], density: [high], platform: [web_desktop], phase: [decision] }
+    lifecycle: { status: stable }
+    evidence: { authority_initial: C, review_by: "2026-10-01", source_version: "研究 Appendix A #19" }
+    provenance: { source_refs: [research-v0.1-AppendixA-19], authority_category: sample_coding, certainty: medium, recommendation_strength: weak }
+    validation: { mode: assistive, checks: [] }
+    statement: locate/compare/decide 的 stay+location 任务用 list+map 组合主表达。
+    applies_when: [空间搜索与比较]
+    rationale: 矩阵行 19：hybrid Primary（List+Map），page/panel detail。
+  - id: CORPUS-2026-09-010
+    type: product_evidence
+    asset_class: representation
+    stability: C
+    name: Google Maps — map with panel detail
+    summary: 地图原生范式：map 主表达，panel 承载详情。
+    category: corpus_representation
+    scope: {}
+    triggers: [google maps, map panel]
+    trigger_conditions: { task_type: [locate, navigate, decide], object_type: [location], representation: [map], density: [high], platform: [web_desktop], phase: [decision] }
+    lifecycle: { status: stable }
+    evidence: { authority_initial: C, review_by: "2026-10-01", source_version: "研究 Appendix A #21" }
+    provenance: { source_refs: [research-v0.1-AppendixA-21], authority_category: sample_coding, certainty: medium, recommendation_strength: weak }
+    validation: { mode: assistive, checks: [] }
+    statement: locate/navigate 的 location 任务以 map 为主，search/list/panel 支撑。
+    applies_when: [空间定位与导航]
+    rationale: 矩阵行 21：density=high，detail=panel。
+  - id: CORPUS-2026-09-011
+    type: product_evidence
+    asset_class: representation
+    stability: C
+    name: AllTrails — map+list for locate/decide
+    summary: 中密度空间决策：map+list 平衡组合。
+    category: corpus_representation
+    scope: {}
+    triggers: [alltrails, trail map]
+    trigger_conditions: { task_type: [locate, decide], object_type: [location], representation: [map, list], density: [medium], platform: [web_desktop], phase: [decision] }
+    lifecycle: { status: stable }
+    evidence: { authority_initial: C, review_by: "2026-10-01", source_version: "研究 Appendix A #22" }
+    provenance: { source_refs: [research-v0.1-AppendixA-22], authority_category: sample_coding, certainty: medium, recommendation_strength: weak }
+    validation: { mode: assistive, checks: [] }
+    statement: locate/decide 的 trail 任务用 map+list 组合，filters/elevation 支撑。
+    applies_when: [户外路线选择]
+    rationale: 矩阵行 22。
+  - id: CORPUS-2026-09-012
+    type: product_evidence
+    asset_class: representation
+    stability: C
+    name: Tripadvisor — list/cards for compare/decide
+    summary: 比较型地点决策：list/cards 混合。
+    category: corpus_representation
+    scope: {}
+    triggers: [tripadvisor, place compare]
+    trigger_conditions: { task_type: [compare, decide], object_type: [item, location], representation: [list, cards], density: [high], platform: [web_desktop], phase: [decision] }
+    lifecycle: { status: stable }
+    evidence: { authority_initial: C, review_by: "2026-10-01", source_version: "研究 Appendix A #23" }
+    provenance: { source_refs: [research-v0.1-AppendixA-23], authority_category: sample_coding, certainty: medium, recommendation_strength: weak }
+    validation: { mode: assistive, checks: [] }
+    statement: compare/decide 的 place 任务用 list/cards 混合主表达，reviews 支撑。
+    applies_when: [点评比较决策]
+    rationale: 矩阵行 23——cards 在比较型消费决策的适用域证据（非默认域）。
+  - id: CORPUS-2026-09-013
+    type: product_evidence
+    asset_class: representation
+    stability: C
+    name: Our World in Data — document/chart for learn/explain/compare
+    summary: 数据叙事学习：document/chart 混合 + 多支撑表达。
+    category: corpus_representation
+    scope: {}
+    triggers: [owid, data narrative]
+    trigger_conditions: { task_type: [learn, explain, compare], object_type: [dataset], representation: [document, chart, table, map], density: [medium], platform: [web_desktop], phase: [decision] }
+    lifecycle: { status: stable }
+    evidence: { authority_initial: C, review_by: "2026-10-01", source_version: "研究 Appendix A #11" }
+    provenance: { source_refs: [research-v0.1-AppendixA-11], authority_category: sample_coding, certainty: medium, recommendation_strength: weak }
+    validation: { mode: assistive, checks: [] }
+    statement: learn/explain/compare 的 dataset+narrative 任务用 document/chart 混合，table/map/source 支撑。
+    applies_when: [数据解释与学习]
+    rationale: 矩阵行 11。
+  - id: CORPUS-2026-09-014
+    type: product_evidence
+    asset_class: representation
+    stability: C
+    name: Bing Search — search_results with rich answers
+    summary: 检索范式重复样本：search_results + rich answers。
+    category: corpus_representation
+    scope: {}
+    triggers: [bing, search]
+    trigger_conditions: { task_type: [locate, decide], object_type: [dataset], representation: [search_results], density: [medium], platform: [web_desktop], phase: [decision] }
+    lifecycle: { status: stable }
+    evidence: { authority_initial: C, review_by: "2026-10-01", source_version: "研究 Appendix A #2" }
+    provenance: { source_refs: [research-v0.1-AppendixA-2], authority_category: sample_coding, certainty: medium, recommendation_strength: weak }
+    validation: { mode: assistive, checks: [] }
+    statement: locate/decide 检索任务的第二个同构样本（范式重复验证）。
+    applies_when: [信息检索]
+    rationale: 矩阵行 2。
+  - id: CORPUS-2026-09-015
+    type: product_evidence
+    asset_class: representation
+    stability: C
+    name: Kagi — search_results with ranking controls
+    summary: 检索范式第三个样本：排序控制为支撑面。
+    category: corpus_representation
+    scope: {}
+    triggers: [kagi, search]
+    trigger_conditions: { task_type: [locate, decide], object_type: [dataset], representation: [search_results], density: [medium], platform: [web_desktop], phase: [decision] }
+    lifecycle: { status: stable }
+    evidence: { authority_initial: C, review_by: "2026-10-01", source_version: "研究 Appendix A #3" }
+    provenance: { source_refs: [research-v0.1-AppendixA-3], authority_category: sample_coding, certainty: medium, recommendation_strength: weak }
+    validation: { mode: assistive, checks: [] }
+    statement: 检索范式第三个同构样本——同构重复是范式验证证据（18 问第 15 问）。
+    applies_when: [信息检索]
+    rationale: 矩阵行 3。
+  - id: CORPUS-2026-09-016
+    type: product_evidence
+    asset_class: representation
+    stability: C
+    name: Medium — low-density document reading
+    summary: 低密度阅读：document 主表达、极少支撑面。
+    category: corpus_representation
+    scope: {}
+    triggers: [medium, reading]
+    trigger_conditions: { task_type: [review, learn], object_type: [document], representation: [document], density: [low], platform: [web_desktop], phase: [decision] }
+    lifecycle: { status: stable }
+    evidence: { authority_initial: C, review_by: "2026-10-01", source_version: "研究 Appendix A #8" }
+    provenance: { source_refs: [research-v0.1-AppendixA-8], authority_category: sample_coding, certainty: medium, recommendation_strength: weak }
+    validation: { mode: assistive, checks: [] }
+    statement: review/learn 的 article 任务用 document 主表达，author/related 为仅有的支撑。
+    applies_when: [低密度长文阅读]
+    rationale: 矩阵行 8。
+  - id: CORPUS-2026-09-017
+    type: product_evidence
+    asset_class: representation
+    stability: C
+    name: BBC News — document/news listing hybrid
+    summary: 新闻浏览：document 与 listing 混合。
+    category: corpus_representation
+    scope: {}
+    triggers: [bbc, news]
+    trigger_conditions: { task_type: [scan, review], object_type: [document], representation: [document, feed], density: [medium], platform: [web_desktop], phase: [decision] }
+    lifecycle: { status: stable }
+    evidence: { authority_initial: C, review_by: "2026-10-01", source_version: "研究 Appendix A #10" }
+    provenance: { source_refs: [research-v0.1-AppendixA-10], authority_category: sample_coding, certainty: medium, recommendation_strength: weak }
+    validation: { mode: assistive, checks: [] }
+    statement: scan/review 的 story 任务用 document/news listing 混合，related stories 支撑。
+    applies_when: [新闻扫描阅读]
+    rationale: 矩阵行 10。
+  - id: CORPUS-2026-09-018
+    type: product_evidence
+    asset_class: representation
+    stability: C
+    name: Etsy — grid for medium-density craft discovery
+    summary: 中密度发现型电商：grid 主表达。
+    category: corpus_representation
+    scope: {}
+    triggers: [etsy, craft grid]
+    trigger_conditions: { task_type: [explore, decide, transact], object_type: [item], representation: [grid], density: [medium], platform: [web_desktop], phase: [decision] }
+    lifecycle: { status: stable }
+    evidence: { authority_initial: C, review_by: "2026-10-01", source_version: "研究 Appendix A #15" }
+    provenance: { source_refs: [research-v0.1-AppendixA-15], authority_category: sample_coding, certainty: medium, recommendation_strength: weak }
+    validation: { mode: assistive, checks: [] }
+    statement: explore/decide/transact 的 product 任务用 grid 主表达，image detail 支撑。
+    applies_when: [视觉发现型电商]
+    rationale: 矩阵行 15。
+  - id: CORPUS-2026-09-019
+    type: product_evidence
+    asset_class: representation
+    stability: C
+    name: IKEA — grid with inspiration supporting
+    summary: 发现型家具电商：grid + room inspiration 支撑。
+    category: corpus_representation
+    scope: {}
+    triggers: [ikea, furniture]
+    trigger_conditions: { task_type: [explore, decide], object_type: [item], representation: [grid], density: [medium], platform: [web_desktop], phase: [decision] }
+    lifecycle: { status: stable }
+    evidence: { authority_initial: C, review_by: "2026-10-01", source_version: "研究 Appendix A #17" }
+    provenance: { source_refs: [research-v0.1-AppendixA-17], authority_category: sample_coding, certainty: medium, recommendation_strength: weak }
+    validation: { mode: assistive, checks: [] }
+    statement: discover/decide 的 product 任务用 grid 主表达，room inspiration 支撑决策语境。
+    applies_when: [家居发现型电商]
+    rationale: 矩阵行 17。
+  - id: CORPUS-2026-09-020
+    type: product_evidence
+    asset_class: representation
+    stability: C
+    name: eBay — grid/list with auction detail
+    summary: 高密度拍卖电商：grid/list + auction detail。
+    category: corpus_representation
+    scope: {}
+    triggers: [ebay, auction]
+    trigger_conditions: { task_type: [explore, compare, transact], object_type: [item], representation: [grid, list], density: [high], platform: [web_desktop], phase: [decision] }
+    lifecycle: { status: stable }
+    evidence: { authority_initial: C, review_by: "2026-10-01", source_version: "研究 Appendix A #14" }
+    provenance: { source_refs: [research-v0.1-AppendixA-14], authority_category: sample_coding, certainty: medium, recommendation_strength: weak }
+    validation: { mode: assistive, checks: [] }
+    statement: discover/compare/transact 的 listing 任务用 grid/list 主表达，auction detail 支撑。
+    applies_when: [拍卖型电商]
+    rationale: 矩阵行 14。
