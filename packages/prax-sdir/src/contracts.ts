@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { JTBD_VERBS, OBJECT_TYPES, REPRESENTATION_PRIMITIVES } from "./vocab.js";
 
 const NonEmpty = z.string().trim().min(1);
 
@@ -14,7 +15,7 @@ export const SdirRegionSchema = z.object({
   behavior_intent: z.array(NonEmpty).default([]),
 });
 
-export const SdirSchema = z.object({
+export const SdirV01Schema = z.object({
   version: z.literal("0.1"),
   screen: z.object({
     id: NonEmpty,
@@ -61,7 +62,144 @@ export const SdirSchema = z.object({
       .default([]),
   }),
 });
+export type SdirV01 = z.infer<typeof SdirV01Schema>;
 
+// ── SDIR 0.2 (spec §6.1): the product-intelligence blocks are additive ──
+const Ternary = z.enum(["low", "medium", "high"]);
+
+const InformationShapeSchema = z.object({
+  cardinality: z.enum(["one", "few", "many", "unbounded"]),
+  relationality: Ternary,
+  hierarchy: Ternary,
+  temporality: Ternary,
+  density: Ternary,
+  dimensionality: Ternary.default("medium"),
+  spatiality: z.enum(["none", "conceptual", "physical"]).default("none"),
+  volatility: Ternary.default("medium"),
+  uncertainty: Ternary.default("low"),
+  comparison_need: z.enum(["none", "optional", "required"]).default("none"),
+});
+
+const ComplexityBudgetSchema = z.object({
+  permanent_panels: z.number().int().nonnegative(),
+  permanent_primary_actions: z.number().int().nonnegative(),
+  modes: z.number().int().nonnegative(),
+  state_owners: z.number().int().nonnegative(),
+  navigation_levels: z.number().int().nonnegative(),
+  persistent_filters: z.number().int().nonnegative(),
+  new_semantic_concepts: z.number().int().nonnegative(),
+  keyboard_contracts: z.number().int().nonnegative(),
+  mobile_conflicts: z.number().int().nonnegative(),
+  permanent_surfaces: z.number().int().nonnegative(),
+});
+
+const SdirV02ScreenSchema = z.object({
+  id: NonEmpty,
+  intent: z.object({
+    primary_task: NonEmpty,
+    secondary_tasks: z.array(NonEmpty).default([]),
+  }),
+  // retained in 0.2; only pattern_ref becomes optional
+  archetype: z.object({ pattern_ref: NonEmpty }).optional(),
+  density_intent: z.enum(["compact", "regular", "spacious"]),
+  regions: z.array(SdirRegionSchema).min(1),
+  relationships: z
+    .array(
+      z.object({
+        id: NonEmpty.optional(),
+        source: NonEmpty,
+        target: NonEmpty,
+        type: NonEmpty,
+      }),
+    )
+    .default([]),
+  interaction_intents: z.array(NonEmpty).min(1),
+  required_states: z.array(SdirStateSchema).min(4),
+  decision_points: z
+    .array(
+      z.object({
+        id: NonEmpty,
+        question: NonEmpty,
+        adapter_may_choose: z.array(NonEmpty).min(1),
+      }),
+    )
+    .min(1),
+  unresolved: z
+    .array(
+      z.object({
+        id: NonEmpty,
+        question: NonEmpty,
+        impact: z.enum(["low", "medium", "high"]),
+        affects: z.array(NonEmpty).default([]),
+      }),
+    )
+    .default([]),
+  rejected_alternatives: z
+    .array(z.object({ option: NonEmpty, reason: NonEmpty }))
+    .default([]),
+  user_job: z.object({
+    verb: z.enum(JTBD_VERBS),
+    target: NonEmpty,
+    success: NonEmpty,
+  }),
+  primary_object: z.object({
+    type: z.enum(OBJECT_TYPES),
+    label: NonEmpty.optional(),
+  }),
+  information_shape: InformationShapeSchema,
+  representation: z.object({
+    primary: z.object({ type: z.enum(REPRESENTATION_PRIMITIVES), reason: NonEmpty }),
+    supporting: z.array(z.object({ type: z.enum(REPRESENTATION_PRIMITIVES), reason: NonEmpty })).max(4).default([]),
+  }),
+  priority: z.object({
+    primary: z.array(NonEmpty).min(1),
+    contextual: z.array(NonEmpty).default([]),
+  }),
+  interaction: z
+    .object({
+      preview: z.enum(["none", "hover", "focus"]).default("none"),
+      inspect: z.enum(["none", "select", "open"]).default("select"),
+      navigate: z.enum(["none", "drill", "open"]).default("none"),
+      locate: z.enum(["none", "search", "filter"]).default("none"),
+    })
+    .default({ preview: "none", inspect: "select", navigate: "none", locate: "none" }),
+  state_ownership: z
+    .array(
+      z.object({
+        state: z.enum(["selection", "preview", "inspector", "viewport", "query", "mode"]),
+        owner: NonEmpty,
+      }),
+    )
+    .min(1),
+  complexity_budget: ComplexityBudgetSchema.optional(),
+  acceptance: z.array(NonEmpty).min(1),
+}).superRefine((screen, ctx) => {
+  const regionIds = new Set(screen.regions.map((region) => region.id));
+  for (const [index, entry] of screen.priority.primary.entries()) {
+    if (!regionIds.has(entry)) {
+      ctx.addIssue({ code: "custom", path: ["priority", "primary", index], message: `priority references nonexistent region id '${entry}'` });
+    }
+  }
+  for (const [index, entry] of screen.priority.contextual.entries()) {
+    if (!regionIds.has(entry)) {
+      ctx.addIssue({ code: "custom", path: ["priority", "contextual", index], message: `priority references nonexistent region id '${entry}'` });
+    }
+  }
+  const owners = new Set([...regionIds, "session", "url"]);
+  for (const [index, entry] of screen.state_ownership.entries()) {
+    if (!owners.has(entry.owner)) {
+      ctx.addIssue({ code: "custom", path: ["state_ownership", index, "owner"], message: `state owner '${entry.owner}' must be a region id, 'session', or 'url'` });
+    }
+  }
+});
+
+export const SdirV02Schema = z.object({
+  version: z.literal("0.2"),
+  screen: SdirV02ScreenSchema,
+});
+export type SdirV02 = z.infer<typeof SdirV02Schema>;
+
+export const SdirSchema = z.discriminatedUnion("version", [SdirV01Schema, SdirV02Schema]);
 export type Sdir = z.infer<typeof SdirSchema>;
 
 export interface SdirIssue {

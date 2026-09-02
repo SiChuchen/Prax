@@ -226,13 +226,14 @@ export class SdirEngine {
           issues.push({ code: "SDIR_STATE_MISSING", message: `required_states must include ${required}.` });
         }
       }
-      if (decisions !== undefined && sdir.screen.archetype.pattern_ref !== decisions.primary_structure.pattern) {
+      const patternRef = sdir.screen.archetype?.pattern_ref;
+      if (decisions !== undefined && patternRef !== undefined && patternRef !== decisions.primary_structure.pattern) {
         issues.push({
           code: "SDIR_PATTERN_MISMATCH",
           message: "SDIR pattern_ref must match the approved primary structure decision.",
         });
       }
-      if (sdir.screen.archetype.pattern_ref === "PAT-CANVAS-WORKSPACE" && !stateSet.has("selected")) {
+      if (patternRef === "PAT-CANVAS-WORKSPACE" && !stateSet.has("selected")) {
         issues.push({ code: "SDIR_STATE_MISSING", message: "Canvas Workspace requires a selected state." });
       }
       issues.push(...referentialIssues(sdir));
