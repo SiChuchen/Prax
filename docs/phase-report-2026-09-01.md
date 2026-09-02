@@ -210,3 +210,35 @@ promotion review):
 ## Gate 1 status
 
 See "Gate 1 evidence" below (added by Task 1.6).
+
+## Gate 1 evidence (Task 1.6, 2026-09-02)
+
+1. **`npm test` green including all new files**: 270/270 tests, 36 files
+   (baseline 216/22 at Phase 0 close; +54 tests across 14 new files).
+2. **Runner on real builds of every runnable golden app**: receipts parse
+   against `MeasurementReceiptSchema` — wizard 6/1 (advisory type size),
+   dashboard 7/0, landing 6/1 (real WCAG 2.5.8 nav target-size defect);
+   frozen wizard receipt + PNG replay byte-identically
+   (`tests/measure-receipt-replay.test.ts`).
+3. **Contradiction demonstration**: doctored receipt (`layout.overflow` fail)
+   + claimed pass → BLOCK `VALIDATION_MEASUREMENT_CONTRADICTION`, at unit
+   level (artifact-evidence case 5) and service level
+   (validate-measurement case 2, validate-measurement-e2e case 2).
+4. **Convergence stall**: baseline + two non-improving rounds (three
+   non-PASS total) → REVIEW `VALIDATION_CONVERGENCE_STALLED`, gate stays
+   open (fourth call accepted), stall event in session warnings, unresolved
+   list runtime-filled into `readiness.convergence`
+   (validation-convergence, validate-measurement-e2e case 3).
+5. **Skipped ≠ passed**: skipped-with-reason satisfies coverage, findings
+   stay `attested` + downgrade warning, `claims.skipped` listed separately;
+   >50% catalog skipped → REVIEW for environment confirmation
+   (artifact-evidence cases 7a/7b, validate-measurement-e2e case 4).
+6. **Doc sync**: architecture.md (validation row, `validation-evidence/`
+   persistence, two-prefix evidence containment, readiness concept
+   boundary), README.md (prax-measure package row + capability paragraph),
+   this report.
+
+Gate 1: **PASSED** (pending user review). Open items for the user:
+landing nav target-size defect (fix in `apps/prax-landing` or accept);
+severity-promotion review timing (Phase 4 F5 — the wizard type-size
+advisory and calibration record feed it).

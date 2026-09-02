@@ -13,7 +13,7 @@ loads the authoritative YAML record and gate artifacts from disk.
 | Knowledge | 23 fully expanded entries | No list-all/search-everything tool; entries are a compiled subset of the versioned `research/upstream/` snapshot, not the whole research asset |
 | Routing | Scope filters plus deterministic scoring | 5 principles, 5 heuristics, 3 patterns, 1 profile |
 | Intent | SDIR `0.1` | Semantic roles and commitments only |
-| Validation | Deterministic, assistive, and empirical checks | External evidence is never fabricated |
+| Validation | Deterministic, assistive, and empirical checks; measured artifact layer (`prax-measure` receipts verified by the validator: schema, digest, containment, staleness, claim cross-check) | External evidence is never fabricated; measured evidence outranks attestation (P-043); skipped is not passed |
 
 ## Gate behavior
 
@@ -43,7 +43,8 @@ The project-local directory is the handoff packet:
 ├── context-manifest.yaml         # runtime-owned derived routing metadata
 ├── compiled-context.yaml         # task-scoped implementation packet
 ├── context-compilation-trace.yaml
-└── validation-report.yaml
+├── validation-report.yaml
+└── validation-evidence/          # prax-measure receipts + bound screenshots (sha256)
 .prax/corrections.yaml            # project-local correction/regression memory
 ```
 
@@ -60,6 +61,10 @@ contains only the session location and update timestamp.
 - Knowledge inspection is limited to previously routed IDs and eight IDs per call.
 - L2 and L3 requests require decision- or evidence-specific reasons.
 - SDIR recursively rejects known render keys and render values.
+- Evidence-file verification is prefix-contained: `rep-evidence/` (realization
+  drift) and `validation-evidence/` (measurement receipts) both resolve and
+  realpath-check against their own directory; receipt sha256 digests are
+  recomputed from disk, never trusted from the declaring check.
 
 ## Lifecycle policies
 
@@ -92,6 +97,11 @@ full-SDIR sessions without a recorded realization decision
   excludes CSS/JSX detail, but Prax still supervises design fidelity via
   persisted validation obligations and drift evidence — Prax controls design
   fidelity, not implementation syntax.
+- **The review-readiness packet is runtime-computed** (spec §5.7): evaluation
+  output carries a `readiness` block (deterministic gates, open error-severity
+  measurement failures, warning dispositions, convergence truth, evidence
+  currency, measured/attested/skipped claim split) that agents cannot
+  self-declare — human review runs downstream of machine gates (P-045).
 - **Figma is a Representation Surface**: the authority chain is Design
   Contract → Representation Artifact → provider refs; the runtime never
   connects to Figma (agents drive the provider MCP), and same-node edits

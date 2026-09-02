@@ -10,7 +10,11 @@ This repository contains the first executable vertical slice: Architecture
 Canvas. It implements all ten staged tools from the v0 specification, explicit
 YAML session artifacts, scoped knowledge routing, L0–L3 progressive disclosure,
 SDIR linting, capability reconciliation, implementation handoff, and
-evidence-aware validation.
+evidence-aware validation — now backed by a measured artifact-validation
+layer (`prax-measure`): browser-measured checks emit hash-bound receipts
+that the validator cross-checks against agent claims, with receipt-staleness
+invalidation after artifact edits and a runtime-computed review-readiness
+packet before any human review.
 
 ## Why Prax exists
 
@@ -34,7 +38,8 @@ become the product model.
 | `prax-knowledge` | Scoped, lifecycle-managed design knowledge with L0–L3 disclosure |
 | `prax-router` | Context routing, candidate caps, audit records, disclosure authorization |
 | `prax-sdir` | Semantic Design Intent Record generation and render-leak linting |
-| `prax-validator` | Context-specific plans, evidence ingestion, and typed findings |
+| `prax-validator` | Context-specific plans, evidence ingestion, typed findings, and measurement-receipt verification |
+| `prax-measure` | Measured artifact validation: browser-measured checks (overflow, collision, truncation, contrast, focus order, target size, projected type size) emitting hash-bound receipts under `validation-evidence/` |
 | `prax-web` | Reserved for a later review/administration UI; intentionally deferred in v0 |
 | `prax-landing` | Product website home page — PRAX-LANDING-001 golden case output (figma_first) |
 | `prax-dashboard` | Local operations dashboard — PRAX-DASHBOARD-001 golden case output (direct_code) |
