@@ -207,3 +207,76 @@ describe("gen-matrix — 150-cell full matrix (M1)", () => {
     expect(await loadCell("cell-nope")).toBeUndefined();
   });
 });
+
+describe("pilot batch + frozen briefs (M2)", () => {
+  it("selects 10 priority-1 cells: every shape once, verbs ≤2, all 3 high-frequency jobs", async () => {
+    const batch = await loadYaml("pilot-batch.yaml");
+    const full = await loadYaml("matrix-full.yaml");
+    const byId = new Map(full.cells.map((cell: any) => [cell.id, cell]));
+    expect(batch.pilot_cells).toHaveLength(10);
+    const shapes: string[] = [];
+    const verbs: string[] = [];
+    for (const entry of batch.pilot_cells) {
+      const cell = byId.get(entry.id);
+      expect(cell, `pilot ${entry.id} in matrix-full`).toBeTruthy();
+      expect(cell.priority).toBe(1);
+      expect(cell.job_shape).toBe(`${entry.verb} × ${entry.shape}`);
+      shapes.push(entry.shape);
+      verbs.push(entry.verb);
+    }
+    expect(new Set(shapes).size).toBe(10);
+    const verbCounts = verbs.reduce<Record<string, number>>((counts, verb) => {
+      counts[verb] = (counts[verb] ?? 0) + 1;
+      return counts;
+    }, {});
+    expect(Math.max(...Object.values(verbCounts))).toBeLessThanOrEqual(2);
+    for (const verb of ["decide", "locate", "explore"]) {
+      expect(verbCounts[verb], `high-frequency verb ${verb} in pilot`).toBeGreaterThan(0);
+    }
+  });
+
+  it("picks 2 warm-up cells: priority 1, outside the pilot batch", async () => {
+    const batch = await loadYaml("pilot-batch.yaml");
+    const full = await loadYaml("matrix-full.yaml");
+    const byId = new Map(full.cells.map((cell: any) => [cell.id, cell]));
+    const pilotIds = new Set(batch.pilot_cells.map((entry: any) => entry.id));
+    expect(batch.warmup_cells).toHaveLength(2);
+    for (const entry of batch.warmup_cells) {
+      expect(pilotIds.has(entry.id), `warm-up ${entry.id} overlaps pilot`).toBe(false);
+      expect(byId.get(entry.id)?.priority).toBe(1);
+    }
+  });
+
+  it("freezes all 12 briefs with required sections, byte-equal to regeneration", async () => {
+    const { renderBrief } = await import("../benchmarks/product-intelligence-matrix/gen-briefs.mjs");
+    const { shapes, matrix, corpus } = await (async () => {
+      const corpusFile = await readFile(
+        resolve(import.meta.dirname, "..", "packages", "prax-knowledge", "data", "corpus-2026-09.yaml"),
+        "utf8",
+      );
+      const [shapesDoc, matrixDoc, corpusDoc] = await Promise.all([
+        loadYaml("shapes.yaml"),
+        loadYaml("matrix.yaml"),
+        parse(corpusFile),
+      ]);
+      return { shapes: shapesDoc, matrix: matrixDoc, corpus: corpusDoc };
+    })();
+    const { generateMatrix } = await import("../benchmarks/product-intelligence-matrix/gen-matrix.mjs");
+    const full = generateMatrix(shapes, matrix, corpus);
+    const byId = new Map(full.cells.map((cell: any) => [cell.id, cell]));
+    const batch = await loadYaml("pilot-batch.yaml");
+    const shapeByName = new Map(shapes.shapes.map((shape: any) => [shape.name, shape]));
+    for (const entry of [...batch.pilot_cells, ...batch.warmup_cells]) {
+      const briefPath = join(matrixDir, "..", "..", "benchmark-runs", "product-intelligence-matrix", entry.id, "brief.md");
+      const committed = await readFile(briefPath, "utf8");
+      expect(committed, `brief for ${entry.id}`).toContain(`# Product Brief — ${entry.id} (${entry.verb} × ${entry.shape})`);
+      expect(committed).toContain("## 预算上限");
+      expect(committed).toContain("wall-clock ≤ 90 min");
+      expect(committed).toContain("token ≤ 1.2M");
+      expect(committed).toContain("## 冻结纪律");
+      expect(committed).toContain(byId.get(entry.id)!.acceptance_seed);
+      expect(committed).toContain(shapeByName.get(entry.shape)!.description);
+      expect(committed).toBe(renderBrief(byId.get(entry.id)!, shapeByName.get(entry.shape)!, entry.source_cell));
+    }
+  });
+});

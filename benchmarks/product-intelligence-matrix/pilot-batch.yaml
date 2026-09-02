@@ -1,0 +1,32 @@
+version: "0.1"
+# Pilot batch + warm-up selection (benchmark program M2, plan 2026-09-02).
+#
+# Pilot rule (plan M2): 10 cells from priority-1, every shape exactly once,
+# verbs repeat ≤2, high-frequency coverage. Realized as the 10 §43 natural
+# pairs (the research's own exemplar per shape — most validated combos);
+# shape-03 takes its decide exemplar (cell-09) over compare so the third
+# high-frequency verb (decide) enters. Verbs: manage/locate/decide/monitor/
+# understand×2/create/edit/complete/explore.
+#
+# Warm-up rule: 2 cells from priority-1 OUTSIDE the pilot batch, so all 10
+# pilot cells stay uniformly fresh for the M3 dual-arm runs (warm-up is
+# process calibration only, its outputs never count as experimental data).
+# Chosen to exercise opposite infrastructure edges: j09-s01 batch/form
+# operations on structured entities, j13-s02 unbounded collection with
+# search/filter.
+pilot_cells:
+  - { id: cell-j01-s01, shape: entity-hierarchy, verb: manage, source_cell: cell-01 }
+  - { id: cell-j02-s02, shape: open-collection, verb: locate, source_cell: cell-02 }
+  - { id: cell-j09-s03, shape: comparison-panel, verb: decide, source_cell: cell-09 }
+  - { id: cell-j04-s04, shape: volatile-evidence-stream, verb: monitor, source_cell: cell-04 }
+  - { id: cell-j05-s05, shape: relational-web, verb: understand, source_cell: cell-05 }
+  - { id: cell-j06-s06, shape: temporal-sequence, verb: understand, source_cell: cell-06 }
+  - { id: cell-j07-s07, shape: spatial-workspace, verb: create, source_cell: cell-07 }
+  - { id: cell-j08-s08, shape: single-document, verb: edit, source_cell: cell-08 }
+  - { id: cell-j10-s09, shape: consequential-flow, verb: complete, source_cell: cell-10 }
+  - { id: cell-j13-s10, shape: dimensional-space, verb: explore, source_cell: cell-13 }
+warmup_cells:
+  - { id: cell-j09-s01, shape: entity-hierarchy, verb: decide, source_cell: null,
+      reason: 批量决策/表单/不可逆确认流，校准实体-表单类实现链路 }
+  - { id: cell-j13-s02, shape: open-collection, verb: explore, source_cell: null,
+      reason: 无界集合 + 搜索/过滤 + 高密度渲染，校准集合类实现链路 }
