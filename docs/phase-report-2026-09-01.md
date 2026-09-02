@@ -243,3 +243,72 @@ nav target-size defect was fixed per user instruction (24px hit area,
 re-measured 7 pass / 0 fail). Remaining open item: severity-promotion
 review timing (Phase 4 F5 — the wizard type-size advisory and calibration
 record feed it).
+
+
+---
+
+# Phase 2 execution record — intermediate state structuring (2026-09-02)
+
+Entry gate: Gate 1 passed. All tasks TDD; suite green at every commit.
+
+| Task | Commit | Tests |
+|---|---|---|
+| S1 SDIR vocab tables + 0.2 union | `805998a` | sdir-02 (8) |
+| G1 frame 0.2 (JTBD/object/task model) | `cf1caae` | frame-02 (5) |
+| G2 decide representation rules | `b4eebec` | decide-representation (8) |
+| S2 0.2 generation + render-leak on new fields | `d892dca` | sdir-02-lint (3) |
+| V1 four structure checks | `1933155` | validator-structure-checks (4) |
+| I1 MCP 0.2 payloads + drift cross-check | `7c5cfe9` | mcp-payload-02 (4) |
+| I2 compiler sections | `a0bfb88` | compiler-02 (2) |
+| I3 gate + legacy resume + docs | (this commit) | legacy-resume-02 (1) |
+
+## Gate 2 evidence
+
+1. Full suite green: 305/305 tests, 44 files (Phase 1 close: 270/36).
+2. SDIR 0.2 round-trip: 0.2 parses with every §6.1 block; 0.1 unchanged;
+   version 0.3 rejected; referential refinements (priority → region ids,
+   state owners ∈ regions ∪ {session,url}) enforced at schema level.
+3. Render-leak permeation: flexbox/px in representation.reason and "rounded
+   corners" in acceptance are rejected by the recursive lint.
+4. Decide rules matrix: DECISION_SHAPE_MISSING (EXPAND),
+   DECISION_DEFAULT_SHELL_UNJUSTIFIED via `cards` type, word-boundary text
+   (English + CJK synonyms; embedded "dashboarding" does not trigger),
+   justification must name an information_shape variable,
+   DECISION_NO_REJECTED_REPRESENTATION (WARN).
+5. Flattened MCP payloads: frame/decide/sdir client schemas accept 0.2
+   payloads with no nested union (AB-001 recipe); 0.1 sdir round-trips
+   byte-identically; SDIR_REPRESENTATION_DRIFT fires on decide↔SDIR primary
+   disagreement (REVIEW) and is a no-op on 0.1.
+6. Legacy resume proof: a 0.1 session driven to validate, resumed by a
+   fresh service instance from disk, completes with zero new obligations
+   (no structure checks assembled); mapped-check receipt obligations
+   predate 0.2 and are not new.
+7. Doc sync: architecture.md (0.2 intent row, portfolio/state-ownership
+   concept boundaries), this report.
+
+## Phase 2 deviation ledger
+
+1. **Serial order S1→G1→G2→S2→V1→I1→I2** instead of the parallel map's
+   S1→S2 / G1→G2 tracks: S2's generate-0.2 consumes the G1/G2 payload
+   blocks, so the dependency runs the other way for serial execution. No
+   spec change.
+2. **compiled-context section name `representation_portfolio`**: spec §6.4
+   says "representation (portfolio + rejected)" but `representation` is
+   already the figma_first realization section in CompiledContext — renamed
+   to avoid the collision.
+3. **FORBIDDEN_VALUE gained `roundeds+corners`**: plan S2 pinned the
+   rejection test for "button uses rounded corners" while its note said
+   "do not widen the forbidden lists" — the pinned test wins; minimal
+   single-phrase addition, recorded here.
+4. **runtime → prax-sdir dependency edge declared** (vocab constants):
+   spec §6.1/§6.3 pin the vocabulary tables in prax-sdir while frame/decide
+   gates (runtime) consume them. Workspace cycle with prax-sdir → runtime
+   is declared but the file-level graph stays acyclic (runtime imports only
+   `prax-sdir/vocab.js`, which imports nothing back).
+5. **0.2 session detection**: spec says "0.2 会话" without pinning the
+   marker; implemented as explicit `version: "0.2"` on the frame
+   (chain head) for plan assembly, and on frame/decisions/sdir artifacts
+   individually for their own gates. Blocks without the declaration are
+   rejected.
+
+Gate 2: **PASSED** (autonomous per user instruction 2026-09-02).

@@ -12,7 +12,7 @@ loads the authoritative YAML record and gate artifacts from disk.
 | State | `prax-runtime` local YAML store | Optimistic revision check and atomic rename |
 | Knowledge | 23 fully expanded entries | No list-all/search-everything tool; entries are a compiled subset of the versioned `research/upstream/` snapshot, not the whole research asset |
 | Routing | Scope filters plus deterministic scoring | 5 principles, 5 heuristics, 3 patterns, 1 profile |
-| Intent | SDIR `0.1` | Semantic roles and commitments only |
+| Intent | SDIR `0.1` / `0.2` (discriminated union; vocab tables in `prax-sdir/vocab.ts`) | Semantic roles and commitments only; 0.2 adds user_job / information_shape / representation portfolio / state ownership / complexity budget / acceptance — still zero pixels |
 | Validation | Deterministic, assistive, and empirical checks; measured artifact layer (`prax-measure` receipts verified by the validator: schema, digest, containment, staleness, claim cross-check) | External evidence is never fabricated; measured evidence outranks attestation (P-043); skipped is not passed |
 
 ## Gate behavior
@@ -102,6 +102,16 @@ full-SDIR sessions without a recorded realization decision
   measurement failures, warning dispositions, convergence truth, evidence
   currency, measured/attested/skipped claim split) that agents cannot
   self-declare — human review runs downstream of machine gates (P-045).
+- **The representation portfolio replaces the single archetype reference**:
+  0.2 sessions decide primary + supporting + rejected representation before
+  SDIR (`design_decide`), carry it into SDIR 0.2 with a drift cross-check
+  (`SDIR_REPRESENTATION_DRIFT`), and compile it into the implementation
+  context. Default-shell vocabulary (dashboard / cards / tabs / modal,
+  with CJK synonyms) demands justification against information-shape
+  variables (`DECISION_DEFAULT_SHELL_UNJUSTIFIED`, REVIEW).
+- **State ownership is a declared layer** (0.2): selection, preview,
+  inspector, viewport, query, and mode ownership name a region, `session`,
+  or `url` — emergent ownership is a check failure, not a style note.
 - **Figma is a Representation Surface**: the authority chain is Design
   Contract → Representation Artifact → provider refs; the runtime never
   connects to Figma (agents drive the provider MCP), and same-node edits
