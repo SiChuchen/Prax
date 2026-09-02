@@ -2,7 +2,7 @@
 /**
  * prax-measure CLI (spec §5.1):
  *   node bin/prax-measure.mjs --app <appDir> --out <sessionDir>
- *       [--serve <url>] [--viewports 1280x860,1440x900]
+ *       [--serve <url>] [--viewports 1280x860,1440x900] [--entry /path]
  * Exit codes: 0 = no error-severity fail; 1 = error-severity fail;
  *             2 = environment failure (receipt still written, all checks skipped).
  */
@@ -32,6 +32,7 @@ function argumentValue(name) {
 const app = argumentValue("--app");
 const out = argumentValue("--out");
 const serve = argumentValue("--serve");
+const entry = argumentValue("--entry");
 const viewportsRaw = argumentValue("--viewports") ?? "1280x860";
 
 if (app === undefined || out === undefined) {
@@ -45,6 +46,7 @@ try {
     outDir: out,
     serve,
     viewports: parseViewports(viewportsRaw),
+    ...(entry === undefined ? {} : { entry }),
   });
   const receipt = JSON.parse(await readFile(receiptPath, "utf8"));
   const environmentFailure = receipt.checks.every((check) => check.status === "skipped");
