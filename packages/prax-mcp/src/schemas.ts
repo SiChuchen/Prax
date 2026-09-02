@@ -171,7 +171,14 @@ export const DesignRealizeInputSchema = z
     provider: z.string().trim().min(1).optional(),
     conditions: z
       .array(z.object({ id: z.string().trim().min(1), holds: z.boolean(), basis: z.string().trim().min(1) }))
-      .optional(),
+      .optional()
+      .describe(
+        "Required for realize propose, and must EXACTLY match the fixed condition set of the chosen mode " +
+        "(all ids, no extras, each with holds + basis): " +
+        "direct_code → defect_fix_fit, visual_polish_fit, small_modification, mature_design_system; " +
+        "figma_first → greenfield, high_visual_uncertainty, marketing_editorial, " +
+        "stakeholder_visual_approval, spatial_exploration_value, runtime_dependency_low.",
+      ),
     reason: z.string().trim().min(1).optional().describe("Required when re-proposing a different mode."),
     override: z.boolean().optional(),
     override_reason: z.string().trim().min(1).optional(),
