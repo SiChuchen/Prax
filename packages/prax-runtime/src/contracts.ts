@@ -554,6 +554,17 @@ export const RoutedKnowledgeRecordSchema = z.object({
 });
 export type RoutedKnowledgeRecord = z.infer<typeof RoutedKnowledgeRecordSchema>;
 
+export const ValidationLoopHistoryEntrySchema = z.object({
+  evaluated_at: z.string().datetime(),
+  open_findings: z.number().int().nonnegative(),
+});
+export type ValidationLoopHistoryEntry = z.infer<typeof ValidationLoopHistoryEntrySchema>;
+
+export const ValidationLoopSchema = z.object({
+  history: z.array(ValidationLoopHistoryEntrySchema).default([]),
+});
+export type ValidationLoop = z.infer<typeof ValidationLoopSchema>;
+
 export const DesignSessionSchema = z.object({
   id: NonEmptyStringSchema,
   project_id: NonEmptyStringSchema.optional(),
@@ -573,6 +584,7 @@ export const DesignSessionSchema = z.object({
   warnings: z.array(NonEmptyStringSchema).default([]),
   lifecycle_policy: LifecyclePolicySchema.optional(),
   design_authorities: z.array(NonEmptyStringSchema).default([]),
+  validation_loop: ValidationLoopSchema.default({ history: [] }),
 });
 export type DesignSession = z.infer<typeof DesignSessionSchema>;
 

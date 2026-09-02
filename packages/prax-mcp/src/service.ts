@@ -1434,10 +1434,66 @@ export class PraxService {
     const mergedFindings = [...evaluation.findings, ...(adjudication?.findings ?? [])];
     const now = this.sessions.nowIso();
     const complete = evaluation.status === "PASS" && finalMissing.length === 0;
+
+    // B3 convergence protocol (spec §5.6): every non-PASS evaluation appends its
+    // open-finding count; the first entry is the baseline and never counts as
+    // non-improving; two consecutive non-improving entries → REVIEW stall. The
+    // gate is never locked by a stall (the routing-deadlock lesson).
+    const openFindings = mergedFindings.filter(
+      (finding) => finding.outcome === "fail" || finding.outcome === "inconclusive",
+    ).length;
+    const loopBefore = session.validation_loop ?? { history: [] };
+    let validationLoop = loopBefore;
+    let stalled = false;
+    if (status !== "PASS") {
+      const history = [...loopBefore.history, { evaluated_at: now, open_findings: openFindings }];
+      let minimum = history.length > 0 ? history[0]!.open_findings : 0;
+      let consecutive = 0;
+      for (let index = 1; index < history.length; index += 1) {
+        const entry = history[index]!;
+        if (entry.open_findings < minimum) {
+          minimum = entry.open_findings;
+          consecutive = 0;
+        } else {
+          consecutive += 1;
+        }
+      }
+      stalled = consecutive >= 2;
+      validationLoop = { history };
+    }
+    const stalledBefore = (() => {
+      const history = loopBefore.history;
+      let minimum = history.length > 0 ? history[0]!.open_findings : 0;
+      let consecutive = 0;
+      for (let index = 1; index < history.length; index += 1) {
+        const entry = history[index]!;
+        if (entry.open_findings < minimum) {
+          minimum = entry.open_findings;
+          consecutive = 0;
+        } else {
+          consecutive += 1;
+        }
+      }
+      return consecutive >= 2;
+    })();
+    if (stalled && status !== "BLOCK") status = "REVIEW";
+    const unresolvedFindings = mergedFindings
+      .filter((finding) => finding.outcome === "fail" || finding.outcome === "inconclusive")
+      .map((finding) => finding.check_id);
+    const stallWarning =
+      stalled && !stalledBefore
+        ? `VALIDATION_CONVERGENCE_STALLED: open findings have not reached a new minimum for two consecutive evaluations; unresolved findings (truthful report, not retried indefinitely): [${unresolvedFindings.join(", ")}]`
+        : undefined;
+
     const updated = complete
       ? { ...advanceSession(session, "validate", now), phase: "COMPLETE" as const, current_gate: { name: "complete" } }
       : touch(session, now);
-    await this.sessions.commit(updated, [
+    const persistedSession = {
+      ...updated,
+      validation_loop: validationLoop,
+      warnings: [...updated.warnings, ...(stallWarning === undefined ? [] : [stallWarning])],
+    };
+    await this.sessions.commit(persistedSession, [
       {
         key: "validationReport",
         value: {
@@ -1458,6 +1514,14 @@ export class PraxService {
       ...(status !== evaluation.status ? { status } : {}),
       findings: mergedFindings,
       missing_evidence: finalMissing,
+      ...(stalled
+        ? {
+            code: "VALIDATION_CONVERGENCE_STALLED",
+            message: `Convergence stalled: open findings did not reach a new minimum for two consecutive evaluations. Report unresolved findings truthfully instead of retrying indefinitely. Unresolved: [${unresolvedFindings.join(", ")}]`,
+            unresolved: unresolvedFindings,
+            warnings: [...(evaluation.warnings ?? []), ...(stallWarning === undefined ? [] : [stallWarning])],
+          }
+        : {}),
       ...(regressionObligations.length === 0 ? {} : { correction_regressions: regressionObligations }),
       ...(planChanged
         ? {
@@ -1494,6 +1558,7 @@ export class PraxService {
         outcome,
         message,
         source: "prax-validator/adjudicator",
+        provenance: "measured",
       }));
 
     const pngRefs = [

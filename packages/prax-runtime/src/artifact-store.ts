@@ -197,6 +197,7 @@ export class FileSessionStore {
         warnings: [],
         ...(input.lifecyclePolicy === undefined ? {} : { lifecycle_policy: input.lifecyclePolicy }),
         design_authorities: input.designAuthorities ?? [],
+        validation_loop: { history: [] },
       };
 
       await mkdir(sessionDirectory, { recursive: true });
