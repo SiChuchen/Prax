@@ -1,0 +1,44 @@
+needs:
+  - id: need-facet-filter
+    product_action: 多 facet 过滤面板，各维度计数实时反馈
+    required_experience:
+      - 多选过滤
+      - 计数反馈
+    capabilities:
+      - 纯前端内存过滤即可
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 受控 checkbox 组 + 即时计数，无外部依赖
+  - id: need-filter-chips
+    product_action: 活动过滤条件以 chips 显式呈现并逐项移除
+    required_experience:
+      - 语境可见
+      - 单步回退
+    capabilities:
+      - 受控组件
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: chips 行 + 单项移除按钮 + 全部重置
+  - id: need-inline-detail
+    product_action: 条目详情右栏内联展开，结果流位置保留
+    required_experience:
+      - 详情下钻
+      - 浏览位置不重置
+    capabilities:
+      - 受控组件
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 右栏条件渲染详情，结果区滚动位置由浏览器保留
+  - id: need-view-toggle
+    product_action: 列表/紧凑网格双浏览形态切换
+    required_experience:
+      - 形态切换不丢过滤
+    capabilities:
+      - CSS Grid
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 同一数据源两种渲染，切换仅改布局不改状态

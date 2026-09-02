@@ -1,0 +1,60 @@
+user:
+  expertise: expert
+  familiarity: high
+task:
+  primary: 浏览待决调拨请求，理解位置语境，指派到正确实体并确认
+  modes:
+    - review
+    - manage
+    - transact
+  frequency: medium
+domain:
+  type: 仓储/门店调拨运营：大区-仓-库位层级上的位置敏感决策
+  entities:
+    - request
+    - region
+    - warehouse
+    - slot
+information:
+  volume: high
+  relationship_complexity: medium
+  change_rate: low
+  comparison_need: medium
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: medium
+  error_cost: medium
+priorities:
+  - 决策输入同屏可得
+  - 批量操作零误伤
+  - 层级结构可见
+  - 状态归属显式
+density_intent: compact
+confidence:
+  overall: high
+unknowns: []
+classification:
+  version: "1"
+  task_type: manage_lifecycle
+  domain_id: unknown
+  interaction_mode: inventory_with_lifecycle_actions
+  product_type: unknown
+  primary_object_type: warehouse
+  secondary_object_types:
+    - request
+    - slot
+    - region
+  confidence: medium
+  evidence:
+    - task_type=manage_lifecycle ← token 'manage' in context.task and frame.tasks
+    - interaction_mode=inventory_with_lifecycle_actions ← token 'manage' in context.task, frame.tasks, and context.priorities
+    - primary_object_type=warehouse ← most referenced product object in the Product Frame
+  open_questions:
+    - domain_id could not be classified from the provided context; refine the context fields or record a custom classification
+    - product_type could not be derived; record the intended audience and product kind

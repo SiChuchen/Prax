@@ -1,0 +1,67 @@
+version: "0.2"
+jtbd:
+  verb: explore
+  target: 多维数据（开放组件目录：类目/框架/许可证/热度多个维度的条目集合）
+  success: 维度切换不重置认知——切换过滤维度、下钻详情、返回浏览时，已建立的筛选与选中语境不丢失
+primary_object:
+  type: item
+  label: 目录条目（组件）
+task_model:
+  frequency: high
+  reversibility: reversible
+  consequence: low
+  expertise: mixed
+user:
+  primary_role: 前端工程师（为项目选型浏览组件库）
+  expertise: expert
+  familiarity: medium
+goal:
+  primary: 在开放海量目录中高效探索并理解候选组件，逐步收窄而不丢失已建立的语境
+tasks:
+  primary: 以搜索与多 facet 过滤收窄目录，浏览结果并下钻条目详情
+  secondary:
+    - 逐项移除或重置过滤条件
+    - 查看条目的多维度属性（框架/许可证/热度/更新时间）
+    - 在结果列表与紧凑网格间切换浏览形态
+product_objects:
+  - id: component
+    user_name: 组件
+    purpose: 被探索的目录条目
+  - id: facet
+    user_name: 过滤维度
+    purpose: 类目/框架/许可证等收窄轴
+  - id: filter_state
+    user_name: 过滤状态
+    purpose: 当前生效的维度取值集合，显式归属、可回退
+  - id: collection
+    user_name: 目录
+    purpose: 开放海量条目集合
+relationships:
+  - id: rel-collection-item
+    source: collection
+    target: component
+    type: contains
+    direction: forward
+    meaning: 目录包含组件条目
+    importance: primary
+  - id: rel-item-facet
+    source: component
+    target: facet
+    type: classified_by
+    direction: forward
+    meaning: 组件按多维度分类
+    importance: primary
+  - id: rel-facet-state
+    source: facet
+    target: filter_state
+    type: constrains
+    direction: forward
+    meaning: 维度取值约束当前集合
+    importance: supporting
+mental_model_hypothesis:
+  summary: 用户把探索想成'过滤器 + 结果流'：左栏勾选维度，中间结果即时变化，顶部活动条件随时可摘除；点开条目在右侧详情列展开，回来时过滤如旧
+  confidence: medium
+  evidence:
+    - user_requirement
+primary_success_definition: 用户连续切换 3 个以上过滤维度并下钻多个条目后，当前过滤语境与浏览位置完整保留；每一步收窄都显式可见且可单步回退
+open_questions: []

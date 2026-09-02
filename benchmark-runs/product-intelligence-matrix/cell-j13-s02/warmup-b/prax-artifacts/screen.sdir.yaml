@@ -1,0 +1,142 @@
+version: "0.2"
+screen:
+  id: list_detail_screen
+  intent:
+    primary_task: 以搜索与多 facet 过滤收窄目录，浏览结果并下钻条目详情
+    secondary_tasks:
+      - 逐项移除或重置过滤条件
+      - 查看条目的多维度属性（框架/许可证/热度/更新时间）
+      - 在结果列表与紧凑网格间切换浏览形态
+  archetype:
+    pattern_ref: PAT-LIST-DETAIL
+  density_intent: regular
+  regions:
+    - id: search_bar
+      role: experimental:search_bar
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: facet_panel
+      role: experimental:facet_panel
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: result_stream
+      role: experimental:result_stream
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: active_filter_chips
+      role: experimental:active_filter_chips
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: detail_panel
+      role: experimental:detail_panel
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: view_toggle
+      role: experimental:view_toggle
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: workspace
+      role: dominant_workspace
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - preserve_context
+  relationships: []
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved:
+    - id: grid-density-threshold
+      question: grid-density-threshold
+      impact: low
+      affects:
+        - implementation
+    - id: result-pagination-form
+      question: result-pagination-form
+      impact: low
+      affects:
+        - implementation
+  rejected_alternatives:
+    - option: PAT-CANVAS-WORKSPACE 作主结构
+      reason: 画布承载空间关系结构，relationality=low 的目录条目无此结构；空间自由布局反而破坏结果流的可扫视性
+    - option: PAT-WORKSPACE 单独作主结构
+      reason: workspace 底座不定义探索的信息组织；须与 PAT-LIST-DETAIL 组合，由后者定义主从结构
+    - option: 分类树主导导航
+      reason: 把 facet 层级化为深层树会逐级丢弃语境，与维度切换不重置认知冲突
+  user_job:
+    verb: explore
+    target: 多维数据（开放组件目录：类目/框架/许可证/热度多个维度的条目集合）
+    success: 维度切换不重置认知——切换过滤维度、下钻详情、返回浏览时，已建立的筛选与选中语境不丢失
+  primary_object:
+    type: item
+    label: 目录条目（组件）
+  information_shape:
+    cardinality: unbounded
+    relationality: low
+    hierarchy: medium
+    temporality: low
+    density: medium
+    dimensionality: medium
+    spatiality: none
+    volatility: medium
+    uncertainty: low
+    comparison_need: none
+  representation:
+    primary:
+      type: search_results
+      reason: cardinality=unbounded：开放集合的进入路径必须是搜索+过滤驱动的结果流，浏览与收窄同屏演进，否则海量条目无法定位
+    supporting:
+      - type: form
+        reason: hierarchy=medium：类目/框架/许可证以 facet 过滤面板（表单控件）承载维度收窄，各维度计数即时反馈
+      - type: grid
+        reason: density=medium：紧凑网格浏览形态与列表可切换，服务扫视式探索
+      - type: list
+        reason: 下钻详情以侧栏列表条目展开（列表-详情主从），浏览位置在结果流中保留
+  priority:
+    primary:
+      - search_bar
+      - facet_panel
+      - result_stream
+      - workspace
+    contextual:
+      - active_filter_chips
+      - detail_panel
+      - view_toggle
+  interaction:
+    preview: none
+    inspect: select
+    navigate: none
+    locate: none
+  state_ownership:
+    - state: selection
+      owner: search_bar
+    - state: preview
+      owner: session
+  acceptance:
+    - 用户连续切换 3 个以上过滤维度并下钻多个条目后，当前过滤语境与浏览位置完整保留；每一步收窄都显式可见且可单步回退

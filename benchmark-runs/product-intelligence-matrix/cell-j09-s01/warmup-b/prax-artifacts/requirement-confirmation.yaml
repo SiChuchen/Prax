@@ -1,0 +1,24 @@
+version: "0.1"
+user_quote:
+  - 动词：decide；对象：位置敏感的选项；成功标准：决策输入同屏可得（brief.md user_job 原文）
+restatement: 从零构建一个单页 Web 应用：用户面对大量有层级归属的结构化实体（大区→仓→库位），需要对一批位置敏感的待决选项（调拨/补货请求）做出裁定（指派到某个实体并确认）。决策所需输入必须同屏可得；层级结构可见；选择与决策状态归属显式；批量操作零误伤。
+boundaries:
+  in_scope:
+    - 单页 Web 应用，静态可打开，首屏数据就绪
+    - 层级实体树（大区→仓→库位）的呈现与选择
+    - 待决选项列表 + 选中详情 + 候选实体 + 决策动作（指派/批量确认）同屏
+    - 不可逆确认的恢复/撤销路径
+  out_of_scope:
+    - 后端、账号体系、持久化服务
+    - 部署到外部服务
+    - 多主屏/多页面路由
+  scope_complete: true
+open_questions: []
+confirmation:
+  status: explicit_user_confirmation
+  evidence:
+    - type: task_brief
+      ref: brief.md（M2 冻结简报，与 benchmark-runs/product-intelligence-matrix/cell-j09-s01/brief.md 字节一致）
+    - type: conversation_message
+      ref: 操作算子（benchmark program M2）指令：'对 cell-j09-s01 执行 Arm B 热身：以 brief.md 为唯一需求，走 Prax 0.2 全链并实现应用'（2026-09-03 会话）
+  confirmed_at: 2026-09-03T01:10:00Z

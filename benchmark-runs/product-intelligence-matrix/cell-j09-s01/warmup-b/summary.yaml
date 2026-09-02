@@ -1,0 +1,33 @@
+run:
+  id: pi-matrix-warmup-cell-j09-s01-B
+  arm: arm-b-prax (warm-up — process calibration only, NOT experimental data)
+  cell: cell-j09-s01 (decide × entity-hierarchy, priority-1 对角带交叉格)
+  agent_cli: claude-code (glm-5.3), benchmark execution program session
+  worktree: E:\codex-prj\ab-worktrees\pi-matrix\cell-j09-s01-warmup-b (fresh git repo, commit 1)
+  started_at: 2026-09-02T17:07Z (approx, worktree creation)
+  ended_at: 2026-09-02T17:19Z (approx, packaging)
+
+result:
+  implementation_completed: true
+  final_validation: COMPLETE   # 11/11 findings pass
+  stack: React 18 + Vite 5 (framework=react per prepare contract), static dist
+  tests: n/a (no test harness in warm-up scope; measurement receipt is the evidence layer)
+  lint_build: pass (vite build clean)
+
+prax_flow:
+  design_session_id: ds_20260902170755_09231fa8
+  chain: start(greenfield) -> confirm -> frame 0.2 -> context -> route (PAT-RESOURCE-MANAGEMENT/PAT-WORKSPACE/PAT-APPLICATION-SHELL) -> inspect L1 -> decide 0.2 (primary=tree, supporting list/form/search_results, rejected dashboard/table/tabs) -> sdir generate_from_decisions -> reconcile (4 needs) -> realize direct_code -> prepare -> validate plan/submit/evaluate -> COMPLETE
+  driven_via: stdio JSON-RPC (ab-worktrees/pi-matrix/_tools/mcp-call.mjs, PRAX_STATE_ROOT in worktree)
+  warnings_at_evaluate:
+    - complexity_budget_declared advisory (known F4 gap #1)
+    - keyboard self-attestation without artifact_refs (measurement_receipt present; M3 arm guidance should cite screenshots too)
+
+receipts:
+  worktree: validation-evidence/receipt-2026-09-02T17-16-09-269Z.json (7/7 pass, 2 viewports)
+  benchmark: benchmark-runs/product-intelligence-matrix/cell-j09-s01/validation-evidence/receipt-2026-09-02T17-18-03-850Z.json (7/7 pass, via run-cell.mjs)
+
+process:
+  wall_clock_seconds: 625
+  model_usage: single-session executor; token spend dominated by chain payloads + implementation (~under budget, no per-run meter available — honest limitation)
+  human_clarifications: 0
+  deviations: see phase report 2026-09-03 (routing re-call BLOCK; decide top-level rejected required; evidence gate requires conversation_message)

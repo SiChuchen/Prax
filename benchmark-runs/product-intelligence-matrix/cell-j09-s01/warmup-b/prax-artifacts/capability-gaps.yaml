@@ -1,0 +1,46 @@
+needs:
+  - id: need-tree-structure
+    product_action: 呈现大区→仓→库位层级树，支持选择与收窄
+    required_experience:
+      - 层级展开收起
+      - 选择联动队列过滤
+    capabilities:
+      - 纯前端组件即可实现（受控树）
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 自建轻量树组件（button + aria-level），无外部依赖
+  - id: need-batch-assign
+    product_action: 多选请求 + 批量指派到实体 + 显式确认
+    required_experience:
+      - 多选零误伤
+      - 批量计数确认
+    capabilities:
+      - checkbox 多选 + 贴底动作条
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 批量动作条显示选中计数，确认按钮显式列出目标实体
+  - id: need-batch-undo
+    product_action: 已确认批次的撤销恢复路径
+    required_experience:
+      - 最近一批可撤回
+      - 撤回显式提示
+    capabilities:
+      - 内存态撤销栈即可（无持久化要求）
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 保留最近一批确认记录，提供撤销动作与 toast 反馈
+  - id: need-inline-decision-inputs
+    product_action: 选中请求的详情、候选实体、动作同屏呈现
+    required_experience:
+      - 详情面板
+      - 候选选择
+      - 确认/撤销动作
+    capabilities:
+      - 右栏面板组件
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 决策面板随选中渲染，空态显示引导文案而非隐藏

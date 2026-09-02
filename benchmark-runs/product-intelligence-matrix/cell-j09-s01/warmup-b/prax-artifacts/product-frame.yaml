@@ -1,0 +1,74 @@
+version: "0.2"
+jtbd:
+  verb: decide
+  target: 位置敏感的选项（一批待裁定的调拨/补货请求，其合理去向取决于层级实体位置）
+  success: 决策输入同屏可得——选中待决项后，其详情、候选实体与决策动作无需离开当前屏即可完成裁定；层级结构可见，状态归属显式
+primary_object:
+  type: entity
+  label: 调拨请求（被指派到层级实体上的待决选项）
+task_model:
+  frequency: medium
+  reversibility: costly
+  consequence: medium
+  expertise: mixed
+user:
+  primary_role: 区域运营专员（裁定跨仓调拨请求）
+  expertise: expert
+  familiarity: high
+goal:
+  primary: 在大量层级实体中高效、零误伤地裁定待决调拨请求
+tasks:
+  primary: 浏览待决请求，理解其位置语境（源仓/目的仓/库存水位），指派到正确实体并确认
+  secondary:
+    - 按大区/仓过滤与定位
+    - 批量选择同类请求一次指派
+    - 复核已裁定项并撤销（恢复路径）
+product_objects:
+  - id: request
+    user_name: 调拨请求
+    purpose: 待决选项：需要被指派到某个实体的位置敏感决策单元
+  - id: region
+    user_name: 大区
+    purpose: 层级顶层：地理分组
+  - id: warehouse
+    user_name: 仓库
+    purpose: 层级中层：请求的源与候选目的
+  - id: slot
+    user_name: 库位
+    purpose: 层级叶：指派落点
+relationships:
+  - id: rel-region-wh
+    source: region
+    target: warehouse
+    type: contains
+    direction: forward
+    meaning: 大区包含仓库
+    importance: primary
+  - id: rel-wh-slot
+    source: warehouse
+    target: slot
+    type: contains
+    direction: forward
+    meaning: 仓库包含库位
+    importance: primary
+  - id: rel-req-slot
+    source: request
+    target: slot
+    type: assigned_to
+    direction: forward
+    meaning: 请求被指派到库位（决策结果）
+    importance: primary
+  - id: rel-req-wh
+    source: request
+    target: warehouse
+    type: originates_from
+    direction: forward
+    meaning: 请求来自源仓
+    importance: supporting
+mental_model_hypothesis:
+  summary: 用户把任务想成“左边一棵实体树 + 右边一列待决卡”：树上选实体缩小范围，卡上做指派与确认；两栏状态互不覆盖
+  confidence: medium
+  evidence:
+    - user_requirement
+primary_success_definition: 用户能在单屏内完成“选请求→看输入→指派→确认”闭环；批量操作零误伤；不可逆确认有撤销恢复路径
+open_questions: []

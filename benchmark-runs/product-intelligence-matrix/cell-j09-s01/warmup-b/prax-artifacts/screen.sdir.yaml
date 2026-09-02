@@ -1,0 +1,142 @@
+version: "0.2"
+screen:
+  id: resource_management_screen
+  intent:
+    primary_task: 浏览待决请求，理解其位置语境（源仓/目的仓/库存水位），指派到正确实体并确认
+    secondary_tasks:
+      - 按大区/仓过滤与定位
+      - 批量选择同类请求一次指派
+      - 复核已裁定项并撤销（恢复路径）
+  archetype:
+    pattern_ref: PAT-RESOURCE-MANAGEMENT
+  density_intent: compact
+  regions:
+    - id: request_queue
+      role: experimental:request_queue
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: entity_tree
+      role: experimental:entity_tree
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: decision_panel
+      role: experimental:decision_panel
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: batch_controls
+      role: experimental:batch_controls
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: assignment_history
+      role: experimental:assignment_history
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: search
+      role: experimental:search
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: workspace
+      role: dominant_workspace
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - preserve_context
+  relationships: []
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved:
+    - id: undo-window
+      question: undo-window
+      impact: low
+      affects:
+        - implementation
+    - id: queue-sort-default
+      question: queue-sort-default
+      impact: low
+      affects:
+        - implementation
+  rejected_alternatives:
+    - option: PAT-WORKSPACE 单独作主结构
+      reason: workspace 只提供持久工作台底座，不解决层级实体的清点与生命周期动作；须与 PAT-RESOURCE-MANAGEMENT 组合，由后者定义主结构
+    - option: PAT-APPLICATION-SHELL 作主结构（页面导航）
+      reason: 把树、队列、决策拆到多个导航区会破坏决策输入同屏可得；shell 只适合多面产品的全局骨架，本应用是单屏工具
+    - option: PAT-LIST-DETAIL-INSPECTOR 作主结构（列表主导）
+      reason: 列表把 many 实体压成顺序行，hierarchy=high 的层级归属不可见；树必须为主、列表承载队列侧
+  user_job:
+    verb: decide
+    target: 位置敏感的选项（一批待裁定的调拨/补货请求，其合理去向取决于层级实体位置）
+    success: 决策输入同屏可得——选中待决项后，其详情、候选实体与决策动作无需离开当前屏即可完成裁定；层级结构可见，状态归属显式
+  primary_object:
+    type: entity
+    label: 调拨请求（被指派到层级实体上的待决选项）
+  information_shape:
+    cardinality: many
+    relationality: medium
+    hierarchy: high
+    temporality: low
+    density: high
+    dimensionality: medium
+    spatiality: none
+    volatility: medium
+    uncertainty: low
+    comparison_need: none
+  representation:
+    primary:
+      type: tree
+      reason: hierarchy=high：大区→仓→库位的归属结构是决策的定位骨架，树显式呈现父子层级，使位置敏感的候选集可见且可逐层收窄
+    supporting:
+      - type: list
+        reason: cardinality=many：待决请求队列为高密度顺序浏览与批量选择服务（与树选择联动过滤）
+      - type: form
+        reason: 决策输入同屏可得：选中请求后的指派目标、数量与确认/撤销动作以内联表单呈现，不离开当前屏
+      - type: search_results
+        reason: cardinality=many + density=high：按单号/仓库搜索直达请求，服务定位环节
+  priority:
+    primary:
+      - request_queue
+      - entity_tree
+      - decision_panel
+      - workspace
+    contextual:
+      - batch_controls
+      - assignment_history
+      - search
+  interaction:
+    preview: none
+    inspect: select
+    navigate: none
+    locate: none
+  state_ownership:
+    - state: selection
+      owner: request_queue
+    - state: preview
+      owner: session
+  acceptance:
+    - 用户能在单屏内完成“选请求→看输入→指派→确认”闭环；批量操作零误伤；不可逆确认有撤销恢复路径

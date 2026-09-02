@@ -1,0 +1,82 @@
+version: "0.1"
+session_id: ds_20260902171904_9096fb54
+task:
+  surfaces: []
+  primary: 以搜索与多 facet 过滤收窄目录，浏览结果并下钻条目详情
+product_relationships:
+  - id: rel-collection-item
+    source: collection
+    target: component
+    type: contains
+    direction: forward
+    meaning: 目录包含组件条目
+    importance: primary
+  - id: rel-item-facet
+    source: component
+    target: facet
+    type: classified_by
+    direction: forward
+    meaning: 组件按多维度分类
+    importance: primary
+  - id: rel-facet-state
+    source: facet
+    target: filter_state
+    type: constrains
+    direction: forward
+    meaning: 维度取值约束当前集合
+    importance: supporting
+region_relationships: []
+decisions:
+  primary_structure: PAT-LIST-DETAIL
+  density_intent: regular
+  major_choice_ids:
+    - choice-search-primary
+    - choice-facet-form
+    - choice-filter-state-owned
+    - choice-inline-detail
+must_preserve: []
+regression_points: []
+unresolved:
+  - grid-density-threshold
+  - result-pagination-form
+corrections: []
+representation_portfolio:
+  primary:
+    type: search_results
+    reason: cardinality=unbounded：开放集合的进入路径必须是搜索+过滤驱动的结果流，浏览与收窄同屏演进，否则海量条目无法定位
+  supporting:
+    - type: form
+      reason: hierarchy=medium：类目/框架/许可证以 facet 过滤面板（表单控件）承载维度收窄，各维度计数即时反馈
+    - type: grid
+      reason: density=medium：紧凑网格浏览形态与列表可切换，服务扫视式探索
+    - type: list
+      reason: 下钻详情以侧栏列表条目展开（列表-详情主从），浏览位置在结果流中保留
+  rejected:
+    - option: dashboard
+      reason: 等权磁贴无法承载 unbounded 集合的渐进收窄，过滤语境会被拆散
+    - option: tree
+      reason: relationality=low：条目间无强关系结构，树形导航强行制造假层级，单一 facet 平铺更诚实
+    - option: feed
+      reason: temporality=low：目录探索非时间流任务，按时间排序的 feed 与任务不符
+state_ownership:
+  - state: selection
+    owner: search_bar
+  - state: preview
+    owner: session
+acceptance:
+  - 用户连续切换 3 个以上过滤维度并下钻多个条目后，当前过滤语境与浏览位置完整保留；每一步收窄都显式可见且可单步回退
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - destructive_recovery
+    - requirement_alignment
+  regression_check_ids: []

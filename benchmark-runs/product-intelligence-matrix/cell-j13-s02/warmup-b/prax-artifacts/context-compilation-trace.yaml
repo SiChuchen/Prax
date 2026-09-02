@@ -1,0 +1,38 @@
+version: "0.1"
+session_id: ds_20260902171904_9096fb54
+task_ref: 以搜索与多 facet 过滤收窄目录，浏览结果并下钻条目详情
+selected:
+  - ref: product_relationships
+    reason:
+      - rel-collection-item:collection->component
+      - rel-item-facet:component->facet
+      - rel-facet-state:facet->filter_state
+  - ref: region_relationships
+    reason: []
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-LIST-DETAIL
+  - ref: unresolved
+    reason:
+      - grid-density-threshold
+      - result-pagination-form
+  - ref: corrections
+    reason: []
+  - ref: validation-plan@1
+    reason:
+      - semantic_conformance
+      - state_completeness
+      - product_model_alignment
+      - keyboard
+      - hierarchy_review
+      - representation_decided
+      - state_ownership_declared
+      - acceptance_contract_present
+      - complexity_budget_declared
+      - destructive_recovery
+      - requirement_alignment
+excluded:
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata

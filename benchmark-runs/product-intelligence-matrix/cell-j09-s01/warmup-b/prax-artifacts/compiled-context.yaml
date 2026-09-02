@@ -1,0 +1,89 @@
+version: "0.1"
+session_id: ds_20260902170755_09231fa8
+task:
+  surfaces: []
+  primary: 浏览待决请求，理解其位置语境（源仓/目的仓/库存水位），指派到正确实体并确认
+product_relationships:
+  - id: rel-region-wh
+    source: region
+    target: warehouse
+    type: contains
+    direction: forward
+    meaning: 大区包含仓库
+    importance: primary
+  - id: rel-wh-slot
+    source: warehouse
+    target: slot
+    type: contains
+    direction: forward
+    meaning: 仓库包含库位
+    importance: primary
+  - id: rel-req-slot
+    source: request
+    target: slot
+    type: assigned_to
+    direction: forward
+    meaning: 请求被指派到库位（决策结果）
+    importance: primary
+  - id: rel-req-wh
+    source: request
+    target: warehouse
+    type: originates_from
+    direction: forward
+    meaning: 请求来自源仓
+    importance: supporting
+region_relationships: []
+decisions:
+  primary_structure: PAT-RESOURCE-MANAGEMENT
+  density_intent: compact
+  major_choice_ids:
+    - choice-tree-primary
+    - choice-inline-decision
+    - choice-batch-select
+    - choice-undo-path
+must_preserve: []
+regression_points: []
+unresolved:
+  - undo-window
+  - queue-sort-default
+corrections: []
+representation_portfolio:
+  primary:
+    type: tree
+    reason: hierarchy=high：大区→仓→库位的归属结构是决策的定位骨架，树显式呈现父子层级，使位置敏感的候选集可见且可逐层收窄
+  supporting:
+    - type: list
+      reason: cardinality=many：待决请求队列为高密度顺序浏览与批量选择服务（与树选择联动过滤）
+    - type: form
+      reason: 决策输入同屏可得：选中请求后的指派目标、数量与确认/撤销动作以内联表单呈现，不离开当前屏
+    - type: search_results
+      reason: cardinality=many + density=high：按单号/仓库搜索直达请求，服务定位环节
+  rejected:
+    - option: dashboard
+      reason: 等权磁贴无法承载 hierarchy=high 的层级归属，位置语境会被拆散，决策输入难以同屏
+    - option: table
+      reason: 扁平表格把层级压成列，父子归属不可见，与 hierarchy=high 冲突
+    - option: tabs
+      reason: 标签切分使树与队列不能并置，违背决策输入同屏可得（Preserve Context）
+state_ownership:
+  - state: selection
+    owner: request_queue
+  - state: preview
+    owner: session
+acceptance:
+  - 用户能在单屏内完成“选请求→看输入→指派→确认”闭环；批量操作零误伤；不可逆确认有撤销恢复路径
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - destructive_recovery
+    - requirement_alignment
+  regression_check_ids: []

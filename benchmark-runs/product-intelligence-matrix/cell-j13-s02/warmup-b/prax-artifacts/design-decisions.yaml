@@ -1,0 +1,100 @@
+session_id: ds_20260902171904_9096fb54
+version: "0.2"
+information_shape:
+  cardinality: unbounded
+  relationality: low
+  hierarchy: medium
+  temporality: low
+  density: medium
+  dimensionality: medium
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: search_results
+    reason: cardinality=unbounded：开放集合的进入路径必须是搜索+过滤驱动的结果流，浏览与收窄同屏演进，否则海量条目无法定位
+  supporting:
+    - type: form
+      reason: hierarchy=medium：类目/框架/许可证以 facet 过滤面板（表单控件）承载维度收窄，各维度计数即时反馈
+    - type: grid
+      reason: density=medium：紧凑网格浏览形态与列表可切换，服务扫视式探索
+    - type: list
+      reason: 下钻详情以侧栏列表条目展开（列表-详情主从），浏览位置在结果流中保留
+  rejected:
+    - option: dashboard
+      reason: 等权磁贴无法承载 unbounded 集合的渐进收窄，过滤语境会被拆散
+    - option: tree
+      reason: relationality=low：条目间无强关系结构，树形导航强行制造假层级，单一 facet 平铺更诚实
+    - option: feed
+      reason: temporality=low：目录探索非时间流任务，按时间排序的 feed 与任务不符
+  justification_vs_shape: 逐项推导：cardinality=unbounded → 主表达必须以搜索/过滤为骨架（search_results），逐页/逐流呈现而非全量铺开；relationality=low → 否决树/图等关系表达；hierarchy=medium → 维度分组以 facet 表单承载而非深层导航树；density=medium → 列表/网格双形态紧凑呈现；temporality=low → 无时间线需求；comparison_need=none → 不设并排比较；volatility=medium + 静态目录 → 无自动刷新诉求。维度切换不重置认知由 filter_state 的显式归属（chips + 逐项移除 + 结果流位置保留）保障。
+primary_structure:
+  pattern: PAT-LIST-DETAIL
+  rationale:
+    - 搜索+facet 过滤的结果流与侧栏详情下钻，正是 List-Detail 主从的定义场景
+    - cardinality=unbounded 下渐进收窄需要主区稳定、详情随选中变化的结构
+    - Router 高置信命中 PAT-LIST-DETAIL；PAT-WORKSPACE 的持久底座思想体现为过滤状态跨下钻保留
+  confidence: high
+information_hierarchy:
+  primary:
+    - search_bar
+    - facet_panel
+    - result_stream
+  secondary:
+    - active_filter_chips
+    - detail_panel
+    - view_toggle
+density:
+  intent: regular
+  strategy:
+    - facet 面板常驻左栏并实时显示各维度计数
+    - 活动过滤 chips 顶部一行，逐项可摘除
+    - 详情在右栏展开，结果流滚动位置不重置
+  avoid:
+    - 等权磁贴 dashboard
+    - 模态详情打断浏览
+    - 深层导航树
+major_choices:
+  - id: choice-search-primary
+    choice: 以 search_results 为 primary 表达（搜索+过滤骨架），而非树形导航或 dashboard
+    rationale: cardinality=unbounded；树/dashboard 均被 shape 否决（见 representation.rejected）
+    confidence: high
+    references:
+      - collection
+      - component
+  - id: choice-facet-form
+    choice: 多 facet 过滤以左栏表单承载 + 各维度计数反馈
+    rationale: hierarchy=medium 的分组诉求由 facet 承载；计数让收窄路径可预期
+    confidence: high
+    references:
+      - facet
+  - id: choice-filter-state-owned
+    choice: 过滤状态显式归属：活动 chips + 逐项移除 + 下钻返回不重置
+    rationale: 维度切换不重置认知是 success 标准；过滤状态必须有可见归属与单步回退
+    confidence: high
+    references:
+      - filter_state
+  - id: choice-inline-detail
+    choice: 条目详情右栏内联展开，而非弹窗或独立页
+    rationale: 详情探索不离开结果语境；modal 会切断浏览位置（Preserve Context）
+    confidence: high
+    references:
+      - component
+rejected:
+  - option: PAT-CANVAS-WORKSPACE 作主结构
+    reason: 画布承载空间关系结构，relationality=low 的目录条目无此结构；空间自由布局反而破坏结果流的可扫视性
+  - option: PAT-WORKSPACE 单独作主结构
+    reason: workspace 底座不定义探索的信息组织；须与 PAT-LIST-DETAIL 组合，由后者定义主从结构
+  - option: 分类树主导导航
+    reason: 把 facet 层级化为深层树会逐级丢弃语境，与维度切换不重置认知冲突
+unresolved:
+  - id: grid-density-threshold
+    impact: low
+    affects:
+      - implementation
+  - id: result-pagination-form
+    impact: low
+    affects:
+      - implementation

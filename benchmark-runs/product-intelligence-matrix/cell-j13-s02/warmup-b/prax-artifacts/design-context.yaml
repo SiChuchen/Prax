@@ -1,0 +1,59 @@
+user:
+  expertise: expert
+  familiarity: medium
+task:
+  primary: 搜索/过滤收窄目录并下钻条目详情
+  modes:
+    - explore
+    - locate
+    - review
+  frequency: high
+domain:
+  type: 组件目录检索与选型探索
+  entities:
+    - component
+    - facet
+    - filter_state
+    - collection
+information:
+  volume: high
+  relationship_complexity: low
+  change_rate: low
+  comparison_need: medium
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: low
+  error_cost: low
+priorities:
+  - 维度切换不重置认知
+  - 过滤状态显式且可回退
+  - 定位路径有搜索/过滤支撑
+density_intent: regular
+confidence:
+  overall: high
+unknowns: []
+classification:
+  version: "1"
+  task_type: compare_filter_records
+  domain_id: unknown
+  interaction_mode: collection_with_contextual_detail
+  product_type: unknown
+  primary_object_type: component
+  secondary_object_types:
+    - facet
+    - filter_state
+    - collection
+  confidence: medium
+  evidence:
+    - task_type=compare_filter_records ← token '过滤' in context.task and frame.tasks
+    - interaction_mode=collection_with_contextual_detail ← token '列表' in context.task, frame.tasks, and context.priorities
+    - primary_object_type=component ← most referenced product object in the Product Frame
+  open_questions:
+    - domain_id could not be classified from the provided context; refine the context fields or record a custom classification
+    - product_type could not be derived; record the intended audience and product kind

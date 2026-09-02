@@ -1,0 +1,101 @@
+session_id: ds_20260902170755_09231fa8
+version: "0.2"
+information_shape:
+  cardinality: many
+  relationality: medium
+  hierarchy: high
+  temporality: low
+  density: high
+  dimensionality: medium
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: tree
+    reason: hierarchy=high：大区→仓→库位的归属结构是决策的定位骨架，树显式呈现父子层级，使位置敏感的候选集可见且可逐层收窄
+  supporting:
+    - type: list
+      reason: cardinality=many：待决请求队列为高密度顺序浏览与批量选择服务（与树选择联动过滤）
+    - type: form
+      reason: 决策输入同屏可得：选中请求后的指派目标、数量与确认/撤销动作以内联表单呈现，不离开当前屏
+    - type: search_results
+      reason: cardinality=many + density=high：按单号/仓库搜索直达请求，服务定位环节
+  rejected:
+    - option: dashboard
+      reason: 等权磁贴无法承载 hierarchy=high 的层级归属，位置语境会被拆散，决策输入难以同屏
+    - option: table
+      reason: 扁平表格把层级压成列，父子归属不可见，与 hierarchy=high 冲突
+    - option: tabs
+      reason: 标签切分使树与队列不能并置，违背决策输入同屏可得（Preserve Context）
+  justification_vs_shape: 逐项推导：cardinality=many + density=high → 需要可缩放的紧凑结构而非逐条卡片（tree + list 组合，compact 密度）；hierarchy=high → 主表达必须是显式层级（tree），否则位置语境不可见，故否决 table/dashboard；temporality=low → 无需时间线表达，队列按优先级排序即可；relationality=medium → 归属关系由树承载即可，不需要图；comparison_need=none → 不设并排比较面板；uncertainty=low + consequence=medium → 不可逆确认走显式确认+撤销恢复，不做向导式多步流程；spatiality=none → 无地理坐标表达需求。
+primary_structure:
+  pattern: PAT-RESOURCE-MANAGEMENT
+  rationale:
+    - 对一组受管对象（调拨请求）做清点、状态与生命周期动作，正是 Resource Management 的定义场景
+    - hierarchy=high 的实体侧以 tree 承载，与请求队列构成主从双区，底座为 PAT-WORKSPACE 的持久工作台
+    - Router 高置信（high）命中 PAT-RESOURCE-MANAGEMENT 与 PAT-WORKSPACE
+  confidence: high
+information_hierarchy:
+  primary:
+    - request_queue
+    - entity_tree
+    - decision_panel
+  secondary:
+    - batch_controls
+    - assignment_history
+    - search
+density:
+  intent: compact
+  strategy:
+    - 队列与树并置为双主区，决策面板随选中展开于右栏，不常驻空态
+    - 批量操作只在有多选时出现，动作条贴底不遮内容
+    - 行内信息分级：单号/状态常显，库存水位与历史折叠进详情
+  avoid:
+    - 等权磁贴 dashboard
+    - 常驻工具栏堆叠
+    - 模态打断批量流
+major_choices:
+  - id: choice-tree-primary
+    choice: 以 tree 为 primary 表达（实体层级骨架），而非 table 或 dashboard
+    rationale: hierarchy=high 且决策位置敏感；table/dashboard 均被 shape 否决（见 representation.rejected）
+    confidence: high
+    references:
+      - region
+      - warehouse
+      - slot
+  - id: choice-inline-decision
+    choice: 决策输入内联右栏（form 支撑），而非弹窗或独立页
+    rationale: 决策输入同屏可得是 success 标准；modal 会打断批量节奏且切断树/队列语境
+    confidence: high
+    references:
+      - request
+  - id: choice-batch-select
+    choice: 队列支持多选 + 贴底批量动作条（零误伤：显式计数 + 确认）
+    rationale: cardinality=many 下逐条裁定不可扩展；批量必须显式状态归属与确认以防误伤
+    confidence: high
+    references:
+      - request
+  - id: choice-undo-path
+    choice: 不可逆确认配撤销恢复（最近一批可撤回）
+    rationale: task_model.reversibility=costly：错误指派代价中等，需恢复路径而非纯确认对话框
+    confidence: medium
+    references:
+      - request
+rejected:
+  - option: PAT-WORKSPACE 单独作主结构
+    reason: workspace 只提供持久工作台底座，不解决层级实体的清点与生命周期动作；须与 PAT-RESOURCE-MANAGEMENT 组合，由后者定义主结构
+  - option: PAT-APPLICATION-SHELL 作主结构（页面导航）
+    reason: 把树、队列、决策拆到多个导航区会破坏决策输入同屏可得；shell 只适合多面产品的全局骨架，本应用是单屏工具
+  - option: PAT-LIST-DETAIL-INSPECTOR 作主结构（列表主导）
+    reason: 列表把 many 实体压成顺序行，hierarchy=high 的层级归属不可见；树必须为主、列表承载队列侧
+unresolved:
+  - id: undo-window
+    impact: low
+    affects:
+      - implementation
+  - id: queue-sort-default
+    impact: low
+    affects:
+      - implementation
