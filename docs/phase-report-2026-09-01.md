@@ -150,7 +150,7 @@ Runner executed against production builds of every runnable golden app at
 |---|---|---|
 | prax-wizard | 6 pass / 1 fail (warnings=1) | `type.min_projected_size` min 11px (field labels, counters, notes) — **real advisory finding**, warning tier; density-linked threshold deferred per spec §12 decision 11 |
 | prax-dashboard | 7 pass / 0 fail | clean after over-kill fix |
-| prax-landing | 6 pass / 1 fail (error=1) | `a11y.target_size` — two `nav.shell-nav` links at 19.5px height — **real WCAG 2.2 AA 2.5.8 defect**; filed here, fix belongs to the landing app (outside Phase 1 scope) |
+| prax-landing | 6 pass / 1 fail (error=1) → **7 pass / 0 fail after fix** | `a11y.target_size` — two `nav.shell-nav` links at 19.5px height — real WCAG 2.2 AA 2.5.8 defect; **fixed 2026-09-02** (24px nav hit area, re-measured 7/7, commit follows this record) |
 
 Over-kill false positives found and fixed during calibration (each now has a
 fixture regression case):
@@ -238,7 +238,8 @@ See "Gate 1 evidence" below (added by Task 1.6).
    boundary), README.md (prax-measure package row + capability paragraph),
    this report.
 
-Gate 1: **PASSED** (pending user review). Open items for the user:
-landing nav target-size defect (fix in `apps/prax-landing` or accept);
-severity-promotion review timing (Phase 4 F5 — the wizard type-size
-advisory and calibration record feed it).
+Gate 1: **PASSED and confirmed by the user (2026-09-02)**. The landing
+nav target-size defect was fixed per user instruction (24px hit area,
+re-measured 7 pass / 0 fail). Remaining open item: severity-promotion
+review timing (Phase 4 F5 — the wizard type-size advisory and calibration
+record feed it).
