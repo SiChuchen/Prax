@@ -1,4 +1,4 @@
-import type { KnowledgeEntry, KnowledgeStore, KnowledgeType } from "prax-knowledge";
+import type { KnowledgeEntry, KnowledgeStore, KnowledgeType, TriggerConditions } from "prax-knowledge";
 import type { CanonicalClassification, DesignContext, ProductFrame } from "prax-runtime";
 import type {
   CandidateAudit,
@@ -130,11 +130,76 @@ function hardScopeMismatch(
   return undefined;
 }
 
+// route-time facet contexts (spec §7.2 trigger_conditions): the 0.2 frame
+// supplies task/object; density maps through the pinned inverse; the router
+// itself serves the decision phase. Representation is decided after routing,
+// so that facet cannot match at route time.
+const DENSITY_TO_FACET: Record<string, Facet<"density">> = {
+  compact: "high",
+  regular: "medium",
+  spacious: "low",
+};
+
+type Facet<T extends keyof TriggerConditions> = TriggerConditions[T][number];
+
+interface FacetContext {
+  task_type?: Facet<"task_type"> | undefined;
+  object_type?: Facet<"object_type"> | undefined;
+  density?: Facet<"density"> | undefined;
+  platform: Facet<"platform">;
+  phase: Facet<"phase">;
+}
+
+function facetContext(frame: ProductFrame, context: DesignContext): FacetContext {
+  const legacy = frame as { jtbd?: { verb?: Facet<"task_type"> }; primary_object?: { type?: Facet<"object_type"> } };
+  return {
+    ...(legacy.jtbd?.verb !== undefined ? { task_type: legacy.jtbd.verb } : {}),
+    ...(legacy.primary_object?.type !== undefined ? { object_type: legacy.primary_object.type } : {}),
+    ...(DENSITY_TO_FACET[context.density_intent] !== undefined
+      ? { density: DENSITY_TO_FACET[context.density_intent]! }
+      : {}),
+    platform: `${context.platform.family}_${context.platform.form_factor}` as Facet<"platform">,
+    phase: "decision",
+  };
+}
+
+function triggerConditionBonus(
+  entry: KnowledgeEntry,
+  facets: FacetContext,
+  scopeMatch: string[],
+): number {
+  const conditions = entry.trigger_conditions;
+  if (conditions === undefined) return 0;
+  let bonus = 0;
+  if (facets.task_type !== undefined && conditions.task_type.includes(facets.task_type)) {
+    bonus += 2;
+    scopeMatch.push(`trigger_condition:task_type`);
+  }
+  if (facets.object_type !== undefined && conditions.object_type.includes(facets.object_type)) {
+    bonus += 2;
+    scopeMatch.push(`trigger_condition:object_type`);
+  }
+  if (facets.density !== undefined && conditions.density.includes(facets.density)) {
+    bonus += 2;
+    scopeMatch.push(`trigger_condition:density`);
+  }
+  if (conditions.platform.includes(facets.platform)) {
+    bonus += 2;
+    scopeMatch.push(`trigger_condition:platform`);
+  }
+  if (conditions.phase.includes(facets.phase)) {
+    bonus += 2;
+    scopeMatch.push(`trigger_condition:phase`);
+  }
+  return bonus;
+}
+
 function scoreEntry(
   entry: KnowledgeEntry,
   context: DesignContext,
   haystack: string,
   canonical: CanonicalRouting | undefined,
+  facets: FacetContext,
 ): ScoredEntry {
   const trigger = anyMatch(entry.triggers, haystack);
   const scopeMatch: string[] = [];
@@ -183,6 +248,9 @@ function scoreEntry(
     scopeMatch.push(`density:${context.density_intent}`);
   }
   score += entry.lifecycle.status === "stable" ? 3 : entry.lifecycle.status === "reviewed" ? 2 : 0;
+  // lex specialis (D7 via spec §7.2): every matching trigger facet adds
+  // weight on top of scope + lifecycle; more specific entries outrank
+  score += triggerConditionBonus(entry, facets, scopeMatch);
   if (entry.type === "platform_convention") score += 4;
   if (entry.scope.domain.length === 0 && entry.scope.task_type.length === 0) score += 1;
 
@@ -212,11 +280,15 @@ export class DesignRouter {
   public route(frame: ProductFrame, context: DesignContext, question: string): RoutingResult {
     const haystack = contextTokens(frame, context, question);
     const canonical = canonicalRouting(context);
+    const facets = facetContext(frame, context);
     const scored: ScoredEntry[] = [];
     const excluded: ExcludedCandidate[] = [];
 
     for (const entry of this.store.entries()) {
-      if (entry.type === "myth" || entry.type === "product_evidence") continue;
+      // myth quarantine lives at the asset_class layer now (spec §7.2); myth
+      // entries surface only at decide-time default-shell checks and explicit
+      // inspection — never in default routing
+      if (entry.asset_class === "myth" || entry.type === "product_evidence") continue;
       if (entry.lifecycle.status === "deprecated") {
         excluded.push({ id: entry.id, reason: "deprecated knowledge is not preferred" });
         continue;
@@ -226,7 +298,7 @@ export class DesignRouter {
         if (entry.type === "pattern") excluded.push({ id: entry.id, reason: mismatch });
         continue;
       }
-      const candidate = scoreEntry(entry, context, haystack, canonical);
+      const candidate = scoreEntry(entry, context, haystack, canonical, facets);
       if (candidate.score < 4) continue;
       scored.push(candidate);
     }
