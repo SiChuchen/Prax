@@ -1,13 +1,17 @@
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
 import { z } from "zod";
 import {
+  AssetClassSchema,
   KnowledgeEntrySchema,
   KnowledgeLifecycleStatusSchema,
   KnowledgeScopeSchema,
   KnowledgeTypeSchema,
   PatternContractSchema,
+  StabilitySchema,
+  TriggerConditionsSchema,
   type DisclosureDepth,
   type InspectedKnowledge,
   type KnowledgeEntry,
@@ -24,6 +28,17 @@ const NonEmpty = z.string().trim().min(1);
 const KnowledgeSeedSchema = z.object({
   id: NonEmpty,
   type: KnowledgeTypeSchema,
+  asset_class: AssetClassSchema,
+  stability: StabilitySchema,
+  trigger_conditions: TriggerConditionsSchema,
+  evidence: z.object({
+    authority_initial: z.enum(["N", "A", "B", "C", "D", "E"]),
+    source_version: NonEmpty.optional(),
+    source_date: NonEmpty.optional(),
+    review_by: NonEmpty,
+  }),
+  refutation: NonEmpty.optional(),
+  correct_ref: NonEmpty.optional(),
   name: NonEmpty,
   summary: NonEmpty,
   category: NonEmpty,
@@ -63,7 +78,7 @@ const KnowledgeSeedSchema = z.object({
 });
 
 const KnowledgeSeedDocumentSchema = z.object({
-  version: z.literal("0.1"),
+  version: z.literal("0.2"),
   entries: z.array(KnowledgeSeedSchema),
 });
 
@@ -71,6 +86,12 @@ function expandSeed(seed: z.infer<typeof KnowledgeSeedSchema>): KnowledgeEntry {
   return KnowledgeEntrySchema.parse({
     id: seed.id,
     type: seed.type,
+    asset_class: seed.asset_class,
+    stability: seed.stability,
+    trigger_conditions: seed.trigger_conditions,
+    evidence: seed.evidence,
+    ...(seed.refutation === undefined ? {} : { refutation: seed.refutation }),
+    ...(seed.correct_ref === undefined ? {} : { correct_ref: seed.correct_ref }),
     name: seed.name,
     summary: seed.summary,
     category: seed.category,
@@ -142,16 +163,36 @@ export class KnowledgeStore {
   }
 
   public static async fromYamlFile(filePath: string): Promise<KnowledgeStore> {
-    const raw = parse(await readFile(filePath, "utf8"));
+    const raw = parse(await readFile(filePath, "utf8")) as { version?: string };
+    if (raw?.version === "0.2") {
+      const seedDocument = KnowledgeSeedDocumentSchema.parse(raw);
+      return new KnowledgeStore(seedDocument.entries.map(expandSeed));
+    }
+    if (raw?.version === "0.1") {
+      // 0.1 seeds cannot expand into 0.2 entries without asset_class — the
+      // migration script is the sanctioned path; reject loudly here
+      throw new KnowledgeStoreError(
+        "KNOWLEDGE_VERSION_UNSUPPORTED",
+        `${filePath} is a 0.1 knowledge document; run scripts/migrate-02.mjs (spec §7.1).`,
+      );
+    }
     const completeDocument = z
-      .object({ version: z.literal("0.1"), entries: z.array(KnowledgeEntrySchema) })
+      .object({ version: z.literal("0.2"), entries: z.array(KnowledgeEntrySchema) })
       .safeParse(raw);
     if (completeDocument.success) {
       return new KnowledgeStore(completeDocument.data.entries);
     }
+    throw new KnowledgeStoreError("KNOWLEDGE_VERSION_UNSUPPORTED", `${filePath} is not a parseable 0.2 knowledge document.`);
+  }
 
-    const seedDocument = KnowledgeSeedDocumentSchema.parse(raw);
-    return new KnowledgeStore(seedDocument.entries.map(expandSeed));
+  /**
+   * Multi-file merge (spec §7.1): knowledge.yaml plus every corpus-*.yaml in
+   * the same directory. Duplicate ids across files are a hard error.
+   */
+  public static async fromDirectory(directory: string): Promise<KnowledgeStore> {
+    const files = (await readdir(directory)).filter((file) => file === "knowledge.yaml" || file.startsWith("corpus-"));
+    const stores = await Promise.all(files.sort().map((file) => KnowledgeStore.fromYamlFile(join(directory, file))));
+    return new KnowledgeStore(stores.flatMap((store) => store.entries()));
   }
 
   public size(): number {
@@ -232,6 +273,6 @@ export class KnowledgeStore {
 }
 
 export async function loadBuiltInKnowledgeStore(): Promise<KnowledgeStore> {
-  const filePath = fileURLToPath(new URL("../data/knowledge.yaml", import.meta.url));
-  return KnowledgeStore.fromYamlFile(filePath);
+  const directory = fileURLToPath(new URL("../data/", import.meta.url));
+  return KnowledgeStore.fromDirectory(directory);
 }

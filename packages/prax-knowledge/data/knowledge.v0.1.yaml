@@ -1,0 +1,379 @@
+version: "0.1"
+entries:
+  - id: P-01
+    type: principle
+    name: Perceptual Grouping
+    summary: Group related product objects so structure is visible before detail is read.
+    category: perception
+    scope: { platform: [web_desktop], phase: [routing, decision, validation] }
+    triggers: [grouping, architecture, canvas, relationships, dense_information]
+    lifecycle: { status: stable }
+    provenance: { source_refs: [N027, A037, A018], authority_category: established_design_research, certainty: high, recommendation_strength: strong }
+    validation: { mode: assistive, checks: [related objects form readable visual groups] }
+    statement: Encode meaningful grouping with proximity, containment, alignment, and continuity.
+    applies_when: [objects have meaningful relationships, a dense workspace must be scanned]
+    does_not_apply_when: [grouping would imply a false relationship]
+    rationale: People infer structure from perceptual organization before reading labels.
+    forces: [scan speed, truthful relationships, density]
+    tradeoffs: [strong containers can add chrome]
+    examples: [cluster architecture nodes by bounded context]
+    conflicts: [P-22]
+
+  - id: P-03
+    type: principle
+    name: Visual Hierarchy
+    summary: Make importance and reading order evident without relying on decoration.
+    category: perception
+    scope: { platform: [web_desktop], phase: [decision, validation] }
+    triggers: [hierarchy, importance, attention, architecture, toolbar]
+    lifecycle: { status: stable }
+    provenance: { source_refs: [A038, N049, A054], authority_category: established_design_research, certainty: high, recommendation_strength: strong }
+    validation: { mode: assistive, checks: [primary content dominates supporting chrome] }
+    statement: Use a small number of consistent prominence levels tied to product importance.
+    applies_when: [multiple regions compete for attention]
+    does_not_apply_when: [all items genuinely have equal priority]
+    rationale: Hierarchy reduces search cost and makes the intended task path legible.
+    forces: [attention, density, consistency]
+    tradeoffs: [over-emphasis can suppress useful context]
+    examples: [canvas dominates navigation and inspector]
+
+  - id: P-10
+    type: principle
+    name: Match the Product Mental Model
+    summary: Organize the interface around user-recognized objects and tasks, not backend records.
+    category: product_model
+    scope: { phase: [product_framing, decision, validation] }
+    triggers: [mental_model, product_objects, backend_leak, architecture, settings]
+    lifecycle: { status: stable }
+    provenance: { source_refs: [A050, A053, C029], authority_category: interaction_design, certainty: high, recommendation_strength: strong }
+    validation: { mode: assistive, checks: [labels and navigation use user-facing concepts] }
+    statement: Preserve the user's conceptual model even when technical capability boundaries differ.
+    applies_when: [backend nouns could shape navigation, product objects are being named]
+    does_not_apply_when: [the technical object is itself the user's work object]
+    rationale: A system image built from implementation details transfers avoidable complexity to users.
+    forces: [technical constraints, user language, learnability]
+    tradeoffs: [may require composition or a backend-for-frontend]
+    examples: [architecture node rather than database row]
+
+  - id: P-19
+    type: principle
+    name: Preserve Context
+    summary: Let users inspect detail without losing their place in the larger system.
+    category: interaction
+    scope: { task_type: [inspect, trace, compare], platform: [web_desktop], phase: [decision, validation] }
+    triggers: [context, inspect, trace, selection, architecture, canvas]
+    lifecycle: { status: stable }
+    provenance: { source_refs: [N011, B039], authority_category: interaction_design, certainty: high, recommendation_strength: strong }
+    validation: { mode: empirical, checks: [detail inspection preserves overview and selection] }
+    statement: Prefer contextual detail and reversible focus over navigation that destroys orientation.
+    applies_when: [users traverse relationships, users compare overview and detail]
+    does_not_apply_when: [detail is a separate long-running workflow]
+    rationale: Reconstructing context consumes working memory and raises navigation cost.
+    forces: [screen area, depth of detail, orientation]
+    tradeoffs: [persistent context consumes space]
+    examples: [selection-driven inspector beside a canvas]
+
+  - id: P-22
+    type: principle
+    name: Signal over Chrome
+    summary: Keep controls and decoration quieter than the information users came to understand.
+    category: information_design
+    scope: { density: [compact, regular], platform: [web_desktop], phase: [decision, validation] }
+    triggers: [signal_to_noise, density, chrome, toolbar, architecture, data]
+    lifecycle: { status: stable }
+    provenance: { source_refs: [N011, A020, B026, B027, E025], authority_category: information_design, certainty: high, recommendation_strength: strong }
+    validation: { mode: assistive, checks: [supporting chrome does not dominate content] }
+    statement: Spend visual contrast on task-relevant structure, state, and exceptions.
+    applies_when: [professional tools contain dense information]
+    does_not_apply_when: [a safety-critical control needs persistent emphasis]
+    rationale: Unstructured visual noise hides relationships and weakens hierarchy.
+    forces: [discoverability, density, brand expression]
+    tradeoffs: [quiet controls may require stronger grouping or labels]
+    examples: [subdued canvas toolbar]
+
+  - id: P-26
+    type: principle
+    name: Visibility of System Status
+    summary: Expose meaningful progress, readiness, selection, and failure states.
+    category: feedback
+    scope: { phase: [decision, sdir, validation] }
+    triggers: [status, loading, empty, ready, error, selected]
+    lifecycle: { status: stable }
+    provenance: { source_refs: [N005, N052, N004], authority_category: usability_heuristics, certainty: high, recommendation_strength: strong }
+    validation: { mode: deterministic, checks: [required states are represented] }
+    statement: Every meaningful operation and data surface must communicate its current state.
+    applies_when: [work is asynchronous, data can be absent or fail]
+    does_not_apply_when: [state changes are instantaneous and self-evident]
+    rationale: Feedback closes the action loop and prevents uncertainty from becoming repeated action.
+    forces: [latency, interruption, error recovery]
+    tradeoffs: [status messaging can become noisy]
+
+  - id: P-28
+    type: principle
+    name: Recoverable Action
+    summary: Prevent costly mistakes and make ordinary actions reversible where possible.
+    category: safety
+    scope: { phase: [decision, validation] }
+    triggers: [destructive, error_cost, undo, recovery]
+    lifecycle: { status: stable }
+    provenance: { source_refs: [N005, N001], authority_category: usability_heuristics, certainty: high, recommendation_strength: strong }
+    validation: { mode: deterministic, checks: [high-cost actions have prevention or recovery] }
+    statement: Match confirmation, undo, and recovery strength to the cost of error.
+    applies_when: [actions mutate or delete valuable state]
+    does_not_apply_when: [read-only inspection]
+    rationale: Recovery is more robust than relying on perfect attention.
+    forces: [speed, safety, reversibility]
+    tradeoffs: [confirmation adds friction]
+
+  - id: H-01
+    type: heuristic
+    name: Task-first Entry
+    summary: The first view should make the primary user task obvious.
+    category: task_clarity
+    scope: { phase: [decision, validation] }
+    triggers: [primary_task, entry, navigation]
+    lifecycle: { status: stable }
+    provenance: { source_refs: [A050, N005], authority_category: synthesized_heuristic, certainty: high, recommendation_strength: strong }
+    validation: { mode: assistive, checks: [primary task is apparent from the initial view] }
+    statement: Allocate the initial view around the primary task and its necessary context.
+    applies_when: [a screen has one dominant purpose]
+    rationale: Clear entry reduces orientation and choice cost.
+
+  - id: H-02
+    type: heuristic
+    name: Object Language
+    summary: Use the same stable names for product objects across navigation, actions, and detail.
+    category: product_model
+    scope: { phase: [product_framing, decision, validation] }
+    triggers: [labels, product_objects, naming, backend_leak]
+    lifecycle: { status: stable }
+    provenance: { source_refs: [A050, A053], authority_category: synthesized_heuristic, certainty: high, recommendation_strength: strong }
+    validation: { mode: assistive, checks: [labels match the product frame] }
+    statement: One user-facing concept should keep one name across the experience.
+    applies_when: [an object appears in multiple regions]
+    rationale: Stable language reinforces a coherent system image.
+
+  - id: H-07
+    type: heuristic
+    name: State Completeness
+    summary: Define loading, empty, ready, selected, and error behavior before implementation.
+    category: feedback
+    scope: { phase: [sdir, validation] }
+    triggers: [states, loading, empty, ready, selected, error]
+    lifecycle: { status: stable }
+    provenance: { source_refs: [N005, N052], authority_category: synthesized_heuristic, certainty: high, recommendation_strength: strong }
+    validation: { mode: deterministic, checks: [required state set is complete] }
+    statement: Treat non-happy states as first-class design intent.
+    applies_when: [content is loaded or selected]
+    rationale: Missing states force implementation-time invention and inconsistent recovery.
+
+  - id: H-13
+    type: heuristic
+    name: Structured Density
+    summary: Professional tools may be dense when groups, hierarchy, and interaction remain legible.
+    category: density
+    scope: { density: [compact, regular], platform: [web_desktop], phase: [decision, validation] }
+    triggers: [density, professional_tool, data, architecture]
+    lifecycle: { status: stable }
+    provenance: { source_refs: [B026, B027, A038], authority_category: synthesized_heuristic, certainty: high, recommendation_strength: strong }
+    validation: { mode: assistive, checks: [density is structured rather than merely compressed] }
+    statement: Increase information per view only while grouping, target clarity, and state remain readable.
+    applies_when: [expert users compare many related objects]
+    does_not_apply_when: [novices need guided sequential work]
+    rationale: Density supports expert scan and comparison, but only if structure carries the load.
+    tradeoffs: [higher learning threshold]
+
+  - id: H-19
+    type: heuristic
+    name: Contextual Inspector
+    summary: Show details for the current selection while preserving the parent workspace.
+    category: inspection
+    scope: { task_type: [inspect, trace], domain: [architecture, data], platform: [web_desktop], phase: [decision, validation] }
+    triggers: [inspector, selection, detail, architecture, canvas]
+    lifecycle: { status: stable }
+    provenance: { source_refs: [N019, E023, A021], authority_category: synthesized_heuristic, certainty: high, recommendation_strength: strong }
+    validation: { mode: empirical, checks: [selecting an object updates detail without losing context] }
+    statement: Bind detail to explicit selection and keep that selection visible in context.
+    applies_when: [users repeatedly inspect items in a shared workspace]
+    does_not_apply_when: [detail becomes an independent workflow]
+    rationale: Contextual inspection minimizes navigation and supports rapid comparison.
+
+  - id: H-21
+    type: heuristic
+    name: Orientation Invariants
+    summary: Preserve stable anchors, selection, and view position across inspection steps.
+    category: navigation
+    scope: { task_type: [inspect, trace, compare], phase: [decision, validation] }
+    triggers: [context_preservation, orientation, trace, architecture]
+    lifecycle: { status: stable }
+    provenance: { source_refs: [N011, B039], authority_category: synthesized_heuristic, certainty: high, recommendation_strength: strong }
+    validation: { mode: empirical, checks: [users can return to the prior context] }
+    statement: Define what must remain stable while focus and detail change.
+    applies_when: [users follow multi-step relationships]
+    rationale: Stable anchors reduce working-memory demands.
+
+  - id: H-22
+    type: heuristic
+    name: Overview, Filter, Detail
+    summary: Start with a meaningful overview, narrow deliberately, then expose detail on demand.
+    category: information_exploration
+    scope: { task_type: [explore, inspect, trace, compare], domain: [architecture, data], phase: [decision, validation] }
+    triggers: [overview, filter, zoom, detail, architecture, data]
+    lifecycle: { status: stable }
+    provenance: { source_refs: [N011, B039], authority_category: established_pattern_family, certainty: medium, recommendation_strength: moderate }
+    validation: { mode: empirical, checks: [overview and detail support the primary task] }
+    statement: Provide task-relevant overview and narrowing before expensive detail.
+    applies_when: [the information space exceeds a single readable view]
+    known_exceptions: [the original mantra is a useful family resemblance, not a universal sequence]
+    rationale: Layered exploration balances global orientation with local precision.
+    research_notes: [Treat progressive disclosure evidence as context-sensitive rather than universal.]
+
+  - id: PAT-APPLICATION-SHELL
+    type: pattern
+    name: Application Shell
+    summary: Stable global navigation and utilities around a changing work region.
+    category: structure
+    scope: { platform: [web_desktop], phase: [decision] }
+    triggers: [navigation, multi_area, application]
+    lifecycle: { status: stable }
+    provenance: { source_refs: [A019, N019], authority_category: pattern_synthesis, certainty: high, recommendation_strength: moderate }
+    validation: { mode: assistive, checks: [global shell remains stable across work areas] }
+    statement: Use a stable shell when users move among several durable product areas.
+    applies_when: [multiple durable work areas share identity and utilities]
+    does_not_apply_when: [one focused task dominates the entire product]
+    rationale: Stable global structure supports orientation across workflows.
+    pattern_contract: { problem: Users need to move among durable product areas without reorienting, context: Multi-area desktop web applications, forces: [global orientation, local focus], solution: Keep global navigation and utilities stable around a replaceable work region, tradeoffs: [persistent chrome consumes space], consequences: [strong orientation, risk of over-navigation], applies_when: [several durable areas exist], does_not_apply_when: [the product is a single workspace], related_patterns: { composed_of: [], complements: [PAT-WORKSPACE], alternatives: [{ pattern: PAT-WORKSPACE, when: one workspace dominates }] }, anti_patterns: [backend-table-per-navigation-item] }
+
+  - id: PAT-WORKSPACE
+    type: pattern
+    name: Workspace
+    summary: A persistent surface for iterative, object-centered work.
+    category: structure
+    scope: { platform: [web_desktop], density: [compact, regular], phase: [decision] }
+    triggers: [workspace, iterative_work, professional_tool]
+    lifecycle: { status: stable }
+    provenance: { source_refs: [N019, A021], authority_category: pattern_synthesis, certainty: high, recommendation_strength: strong }
+    validation: { mode: empirical, checks: [primary work remains in a stable surface] }
+    statement: Use a persistent workspace when users repeatedly manipulate or inspect related objects.
+    applies_when: [work is iterative and context-rich]
+    does_not_apply_when: [the task is short and linear]
+    rationale: A stable surface preserves context across repeated actions.
+    pattern_contract: { problem: Repeated actions lose context across page transitions, context: Expert desktop tools, forces: [context, density, repeated action], solution: Keep the primary object space persistent and place supporting actions around it, tradeoffs: [higher initial complexity], consequences: [fast iteration, need for strong hierarchy], applies_when: [tasks are iterative], does_not_apply_when: [tasks are linear], related_patterns: { composed_of: [], complements: [PAT-LIST-DETAIL-INSPECTOR], alternatives: [{ pattern: PAT-APPLICATION-SHELL, when: global navigation dominates }] }, anti_patterns: [dashboard-as-workspace] }
+
+  - id: PAT-CANVAS-WORKSPACE
+    type: pattern
+    name: Canvas Workspace
+    summary: A spatial workspace for understanding and manipulating relationships.
+    category: structure
+    scope: { task_type: [inspect, trace, explore], domain: [architecture], platform: [web_desktop], density: [compact, regular], phase: [decision] }
+    triggers: [architecture, canvas, graph, nodes, relationships, trace]
+    lifecycle: { status: reviewed }
+    provenance: { source_refs: [N019, E023, A021, PRAX-GOLDEN-001], authority_category: project_pattern_synthesis, certainty: medium, recommendation_strength: strong }
+    validation: { mode: empirical, checks: [users can locate and follow a relationship without losing global context] }
+    statement: Make the relationship canvas dominant; keep navigation, tools, and inspection subordinate and contextual.
+    applies_when: [spatial relationships are central to the task, overview and trace must coexist]
+    does_not_apply_when: [items are primarily sequential or tabular]
+    rationale: Spatial continuity and contextual inspection support system understanding better than page-by-page traversal.
+    forces: [global context, local detail, density, pan-and-zoom cost]
+    tradeoffs: [accessibility and small-screen behavior require alternatives]
+    examples: [software architecture explorer]
+    counterexamples: [provider settings form]
+    related: [H-19, H-21, H-22, P-01, P-19]
+    pattern_contract: { problem: Users must understand a complex relationship network while inspecting individual entities, context: Desktop architecture analysis with expert users, forces: [global context, local detail, traceability, interaction cost], solution: Use a dominant spatial canvas with selection-driven contextual detail and quiet supporting chrome, tradeoffs: [pan and zoom can disorient; keyboard and list alternatives are needed], consequences: [strong relationship comprehension, more complex interaction validation], applies_when: [relationships are first-class product objects, preserving context is a success criterion], does_not_apply_when: [the task is configuration, the information is naturally tabular], related_patterns: { composed_of: [PAT-WORKSPACE], complements: [PAT-LIST-DETAIL-INSPECTOR], alternatives: [{ pattern: PAT-DATA-EXPLORER, when: comparison is primarily row-based }] }, anti_patterns: [decorative-node-map, full-page-selection-navigation] }
+
+  - id: PAT-LIST-DETAIL
+    type: pattern
+    name: List Detail
+    summary: Select from a collection and inspect one object in an adjacent detail region.
+    category: structure
+    scope: { task_type: [browse, inspect], platform: [web_desktop], phase: [decision] }
+    triggers: [list, collection, detail, selection]
+    lifecycle: { status: stable }
+    provenance: { source_refs: [A019, N019], authority_category: pattern_synthesis, certainty: high, recommendation_strength: moderate }
+    validation: { mode: empirical, checks: [selection and detail remain synchronized] }
+    statement: Use list-detail when collection scanning precedes focused inspection.
+    applies_when: [items are naturally ordered or filtered]
+    does_not_apply_when: [relationships among items are the primary object]
+    rationale: Adjacent detail reduces navigation while preserving collection context.
+    pattern_contract: { problem: Users repeatedly move between a collection and item detail, context: Desktop collection workflows, forces: [scan speed, detail space], solution: Keep selection list and current detail visible together, tradeoffs: [limited width for both regions], consequences: [fast inspection, clear selection dependency], applies_when: [collection order matters], does_not_apply_when: [spatial relationships dominate], related_patterns: { composed_of: [], complements: [], alternatives: [{ pattern: PAT-CANVAS-WORKSPACE, when: relationships dominate }] }, anti_patterns: [detail-without-visible-selection] }
+
+  - id: PAT-LIST-DETAIL-INSPECTOR
+    type: pattern
+    name: Contextual Inspector
+    summary: A subordinate panel that reflects the current workspace selection.
+    category: inspection
+    scope: { task_type: [inspect, trace], domain: [architecture, data], platform: [web_desktop], phase: [decision] }
+    triggers: [inspector, selection, properties, architecture, canvas]
+    lifecycle: { status: reviewed }
+    provenance: { source_refs: [N019, E023, A021], authority_category: pattern_synthesis, certainty: medium, recommendation_strength: strong }
+    validation: { mode: empirical, checks: [inspector changes only with explicit selection] }
+    statement: Let a contextual inspector expose detail without replacing the workspace.
+    applies_when: [selection is frequent and detail is supporting]
+    does_not_apply_when: [detail is the primary long-form task]
+    rationale: A subordinate inspector preserves context and supports quick comparison.
+    pattern_contract: { problem: Detail is needed without leaving a context-rich workspace, context: Selection-based professional tools, forces: [detail, context, screen area], solution: Bind a supporting inspector to explicit selection, tradeoffs: [reduced workspace area], consequences: [rapid comparison, strong need for selection feedback], applies_when: [detail is contextual], does_not_apply_when: [detail is independent], related_patterns: { composed_of: [], complements: [PAT-CANVAS-WORKSPACE], alternatives: [{ pattern: PAT-LIST-DETAIL, when: collection browsing dominates }] }, anti_patterns: [inspector-as-unrelated-sidebar] }
+
+  - id: PAT-DATA-EXPLORER
+    type: pattern
+    name: Data Explorer
+    summary: Filterable, comparable data surface with detail on demand.
+    category: exploration
+    scope: { task_type: [compare, filter, inspect], domain: [data, logs], platform: [web_desktop], density: [compact], phase: [decision] }
+    triggers: [data, logs, rows, columns, filter, compare]
+    lifecycle: { status: stable }
+    provenance: { source_refs: [N011, B039], authority_category: pattern_synthesis, certainty: high, recommendation_strength: strong }
+    validation: { mode: empirical, checks: [filter and comparison preserve orientation] }
+    statement: Use a data explorer when structured comparison and filtering dominate.
+    applies_when: [items share comparable fields]
+    does_not_apply_when: [spatial relationships are primary]
+    rationale: Tabular alignment and persistent filters optimize systematic comparison.
+    pattern_contract: { problem: Users must find and compare items in a large structured set, context: Dense data and log tools, forces: [volume, comparison, filtering], solution: Pair a structured data surface with persistent narrowing and detail on demand, tradeoffs: [weak fit for nonlinear relationships], consequences: [fast comparison, potential density overload], applies_when: [shared fields support comparison], does_not_apply_when: [spatial topology dominates], related_patterns: { composed_of: [], complements: [PAT-LIST-DETAIL-INSPECTOR], alternatives: [{ pattern: PAT-CANVAS-WORKSPACE, when: topology dominates }] }, anti_patterns: [card-grid-for-dense-comparison] }
+
+  - id: PAT-SETTINGS-SECTIONS
+    type: pattern
+    name: Settings Sections
+    summary: Stable, searchable groups for infrequent configuration tasks.
+    category: configuration
+    scope: { task_type: [configure], domain: [settings], platform: [web_desktop], phase: [decision] }
+    triggers: [settings, preferences, configuration, form]
+    lifecycle: { status: stable }
+    provenance: { source_refs: [A019, N005], authority_category: pattern_synthesis, certainty: high, recommendation_strength: strong }
+    validation: { mode: empirical, checks: [settings are grouped by user goal] }
+    statement: Group settings by user goal with stable labels and clear save behavior.
+    applies_when: [configuration is infrequent and categorical]
+    does_not_apply_when: [continuous object-centered work dominates]
+    rationale: Goal-based grouping reduces search and avoids exposing backend configuration structure.
+    pattern_contract: { problem: Users must locate infrequent configuration safely, context: Product settings, forces: [findability, safety, infrequency], solution: Organize settings into stable goal-based sections with explicit change status, tradeoffs: [cross-cutting settings need search], consequences: [predictable navigation, need for careful labels], applies_when: [configuration is categorical], does_not_apply_when: [work is spatial or iterative], related_patterns: { composed_of: [], complements: [], alternatives: [{ pattern: PAT-RESOURCE-MANAGEMENT, when: managing many entities }] }, anti_patterns: [backend-config-dump] }
+
+  - id: PAT-RESOURCE-MANAGEMENT
+    type: pattern
+    name: Resource Management
+    summary: Inventory, status, and lifecycle actions for a set of managed product objects.
+    category: management
+    scope: { task_type: [manage, administer], platform: [web_desktop], phase: [decision] }
+    triggers: [resources, inventory, status, create, archive]
+    lifecycle: { status: reviewed }
+    provenance: { source_refs: [A019, N019], authority_category: pattern_synthesis, certainty: medium, recommendation_strength: moderate }
+    validation: { mode: empirical, checks: [status and lifecycle actions are visible and safe] }
+    statement: Use resource management for repeated lifecycle work across many peer objects.
+    applies_when: [users create, review, and retire peer resources]
+    does_not_apply_when: [one relationship workspace dominates]
+    rationale: Inventory and explicit lifecycle state support administrative control.
+    pattern_contract: { problem: Users manage lifecycle and status across many peer objects, context: Administrative desktop tools, forces: [inventory, safety, bulk action], solution: Center a status-rich inventory with scoped lifecycle actions, tradeoffs: [can become backend-shaped], consequences: [clear oversight, requires product-language discipline], applies_when: [peer object lifecycle dominates], does_not_apply_when: [topology or configuration dominates], related_patterns: { composed_of: [], complements: [PAT-LIST-DETAIL], alternatives: [{ pattern: PAT-SETTINGS-SECTIONS, when: configuration rather than inventory dominates }] }, anti_patterns: [database-admin-clone] }
+
+  - id: WEB-DESKTOP
+    type: platform_convention
+    name: Web Desktop Professional Tool
+    summary: Pointer-and-keyboard conventions for large-viewport, information-dense work.
+    category: platform
+    scope: { platform: [web_desktop], phase: [decision, validation] }
+    triggers: [web, desktop, pointer, keyboard, large_viewport]
+    lifecycle: { status: stable }
+    provenance: { source_refs: [B026, B027, N005], authority_category: platform_convention, certainty: high, recommendation_strength: strong }
+    validation: { mode: deterministic, checks: [keyboard access and visible focus are preserved] }
+    statement: Support keyboard and pointer equivalently, visible focus, resilient resizing, and browser-native expectations.
+    applies_when: [the platform is desktop web]
+    does_not_apply_when: [touch-only compact interfaces]
+    rationale: Platform conventions reduce relearning and make dense tools operable across input modes.
+    forces: [density, accessibility, browser behavior]
+    tradeoffs: [custom spatial interactions require additional keyboard models]

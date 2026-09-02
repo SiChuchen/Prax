@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { JTBD_VERBS, OBJECT_TYPES, REPRESENTATION_PRIMITIVES } from "prax-sdir";
 
 export const KnowledgeTypeSchema = z.enum([
   "principle",
@@ -19,6 +20,34 @@ export const KnowledgeLifecycleStatusSchema = z.enum([
 export type KnowledgeLifecycleStatus = z.infer<
   typeof KnowledgeLifecycleStatusSchema
 >;
+
+export const AssetClassSchema = z.enum([
+  "principle",
+  "heuristic",
+  "pattern",
+  "profile",
+  "product_object",
+  "representation",
+  "composition",
+  "interaction_pattern",
+  "validation_asset",
+  "myth",
+]);
+export type AssetClass = z.infer<typeof AssetClassSchema>;
+
+export const StabilitySchema = z.enum(["A", "B", "C"]);
+
+// Six trigger facets (spec §7.1, governed with SDIR_VOCAB): cross-facet AND,
+// intra-facet OR. Absent facet ≡ no constraint from that facet.
+export const TriggerConditionsSchema = z.object({
+  task_type: z.array(z.enum(JTBD_VERBS)).default([]),
+  object_type: z.array(z.enum(OBJECT_TYPES)).default([]),
+  representation: z.array(z.enum(REPRESENTATION_PRIMITIVES)).default([]),
+  density: z.array(z.enum(["low", "medium", "high"])).default([]),
+  platform: z.array(z.enum(["web_desktop", "web_mobile"])).default([]),
+  phase: z.array(z.enum(["framing", "context", "routing", "decision", "sdir", "validation"])).default([]),
+});
+export type TriggerConditions = z.infer<typeof TriggerConditionsSchema>;
 
 export const KnowledgeScopeSchema = z.object({
   user_type: z.array(z.string()).default([]),
@@ -118,6 +147,19 @@ export const KnowledgeEntrySchema = z
       mode: z.enum(["deterministic", "assistive", "empirical"]),
       checks: z.array(z.string().min(1)).default([]),
     }),
+    asset_class: AssetClassSchema,
+    stability: StabilitySchema,
+    trigger_conditions: TriggerConditionsSchema,
+    evidence: z.object({
+      authority_initial: z.enum(["N", "A", "B", "C", "D", "E"]),
+      source_version: z.string().min(1).optional(),
+      source_date: z.string().min(1).optional(),
+      review_by: z.string().min(1),
+    }),
+    // myth-quarantine entries (spec §7.3): never routed by default, surfaced
+    // only at decide-time default-shell checks and explicit inspection
+    refutation: z.string().min(1).optional(),
+    correct_ref: z.string().min(1).optional(),
     disclosure: z.object({
       L0: DisclosureL0Schema,
       L1: DisclosureL1Schema,
@@ -141,12 +183,24 @@ export const KnowledgeEntrySchema = z
         message: "Only Pattern entries may define pattern_contract.",
       });
     }
+    if (entry.asset_class === "myth") {
+      if (!entry.id.startsWith("myth-")) {
+        context.addIssue({ code: "custom", path: ["id"], message: "Myth entries must use myth- prefixed ids." });
+      }
+      if (entry.refutation === undefined || entry.correct_ref === undefined) {
+        context.addIssue({
+          code: "custom",
+          path: ["refutation"],
+          message: "Myth entries require refutation and correct_ref.",
+        });
+      }
+    }
   });
 
 export type KnowledgeEntry = z.infer<typeof KnowledgeEntrySchema>;
 
 export const KnowledgeDocumentSchema = z.object({
-  version: z.literal("0.1"),
+  version: z.literal("0.2"),
   entries: z.array(KnowledgeEntrySchema),
 });
 
