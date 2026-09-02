@@ -10,7 +10,7 @@ loads the authoritative YAML record and gate artifacts from disk.
 |---|---|---|
 | Protocol | MCP 2026-07-28 over stdio, SDK v2 | Twelve staged tools (`design_realize` added by ADR-003; `design_correct` agent-facing correction ingestion) |
 | State | `prax-runtime` local YAML store | Optimistic revision check and atomic rename |
-| Knowledge | 23 fully expanded entries | No list-all/search-everything tool; entries are a compiled subset of the versioned `research/upstream/` snapshot, not the whole research asset |
+| Knowledge | 34 built-in entries (23 migrated + 11 myth-quarantined) + first-batch corpus files (`corpus-*.yaml`, multi-file merge) | No list-all/search-everything tool; asset_class/stability/trigger_conditions per spec §7.1; myths surface only at decide-time checks, never in default routing; 0.1 documents rejected — migration script is the sanctioned path |
 | Routing | Scope filters plus deterministic scoring | 5 principles, 5 heuristics, 3 patterns, 1 profile |
 | Intent | SDIR `0.1` / `0.2` (discriminated union; vocab tables in `prax-sdir/vocab.ts`) | Semantic roles and commitments only; 0.2 adds user_job / information_shape / representation portfolio / state ownership / complexity budget / acceptance — still zero pixels |
 | Validation | Deterministic, assistive, and empirical checks; measured artifact layer (`prax-measure` receipts verified by the validator: schema, digest, containment, staleness, claim cross-check) | External evidence is never fabricated; measured evidence outranks attestation (P-043); skipped is not passed |

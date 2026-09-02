@@ -312,3 +312,58 @@ Entry gate: Gate 1 passed. All tasks TDD; suite green at every commit.
    rejected.
 
 Gate 2: **PASSED** (autonomous per user instruction 2026-09-02).
+
+
+---
+
+# Phase 3 execution record — knowledge asset restructure (2026-09-02)
+
+| Task | Commit | Tests |
+|---|---|---|
+| K1 schema 0.2 both layers + migration | `9c9f473` | knowledge-02-migration (6) |
+| K2 trigger-condition routing + myth exclusion | `2aa36ca` | router-triggers (4) |
+| K3 eleven myth seeds + decide surfacing | `a7727d1` | decide-myth-surfacing (4) |
+| K4 intake protocol + first-batch corpus | (this commit) | — |
+
+## Gate 3 evidence
+
+1. Full suite green: 319/319, 47 files (Phase 2 close: 305/44).
+2. Migration round-trip: 23 entries parse as expanded 0.2 contracts;
+   platform_convention → profile; reviewed (3) → B; vocabulary alignment
+   through the pinned synonym tables (task_type 19-verb, density intent→
+   facet); frozen 0.1 source kept at `knowledge.v0.1.yaml`.
+3. Router regression: routing-vocabulary + runtime-and-routing suites
+   green, live-run anchors intact (dashboard → PAT-DATA-EXPLORER at line
+   423; canvas flows at 516/592); trigger-condition weighting is additive
+   (lex specialis +2/facet) on top of unchanged hardScopeMismatch + score.
+4. Myth quarantine: asset_class-layer exclusion; 11 myths never in default
+   routing; SHELL_MYTH_MAP surfaces the matching myth id in the
+   DECISION_DEFAULT_SHELL_UNJUSTIFIED REVIEW message.
+5. Corpus: 20 entries from Appendix A rows 1-23, six-facet encoded,
+   authority_initial C, review_by 2026-10-01; loader merges (54 total).
+6. Doc sync: architecture.md knowledge row, docs/knowledge-intake-protocol.md
+   (18 questions verbatim + stability rules), this report.
+
+## Phase 3 deviation ledger
+
+1. **Stability assignments are PROVISIONAL** — the plan reserves this as a
+   human handoff (`stability-assignments.draft.yaml`, all confirmed: false).
+   Under the user's autonomous-execution instruction the migration
+   proceeded with reviewed→B / stable→A provisional grades; flipping any
+   grade later is a one-line data change. **Open item for the user.**
+2. **task_type/density vocabulary alignment tables** (browse→explore,
+   inspect→review, trace/filter→locate, configure/administer→manage,
+   compact→high, regular→medium, spacious→low) are pinned in the migration
+   script — the 0.1 scope vocabulary predates the 19-verb table; spec §7.1
+   does not enumerate the mapping. Recorded for review.
+3. **Route-time facet contexts**: task/object from the 0.2 frame, density
+   via inverse intent mapping, platform from context, phase fixed to
+   "decision" (the router's consumer); representation cannot match at route
+   time (decided after routing) — noted in router.ts.
+4. **corpus entries use type product_evidence + asset_class representation**
+   (the six legacy types are retained per spec; representation is an
+   asset_class, not a legacy type).
+5. knowledge-02-migration test pins the migration via the frozen 0.1 source
+   (`knowledge.v0.1.yaml`) since the live file is already migrated.
+
+Gate 3: **PASSED** (stability confirmation remains open for the user).
