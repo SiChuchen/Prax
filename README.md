@@ -14,7 +14,9 @@ evidence-aware validation — now backed by a measured artifact-validation
 layer (`prax-measure`): browser-measured checks emit hash-bound receipts
 that the validator cross-checks against agent claims, with receipt-staleness
 invalidation after artifact edits and a runtime-computed review-readiness
-packet before any human review.
+packet before any human review. Four layout/focus checks were promoted to
+error severity after zero-overkill calibration on all runnable golden apps
+(the accreting-gate mechanism's first instance).
 
 ## Why Prax exists
 

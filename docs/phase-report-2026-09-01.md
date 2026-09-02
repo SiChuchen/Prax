@@ -367,3 +367,45 @@ Gate 2: **PASSED** (autonomous per user instruction 2026-09-02).
    (`knowledge.v0.1.yaml`) since the live file is already migrated.
 
 Gate 3: **PASSED** (stability confirmation remains open for the user).
+
+
+---
+
+# Phase 4 execution record — empirical loop framework (2026-09-02)
+
+Replan pair: `docs/superpowers/specs/2026-09-02-phase4-empirical-loop.md` +
+`docs/superpowers/plans/2026-09-02-phase4-empirical-loop.md`.
+
+| Task | Commit | Evidence |
+|---|---|---|
+| R1 replan docs | `41ce467` | spec+plan pair from Phase 1–3 evidence |
+| F1 matrix + harness | `6a7d72d` | 15 cells (§43 verbatim) + run-cell.mjs; **smoke: cell-13 ran end-to-end against the dashboard build, 7/7 schema-valid receipt** filed under benchmark-runs/product-intelligence-matrix/cell-13/ |
+| F2 A/B protocol | `4d4646c` | arms + 13 metrics (§44 verbatim), PRAX-AB-001 blind procedure, rubric-bias lesson recorded |
+| F3 inter-rater + saturation | `e0eecc8` | §45 eight-field pilot procedure; saturation ledger seeded from §46 bands |
+| F5 check promotion | `c53fa3a` | four checks warning→error (zero-overkill on landing/dashboard/wizard); type.min_projected_size stays advisory (§5.3 wins over the blanket rule) |
+| G4 docs sync | (this commit) | this record + program ledger |
+
+## Gate 4 status: PARTIAL — framework complete, one criterion open
+
+1. ✅ Harness runs end to end on one matrix cell (cell-13 smoke).
+2. ✅ A/B protocol written and reviewed.
+3. ✅ Inter-rater pilot + saturation ledger framed.
+4. ❌ **F4 ECP cognition workspace pilot — OPEN**: a live agent
+   implementation session (golden case #6, representation per research
+   §40–41, full chain ①→⑱, then fixture freeze). Not executable inside this
+   orchestration session; entry conditions pinned in the replan spec.
+5. ✅ Program ledger closed below.
+
+## Program ledger close (ADR-005, phases 0–4)
+
+- **keep**: measurement receipts as the empirical evidence channel (AB-001
+  self-attestation gap closed at BLOCK); convergence stall rule as the sole
+  convergence governor; vocabulary-as-versioned-constants; warning-born →
+  zero-overkill → error promotion (first instance executed); flattened MCP
+  payload recipe; corpus/myth knowledge separation.
+- **revise**: none this program (all deviations recorded per-phase above).
+- **remove**: none.
+- **defer**: ECP pilot execution (F4, live session); 150-cell benchmark
+  execution + A/B runs (next program); density-linked type-size threshold
+  (needs a runner input channel); knowledge stability confirmation
+  (provisional grades on record).
