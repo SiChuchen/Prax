@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>a11y.contrast fixture</title>
+  <style>
+    body { margin: 0; font-family: sans-serif; background: #ffffff; }
+    .low-contrast { color: #aaaaaa; font-size: 16px; }
+    .high-contrast { color: #333333; font-size: 16px; }
+    .large-passing { color: #888888; font-size: 24px; }
+  </style>
+</head>
+<body>
+  <!-- positive case: 16px #aaa on white ≈ 2.3:1, below the 4.5 AA minimum -->
+  <section id="failing-region" aria-label="positive case">
+    <p class="low-contrast" id="low-contrast-text">This text does not meet the contrast minimum</p>
+  </section>
+
+  <!-- negative case: #333 on white ≈ 12.9:1 -->
+  <section id="passing-region" aria-label="negative case">
+    <p class="high-contrast" id="high-contrast-text">This text comfortably meets the contrast minimum</p>
+  </section>
+
+  <!-- negative case: 24px #888 on white ≈ 3.5:1, meets the 3.0 large-text minimum -->
+  <section id="large-region" aria-label="large text tier">
+    <p class="large-passing" id="large-text">This large text meets the large-text minimum</p>
+  </section>
+</body>
+</html>
