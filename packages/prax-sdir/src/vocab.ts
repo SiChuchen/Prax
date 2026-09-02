@@ -90,3 +90,16 @@ export const SHELL_TERMS = {
   terms: ["dashboard", "cards", "tabs", "modal"],
   synonyms: ["仪表盘", "卡片", "标签页", "模态"],
 } as const;
+
+/**
+ * Decide-time myth surfacing map (spec §7.3): which quarantined myth a
+ * triggered shell term should surface in the REVIEW message. Tabs and modal
+ * share the disclosure myth (§12 mutual tabs force working-memory comparison;
+ * §10/§52-Q9 detail surfaces derive from context retention).
+ */
+export const SHELL_MYTH_MAP = {
+  dashboard: "myth-dashboard-default-home",
+  cards: "myth-card-grid-default",
+  tabs: "myth-more-disclosure-better",
+  modal: "myth-more-disclosure-better",
+} as const;

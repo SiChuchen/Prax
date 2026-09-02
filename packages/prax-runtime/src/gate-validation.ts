@@ -19,9 +19,9 @@ import {
   type RequirementConfirmation,
   zodIssues,
 } from "./contracts.js";
-import { SHELL_TERMS } from "prax-sdir";
+import { SHELL_MYTH_MAP, SHELL_TERMS } from "prax-sdir";
 import { classifyDesignContext } from "./classification.js";
-export { SHELL_TERMS };
+export { SHELL_MYTH_MAP, SHELL_TERMS };
 import { classifyIntentImpact } from "./change-impact.js";
 
 export function validateRequirementConfirmation(input: unknown): ArtifactValidation<RequirementConfirmation> {
@@ -502,11 +502,25 @@ export function validateDesignDecisions(
         justification !== undefined && shapeVariables.some((variable) => justification.includes(variable));
       if (!referencesShape) {
         codes.push("DECISION_DEFAULT_SHELL_UNJUSTIFIED");
+        const allDecisionText = [
+          representation.primary.reason,
+          ...representation.supporting.map((entry) => entry.reason),
+          ...representation.rejected.map((entry) => entry.option),
+          ...parsed.data.major_choices.flatMap((choice) => [choice.choice, choice.rationale]),
+        ].join(" ");
+        const englishMatch = wordBoundary.exec(allDecisionText)?.[1];
+        const synonymMatch = SHELL_TERMS.synonyms
+          .map((synonym, index) => (allDecisionText.includes(synonym) ? SHELL_TERMS.terms[index] : undefined))
+          .find((matched) => matched !== undefined);
+        const triggeredTerm =
+          representation.primary.type === "cards" ? "cards" : englishMatch ?? synonymMatch;
+        const myth = triggeredTerm !== undefined ? SHELL_MYTH_MAP[triggeredTerm as keyof typeof SHELL_MYTH_MAP] : undefined;
         issues.push(
           "Default-shell representation detected (dashboard / cards / tabs / modal). " +
             (justification === undefined
               ? "representation.justification_vs_shape is required."
               : "justification_vs_shape must reference at least one information_shape variable (cardinality, relationality, …).") +
+            (myth === undefined ? "" : ` Refuted default on record: ${myth} — read its refutation before arguing.`) +
             " Negative knowledge mandates argumentation, not prohibition (research §48C).",
         );
       }
