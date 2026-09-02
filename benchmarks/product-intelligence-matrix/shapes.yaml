@@ -1,0 +1,200 @@
+version: "0.1"
+# 10 information-shape prototypes (benchmark program M1, plan 2026-09-02).
+# Induced from the shape side of the 15 §43 example cells (matrix.yaml):
+# each prototype's information_shape is byte-equal to its first exemplar's
+# parsed shape; absorbed exemplars deviate on ≤3 non-distinguishing facets
+# (noted per shape). All facet values come from the SDIR 0.2
+# InformationShape vocabulary — no new words. trigger_conditions use the
+# corpus-2026-09 facet keys (task_type/object_type/representation/density/
+# platform/phase) so bundles are routing-compatible.
+#
+# high_frequency_jobs: corpus-2026-09 task_type counts (2026-09-03)
+#   decide 11 / locate 7 / explore 6 — the three most frequent jobs; they
+#   form the 30-cell diagonal band with all 10 shapes (priority 1).
+high_frequency_jobs: [decide, locate, explore]
+shapes:
+  - id: shape-01
+    name: entity-hierarchy
+    description: 大量有层级归属的结构化实体集合，成败在批量操作零误伤与状态归属显式。
+    information_shape:
+      cardinality: many
+      relationality: medium
+      hierarchy: high
+      temporality: low
+      density: high
+      dimensionality: medium
+      spatiality: none
+      volatility: medium
+      uncertainty: low
+      comparison_need: none
+    trigger_conditions: { object_type: [entity, record], density: [high] }
+    exemplar_cells: [cell-01]
+    seed_clause: 状态归属显式，层级结构可见
+    suggested_objects: [entity, record]
+  - id: shape-02
+    name: open-collection
+    description: 无界弱关系的大集合，主要认知负担是定位路径而非结构呈现。
+    information_shape:
+      cardinality: unbounded
+      relationality: low
+      hierarchy: medium
+      temporality: low
+      density: medium
+      dimensionality: medium
+      spatiality: none
+      volatility: medium
+      uncertainty: low
+      comparison_need: none
+    trigger_conditions: { object_type: [item, dataset], density: [medium] }
+    exemplar_cells: [cell-02]
+    seed_clause: 定位路径有搜索/过滤支撑且不丢上下文
+    suggested_objects: [item, dataset]
+  - id: shape-03
+    name: comparison-panel
+    description: 少量高密度条目并排比较，比较本身是任务、比较状态必须驻留同屏。
+    information_shape:
+      cardinality: few
+      relationality: medium
+      hierarchy: low
+      temporality: low
+      density: high
+      dimensionality: medium
+      spatiality: none
+      volatility: medium
+      uncertainty: low
+      comparison_need: required
+    trigger_conditions: { object_type: [item, location], density: [high] }
+    exemplar_cells: [cell-03, cell-09]
+    absorbed_notes: cell-09 (decide × location-sensitive) deviates on density medium + spatiality physical — 空间性留在该 job 的 brief 语境，shape 侧收敛为比较束。
+    seed_clause: 比较状态在同一视图内维持
+    suggested_objects: [item, location]
+  - id: shape-04
+    name: volatile-evidence-stream
+    description: 高时间性高密度的易变数据流，异常要在扫视内可见且变化可追溯。
+    information_shape:
+      cardinality: many
+      relationality: low
+      hierarchy: medium
+      temporality: high
+      density: high
+      dimensionality: medium
+      spatiality: none
+      volatility: high
+      uncertainty: low
+      comparison_need: none
+    trigger_conditions: { object_type: [metric, event], density: [high] }
+    exemplar_cells: [cell-04, cell-15]
+    absorbed_notes: cell-15 (troubleshoot × system evidence) deviates on relationality high + uncertainty medium — 关系型证据链是该 shape 的高关系变体。
+    seed_clause: 指标变化可追溯，无闪烁噪声
+    suggested_objects: [metric, event]
+  - id: shape-05
+    name: relational-web
+    description: 关系本身是内容，跟随依赖与影响不能丢失全局上下文。
+    information_shape:
+      cardinality: many
+      relationality: high
+      hierarchy: medium
+      temporality: low
+      density: medium
+      dimensionality: medium
+      spatiality: none
+      volatility: medium
+      uncertainty: low
+      comparison_need: none
+    trigger_conditions: { object_type: [relationship, conversation], density: [medium] }
+    exemplar_cells: [cell-05, cell-11]
+    absorbed_notes: cell-11 (communicate × threaded conversation) deviates on temporality high — 线程是关系网的时间性变体。
+    seed_clause: 关系跟随不丢失全局上下文
+    suggested_objects: [relationship, conversation]
+  - id: shape-06
+    name: temporal-sequence
+    description: 随时间演化的多元素序列，变更因果与时间结构必须互相一致。
+    information_shape:
+      cardinality: many
+      relationality: medium
+      hierarchy: medium
+      temporality: high
+      density: medium
+      dimensionality: medium
+      spatiality: none
+      volatility: medium
+      uncertainty: low
+      comparison_need: none
+    trigger_conditions: { object_type: [change_set, dataset], density: [medium] }
+    exemplar_cells: [cell-06, cell-14]
+    absorbed_notes: cell-14 (explain × narrative data) deviates on hierarchy low + temporality medium — 叙事流是时序演化的低层级变体。
+    seed_clause: 时间结构与变更语义一致
+    suggested_objects: [change_set, dataset]
+  - id: shape-07
+    name: spatial-workspace
+    description: 物理空间排布即意图，空间操作必须有键盘等价物。
+    information_shape:
+      cardinality: many
+      relationality: medium
+      hierarchy: low
+      temporality: low
+      density: medium
+      dimensionality: medium
+      spatiality: physical
+      volatility: medium
+      uncertainty: low
+      comparison_need: none
+    trigger_conditions: { object_type: [canvas_object], density: [medium] }
+    exemplar_cells: [cell-07]
+    seed_clause: 空间操作有键盘等价物
+    suggested_objects: [canvas_object]
+  - id: shape-08
+    name: single-document
+    description: 单一文档的编辑任务，结构化编辑与预览一致、密度低。
+    information_shape:
+      cardinality: one
+      relationality: low
+      hierarchy: medium
+      temporality: medium
+      density: low
+      dimensionality: medium
+      spatiality: none
+      volatility: medium
+      uncertainty: low
+      comparison_need: none
+    trigger_conditions: { object_type: [document], density: [low] }
+    exemplar_cells: [cell-08]
+    seed_clause: 结构化编辑与预览一致
+    suggested_objects: [document]
+  - id: shape-09
+    name: consequential-flow
+    description: 单一高后果流程，零失误走完全程、不可逆步骤有恢复/确认路径。
+    information_shape:
+      cardinality: one
+      relationality: low
+      hierarchy: high
+      temporality: low
+      density: low
+      dimensionality: medium
+      spatiality: none
+      volatility: medium
+      uncertainty: medium
+      comparison_need: none
+    trigger_conditions: { object_type: [workflow], density: [low] }
+    exemplar_cells: [cell-10]
+    seed_clause: 不可逆步骤有恢复/确认路径
+    suggested_objects: [workflow]
+  - id: shape-10
+    name: dimensional-space
+    description: 维度是主要认知负担（从单概念到无界数据），切换维度不重置认知。
+    information_shape:
+      cardinality: unbounded
+      relationality: medium
+      hierarchy: medium
+      temporality: low
+      density: high
+      dimensionality: high
+      spatiality: none
+      volatility: medium
+      uncertainty: low
+      comparison_need: none
+    trigger_conditions: { object_type: [dataset, media], density: [high] }
+    exemplar_cells: [cell-13, cell-12]
+    absorbed_notes: cell-12 (learn × interactive concept) deviates on cardinality one + hierarchy low + density low — 单概念是维度空间的有界变体，共同判别维是 dimensionality high。
+    seed_clause: 维度切换不重置认知，过滤/投影状态可回退
+    suggested_objects: [dataset, media]
