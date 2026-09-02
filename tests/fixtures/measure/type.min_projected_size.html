@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>type.min_projected_size fixture</title>
+  <style>
+    body { margin: 0; font-family: sans-serif; font-size: 16px; }
+    .micro { font-size: 10px; }
+  </style>
+</head>
+<body>
+  <!-- positive case: primary-content text projected at 10px -->
+  <main>
+    <section aria-label="positive case">
+      <p class="micro" id="micro-primary">This primary-content text is set at ten pixels.</p>
+    </section>
+    <section aria-label="negative case">
+      <p id="normal-primary">This primary-content text is set at the inherited sixteen pixels.</p>
+    </section>
+  </main>
+
+  <!-- negative case: micro text outside the primary content scope -->
+  <footer>
+    <p class="micro" id="micro-footer">Fine print outside primary content.</p>
+  </footer>
+</body>
+</html>
