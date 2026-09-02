@@ -56,6 +56,7 @@ describe("layout.overflow check (Task A2.1)", () => {
 
     const flagged = (outcome.measured as { flagged_elements: string[] }).flagged_elements;
     expect(flagged.join(" ")).not.toContain("contained-region");
+    expect(flagged.join(" ")).not.toContain("sr-only-note");
     expect(flagged.length).toBeGreaterThan(0);
 
     await browser.close();

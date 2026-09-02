@@ -35,6 +35,9 @@ export async function run(page: Page, ctx: CheckContext): Promise<CheckOutcome> 
       }
       // inline links within a sentence flow with the text — exempt
       if (element.tagName === "A" && style.display === "inline") continue;
+      // tabindex="-1" marks programmatic focus anchors (headings, skip
+      // targets), not pointer-activatable targets — WCAG 2.5.8 does not apply
+      if (element.getAttribute("tabindex") === "-1") continue;
       // an equivalent alternative control on the same page — exempt when the
       // declaration resolves to an existing element
       const alternative = element.getAttribute("data-target-alternative");

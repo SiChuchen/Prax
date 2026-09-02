@@ -48,6 +48,7 @@ describe("text.truncation check (Task A2.3)", () => {
     expect(elements).not.toContain("div#title-text");
     expect(elements).not.toContain("div#intended-text");
     expect(elements).not.toContain("p#wrapping-text");
+    expect(elements).not.toContain("span#sr-only-text");
 
     await browser.close();
   });

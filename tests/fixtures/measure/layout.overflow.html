@@ -6,6 +6,7 @@
   <style>
     body { margin: 0; font-family: sans-serif; }
     .negative-region { width: 400px; padding: 8px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
   </style>
 </head>
 <body>
@@ -13,6 +14,8 @@
   <section id="overflow-region" aria-label="positive case">
     <div style="width: 1294px; height: 40px; background: #eee;">deliberately 1294px wide</div>
   </section>
+  <!-- negative case: sr-only assistive text in a 1px clip box -->
+  <span class="sr-only" id="sr-only-note">Screen-reader-only announcement</span>
   <!-- negative case: content stays inside its box at every width -->
   <section class="negative-region" id="contained-region" aria-label="negative case">
     <p>This paragraph is fully contained; nothing overflows horizontally.</p>

@@ -29,6 +29,9 @@ export async function run(page: Page, ctx: CheckContext): Promise<CheckOutcome> 
     const candidates: Element[] = [document.documentElement, document.body, ...Array.from(document.body?.querySelectorAll("*") ?? [])];
     for (const element of candidates) {
       if (element === null || !isVisible(element)) continue;
+      // sr-only clip pattern: a sub-pixel box is assistive-tech text, not rendered content
+      const box = element.getBoundingClientRect();
+      if (box.width <= 1 || box.height <= 1) continue;
       if (element.scrollWidth > element.clientWidth + 1) {
         flagged.push(
           element.id !== ""

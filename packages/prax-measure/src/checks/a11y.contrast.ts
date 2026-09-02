@@ -66,6 +66,9 @@ export async function run(page: Page, ctx: CheckContext): Promise<CheckOutcome> 
     for (const element of Array.from(document.body?.querySelectorAll("*") ?? [])) {
       const style = window.getComputedStyle(element);
       if (style.display === "none" || style.visibility === "hidden") continue;
+      // sr-only clip pattern: a sub-pixel box is assistive-tech text, not rendered content
+      const box = element.getBoundingClientRect();
+      if (box.width <= 1 || box.height <= 1) continue;
       const ownText = Array.from(element.childNodes)
         .filter((node) => node.nodeType === Node.TEXT_NODE)
         .map((node) => node.textContent ?? "")

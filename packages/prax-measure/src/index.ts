@@ -1,2 +1,2 @@
-// prax-measure: measured artifact-validation layer (spec §5.1).
-// Checks land in src/checks/, the runner and receipt writer follow (Tasks A2/A3).
+export { runMeasurement, type RunMeasurementOptions, type RunnerViewport } from "./runner.js";
+export { writeReceiptAtomically } from "./receipt.js";

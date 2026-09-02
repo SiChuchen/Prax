@@ -10,6 +10,7 @@
     .title-carried { width: 200px; white-space: nowrap; overflow: hidden; }
     .truncation-intended { width: 200px; white-space: nowrap; overflow: hidden; }
     .wrapping { width: 200px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
   </style>
 </head>
 <body>
@@ -33,6 +34,8 @@
     <div class="truncation-intended" id="intended-text">This truncation is explicitly intended by the author</div>
   </section>
 
+  <!-- negative case: sr-only assistive text in a 1px clip box -->
+  <span class="sr-only" id="sr-only-text">Assistive text that is never visually rendered</span>
   <!-- negative case: ordinary wrapping text -->
   <section id="fitting-region" aria-label="wrapping text">
     <p class="wrapping" id="wrapping-text">This paragraph wraps normally and never overflows its container.</p>

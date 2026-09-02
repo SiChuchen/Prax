@@ -52,6 +52,7 @@ describe("a11y.target_size check (Task A2.6)", () => {
     expect(selectors).not.toContain("button#roomy-button");
     expect(selectors).not.toContain("a#inline-link");
     expect(selectors).not.toContain("button#compact-button");
+    expect(selectors).not.toContain("h2#focus-anchor");
 
     await browser.close();
   });
