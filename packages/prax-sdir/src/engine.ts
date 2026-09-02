@@ -1,10 +1,10 @@
 import type { DesignContext, DesignDecisions, ProductFrame } from "prax-runtime";
 import { zodIssues } from "prax-runtime";
-import { SdirSchema, type Sdir, type SdirIssue, type SdirValidation } from "./contracts.js";
+import { SdirSchema, SdirV02Schema, type Sdir, type SdirIssue, type SdirValidation } from "./contracts.js";
 import { patternSurfaceContract } from "./surfaces.js";
 
 export const FORBIDDEN_KEY = /(^|_)(width|height|padding|margin|display|grid|flex|color|font|radius|shadow|css|class|classname|component|framework|tailwind|pixel|px)($|_)/i;
-export const FORBIDDEN_VALUE = /(\d+(?:\.\d+)?px\b|display\s*:\s*(?:flex|grid)|grid-template|rounded-(?:sm|md|lg|xl)|(?:Radix|Vue|React|Compose)[A-Z]\w*)/i;
+export const FORBIDDEN_VALUE = /(\d+(?:\.\d+)?px\b|display\s*:\s*(?:flex|grid)|grid-template|rounded-(?:sm|md|lg|xl)|rounded\s+corners|(?:Radix|Vue|React|Compose)[A-Z]\w*)/i;
 const KNOWN_ROLES = new Set([
   "dominant_workspace",
   "contextual_inspector",
@@ -170,37 +170,69 @@ export class SdirEngine {
         ? { id: `open_${(openCounter += 1)}`, question: unknown, impact: "medium" as const, affects: [] }
         : { id: unknown.id, question: unknown.id, impact: unknown.impact, affects: unknown.affects },
     );
-    return SdirSchema.parse({
-      version: "0.1",
-      screen: {
-        id: `${pattern.toLowerCase().replaceAll("pat-", "").replaceAll("-", "_")}_screen`,
-        intent: {
-          primary_task: frame.tasks.primary,
-          secondary_tasks: frame.tasks.secondary,
-        },
-        archetype: { pattern_ref: pattern },
-        density_intent: context.density_intent,
-        regions,
-        relationships,
-        interaction_intents:
-          pattern === "PAT-CANVAS-WORKSPACE"
-            ? ["spatial_overview", "direct_selection", "pan_zoom", "progressive_inspection", "keyboard_equivalent"]
-            : ["preserve_context", "keyboard_equivalent"],
-        required_states: ["loading", "empty", "ready", "selected", "error"],
-        decision_points: [
-          {
-            id: "region_realization",
-            question: "How should the platform adapter realize the semantic regions while preserving hierarchy?",
-            adapter_may_choose: ["native landmarks", "accessible composite widgets", "responsive region arrangement"],
-          },
-        ],
-        unresolved,
-        rejected_alternatives: decisions.rejected.map((rejected) => ({
-          option: rejected.option,
-          reason: rejected.reason,
-        })),
+    const screenId = `${pattern.toLowerCase().replaceAll("pat-", "").replaceAll("-", "_")}_screen`;
+    const baseScreen = {
+      id: screenId,
+      intent: {
+        primary_task: frame.tasks.primary,
+        secondary_tasks: frame.tasks.secondary,
       },
-    });
+      archetype: { pattern_ref: pattern },
+      density_intent: context.density_intent,
+      regions,
+      relationships,
+      interaction_intents:
+        pattern === "PAT-CANVAS-WORKSPACE"
+          ? ["spatial_overview", "direct_selection", "pan_zoom", "progressive_inspection", "keyboard_equivalent"]
+          : ["preserve_context", "keyboard_equivalent"],
+      required_states: ["loading", "empty", "ready", "selected", "error"],
+      decision_points: [
+        {
+          id: "region_realization",
+          question: "How should the platform adapter realize the semantic regions while preserving hierarchy?",
+          adapter_may_choose: ["native landmarks", "accessible composite widgets", "responsive region arrangement"],
+        },
+      ],
+      unresolved,
+      rejected_alternatives: decisions.rejected.map((rejected) => ({
+        option: rejected.option,
+        reason: rejected.reason,
+      })),
+    };
+
+    // 0.2 generation (spec §6.1): when the gated upstream artifacts carry the
+    // product-model blocks, the generated SDIR extends with them — semantic
+    // content flows from frame/decisions; nothing is invented here
+    if (frame.version === "0.2" && decisions.version === "0.2" && decisions.information_shape !== undefined && decisions.representation !== undefined && frame.jtbd !== undefined && frame.primary_object !== undefined) {
+      const primaryRegionIds = regions
+        .filter((region) => region.importance === "dominant" || region.importance === "primary")
+        .map((region) => region.id);
+      const contextualRegionIds = regions
+        .filter((region) => region.importance !== "dominant" && region.importance !== "primary")
+        .map((region) => region.id);
+      return SdirV02Schema.parse({
+        version: "0.2",
+        screen: {
+          ...baseScreen,
+          user_job: frame.jtbd,
+          primary_object: frame.primary_object,
+          information_shape: decisions.information_shape,
+          representation: {
+            primary: decisions.representation.primary,
+            supporting: decisions.representation.supporting,
+          },
+          priority: { primary: primaryRegionIds, contextual: contextualRegionIds },
+          interaction: { preview: "none", inspect: "select", navigate: "none", locate: "none" },
+          state_ownership: [
+            { state: "selection", owner: primaryRegionIds[0] ?? regions[0]!.id },
+            { state: "preview", owner: "session" },
+          ],
+          acceptance: [frame.primary_success_definition],
+        },
+      });
+    }
+
+    return SdirSchema.parse({ version: "0.1", screen: baseScreen });
   }
 
   public validate(input: unknown, decisions?: DesignDecisions): SdirValidation {
