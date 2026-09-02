@@ -112,3 +112,101 @@ Reviewers: (a) codebase facts, (b) internal consistency/executability,
 2. After Gate 1: decide whether the wizard/dashboard/landing calibration
    findings are defects to fix or check over-kill to tune — this choice feeds
    the first severity-promotion review (Phase 4 F5).
+
+---
+
+# Phase 1 execution record — measured artifact-validation layer (2026-09-02)
+
+Baseline: `0c8c321` (Task A1). All Phase 1 tasks executed TDD
+(failing test → implement → green → commit); `npm test` green at every
+commit boundary; landing golden replay green throughout.
+
+## Task ledger
+
+| Task | Commit | Tests added |
+|---|---|---|
+| 0.2 principle registry P-041..P-045 | `de56ba7` | — |
+| A1 receipt schema + catalog constants | `0c8c321` | measurement-receipt (3) |
+| A2.1 layout.overflow | `7503ea6` | measure-layout.overflow (3) |
+| A2.2 layout.responsive_collision | `435b262` | measure-layout.responsive_collision (3) |
+| A2.3 text.truncation | `62458fa` | measure-text.truncation (3) |
+| A2.4 a11y.contrast | `579c5b1` | measure-a11y.contrast (3) |
+| A2.5 a11y.focus_order | `2d8d129` | measure-a11y.focus_order (3) |
+| A2.6 a11y.target_size | `ed1a391` | measure-a11y.target_size (3) |
+| A2.7 type.min_projected_size | `fabf580` | measure-type.min_projected_size (3) |
+| A3 runner + CLI + atomic receipt writer | `f5dfd53` | measure-runner (2) |
+| B1 contracts: map + provenance | `179fb41` | artifact-evidence-contracts (5) |
+| B3 convergence protocol | `6ea8d7d` | validation-convergence (3) |
+| B2 artifact-evidence verification | `05ac999` | artifact-evidence (12) |
+| B4 evaluation wiring + readiness | `203ae68` | validate-measurement (4) |
+| C1 e2e + replay fixture + this record | (this commit) | validate-measurement-e2e (5), measure-receipt-replay (2) |
+
+## Calibration record (Task A3 Step 5 + C1 Step 1, zero-overkill evidence)
+
+Runner executed against production builds of every runnable golden app at
+1280x860. Every receipt parses against `MeasurementReceiptSchema`.
+
+| App | Receipt summary | Findings triage |
+|---|---|---|
+| prax-wizard | 6 pass / 1 fail (warnings=1) | `type.min_projected_size` min 11px (field labels, counters, notes) — **real advisory finding**, warning tier; density-linked threshold deferred per spec §12 decision 11 |
+| prax-dashboard | 7 pass / 0 fail | clean after over-kill fix |
+| prax-landing | 6 pass / 1 fail (error=1) | `a11y.target_size` — two `nav.shell-nav` links at 19.5px height — **real WCAG 2.2 AA 2.5.8 defect**; filed here, fix belongs to the landing app (outside Phase 1 scope) |
+
+Over-kill false positives found and fixed during calibration (each now has a
+fixture regression case):
+
+1. `.sr-only` clip-pattern text (1px box) was flagged by element-level
+   `layout.overflow` and `text.truncation` (dashboard) — sub-pixel boxes are
+   assistive-tech text, never rendered content; fix scans skip boxes ≤ 1px
+   (also applied to `a11y.contrast` for hygiene).
+2. `tabindex="-1"` programmatic focus anchors (wizard step headings) were
+   flagged by `a11y.target_size` — WCAG 2.5.8 covers pointer-activatable
+   targets, not focus anchors; fix exempts `tabindex="-1"`.
+
+Residual false-positive risk (subagent-style honest notes, for the F5
+promotion review):
+
+- `a11y.focus_order` detects indicators via outline/box-shadow only;
+  border-change indicators are a known false-negative direction (not
+  over-kill).
+- `a11y.contrast` resolves background via the ancestor chain; gradients and
+  background images degrade to the nearest opaque color (approximation, both
+  directions possible).
+- `layout.overflow` element scan relies on `scrollWidth > clientWidth + 1`;
+  intentional scroll containers (`overflow: auto` with visible affordance)
+  may need an explicit exemption class in a later catalog revision.
+
+## Deviation ledger (plan ↔ as-executed)
+
+1. **A2.1–A2.7 executed serially by the orchestrating agent, not parallel
+   subagents.** Seven parallel subagents were dispatched per the plan's
+   parallelization map; the account hit API rate limits (429) and two agents
+   died mid-read with no files written; the remaining five were stopped and
+   the checks implemented serially under the same TDD discipline and per-task
+   commits. No spec deviation — execution-mode only.
+2. **Check file naming uses catalog ids verbatim** (`layout.overflow.ts`),
+   not the dashed names in spec §10 (`layout-overflow.ts`). The plan's Task
+   A2 block and the user-issued subagent template pin `<id>.ts`, and Task A3
+   references the fixture as `layout.overflow.html` — dot form followed for
+   consistency with the plan's pinned paths.
+3. **`ValidationFinding.provenance` semantics for deterministic findings**:
+   spec §5.4 defines the field for empirical claims (measured = verified
+   receipt; attested = self-claim). Deterministic machine-computed findings
+   (SDIR checks, adjudicator) are labeled `measured` — machine-computed from
+   gated artifacts, never agent self-claims; empirical findings default
+   `attested` until receipt-backed.
+4. **Golden e2e flows augmented with receipts** (service-e2e, landing
+   fixture replay, adjudication completes, realization-e2e): mapped checks
+   claiming pass now require receipt coverage (spec §5.4 rule 3), so each
+   flow attaches a valid receipt before evaluate. The landing replay's
+   frozen bytes and golden digests are untouched; the receipt attaches as a
+   new evidence file and the frozen evidence object replays unmodified.
+5. **`prax-measure` tsconfig gains `"lib": ["es2023", "dom"]`** — evaluate
+   callbacks run in browser context and need DOM globals; not foreseen in
+   the plan's "tsconfig matching sibling packages".
+6. `type.min_projected_size` records `min_font_px` even on pass (honest
+   measurement, not only the failing minimum).
+
+## Gate 1 status
+
+See "Gate 1 evidence" below (added by Task 1.6).

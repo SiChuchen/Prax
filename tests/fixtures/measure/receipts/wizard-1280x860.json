@@ -1,0 +1,163 @@
+{
+  "receipt_version": "0.1",
+  "tool": {
+    "name": "prax-measure",
+    "version": "0.1.0"
+  },
+  "target": {
+    "app_root": "apps/prax-wizard",
+    "base_url": "http://127.0.0.1:23709/",
+    "build_ref": null
+  },
+  "run_at": "2026-09-02T02:38:11.881Z",
+  "viewport_matrix": [
+    {
+      "width": 1280,
+      "height": 860,
+      "label": "desktop"
+    }
+  ],
+  "checks": [
+    {
+      "id": "layout.overflow",
+      "status": "pass",
+      "severity": "warning",
+      "measured": {
+        "scroll_width": 1280,
+        "inner_width": 1280,
+        "overflow_px": 0,
+        "element_overflows": 0,
+        "flagged_elements": [],
+        "viewport": "desktop"
+      },
+      "threshold": {
+        "max_overflow_px": 0,
+        "element_overflow_tolerance_px": 1
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "layout.responsive_collision",
+      "status": "pass",
+      "severity": "warning",
+      "measured": {
+        "collisions": 0,
+        "pairs": [],
+        "interactive_elements": 5,
+        "viewport": "desktop"
+      },
+      "threshold": {
+        "max_collisions": 0
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "text.truncation",
+      "status": "pass",
+      "severity": "warning",
+      "measured": {
+        "truncated": 0,
+        "elements": [],
+        "viewport": "desktop"
+      },
+      "threshold": {
+        "max_truncated": 0
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "a11y.contrast",
+      "status": "pass",
+      "severity": "error",
+      "measured": {
+        "failing": 0,
+        "pairs": [],
+        "viewport": "desktop"
+      },
+      "threshold": {
+        "normal_min_ratio": 4.5,
+        "large_min_ratio": 3
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "a11y.focus_order",
+      "status": "pass",
+      "severity": "warning",
+      "measured": {
+        "stops": 2,
+        "sequence": [
+          "select",
+          "textarea"
+        ],
+        "missing_indicators": [],
+        "inversions": [],
+        "viewport": "desktop"
+      },
+      "threshold": {
+        "max_missing_focus_indicators": 0,
+        "max_order_inversions": 0
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "a11y.target_size",
+      "status": "pass",
+      "severity": "error",
+      "measured": {
+        "undersized": 0,
+        "elements": [],
+        "viewport": "desktop"
+      },
+      "threshold": {
+        "min_target_px": 24
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "type.min_projected_size",
+      "status": "fail",
+      "severity": "warning",
+      "subject": "p; span; span; span; span; span; span; p",
+      "measured": {
+        "min_font_px": 11,
+        "undersized": 8,
+        "elements": [
+          "p",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "p"
+        ],
+        "viewport": "desktop"
+      },
+      "threshold": {
+        "min_projected_px": 12
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/min-projected-size-1280x860.png",
+          "sha256": "908cf6890e8e75d4de1c6af7960678e9eebae82b94ddb01b62e9d236c1de0864"
+        }
+      ],
+      "supported_fixes": [
+        "raise the listed primary-content text to at least 12px, or declare a density intent that justifies the smaller projection"
+      ]
+    }
+  ],
+  "summary": {
+    "pass": 6,
+    "fail": 1,
+    "skipped": 0,
+    "warnings": 1
+  }
+}
