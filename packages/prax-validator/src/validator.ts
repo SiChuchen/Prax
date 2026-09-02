@@ -44,6 +44,20 @@ const REPRESENTATION_CHECKS: ValidationCheck[] = [
   { id: "representation_runtime_drift", label: "Representation runtime drift", kind: "empirical", requirement: "Runtime snapshot evidence compares against the approved representation snapshot (two artifact_refs: approved then runtime).", evidence_required: true },
 ];
 
+// SDIR 0.2 structure checks (spec §6.5): deterministic, zero-browser; only
+// assembled for 0.2 sessions (frame declares version 0.2) — 0.1 sessions
+// carry zero new obligations (compatibility discipline)
+const STRUCTURE_CHECKS: ValidationCheck[] = [
+  { id: "representation_decided", label: "Representation decided", kind: "deterministic", requirement: "SDIR 0.2 declares representation.primary with a non-empty reason.", evidence_required: false },
+  { id: "state_ownership_declared", label: "State ownership declared", kind: "deterministic", requirement: "Selection and preview states both have declared owners.", evidence_required: false },
+  { id: "acceptance_contract_present", label: "Acceptance contract present", kind: "deterministic", requirement: "SDIR 0.2 carries at least one acceptance criterion.", evidence_required: false },
+  { id: "complexity_budget_declared", label: "Complexity budget declared", kind: "deterministic", requirement: "SDIR 0.2 declares a complexity_budget block (values are not judged).", evidence_required: false },
+];
+
+function universalChecks(input: ValidationPlanInput): ValidationCheck[] {
+  return input.frame?.version === "0.2" ? [...UNIVERSAL_CHECKS, ...STRUCTURE_CHECKS] : UNIVERSAL_CHECKS;
+}
+
 const DELTA_CONFORMANCE_CHECK: ValidationCheck = {
   id: "delta_conformance",
   label: "Delta conformance",
@@ -120,6 +134,10 @@ const CHECK_PROFILE: Record<string, { profile: string; facet: string }> = {
   safe_change: { profile: "state_coverage", facet: "behavioral" },
   destructive_recovery: { profile: "runtime_degradation", facet: "behavioral" },
   design_representation_coverage: { profile: "representation_integrity", facet: "semantic" },
+  representation_decided: { profile: "semantic_integrity", facet: "semantic" },
+  state_ownership_declared: { profile: "semantic_integrity", facet: "semantic" },
+  acceptance_contract_present: { profile: "semantic_integrity", facet: "semantic" },
+  complexity_budget_declared: { profile: "semantic_integrity", facet: "semantic" },
   representation_runtime_drift: { profile: "representation_integrity", facet: "visual" },
 };
 
@@ -147,7 +165,7 @@ export class PraxValidator {
       return ValidationPlanSchema.parse({
         version: "0.1",
         ...(input.decisions === undefined ? {} : { pattern_ref: input.decisions.primary_structure.pattern }),
-        checks: [...UNIVERSAL_CHECKS, ...patternChecks, ...riskChecks, REQUIREMENT_CHECK],
+        checks: [...universalChecks(input), ...patternChecks, ...riskChecks, REQUIREMENT_CHECK],
       });
     }
 
@@ -178,7 +196,7 @@ export class PraxValidator {
       version: "0.1",
       ...(input.decisions === undefined ? {} : { pattern_ref: input.decisions.primary_structure.pattern }),
       checks: [
-        ...UNIVERSAL_CHECKS,
+        ...universalChecks(input),
         ...patternChecks,
         ...riskChecks,
         ...(input.realizationMode === "figma_first" ? REPRESENTATION_CHECKS : []),
@@ -301,12 +319,48 @@ export class PraxValidator {
       });
     }
 
+    const structureCheckIds = new Set(STRUCTURE_CHECKS.map((check) => check.id));
+    const structureWarnings: string[] = [];
+    if (input.plan.checks.some((check) => structureCheckIds.has(check.id))) {
+      const screen02 = input.sdir !== undefined && input.sdir.version === "0.2" ? input.sdir.screen : undefined;
+      const owned = new Set((screen02?.state_ownership ?? []).map((entry) => entry.state));
+      for (const check of input.plan.checks.filter((entry) => structureCheckIds.has(entry.id))) {
+        let passed = false;
+        let warning: string | undefined;
+        if (check.id === "representation_decided") {
+          passed = screen02?.representation?.primary?.reason !== undefined && screen02.representation.primary.reason.trim() !== "";
+        } else if (check.id === "state_ownership_declared") {
+          passed = owned.has("selection") && owned.has("preview");
+        } else if (check.id === "acceptance_contract_present") {
+          passed = (screen02?.acceptance?.length ?? 0) >= 1;
+        } else {
+          passed = true; // presence-only check; absence is advisory
+          if (screen02?.complexity_budget === undefined) {
+            warning =
+              "complexity_budget_declared: the 0.2 SDIR declares no complexity_budget block — new permanent surfaces, modes, and state owners stay uncounted (P-044).";
+          }
+        }
+        if (warning !== undefined) structureWarnings.push(warning);
+        findings.push({
+          check_id: check.id,
+          kind: "deterministic",
+          outcome: passed ? "pass" : "fail",
+          message: passed
+            ? check.requirement
+            : `0.2 session SDIR does not satisfy '${check.id}': ${check.requirement}`,
+          source: "prax-validator",
+          provenance: "measured",
+        });
+      }
+    }
+
     for (const check of input.plan.checks) {
       if (
         check.id === "semantic_conformance" ||
         check.id === "state_completeness" ||
         check.id === "delta_conformance" ||
-        check.id === "design_representation_coverage"
+        check.id === "design_representation_coverage" ||
+        structureCheckIds.has(check.id)
       ) {
         continue;
       }
@@ -359,7 +413,9 @@ export class PraxValidator {
             ? "WARN"
             : "PASS";
 
-    const warnings = input.plan.checks
+    const warnings = [
+      ...structureWarnings,
+      ...input.plan.checks
       .filter(
         (check) =>
           check.kind === "empirical" &&
@@ -370,7 +426,8 @@ export class PraxValidator {
       .map(
         (check) =>
           `check '${check.id}' passed on agent self-attestation without artifact_refs; cite concrete artifacts (screenshots, run logs) so the claim is verifiable (PRAX-AB-001 finding-01)`,
-      );
+      ),
+    ];
 
     // ── measured artifact evidence (Task B4, spec §5.4/§5.7) ──
     let codes: string[] = [];
