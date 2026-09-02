@@ -53,6 +53,11 @@ Constitution, phase invariants, and candidates are distinguished only by
 | PRAX-P-038 | candidate | Local learning may propose candidates but must not silently mutate authoritative user/org/system assets. |
 | PRAX-P-039 | candidate | External capability trust is explicit: origin, license, execution class, permissions and risk are part of routing. |
 | PRAX-P-040 | candidate | Project truth is scoped to facts that materially affect user-visible meaning, interaction, design decisions or validation. |
+| PRAX-P-041 | candidate | Representation is a decided portfolio (primary + supporting + rejected) before implementation; the default shell is never assumed. |
+| PRAX-P-042 | candidate | Interaction state has explicit owners; selection, preview, inspector, viewport, and query ownership are declared, not emergent. |
+| PRAX-P-043 | candidate | Where a quality claim is machine-measurable, measured evidence outranks attestation; skipped is not passed. |
+| PRAX-P-044 | candidate | Every feature declares its complexity budget; new permanent surfaces, modes, and state owners are counted, not assumed free. |
+| PRAX-P-045 | candidate | Human review runs downstream of machine gates: a review request carries a runtime-computed readiness packet stating what was measured, attested, and skipped — humans never adjudicate what machines already failed. |
 
 ## Promotion rules
 
