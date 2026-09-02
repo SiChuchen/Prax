@@ -148,7 +148,7 @@ Runner executed against production builds of every runnable golden app at
 
 | App | Receipt summary | Findings triage |
 |---|---|---|
-| prax-wizard | 6 pass / 1 fail (warnings=1) | `type.min_projected_size` min 11px (field labels, counters, notes) — **real advisory finding**, warning tier; density-linked threshold deferred per spec §12 decision 11 |
+| prax-wizard | 6 pass / 1 fail → **7 pass / 0 fail after fix (2026-09-02)** | `type.min_projected_size` min 11px was a real advisory finding; **fixed** — micro-typography raised 11px→12px, re-measured 7/7 |
 | prax-dashboard | 7 pass / 0 fail | clean after over-kill fix |
 | prax-landing | 6 pass / 1 fail (error=1) → **7 pass / 0 fail after fix** | `a11y.target_size` — two `nav.shell-nav` links at 19.5px height — real WCAG 2.2 AA 2.5.8 defect; **fixed 2026-09-02** (24px nav hit area, re-measured 7/7, commit follows this record) |
 
