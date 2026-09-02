@@ -76,3 +76,64 @@ export interface ValidationEvaluation {
   warnings: string[];
 }
 
+
+export const ARTIFACT_CHECK_IDS = [
+  "layout.overflow",
+  "layout.responsive_collision",
+  "text.truncation",
+  "a11y.contrast",
+  "a11y.focus_order",
+  "a11y.target_size",
+  "type.min_projected_size",
+] as const;
+export type ArtifactCheckId = (typeof ARTIFACT_CHECK_IDS)[number];
+
+// Default severity per ADR-005 decision 6: warning-born; the two WCAG
+// normative checks are error-born (zero overkill risk).
+export const ARTIFACT_CHECK_DEFAULT_SEVERITY: Record<ArtifactCheckId, "warning" | "error"> = {
+  "layout.overflow": "warning",
+  "layout.responsive_collision": "warning",
+  "text.truncation": "warning",
+  "a11y.contrast": "error",
+  "a11y.focus_order": "warning",
+  "a11y.target_size": "error",
+  "type.min_projected_size": "warning",
+};
+
+export const MeasurementReceiptCheckSchema = z.object({
+  id: z.enum(ARTIFACT_CHECK_IDS),
+  status: z.enum(["pass", "fail", "skipped"]),
+  severity: z.enum(["warning", "error"]),
+  subject: NonEmpty.optional(),
+  measured: z.record(z.string(), z.unknown()).default({}),
+  threshold: z.record(z.string(), z.unknown()).default({}),
+  evidence_refs: z
+    .array(z.object({
+      ref: NonEmpty.refine((r) => r.startsWith("validation-evidence/"), {
+        message: "receipt evidence refs must live under validation-evidence/",
+      }),
+      sha256: z.string().regex(/^[0-9a-f]{64}$/),
+    }))
+    .default([]),
+  supported_fixes: z.array(NonEmpty).default([]),
+  reason: NonEmpty.optional(),
+}).superRefine((check, ctx) => {
+  if (check.status === "skipped" && check.reason === undefined) {
+    ctx.addIssue({ code: "custom", message: "skipped checks require a reason" });
+  }
+  if (check.status !== "pass" && check.subject === undefined) {
+    ctx.addIssue({ code: "custom", message: "fail/skipped checks require a subject" });
+  }
+});
+export type MeasurementReceiptCheck = z.infer<typeof MeasurementReceiptCheckSchema>;
+
+export const MeasurementReceiptSchema = z.object({
+  receipt_version: z.literal("0.1"),
+  tool: z.object({ name: z.literal("prax-measure"), version: NonEmpty }), // version deliberately NonEmpty, not semver-constrained
+  target: z.object({ app_root: NonEmpty, base_url: NonEmpty, build_ref: NonEmpty.nullable() }),
+  run_at: z.string().datetime(),
+  viewport_matrix: z.array(z.object({ width: z.number().int().positive(), height: z.number().int().positive(), label: NonEmpty.optional() })).min(1),
+  checks: z.array(MeasurementReceiptCheckSchema).min(1),
+  summary: z.object({ pass: z.number().int().nonnegative(), fail: z.number().int().nonnegative(), skipped: z.number().int().nonnegative(), warnings: z.number().int().nonnegative() }),
+});
+export type MeasurementReceipt = z.infer<typeof MeasurementReceiptSchema>;
