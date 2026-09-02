@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>layout.overflow fixture</title>
+  <style>
+    body { margin: 0; font-family: sans-serif; }
+    .negative-region { width: 400px; padding: 8px; }
+  </style>
+</head>
+<body>
+  <!-- positive case: content deliberately 14px wider than the 1280 viewport -->
+  <section id="overflow-region" aria-label="positive case">
+    <div style="width: 1294px; height: 40px; background: #eee;">deliberately 1294px wide</div>
+  </section>
+  <!-- negative case: content stays inside its box at every width -->
+  <section class="negative-region" id="contained-region" aria-label="negative case">
+    <p>This paragraph is fully contained; nothing overflows horizontally.</p>
+  </section>
+</body>
+</html>
