@@ -1,6 +1,6 @@
-import { createHash } from "node:crypto";
-import { readFile, realpath, stat } from "node:fs/promises";
-import { resolve, sep } from "node:path";
+import { verifyEvidenceFile } from "./evidence-files.js";
+export { verifyEvidenceFile } from "./evidence-files.js";
+export type { EvidenceVerification } from "./evidence-files.js";
 import {
   RealizationDecisionSchema,
   type DesignSession,
@@ -208,38 +208,6 @@ export function validateDraft(
     : { status: "EXPAND", issues, warnings: [], codes };
 }
 
-export type EvidenceVerification =
-  | { ok: true; sha256: string }
-  | { ok: false; error: string };
-
-export async function verifyEvidenceFile(sessionDirectory: string, ref: string): Promise<EvidenceVerification> {
-  if (!ref.startsWith("rep-evidence/") || ref.split("/").some((segment) => segment === "..")) {
-    return { ok: false, error: `evidence ref must stay under rep-evidence/ relative to the session directory: ${ref}` };
-  }
-  const evidenceRoot = resolve(sessionDirectory, "rep-evidence");
-  const target = resolve(sessionDirectory, ref);
-  if (!target.startsWith(evidenceRoot + sep)) {
-    return { ok: false, error: `evidence ref escapes the evidence directory: ${ref}` };
-  }
-  try {
-    const realTarget = await realpath(target);
-    const realRoot = await realpath(evidenceRoot);
-    if (!realTarget.startsWith(realRoot + sep)) {
-      return { ok: false, error: `evidence ref resolves outside the evidence directory: ${ref}` };
-    }
-    const stats = await stat(realTarget);
-    if (!stats.isFile()) {
-      return { ok: false, error: `evidence ref is not a regular file: ${ref}` };
-    }
-    if (stats.size === 0) {
-      return { ok: false, error: `evidence file is empty: ${ref}` };
-    }
-    const sha256 = createHash("sha256").update(await readFile(realTarget)).digest("hex");
-    return { ok: true, sha256 };
-  } catch {
-    return { ok: false, error: `evidence file not found: ${ref}` };
-  }
-}
 
 export interface ReviewSubmissionInput {
   status: "approved" | "rejected";

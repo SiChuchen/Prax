@@ -5,6 +5,7 @@ export * from "./context-compiler.js";
 export * from "./context-manifest.js";
 export * from "./contracts.js";
 export * from "./errors.js";
+export * from "./evidence-files.js";
 export * from "./gate-validation.js";
 export * from "./lifecycle-policy.js";
 export * from "./realization.js";
