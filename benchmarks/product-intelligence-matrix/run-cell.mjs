@@ -13,11 +13,10 @@
 import { spawn } from "node:child_process";
 import { readFile, readdir } from "node:fs/promises";
 import { join, resolve } from "node:path";
-import { parse } from "yaml";
 import { MeasurementReceiptSchema } from "prax-validator";
+import { loadCell } from "./cells.mjs";
 
 const repoRoot = resolve(import.meta.dirname, "..", "..");
-const matrixPath = join(repoRoot, "benchmarks", "product-intelligence-matrix", "matrix.yaml");
 
 function argumentValue(name, fallback = undefined) {
   const index = process.argv.indexOf(name);
@@ -34,10 +33,9 @@ if (cellId === undefined || cellId.startsWith("--") || appDir === undefined) {
   process.exit(2);
 }
 
-const matrix = parse(await readFile(matrixPath, "utf8"));
-const cell = matrix.cells.find((entry) => entry.id === cellId);
+const cell = await loadCell(cellId);
 if (cell === undefined) {
-  console.error(`unknown cell '${cellId}' — known: ${matrix.cells.map((entry) => entry.id).join(", ")}`);
+  console.error(`unknown cell '${cellId}' — looked in matrix.yaml and matrix-full.yaml`);
   process.exit(2);
 }
 

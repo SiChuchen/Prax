@@ -98,3 +98,112 @@ describe("shapes.yaml — 10 shape prototypes (M1)", () => {
     expect(shapes.high_frequency_jobs).toEqual(["decide", "locate", "explore"]);
   });
 });
+
+describe("gen-matrix — 150-cell full matrix (M1)", () => {
+  const corpusPath = resolve(import.meta.dirname, "..", "packages", "prax-knowledge", "data", "corpus-2026-09.yaml");
+
+  async function sources() {
+    const [shapes, matrix, corpus] = await Promise.all([
+      loadYaml("shapes.yaml"),
+      loadYaml("matrix.yaml"),
+      parse(await readFile(corpusPath, "utf8")),
+    ]);
+    return { shapes, matrix, corpus };
+  }
+
+  it("crosses 15 jobs × 10 shapes into 150 unique, well-formed cells", async () => {
+    const { generateMatrix } = await import("../benchmarks/product-intelligence-matrix/gen-matrix.mjs");
+    const { shapes, matrix, corpus } = await sources();
+    const full = generateMatrix(shapes, matrix, corpus);
+    expect(full.version).toBe("0.1");
+    expect(full.cells).toHaveLength(150);
+    const ids = full.cells.map((cell: any) => cell.id);
+    expect(new Set(ids).size).toBe(150);
+    for (const cell of full.cells) {
+      expect(cell.id).toMatch(/^cell-j\d{2}-s\d{2}$/);
+      expect(cell.job_shape).toMatch(/^[a-z]+ × [a-z-]+$/);
+      expect(JTBD_VERBS).toContain(cell.user_job.verb);
+      expect(cell.user_job.target).toMatch(/\S/);
+      expect(cell.user_job.success).toMatch(/\S/);
+      expect(InformationShapeSchema.parse(cell.information_shape)).toBeTruthy();
+      expect(OBJECT_TYPES).toContain(cell.object_type);
+      expect(cell.acceptance_seed).toMatch(/\S/);
+      expect([1, 2, 3]).toContain(cell.priority);
+    }
+  });
+
+  it("keeps the 15 §43 natural pairs verbatim on job/object/seed", async () => {
+    const { generateMatrix } = await import("../benchmarks/product-intelligence-matrix/gen-matrix.mjs");
+    const { shapes, matrix, corpus } = await sources();
+    const full = generateMatrix(shapes, matrix, corpus);
+    const byId = new Map<string, any>(matrix.cells.map((cell: any) => [`job:${cell.id}`, cell]));
+    const shapeOf = new Map<string, any>();
+    for (const shape of shapes.shapes) {
+      for (const cellId of shape.exemplar_cells) shapeOf.set(cellId, shape);
+    }
+    for (const original of matrix.cells) {
+      const shape = shapeOf.get(original.id);
+      const generated = full.cells.find(
+        (cell: any) =>
+          cell.user_job.target === original.user_job.target &&
+          cell.user_job.success === original.user_job.success &&
+          cell.job_shape === `${original.user_job.verb} × ${shape.name}`,
+      );
+      expect(generated, `natural pair for ${original.id}`).toBeTruthy();
+      expect(generated.user_job).toEqual(original.user_job);
+      expect(generated.object_type).toBe(original.object_type);
+      expect(generated.acceptance_seed).toBe(original.acceptance_seed);
+    }
+  });
+
+  it("bands all 10 shapes × 3 high-frequency jobs at priority 1 (30 cells)", async () => {
+    const { generateMatrix } = await import("../benchmarks/product-intelligence-matrix/gen-matrix.mjs");
+    const { shapes, matrix, corpus } = await sources();
+    const full = generateMatrix(shapes, matrix, corpus);
+    const band = full.cells.filter((cell: any) => shapes.high_frequency_jobs.includes(cell.user_job.verb));
+    expect(band).toHaveLength(30);
+    expect(band.every((cell: any) => cell.priority === 1)).toBe(true);
+    for (const shape of shapes.shapes) {
+      for (const verb of shapes.high_frequency_jobs) {
+        expect(
+          band.some((cell: any) => cell.job_shape === `${verb} × ${shape.name}`),
+          `band cell ${verb} × ${shape.name}`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it("gives priority-1 enough verb diversity for the M2 pilot (>=5 verbs, disambiguation pin)", async () => {
+    const { generateMatrix } = await import("../benchmarks/product-intelligence-matrix/gen-matrix.mjs");
+    const { shapes, matrix, corpus } = await sources();
+    const full = generateMatrix(shapes, matrix, corpus);
+    const verbs = new Set(
+      full.cells.filter((cell: any) => cell.priority === 1).map((cell: any) => cell.user_job.verb),
+    );
+    expect(verbs.size).toBeGreaterThanOrEqual(5);
+  });
+
+  it("is deterministic", async () => {
+    const { generateMatrix } = await import("../benchmarks/product-intelligence-matrix/gen-matrix.mjs");
+    const { shapes, matrix, corpus } = await sources();
+    expect(generateMatrix(shapes, matrix, corpus)).toEqual(generateMatrix(shapes, matrix, corpus));
+  });
+
+  it("commits matrix-full.yaml equal to the generator output (gate M1 evidence)", async () => {
+    const { generateMatrix } = await import("../benchmarks/product-intelligence-matrix/gen-matrix.mjs");
+    const { shapes, matrix, corpus } = await sources();
+    const committed = await loadYaml("matrix-full.yaml");
+    expect(committed.cells).toHaveLength(150);
+    expect(committed).toEqual(generateMatrix(shapes, matrix, corpus));
+  });
+
+  it("resolves cells from matrix.yaml then matrix-full.yaml (run-cell lookup)", async () => {
+    const { loadCell } = await import("../benchmarks/product-intelligence-matrix/cells.mjs");
+    const verbatim = await loadCell("cell-01");
+    expect(verbatim?.user_job.verb).toBe("manage");
+    const full = await loadCell("cell-j01-s02");
+    expect(full?.job_shape).toBe("manage × open-collection");
+    expect(full?.priority).toBeDefined();
+    expect(await loadCell("cell-nope")).toBeUndefined();
+  });
+});
