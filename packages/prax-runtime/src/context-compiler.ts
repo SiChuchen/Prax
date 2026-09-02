@@ -17,6 +17,10 @@ interface SdirLike {
       target: string;
       type: string;
     }>;
+    // 0.2 blocks (spec §6.4): state_ownership and acceptance compile from the
+    // gated SDIR; the representation portfolio compiles from the decisions
+    state_ownership?: Array<{ state: string; owner: string }> | undefined;
+    acceptance?: string[] | undefined;
   };
 }
 
@@ -70,6 +74,19 @@ export const CompiledContextSchema = z.object({
       region_frames: z.array(z.object({ region: NonEmpty, node_id: NonEmpty, name: NonEmpty })).min(1),
     })
     .optional(),
+  // 0.2 sections (spec §6.4): compiled only from gated artifacts, never agent
+  // free text at compile time; absent for 0.1 sessions
+  representation_portfolio: z
+    .object({
+      primary: z.object({ type: NonEmpty, reason: NonEmpty }),
+      supporting: z.array(z.object({ type: NonEmpty, reason: NonEmpty })).default([]),
+      rejected: z.array(z.object({ option: NonEmpty, reason: NonEmpty })).default([]),
+    })
+    .optional(),
+  state_ownership: z
+    .array(z.object({ state: z.enum(["selection", "preview", "inspector", "viewport", "query", "mode"]), owner: NonEmpty }))
+    .optional(),
+  acceptance: z.array(NonEmpty).optional(),
   validation: z.object({
     plan_revision: z.number().int().positive(),
     check_ids: z.array(NonEmpty),
@@ -210,6 +227,17 @@ export function compileContext(input: CompileContextInput): {
       intended: correction.intended.statement,
     })),
     ...(representation === undefined ? {} : { representation }),
+    ...(decisions?.version === "0.2" && decisions.representation !== undefined
+      ? {
+          representation_portfolio: {
+            primary: decisions.representation.primary,
+            supporting: decisions.representation.supporting,
+            rejected: decisions.representation.rejected,
+          },
+        }
+      : {}),
+    ...(sdir?.screen.state_ownership !== undefined ? { state_ownership: sdir.screen.state_ownership } : {}),
+    ...(sdir?.screen.acceptance !== undefined ? { acceptance: sdir.screen.acceptance } : {}),
     validation: {
       plan_revision: input.planRevision,
       check_ids: [...input.planCheckIds],

@@ -1203,6 +1203,15 @@ export class PraxService {
         revision: persistedPlan.revision,
       },
       validation_requirements: validationPlan.checks.map((check) => check.id),
+      ...(decisions?.version === "0.2" && decisions.representation !== undefined
+        ? { representation_portfolio_ref: "compiled-context.yaml#representation_portfolio" }
+        : {}),
+      ...(sdirArtifact !== undefined && (sdirArtifact as { screen?: { state_ownership?: unknown; acceptance?: unknown } }).screen?.state_ownership !== undefined
+        ? { state_ownership_ref: "compiled-context.yaml#state_ownership" }
+        : {}),
+      ...(sdirArtifact !== undefined && (sdirArtifact as { screen?: { acceptance?: unknown } }).screen?.acceptance !== undefined
+        ? { acceptance_ref: "compiled-context.yaml#acceptance" }
+        : {}),
       ...(realizationBlock === undefined ? {} : { realization: realizationBlock }),
       ...(modePlan === undefined ? {} : { mode_plan: modePlan }),
     };
