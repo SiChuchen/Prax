@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>layout.responsive_collision fixture</title>
+  <style>
+    body { margin: 0; font-family: sans-serif; }
+    .stack { position: relative; height: 60px; margin-bottom: 24px; }
+    .overlap-a { position: absolute; left: 0; top: 0; width: 100px; height: 40px; }
+    .overlap-b { position: absolute; left: 50px; top: 0; width: 100px; height: 40px; }
+    #separated-region button { margin-right: 24px; }
+    [data-overlay] { position: absolute; right: 0; top: 0; width: 100px; height: 40px; }
+  </style>
+</head>
+<body>
+  <!-- positive case: two interactive elements whose hit areas intersect by 50px -->
+  <section id="collision-region" class="stack" aria-label="positive case">
+    <button class="overlap-a" id="first">First action</button>
+    <button class="overlap-b" id="second">Second action</button>
+  </section>
+
+  <!-- negative case: interactive elements with disjoint hit areas -->
+  <section id="separated-region" aria-label="negative case">
+    <button id="left">Left</button>
+    <button id="right">Right</button>
+  </section>
+
+  <!-- negative case: explicit overlay role is exempt from collision detection -->
+  <section id="overlay-region" class="stack" aria-label="overlay exemption">
+    <button id="under" style="position:absolute;left:0;top:0;width:100px;height:40px;">Underlying</button>
+    <button data-overlay id="floating" style="width:100px;height:40px;">Overlay</button>
+  </section>
+</body>
+</html>
