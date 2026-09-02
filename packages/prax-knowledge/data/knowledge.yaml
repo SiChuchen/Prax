@@ -632,7 +632,7 @@ entries:
       - detail becomes an independent workflow
     rationale: Contextual inspection minimizes navigation and supports rapid comparison.
     asset_class: heuristic
-    stability: A
+    stability: B
     trigger_conditions:
       task_type:
         - review
@@ -814,7 +814,7 @@ entries:
       anti_patterns:
         - backend-table-per-navigation-item
     asset_class: pattern
-    stability: A
+    stability: B
     trigger_conditions:
       platform: *a7
       phase:
@@ -886,7 +886,7 @@ entries:
       anti_patterns:
         - dashboard-as-workspace
     asset_class: pattern
-    stability: A
+    stability: B
     trigger_conditions:
       platform: *a8
       density:
@@ -1073,7 +1073,7 @@ entries:
       anti_patterns:
         - detail-without-visible-selection
     asset_class: pattern
-    stability: A
+    stability: B
     trigger_conditions:
       task_type:
         - explore
@@ -1238,7 +1238,7 @@ entries:
       anti_patterns:
         - card-grid-for-dense-comparison
     asset_class: pattern
-    stability: A
+    stability: B
     trigger_conditions:
       task_type:
         - compare
@@ -1317,7 +1317,7 @@ entries:
       anti_patterns:
         - backend-config-dump
     asset_class: pattern
-    stability: A
+    stability: B
     trigger_conditions:
       task_type:
         - manage
@@ -1450,7 +1450,7 @@ entries:
     tradeoffs:
       - custom spatial interactions require additional keyboard models
     asset_class: profile
-    stability: A
+    stability: B
     trigger_conditions:
       platform: *a15
       phase:
@@ -1460,9 +1460,6 @@ entries:
       authority_initial: C
       review_by: 2026-12-31
       source_version: B026
-
-  # ── negative-knowledge seeds (Task K3, spec §7.3; §48C full set + card-grid) ──
-  # refutations rebut the UNIVERSAL quantifier, not in-domain value (§48C semantics)
   - id: myth-left-nav-best
     type: myth
     asset_class: myth
@@ -1471,14 +1468,31 @@ entries:
     summary: 左侧导航并非所有产品的最优导航形态。
     category: negative_knowledge
     scope: {}
-    triggers: [left nav, navigation, sidebar]
-    trigger_conditions: { phase: [decision] }
-    lifecycle: { status: stable }
-    evidence: { authority_initial: B, review_by: "2026-10-01", source_version: "研究 §48C" }
-    provenance: { source_refs: [research-v0.1-§48C], authority_category: sample_coding, certainty: high, recommendation_strength: strong }
-    validation: { mode: assistive, checks: [] }
+    triggers:
+      - left nav
+      - navigation
+      - sidebar
+    trigger_conditions:
+      phase:
+        - decision
+    lifecycle:
+      status: stable
+    evidence:
+      authority_initial: B
+      review_by: 2026-10-01
+      source_version: 研究 §48C
+    provenance:
+      source_refs:
+        - research-v0.1-§48C
+      authority_category: sample_coding
+      certainty: high
+      recommendation_strength: strong
+    validation:
+      mode: assistive
+      checks: []
     statement: 左侧导航一定最好。
-    applies_when: [never as a universal rule]
+    applies_when:
+      - never as a universal rule
     rationale: 120 样本中导航位置与任务/对象形态相关，无全局最优。
     refutation: 研究文档 §48C 将"左侧导航一定最好"列为不应写成通用规则——导航形态应由产品对象与任务流推导（§9、§48C）。
     correct_ref: PAT-APPLICATION-SHELL
@@ -1490,14 +1504,30 @@ entries:
     summary: 深色模式不等于专业感。
     category: negative_knowledge
     scope: {}
-    triggers: [dark mode, dark theme]
-    trigger_conditions: { phase: [decision] }
-    lifecycle: { status: stable }
-    evidence: { authority_initial: B, review_by: "2026-10-01", source_version: "研究 §48C" }
-    provenance: { source_refs: [research-v0.1-§48C], authority_category: sample_coding, certainty: high, recommendation_strength: strong }
-    validation: { mode: assistive, checks: [] }
+    triggers:
+      - dark mode
+      - dark theme
+    trigger_conditions:
+      phase:
+        - decision
+    lifecycle:
+      status: stable
+    evidence:
+      authority_initial: B
+      review_by: 2026-10-01
+      source_version: 研究 §48C
+    provenance:
+      source_refs:
+        - research-v0.1-§48C
+      authority_category: sample_coding
+      certainty: high
+      recommendation_strength: strong
+    validation:
+      mode: assistive
+      checks: []
     statement: Dark mode 更专业。
-    applies_when: [never as a universal rule]
+    applies_when:
+      - never as a universal rule
     rationale: 专业感来自层级与密度管理，与主题色无因果关系。
     refutation: 研究文档 §48C 将"Dark mode 更专业"列为不可泛化规则；专业工具的可读性证据指向层级与对比度管理（§48C、P-03）。
     correct_ref: P-03
@@ -1509,14 +1539,30 @@ entries:
     summary: 页面动作数量没有普适上限。
     category: negative_knowledge
     scope: {}
-    triggers: [action limit, max actions]
-    trigger_conditions: { phase: [decision] }
-    lifecycle: { status: stable }
-    evidence: { authority_initial: B, review_by: "2026-10-01", source_version: "研究 §48C" }
-    provenance: { source_refs: [research-v0.1-§48C], authority_category: sample_coding, certainty: high, recommendation_strength: strong }
-    validation: { mode: assistive, checks: [] }
+    triggers:
+      - action limit
+      - max actions
+    trigger_conditions:
+      phase:
+        - decision
+    lifecycle:
+      status: stable
+    evidence:
+      authority_initial: B
+      review_by: 2026-10-01
+      source_version: 研究 §48C
+    provenance:
+      source_refs:
+        - research-v0.1-§48C
+      authority_category: sample_coding
+      certainty: high
+      recommendation_strength: strong
+    validation:
+      mode: assistive
+      checks: []
     statement: 页面最多 N 个 action。
-    applies_when: [never as a universal rule]
+    applies_when:
+      - never as a universal rule
     rationale: 高密度专家工具的可行动作数由任务频度与层级分组决定。
     refutation: 研究文档 §48C 列"页面最多 N 个 action"为不可泛化规则；Information Density 必须匹配任务和 expertise（§48A）。
     correct_ref: P-03
@@ -1528,14 +1574,33 @@ entries:
     summary: 固定面板数量不是最优结构的判据。
     category: negative_knowledge
     scope: {}
-    triggers: [panels, fixed layout]
-    trigger_conditions: { representation: [canvas, map], phase: [decision] }
-    lifecycle: { status: stable }
-    evidence: { authority_initial: B, review_by: "2026-10-01", source_version: "研究 §48B" }
-    provenance: { source_refs: [research-v0.1-§48B], authority_category: sample_coding, certainty: medium, recommendation_strength: moderate }
-    validation: { mode: assistive, checks: [] }
+    triggers:
+      - panels
+      - fixed layout
+    trigger_conditions:
+      representation:
+        - canvas
+        - map
+      phase:
+        - decision
+    lifecycle:
+      status: stable
+    evidence:
+      authority_initial: B
+      review_by: 2026-10-01
+      source_version: 研究 §48B
+    provenance:
+      source_refs:
+        - research-v0.1-§48B
+      authority_category: sample_coding
+      certainty: medium
+      recommendation_strength: moderate
+    validation:
+      mode: assistive
+      checks: []
     statement: 固定几个 panel 最好。
-    applies_when: [never as a universal rule]
+    applies_when:
+      - never as a universal rule
     rationale: Panel 是 Canvas/Map/Monitoring 的常见 context-preserving 形态（§48B 趋势），非普适结构。
     refutation: 研究文档 §48B 将"高密度专家工具倾向 persistent chrome/panel"列为强趋势而非规则；面板取舍由 detail surface 与 context retention 推导（§48C）。
     correct_ref: PAT-CANVAS-WORKSPACE
@@ -1547,14 +1612,32 @@ entries:
     summary: 并非所有画布都需要迷你地图。
     category: negative_knowledge
     scope: {}
-    triggers: [minimap, canvas overview]
-    trigger_conditions: { representation: [canvas], phase: [decision] }
-    lifecycle: { status: stable }
-    evidence: { authority_initial: B, review_by: "2026-10-01", source_version: "研究 §48C" }
-    provenance: { source_refs: [research-v0.1-§48C], authority_category: sample_coding, certainty: high, recommendation_strength: strong }
-    validation: { mode: assistive, checks: [] }
+    triggers:
+      - minimap
+      - canvas overview
+    trigger_conditions:
+      representation:
+        - canvas
+      phase:
+        - decision
+    lifecycle:
+      status: stable
+    evidence:
+      authority_initial: B
+      review_by: 2026-10-01
+      source_version: 研究 §48C
+    provenance:
+      source_refs:
+        - research-v0.1-§48C
+      authority_category: sample_coding
+      certainty: high
+      recommendation_strength: strong
+    validation:
+      mode: assistive
+      checks: []
     statement: 所有 Canvas 都需要 minimap。
-    applies_when: [never as a universal rule]
+    applies_when:
+      - never as a universal rule
     rationale: Minimap 的价值取决于画布尺度与导航频度，非画布本身。
     refutation: 研究文档 §48C 列"所有 Canvas 都需要 minimap"为不可泛化规则；样本中 minimap 出现于大尺度图谱场景而非全部画布（§48C、样本矩阵）。
     correct_ref: PAT-CANVAS-WORKSPACE
@@ -1566,14 +1649,33 @@ entries:
     summary: 渐进披露越多越好是反模式。
     category: negative_knowledge
     scope: {}
-    triggers: [disclosure, tabs, modal, accordion]
-    trigger_conditions: { phase: [decision] }
-    lifecycle: { status: stable }
-    evidence: { authority_initial: B, review_by: "2026-10-01", source_version: "研究 §48A/§12" }
-    provenance: { source_refs: [research-v0.1-§48A, research-v0.1-§12], authority_category: sample_coding, certainty: high, recommendation_strength: strong }
-    validation: { mode: assistive, checks: [] }
+    triggers:
+      - disclosure
+      - tabs
+      - modal
+      - accordion
+    trigger_conditions:
+      phase:
+        - decision
+    lifecycle:
+      status: stable
+    evidence:
+      authority_initial: B
+      review_by: 2026-10-01
+      source_version: 研究 §48A/§12
+    provenance:
+      source_refs:
+        - research-v0.1-§48A
+        - research-v0.1-§12
+      authority_category: sample_coding
+      certainty: high
+      recommendation_strength: strong
+    validation:
+      mode: assistive
+      checks: []
     statement: Progressive Disclosure 越多越好。
-    applies_when: [never as a universal rule]
+    applies_when:
+      - never as a universal rule
     rationale: 渐进披露有 retrieval cost；互斥 tabs 迫使工作记忆维持比较状态（§12）。
     refutation: 研究文档 §48A 定论"Progressive Disclosure 有 retrieval cost"；§12 论证互斥标签强迫比较状态驻留工作记忆——披露机制应由 context retention 推导（§10、§52-Q9），不可作为越多越好的默认。
     correct_ref: P-10
@@ -1585,14 +1687,31 @@ entries:
     summary: 留白多少与高级感无因果。
     category: negative_knowledge
     scope: {}
-    triggers: [whitespace, spacing, premium]
-    trigger_conditions: { phase: [decision] }
-    lifecycle: { status: stable }
-    evidence: { authority_initial: B, review_by: "2026-10-01", source_version: "研究 §48C" }
-    provenance: { source_refs: [research-v0.1-§48C], authority_category: sample_coding, certainty: high, recommendation_strength: strong }
-    validation: { mode: assistive, checks: [] }
+    triggers:
+      - whitespace
+      - spacing
+      - premium
+    trigger_conditions:
+      phase:
+        - decision
+    lifecycle:
+      status: stable
+    evidence:
+      authority_initial: B
+      review_by: 2026-10-01
+      source_version: 研究 §48C
+    provenance:
+      source_refs:
+        - research-v0.1-§48C
+      authority_category: sample_coding
+      certainty: high
+      recommendation_strength: strong
+    validation:
+      mode: assistive
+      checks: []
     statement: 留白越多越高级。
-    applies_when: [never as a universal rule]
+    applies_when:
+      - never as a universal rule
     rationale: 密度应匹配任务与 expertise（§48A），而非营销化"高级感"。
     refutation: 研究文档 §48C 列"留白越多越高级"为不可泛化规则；§48A 定论 Information Density 必须匹配任务和 expertise。
     correct_ref: P-03
@@ -1604,14 +1723,33 @@ entries:
     summary: 时间数据不必然采用时间轴表达。
     category: negative_knowledge
     scope: {}
-    triggers: [timeline, temporal, chronology]
-    trigger_conditions: { representation: [timeline], phase: [decision] }
-    lifecycle: { status: stable }
-    evidence: { authority_initial: B, review_by: "2026-10-01", source_version: "研究 §48C" }
-    provenance: { source_refs: [research-v0.1-§48C], authority_category: sample_coding, certainty: high, recommendation_strength: strong }
-    validation: { mode: assistive, checks: [] }
+    triggers:
+      - timeline
+      - temporal
+      - chronology
+    trigger_conditions:
+      representation:
+        - timeline
+      phase:
+        - decision
+    lifecycle:
+      status: stable
+    evidence:
+      authority_initial: B
+      review_by: 2026-10-01
+      source_version: 研究 §48C
+    provenance:
+      source_refs:
+        - research-v0.1-§48C
+      authority_category: sample_coding
+      certainty: high
+      recommendation_strength: strong
+    validation:
+      mode: assistive
+      checks: []
     statement: 所有时间数据都必须 Timeline。
-    applies_when: [never as a universal rule]
+    applies_when:
+      - never as a universal rule
     rationale: 表达由 information_shape（cardinality/temporality/comparison_need）推导，非数据类型。
     refutation: 研究文档 §48C 列"所有时间数据都必须 Timeline"为不可泛化规则；§9/§36 表达原语应经 information_shape 推导而非数据类型直译。
     correct_ref: PAT-DATA-EXPLORER
@@ -1623,14 +1761,34 @@ entries:
     summary: 关系数据不必然采用力导图。
     category: negative_knowledge
     scope: {}
-    triggers: [graph, relationships, force layout]
-    trigger_conditions: { representation: [graph, canvas], phase: [decision] }
-    lifecycle: { status: stable }
-    evidence: { authority_initial: B, review_by: "2026-10-01", source_version: "研究 §48C" }
-    provenance: { source_refs: [research-v0.1-§48C], authority_category: sample_coding, certainty: high, recommendation_strength: strong }
-    validation: { mode: assistive, checks: [] }
+    triggers:
+      - graph
+      - relationships
+      - force layout
+    trigger_conditions:
+      representation:
+        - graph
+        - canvas
+      phase:
+        - decision
+    lifecycle:
+      status: stable
+    evidence:
+      authority_initial: B
+      review_by: 2026-10-01
+      source_version: 研究 §48C
+    provenance:
+      source_refs:
+        - research-v0.1-§48C
+      authority_category: sample_coding
+      certainty: high
+      recommendation_strength: strong
+    validation:
+      mode: assistive
+      checks: []
     statement: 所有关系都必须 Graph。
-    applies_when: [never as a universal rule]
+    applies_when:
+      - never as a universal rule
     rationale: 关系表达取决于 relationality/cardinality/比较需求，图仅是候选之一。
     refutation: 研究文档 §48C 列"所有关系都必须 Graph"为不可泛化规则；高基数关系常由画布+查询/树组合承载更可读（§9、§36）。
     correct_ref: PAT-CANVAS-WORKSPACE
@@ -1642,14 +1800,32 @@ entries:
     summary: 仪表盘不是管理系统的默认首页。
     category: negative_knowledge
     scope: {}
-    triggers: [dashboard, admin home, landing]
-    trigger_conditions: { phase: [decision] }
-    lifecycle: { status: stable }
-    evidence: { authority_initial: B, review_by: "2026-10-01", source_version: "研究 §48C/§13" }
-    provenance: { source_refs: [research-v0.1-§48C, research-v0.1-§13], authority_category: sample_coding, certainty: high, recommendation_strength: strong }
-    validation: { mode: assistive, checks: [] }
+    triggers:
+      - dashboard
+      - admin home
+      - landing
+    trigger_conditions:
+      phase:
+        - decision
+    lifecycle:
+      status: stable
+    evidence:
+      authority_initial: B
+      review_by: 2026-10-01
+      source_version: 研究 §48C/§13
+    provenance:
+      source_refs:
+        - research-v0.1-§48C
+        - research-v0.1-§13
+      authority_category: sample_coding
+      certainty: high
+      recommendation_strength: strong
+    validation:
+      mode: assistive
+      checks: []
     statement: Dashboard 是所有管理系统的首页。
-    applies_when: [never as a universal rule]
+    applies_when:
+      - never as a universal rule
     rationale: 首页表达应由用户任务与主对象推导（§13 展开论证）。
     refutation: 研究文档 §48C 末条列"Dashboard 是所有管理系统的首页"为不可泛化规则；§13 展开论证首页应从 user_job × primary_object 推导，而非管理场景默认仪表盘。
     correct_ref: P-10
@@ -1661,14 +1837,35 @@ entries:
     summary: 卡片/网格不是集合内容的默认表达。
     category: negative_knowledge
     scope: {}
-    triggers: [cards, card grid, collection]
-    trigger_conditions: { representation: [cards, grid], phase: [decision] }
-    lifecycle: { status: stable }
-    evidence: { authority_initial: B, review_by: "2026-10-01", source_version: "研究 §5/§4.1" }
-    provenance: { source_refs: [research-v0.1-§5, research-v0.1-§4.1], authority_category: sample_coding, certainty: high, recommendation_strength: strong }
-    validation: { mode: assistive, checks: [] }
+    triggers:
+      - cards
+      - card grid
+      - collection
+    trigger_conditions:
+      representation:
+        - cards
+        - grid
+      phase:
+        - decision
+    lifecycle:
+      status: stable
+    evidence:
+      authority_initial: B
+      review_by: 2026-10-01
+      source_version: 研究 §5/§4.1
+    provenance:
+      source_refs:
+        - research-v0.1-§5
+        - research-v0.1-§4.1
+      authority_category: sample_coding
+      certainty: high
+      recommendation_strength: strong
+    validation:
+      mode: assistive
+      checks: []
     statement: Cards/Grid 是内容集合的默认表达。
-    applies_when: [never as a universal rule]
+    applies_when:
+      - never as a universal rule
     rationale: 120 样本主表达中 cards/grid 仅占 4.2%，且被通用 Agent 明显过度使用。
     refutation: 研究文档 §5 与 §4.1：120 样本主表达中 Cards/Grid 仅占 4.2%，且通用 Agent 明显过度使用——把它当默认是全称量词谬误；集合表达应由 information_shape 推导。
     correct_ref: PAT-DATA-EXPLORER

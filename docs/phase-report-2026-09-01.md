@@ -385,15 +385,15 @@ Replan pair: `docs/superpowers/specs/2026-09-02-phase4-empirical-loop.md` +
 | F5 check promotion | `c53fa3a` | four checks warning→error (zero-overkill on landing/dashboard/wizard); type.min_projected_size stays advisory (§5.3 wins over the blanket rule) |
 | G4 docs sync | (this commit) | this record + program ledger |
 
-## Gate 4 status: PARTIAL — framework complete, one criterion open
+## Gate 4 status: PARTIAL at this write → **CLOSED** (2026-09-02 by the F4 pilot session; see docs/phase-report-2026-09-02.md)
 
 1. ✅ Harness runs end to end on one matrix cell (cell-13 smoke).
 2. ✅ A/B protocol written and reviewed.
 3. ✅ Inter-rater pilot + saturation ledger framed.
-4. ❌ **F4 ECP cognition workspace pilot — OPEN**: a live agent
-   implementation session (golden case #6, representation per research
-   §40–41, full chain ①→⑱, then fixture freeze). Not executable inside this
-   orchestration session; entry conditions pinned in the replan spec.
+4. ✅ F4 ECP cognition workspace pilot — executed 2026-09-02 by the
+   operator-launched session: full 0.2 chain to COMPLETE, receipt 7/7,
+   4-round convergence, fixture frozen + replay test (commit 483153b;
+   details in docs/phase-report-2026-09-02.md).
 5. ✅ Program ledger closed below.
 
 ## Program ledger close (ADR-005, phases 0–4)
