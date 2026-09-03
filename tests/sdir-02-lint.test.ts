@@ -71,3 +71,35 @@ describe("SDIR 0.2 generation + render-leak coverage (Task S2, spec §6.1)", () 
     expect(generated.version).toBe("0.1");
   });
 });
+
+describe("decide-authored complexity_budget pass-through (F4 gap #1, option 3 — decide-time authoring)", () => {
+  const budget = {
+    permanent_panels: 3,
+    permanent_primary_actions: 6,
+    modes: 2,
+    state_owners: 2,
+    navigation_levels: 2,
+    persistent_filters: 1,
+    new_semantic_concepts: 4,
+    keyboard_contracts: 5,
+    mobile_conflicts: 0,
+    permanent_surfaces: 4,
+  };
+
+  it("copies a decide-authored complexity_budget into the generated 0.2 screen", () => {
+    const engine = new SdirEngine();
+    const generated = engine.generate(frame02(), architectureContext(), {
+      ...decisions02(),
+      complexity_budget: budget,
+    } as never) as { screen: { complexity_budget?: unknown } };
+    expect(generated.screen.complexity_budget).toEqual(budget);
+  });
+
+  it("leaves complexity_budget absent when decide authored none (advisory path unchanged)", () => {
+    const engine = new SdirEngine();
+    const generated = engine.generate(frame02(), architectureContext(), decisions02() as never) as {
+      screen: { complexity_budget?: unknown };
+    };
+    expect(generated.screen.complexity_budget).toBeUndefined();
+  });
+});

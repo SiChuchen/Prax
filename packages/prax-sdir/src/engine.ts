@@ -227,6 +227,11 @@ export class SdirEngine {
             { state: "selection", owner: primaryRegionIds[0] ?? regions[0]!.id },
             { state: "preview", owner: "session" },
           ],
+          // decide-authored budget passes through unchanged (gap #1 option 3);
+          // absent stays absent — the validate-time advisory is the honest signal
+          ...(decisions.complexity_budget === undefined
+            ? {}
+            : { complexity_budget: decisions.complexity_budget }),
           acceptance: [frame.primary_success_definition],
         },
       });

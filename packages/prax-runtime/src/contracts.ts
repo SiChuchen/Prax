@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { JTBD_VERBS, OBJECT_TYPES, REPRESENTATION_PRIMITIVES } from "prax-sdir";
+import { ComplexityBudgetSchema, JTBD_VERBS, OBJECT_TYPES, REPRESENTATION_PRIMITIVES } from "prax-sdir";
 
 export const PRAX_VERSION = "0.1.0";
 
@@ -441,6 +441,11 @@ export const DesignDecisionsSchema = z.object({
     )
     .default([]),
   unresolved: z.array(MaterialUnknownSchema).default([]),
+  // F4 gap #1, option 3 (adjudicated 2026-09-03): the complexity budget is
+  // authored at decide time alongside the portfolio, and the SDIR generator
+  // copies it through — no post-validate backfill path is needed. Optional:
+  // an unauthored budget keeps the validate-time presence advisory.
+  complexity_budget: ComplexityBudgetSchema.optional(),
 });
 export type DesignDecisions = z.infer<typeof DesignDecisionsSchema>;
 

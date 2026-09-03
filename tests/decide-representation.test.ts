@@ -147,3 +147,32 @@ describe("decide representation portfolio rules (Task G2, spec §6.3)", () => {
     expect(result.warnings.some((warning) => warning.includes("DECISION_NO_REJECTED_REPRESENTATION"))).toBe(true);
   });
 });
+
+describe("decide 0.2 complexity_budget authoring (F4 gap #1, option 3)", () => {
+  const budget = {
+    permanent_panels: 3,
+    permanent_primary_actions: 6,
+    modes: 2,
+    state_owners: 2,
+    navigation_levels: 2,
+    persistent_filters: 1,
+    new_semantic_concepts: 4,
+    keyboard_contracts: 5,
+    mobile_conflicts: 0,
+    permanent_surfaces: 4,
+  };
+
+  it("accepts and keeps an authored complexity_budget block", () => {
+    const result = validateDesignDecisions(decisions02({ complexity_budget: budget }), CONTEXT);
+    expect(result.status).toBe("PASS");
+    expect(result.value?.complexity_budget).toEqual(budget);
+  });
+
+  it("rejects a malformed complexity_budget block", () => {
+    const result = validateDesignDecisions(
+      decisions02({ complexity_budget: { permanent_panels: -1 } }),
+      CONTEXT,
+    );
+    expect(result.status).not.toBe("PASS");
+  });
+});
