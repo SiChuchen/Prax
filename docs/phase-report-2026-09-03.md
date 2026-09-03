@@ -162,3 +162,26 @@ budget 语义时选。零成本现状（advisory + 文档说明简报不得承�
 - 基线→现在提交链：`4d9373f` → `3db5801`（M1.1）→ `6897693`（M1.2）→
   `f27f132`（M2.1）→ `c029e6d`（brief-template docs）→ `2813dad`（M2.2）→
   `5836bf5`（M3-prep）→ 本提交。push 未执行（待指示）。
+
+---
+
+# 追加执行记录 — 缺口 #1 方案 3 落地（2026-09-03，用户裁定"按照推荐方案执行"）
+
+M1/M2/M3-prep 收官后同日执行。TDD，逐任务提交，每提交前全绿。
+
+| Task | Commit | Tests |
+|---|---|---|
+| G1-① DesignDecisionsSchema 增可选 complexity_budget（ComplexityBudgetSchema 自 prax-sdir 根导出——与 vocab 常量同一条已声明 workspace 边）+ sdir 0.2 生成透传（缺席保持缺席） | `6a78de9` | sdir-02-lint (+2), decide-representation (+2) |
+| G1-② MCP 端到端回归（prax-mcp 的 decide 输入直接复用 runtime schema——无需 client-schema 改动）+ validator 在场无 warning 钉死 | `434e440` | mcp-payload-02 (+2), validator-structure-checks (+1) |
+| G1-③ cognition fixture v2：decisions 增作者化十计数（口径见 fixture 注释与 README）；sdir 以服务同路径重生成，**重生成不变式验证：除 budget 块外与 v1 语义完全一致**；replay 断言 warnings → [] | `ca88908` | prax-cognition-fixture (更新 1) |
+| G1-④ 本记录 + architecture.md | （本提交） | — |
+
+测试计数：336 → **343/343**（50 文件，+7）。行为边界：未加新门、未改
+severity、未动 apply_delta/validate 路径——未作者化 budget 的 0.2 会话仍走
+原 advisory 路径（向后兼容，legacy-resume 等不受扰）。v1 历史产物
+（validation-report 的 warning 记录、correction-cognition-sdir-budget）原样
+保留为当时事实。
+
+方案 3 未采用的可选收紧（记录为后续候选，不在本次范围）：decide 门对
+超阈 budget 的 justification 规则；presence 由 advisory 升 error（promotion
+通道另议）。

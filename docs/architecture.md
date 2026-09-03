@@ -109,6 +109,12 @@ full-SDIR sessions without a recorded realization decision
   context. Default-shell vocabulary (dashboard / cards / tabs / modal,
   with CJK synonyms) demands justification against information-shape
   variables (`DECISION_DEFAULT_SHELL_UNJUSTIFIED`, REVIEW).
+- **The complexity budget is authored at decide** (0.2, gap #1 closed
+  2026-09-03): `design_decide` accepts an optional ten-count
+  `complexity_budget` and the SDIR generator copies it through verbatim —
+  no post-validate backfill path exists or is needed. An unauthored budget
+  keeps the validate-time presence advisory (`P-044`); values are never
+  judged, only declared.
 - **State ownership is a declared layer** (0.2): selection, preview,
   inspector, viewport, query, and mode ownership name a region, `session`,
   or `url` — emergent ownership is a check failure, not a style note.
