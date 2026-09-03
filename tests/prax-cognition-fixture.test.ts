@@ -208,10 +208,8 @@ it("replays the PRAX-COGNITION-001 fixture through every gate to COMPLETE with g
   const findings = evaluated.findings as Array<{ check_id: string; outcome: string }>;
   expect(findings.length).toBe(checkIds.length);
   expect(findings.every((finding) => finding.outcome === "pass")).toBe(true);
-  // Known advisory gap (see fixture README + corrections.yaml): the 0.2 SDIR
-  // generator does not emit complexity_budget and no legal MCP path exists to
-  // backfill it after the validate gate. The warning is part of the record.
-  expect(evaluated.warnings).toEqual([
-    "complexity_budget_declared: the 0.2 SDIR declares no complexity_budget block — new permanent surfaces, modes, and state owners stay uncounted (P-044).",
-  ]);
+  // F4 gap #1 closed 2026-09-03 (option 3, user-adjudicated): the complexity
+  // budget is authored at decide (fixture v2 design-decisions.yaml) and the
+  // generator passes it through — evaluate carries no advisory warning.
+  expect(evaluated.warnings).toEqual([]);
 });

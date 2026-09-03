@@ -47,3 +47,22 @@ add_surface + direct_code，全链 ①→⑱ 走通，phase COMPLETE。
 - 全部会话 YAML（含 requirement.md、routing-log.yaml、compiled-context.yaml）
 - validation-evidence/：4 轮收据 + ready 态截图 ×2 viewport + 各 fail 轮截图 + 测试运行日志
 - corrections.yaml（项目级，3 条，字节原样拷入）
+
+## fixture v2（2026-09-03，用户裁定 = F4 缺口 #1 方案 3）
+
+- **改动范围**：`design-decisions.yaml` 增作者化 `complexity_budget` 十计数；
+  `screen.sdir.yaml` 以服务同路径重生成（generate→validate），重生成不变式
+  已验证：除新增 budget 块外与 v1 冻结语义完全一致。
+- **裁定**：budget 作者点上移至 decide（docs/phase-report-2026-09-03.md 方案
+  3，用户 2026-09-03 指示执行）；生成器透传，validate 后无合法回填路径的
+  缺口就此闭合；evaluate 不再产生 complexity_budget_declared advisory
+  （replay 断言同步更新为 `warnings: []`）。
+- **作者化口径**（记录在 decisions 注释里）：surfaces=常驻布局区 4；
+  panels=visibility=always 的 region 9；primary_actions 3；modes 1（密度
+  自适应是状态不是 mode）；state_owners 2；navigation_levels 1；
+  persistent_filters 1；new_semantic_concepts 4（change / engineering_event
+  / reconciliation_decision / knowledge_gap）；keyboard_contracts 2（"/"
+  聚焦搜索、Esc 清除）；mobile_conflicts 0。
+- **历史保留**：v1 会话产物（validation-report.yaml 的 warning 记录、
+  corrections.yaml 的 correction-cognition-sdir-budget）不动——它们是当时
+  事实；本 v2 注记是设计闭合后的显式修订记录。

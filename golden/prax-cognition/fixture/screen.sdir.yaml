@@ -1,3 +1,6 @@
+# fixture v2 (2026-09-03): regenerated after gap #1 option 3 — decide-authored
+# complexity_budget now passes through generation; all other bytes semantically
+# identical to the frozen v1 (verified by the regeneration invariant).
 version: "0.2"
 screen:
   id: canvas_workspace_screen
@@ -103,7 +106,8 @@ screen:
     - error
   decision_points:
     - id: region_realization
-      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      question: How should the platform adapter realize the semantic regions while
+        preserving hierarchy?
       adapter_may_choose:
         - native landmarks
         - accessible composite widgets
@@ -140,12 +144,15 @@ screen:
   representation:
     primary:
       type: canvas
-      reason: relationality=high + spatiality=conceptual：架构实体与关系是理解“项目现在是什么样”的主对象，空间画布使结构可见且支持 overview+trace 并存（PAT-CANVAS-WORKSPACE），与既有 project-detail 面的画布心智一致
+      reason: relationality=high +
+        spatiality=conceptual：架构实体与关系是理解“项目现在是什么样”的主对象，空间画布使结构可见且支持
+        overview+trace 并存（PAT-CANVAS-WORKSPACE），与既有 project-detail 面的画布心智一致
     supporting:
       - type: timeline
         reason: temporality=high：变化时间线回答“发生了什么、何时”，把 volatility=high 的变化流按时间排序，与画布选中对象联动
       - type: search_results
-        reason: 专家用户高频定位：Search 提供按名称/类型直达对象的入口，服务 Overview-Filter-Detail（H-22）的 filter 环节
+        reason: 专家用户高频定位：Search 提供按名称/类型直达对象的入口，服务 Overview-Filter-Detail（H-22）的 filter
+          环节
       - type: feed
         reason: Decisions + Activity：决策与工程事件构成活动流，回答“为什么变化”，承载 reason 追溯
       - type: chart
@@ -174,5 +181,16 @@ screen:
       owner: architecture
     - state: preview
       owner: session
+  complexity_budget:
+    permanent_panels: 9
+    permanent_primary_actions: 3
+    modes: 1
+    state_owners: 2
+    navigation_levels: 1
+    persistent_filters: 1
+    new_semantic_concepts: 4
+    keyboard_contracts: 2
+    mobile_conflicts: 0
+    permanent_surfaces: 4
   acceptance:
     - 用户能在几分钟内说出项目当前状态、最近关键变化及其原因，并能定位到执行会话与证据，无需打断 Agent 推进

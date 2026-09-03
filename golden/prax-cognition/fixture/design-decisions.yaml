@@ -98,3 +98,17 @@ unresolved:
     impact: medium
     affects:
       - implementation
+complexity_budget:
+  # fixture v2 (2026-09-03): authored at decide per gap #1 option 3.
+  # Conventions: surfaces = 常驻布局区; panels = visibility=always 的 region;
+  # concepts = 用户须学的领域词; keyboard = 非平台默认的显式契约。
+  permanent_surfaces: 4        # 画布主区 / 时间线-活动带 / 侧栏组合面 / 全局导航 chrome
+  permanent_panels: 9          # 11 regions 中 visibility=always 者（toolbar task_driven、inspector selection_driven 除外）
+  permanent_primary_actions: 3 # 搜索 / 平移缩放 / 刷新频率
+  modes: 1                     # 单一监看模式；密度自适应与选中下钻是状态不是 mode
+  state_owners: 2              # selection→architecture、preview→session
+  navigation_levels: 1         # 单屏工作台
+  persistent_filters: 1        # 搜索词跨刷新保留
+  new_semantic_concepts: 4     # change / engineering_event / reconciliation_decision / knowledge_gap
+  keyboard_contracts: 2        # “/”聚焦搜索、Esc 清除选中与搜索
+  mobile_conflicts: 0          # desktop-only
