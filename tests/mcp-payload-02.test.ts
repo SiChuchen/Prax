@@ -106,3 +106,46 @@ describe("MCP 0.2 payload integration (Task I1, spec §6.3 flattening recipe)", 
     expect(checkSdirRepresentationDrift(legacySdir, legacyDecisions)).toBeUndefined();
   });
 });
+
+describe("decide payload carries the authored complexity_budget (F4 gap #1, option 3)", () => {
+  it("the MCP decide input accepts a budget block and keeps it", () => {
+    const payload = flattenedDecidePayload();
+    (payload.design_decisions as Record<string, unknown>).complexity_budget = {
+      permanent_panels: 3,
+      permanent_primary_actions: 6,
+      modes: 2,
+      state_owners: 2,
+      navigation_levels: 2,
+      persistent_filters: 1,
+      new_semantic_concepts: 4,
+      keyboard_contracts: 5,
+      mobile_conflicts: 0,
+      permanent_surfaces: 4,
+    };
+    const parsed = DesignDecideInputSchema.parse(payload);
+    expect(parsed.design_decisions.complexity_budget?.permanent_surfaces).toBe(4);
+  });
+
+  it("generated SDIR from a budgeted decide payload passes the budget through (end to end)", () => {
+    const payload = flattenedDecidePayload();
+    const budget = {
+      permanent_panels: 3,
+      permanent_primary_actions: 6,
+      modes: 2,
+      state_owners: 2,
+      navigation_levels: 2,
+      persistent_filters: 1,
+      new_semantic_concepts: 4,
+      keyboard_contracts: 5,
+      mobile_conflicts: 0,
+      permanent_surfaces: 4,
+    };
+    const parsed = DesignDecideInputSchema.parse({ ...payload, design_decisions: { ...payload.design_decisions, complexity_budget: budget } });
+    const engine = new SdirEngine();
+    const frame = flattenedFramePayload().product_frame as never;
+    const generated = engine.generate(frame, architectureContext(), parsed.design_decisions as never) as {
+      screen: { complexity_budget?: unknown };
+    };
+    expect(generated.screen.complexity_budget).toEqual(budget);
+  });
+});

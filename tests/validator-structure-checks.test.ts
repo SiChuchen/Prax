@@ -127,3 +127,14 @@ describe("SDIR 0.2 structure checks (Task V1, spec §6.5)", () => {
     expect(evaluation.warnings.some((warning) => warning.includes("complexity_budget_declared"))).toBe(true);
   });
 });
+
+describe("authored complexity_budget closes the advisory (F4 gap #1, option 3)", () => {
+  it("a present budget produces no complexity_budget_declared warning", async () => {
+    const validator = new PraxValidator();
+    const plan = validator.plan({ policyContext: { mode: "greenfield" }, frame: frame02() as never }) as ValidationPlan;
+    const evaluation = await validator.evaluate({ plan, sdir: sdir02() });
+    const budget = evaluation.findings.find((finding) => finding.check_id === "complexity_budget_declared");
+    expect(budget?.outcome).toBe("pass");
+    expect(evaluation.warnings.some((warning) => warning.includes("complexity_budget_declared"))).toBe(false);
+  });
+});
