@@ -1,0 +1,40 @@
+version: "0.1"
+session_id: ds_20260907195547_4b31bcb5
+task_ref: 在维度之间切换投影并按维度值过滤，观察数据分布变化，且任何一步都可回退
+selected:
+  - ref: product_relationships
+    reason:
+      - rel-dim-ds:dataset->dimension
+      - rel-filter-dim:filter->dimension
+      - rel-proj-dim:projection->dimension
+      - rel-state:active_state->filter
+      - rel-rec-ds:dataset->record
+  - ref: region_relationships
+    reason:
+      - region_rel_data_detail
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-DATA-EXPLORER
+  - ref: unresolved
+    reason: []
+  - ref: corrections
+    reason: []
+  - ref: validation-plan@1
+    reason:
+      - semantic_conformance
+      - state_completeness
+      - product_model_alignment
+      - keyboard
+      - hierarchy_review
+      - representation_decided
+      - state_ownership_declared
+      - acceptance_contract_present
+      - complexity_budget_declared
+      - filter_state
+      - comparison_scan
+      - requirement_alignment
+excluded:
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata

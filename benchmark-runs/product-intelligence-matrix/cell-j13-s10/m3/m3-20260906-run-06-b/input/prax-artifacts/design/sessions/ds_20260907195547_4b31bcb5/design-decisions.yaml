@@ -1,0 +1,95 @@
+session_id: ds_20260907195547_4b31bcb5
+representation:
+  primary:
+    type: chart
+    reason: dimensionality=high：把任意维度组合即时投影成分组聚合图（单维=分布条形，双维=分面小倍数），是化解维度认知负担的主投影面
+  supporting:
+    - type: table
+      reason: cardinality=unbounded + density=high：过滤后记录需行对齐高密度扫描与排序
+    - type: list
+      reason: 维度轨用紧凑 list 承载高维度性导航
+    - type: document
+      reason: 选中记录在 contextual inspector 中逐字段展示（relationality=medium）
+  rejected:
+    - option: cards 卡片网格
+      reason: myth-card-grid-default：density=high/unbounded 记录的反模式 card-grid-for-dense-comparison
+    - option: map
+      reason: spatiality=none，不适用
+    - option: tree
+      reason: hierarchy=medium 非主导；树强迫单一维度序
+  justification_vs_shape: 按 shape 束逐 facet 论证（非默认壳层）：cardinality=unbounded + density=high → 记录面必须是密排 table（扫描与排序），而非卡片/看板；dimensionality=high（维度是主要认知负担）→ 主 representation 必须是 chart 式即时投影（单维分布、双维分面），维度轨用 list 承载从单概念到无界的导航；relationality=medium + hierarchy=medium → 只需过滤器↔维度↔投影的平面引用关系（active_state 逐条引用），不需要树/图；spatiality=none → 排除 map/canvas；comparison_need=none → 不做并排对比布局；temporality=low → 不做时间轴。即 chart(投影概览)+table(记录)+list(维度导航) 的组合由形状直接推出，dashboard/cards 壳层被 myth-card-grid-default 驳斥且不满足 density=high 的扫描效率
+primary_structure:
+  pattern: PAT-DATA-EXPLORER
+  rationale:
+    - Router 返回的高置信模式（confidence=high），L2 契约与主任务吻合：structured data surface + persistent narrowing + detail on demand
+    - 辅以同批路由返回的 PAT-LIST-DETAIL-INSPECTOR（L2 已核）承载 record 明细，P-19 Preserve Context
+    - 『维度切换不重置认知』由状态架构保证：filter 与 projection 正交两层，共享同一带归属的 query store；投影切换不清 filter，record 选中在切换后若仍满足过滤则保持（H-21 Orientation Invariants）
+    - 常驻 Active State Tray 逐条列出过滤/投影状态（归属维度、来源控件、生效范围），逐条可回退 + 撤销栈 + 一键重置（验收种子）
+  confidence: high
+information_hierarchy:
+  primary:
+    - data
+    - collection
+    - active_state
+  secondary:
+    - data = 投影工作面：当前维度分布图 + 过滤后记录表，explore 主任务的主工作面
+    - collection = 维度轨：dimension 维度清单与可选值
+    - active_state = 生效状态清单：归属维度+来源+逐条回退，常驻
+    - inspector 选中记录明细；dataset 元信息
+density:
+  intent: compact
+  strategy:
+    - 结构化密度（H-13）：density=high 允许专业工具式密排，但分组、层级、交互必须清晰（组头/分隔线/行悬浮）
+    - Signal over Chrome（P-22）：控件与装饰弱于数据图形，聚合图形是最强视觉元素
+    - 同屏完成主任务：切维度/过滤/回退零页面滚动，明细区内部滚动
+  avoid:
+    - 卡片网格作为记录主呈现（myth-card-grid-default 已驳回）
+    - 多级导航/弹层里藏回退操作（回退必须常驻可见）
+    - 大面积装饰性留白（density=high）
+major_choices:
+  - id: MC-1-projection-vs-filter
+    choice: 过滤器按维度持有、独立于投影：切换投影永不触碰过滤器；不在当前投影中的过滤器（孤儿过滤器）在 active_state 托盘保留并标注『不在当前投影但仍生效』
+    rationale: 成功标准『维度切换不重置认知』的机制化：投影是视角层，过滤是约束层，两层正交；record 选中跨投影保持（若仍满足过滤）。
+    confidence: high
+    references:
+      - filter
+      - projection
+      - dimension
+      - active_state
+      - record
+  - id: MC-2-state-ownership
+    choice: active_state 托盘为每次状态变更建立带 id 的条目（kind=filter|projection，dimension=归属，origin=来源控件，支持单条 × 回退），另配全局撤销栈与 Reset All
+    rationale: 直接实现验收种子：归属=维度+origin，回退=逐条 ×、Ctrl+Z、Reset All 三粒度。
+    confidence: high
+    references:
+      - active_state
+      - filter
+      - projection
+  - id: MC-3-inline-data
+    choice: dataset ~1.2k 条确定性种子记录全部内联，投影面客户端聚合（分布图+记录表），无加载态
+    rationale: 交付约束：首屏即用、静态打开、无后端；cardinality=unbounded 在 UI 语义上呈现（计数、『显示前 N 条』）而非字面无限。
+    confidence: high
+    references:
+      - dataset
+      - record
+rejected:
+  - option: PAT-LIST-DETAIL 作为主导模式
+    reason: 其契约『collection order matters』不成立：记录序无叙事意义；主导必须是过滤/投影（Router 的 PAT-DATA-EXPLORER confidence=high），它降级为记录明细的辅助形态
+  - option: PAT-CANVAS-WORKSPACE
+    reason: Router 已排除：domain 不匹配，且 spatiality=none，拓扑不主导
+  - option: 卡片网格壳层
+    reason: myth-card-grid-default 驳斥：density=high + cardinality=unbounded 下卡片网格是反模式 card-grid-for-dense-comparison
+  - option: tree 层级树主导
+    reason: hierarchy=medium 不是主要负担；树强迫单一维度序，违背任意维度切换
+unresolved: []
+complexity_budget:
+  permanent_panels: 4
+  permanent_primary_actions: 3
+  modes: 0
+  state_owners: 3
+  navigation_levels: 1
+  persistent_filters: 1
+  new_semantic_concepts: 2
+  keyboard_contracts: 1
+  mobile_conflicts: 0
+  permanent_surfaces: 1

@@ -1,0 +1,43 @@
+version: "0.1"
+session_id: ds_20260908001459_128963b1
+task:
+  surfaces: []
+  primary: Locate a specific dataset item using instant search and/or category+facet filters, then confirm it via in-place detail view
+product_relationships:
+  - id: rel-item-category
+    source: item
+    target: category
+    type: belongs_to
+    direction: forward
+    meaning: Each item sits in exactly one subcategory within one domain — grouping for scoping, not a navigational hierarchy to drill through
+    importance: supporting
+region_relationships: []
+decisions:
+  primary_structure: PAT-LIST-DETAIL
+  density_intent: compact
+  major_choice_ids:
+    - mc-domain-skin
+    - mc-instant-search
+    - mc-detail-inplace
+    - mc-chips
+    - mc-keyboard
+    - mc-stack
+must_preserve: []
+regression_points: []
+unresolved:
+  - uk-collection-growth
+corrections: []
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - requirement_alignment
+  regression_check_ids: []

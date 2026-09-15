@@ -1,0 +1,68 @@
+version: "0.2"
+jtbd:
+  verb: understand
+  target: 关系结构 — the dependency & influence web of a service system
+  success: 依赖与影响可跟随 — dependencies and influence can be followed, multi-hop, without losing global context
+primary_object:
+  type: relationship
+  label: 依赖关系 (dependency edge)
+task_model:
+  frequency: medium
+  reversibility: reversible
+  consequence: low
+  expertise: expert
+user:
+  primary_role: Platform/backend engineer or tech lead responsible for a multi-service system
+  expertise: expert
+  familiarity: medium
+goal:
+  primary: Understand how services depend on and influence each other by walking dependency/impact chains on a shared map, while the whole system stays visible as an anchor
+tasks:
+  primary: "Follow a chain: pick a service, read what it depends on and what depends on it, and step through those relationships hop by hop while the full system map stays visible"
+  secondary:
+    - "Assess blast radius: see direct and transitive dependents (influence) and dependencies for any service"
+    - Locate a service quickly via search
+    - Inspect a single relationship's meaning (type, criticality) and a service's role/team via a detail panel
+product_objects:
+  - id: service_node
+    user_name: 服务节点 (service)
+    purpose: A component of the system whose dependencies and dependents the user inspects and between which the user travels
+  - id: dependency_edge
+    user_name: 依赖关系 (dependency)
+    purpose: The directional relationship between two services — the primary content itself; carries type (sync call / data dependency) and criticality
+  - id: follow_trail
+    user_name: 跟随路径 (trail)
+    purpose: The ordered chain of relationship hops the user has walked in the current investigation
+  - id: system_map
+    user_name: 全局地图 (map)
+    purpose: The always-visible whole web (all nodes, all edges) that keeps any follow step anchored in global context
+relationships:
+  - source: dependency_edge
+    target: service_node
+    type: connects
+    direction: forward
+    meaning: Each dependency edge links exactly two service nodes (from → to)
+    importance: primary
+    id: rel_dependency_edge_service_node
+  - source: follow_trail
+    target: dependency_edge
+    type: walks
+    direction: forward
+    meaning: The trail is an ordered sequence of relationship hops; each step extends the trail
+    importance: primary
+    id: rel_follow_trail_dependency_edge
+  - source: system_map
+    target: service_node
+    type: contains
+    direction: forward
+    meaning: The map always contains every service and edge; focus only dims, never removes
+    importance: primary
+    id: rel_system_map_service_node
+mental_model_hypothesis:
+  summary: Users model the system as one connected web laid out in dependency tiers (edge → gateway → domain services → data/infra). Investigating means walking edges — upward 'who do I depend on', downward 'who depends on me'. They expect the whole map to remain visible as a spatial anchor, so a focused walk never degrades into a lost drill-down; position-in-whole is always readable.
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: From any service, the user can follow multi-hop dependency and influence chains, reading each relationship along the way, while the complete system map stays visible with their current position and trail marked in it — 关系跟随不丢失全局上下文.
+open_questions: []

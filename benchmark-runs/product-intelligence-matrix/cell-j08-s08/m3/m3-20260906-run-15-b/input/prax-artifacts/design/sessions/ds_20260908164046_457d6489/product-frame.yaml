@@ -1,0 +1,58 @@
+version: "0.2"
+jtbd:
+  verb: edit
+  target: 文档
+  success: 编辑不破坏结构；结构化编辑与预览始终保持一致
+primary_object:
+  type: document
+  label: 文档
+task_model:
+  frequency: medium
+  reversibility: reversible
+  consequence: low
+  expertise: mixed
+user:
+  primary_role: 文档作者 / 编辑者（撰写并整理结构化文档）
+  expertise: intermediate
+  familiarity: medium
+goal:
+  primary: 在不破坏文档结构的前提下，完成对单一文档的结构化编辑，并确信预览与编辑内容一致
+tasks:
+  primary: 选择大纲中的节，编辑其标题与正文；增删节、重排、升降级；在预览中确认渲染结果与编辑一致
+  secondary:
+    - 撤销/重做误操作
+    - 查看结构校验状态（空节、层级异常等）
+    - 浏览整篇文档的渲染预览
+product_objects:
+  - id: document
+    user_name: 文档
+    purpose: 用户正在编辑的唯一对象：标题 + 有序的节树 + 元信息（状态、更新时间）
+  - id: section
+    user_name: 节 / 小节
+    purpose: 文档的层级组成单元：标题、正文段落、子节序列；结构化编辑的直接目标
+  - id: structure_report
+    user_name: 结构检查
+    purpose: 结构完整性校验结果的聚合（空节、重复标题、层级异常），证明『编辑不破坏结构』
+relationships:
+  - source: document
+    target: section
+    type: contains
+    direction: forward
+    meaning: 文档按序包含一棵节树；节的层级由树深度决定
+    importance: primary
+    id: rel_document_section
+  - source: document
+    target: structure_report
+    type: derived_from
+    direction: forward
+    meaning: 结构检查由文档当前状态实时推导
+    importance: supporting
+    id: rel_document_structure_report
+mental_model_hypothesis:
+  summary: 用户把文档理解为一棵有序的节树（大纲）。编辑 = 对节的字段做受控变更 + 对大纲做受控结构操作（增删/移动/升降级）；预览是同一数据模型的另一种渲染。因为编辑器与预览由同一份状态驱动，二者天然一致；结构操作被完整性规则约束，因此不会破坏结构。
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: 对文档的任一结构化编辑操作（改标题/正文、增删节、重排、升降级、撤销/重做）之后：① 大纲树、节编辑器、预览三者内容一致；② 文档结构仍满足完整性规则（层级连续、无孤儿节）；③ 结构检查面板给出实时、可读的校验结论。
+open_questions: []

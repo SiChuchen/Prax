@@ -1,0 +1,231 @@
+plan_revision: 3
+evidence:
+  submitted_by: claude-main-agent (cell-j04-s04-b)
+  collected_at: 2026-09-08T00:00:00Z
+  items:
+    - check_id: semantic_conformance
+      outcome: pass
+      source: prax_session_artifacts
+      notes: SDIR 经 validate 模式零语义错误通过；pattern_ref=PAT-LIST-DETAIL-INSPECTOR 与 routing/decide 一致。
+      artifact_refs:
+        - .prax/design/sessions/ds_20260907173830_d0e52165/screen.sdir.yaml
+    - check_id: state_completeness
+      outcome: pass
+      source: code_review
+      notes: "ready：种子 150 拍同步预生成，首帧即完整墙（无加载门，loading 仅语义存在瞬时通过）；selected：检查器 selection_driven 显隐；empty：过滤/搜索无匹配 empty-note + 事件轨空态；error：window error → #fatal role=alert 横幅。"
+      artifact_refs:
+        - index.html
+    - check_id: product_model_alignment
+      outcome: pass
+      source: code_review
+      notes: 产品对象=Frame 三件套：metric（瓷片）、change_event（事件轨/检查器事件表，含精确时刻与前后值）、metric_history（sparkline+检查器全折线）；用户语言：指标/严重/警告/变化事件，与 frame user_name 一致。
+      artifact_refs:
+        - index.html
+        - .prax/design/sessions/ds_20260907173830_d0e52165/product-frame.yaml
+    - check_id: keyboard
+      outcome: inconclusive
+      source: not_executable_in_session
+      notes: 键盘代码已实现（/ 聚焦搜索、Esc 清除选择/搜索、方向键网格巡览、瓷片为原生 button 可 Tab、焦点环 :focus-visible），但本会话经四路独立验证（ToolSearch 穷举、子代理复核、codex 代理拒绝生成、chrome MCP 未配置）不存在任何命令执行工具，无法产出运行时键盘实证；不伪造证据，留待有浏览器环境的复验。
+      artifact_refs:
+        - index.html
+    - check_id: hierarchy_review
+      outcome: pass
+      source: code_review
+      notes: 主导区=tile_wall（flex:1，dominant）；inspector=primary（selection_driven，右侧栏上部）；event_rail=supporting（常驻侧栏下部）；状态显著度 crit>warn>normal（左缘实色+底色渐变+徽标），与 SDIR importance 映射一致；装饰性 chrome 最小化（P-22）。
+      artifact_refs:
+        - index.html
+        - .prax/design/sessions/ds_20260907173830_d0e52165/screen.sdir.yaml
+    - check_id: representation_decided
+      outcome: pass
+      source: prax_session_artifacts
+      notes: SDIR representation.primary=grid（附 reason），supporting=chart+timeline；实现落地为 CSS Grid 瓷片墙 + canvas 折线 + 事件时间线。
+      artifact_refs:
+        - .prax/design/sessions/ds_20260907173830_d0e52165/screen.sdir.yaml
+        - index.html
+    - check_id: state_ownership_declared
+      outcome: pass
+      source: prax_session_artifacts
+      notes: selection→tile_wall（选中类由墙管理并同步检查器/事件轨）、query→topbar（filter+search）、mode→app_runtime（paused）。
+      artifact_refs:
+        - .prax/design/sessions/ds_20260907173830_d0e52165/screen.sdir.yaml
+    - check_id: acceptance_contract_present
+      outcome: pass
+      source: prax_session_artifacts
+      notes: SDIR acceptance 4 条：首屏即绪无加载门 / crit-warn 扫视内可发现（耐久色+置顶无闪烁）/ 点击瓷片见精确变化时刻与前后序列 / 更新期间零位移无跳动。
+      artifact_refs:
+        - .prax/design/sessions/ds_20260907173830_d0e52165/screen.sdir.yaml
+    - check_id: complexity_budget_declared
+      outcome: pass
+      source: prax_session_artifacts
+      notes: complexity_budget 全字段声明（panels=2/primary_actions=3/modes=1/state_owners=2/navigation_levels=1/persistent_filters=1/new_concepts=3/keyboard_contracts=1/mobile_conflicts=0/surfaces=3）。
+      artifact_refs:
+        - .prax/design/sessions/ds_20260907173830_d0e52165/screen.sdir.yaml
+    - check_id: requirement_alignment
+      outcome: pass
+      source: code_review
+      notes: 对照确认 restatement：单页（根 index.html，零依赖可 file:// 直开）；首屏就绪（同步种子）；异常扫视可见（2 crit+3 warn 常态种子+耐久编码+置顶）；变化可追溯（change_event 精确时刻/前后值/阈值线/事件标注/按指标过滤事件轨）；无闪烁（tabular-nums、结构不重建、FLIP transform-only、事件插入滚动补偿）；无后端/账号/持久化（N6 显式妥协已记录）。
+      artifact_refs:
+        - index.html
+        - .prax/design/sessions/ds_20260907173830_d0e52165/capability-gaps.yaml
+        - brief.md
+evaluation:
+  status: WARN
+  checks:
+    - id: semantic_conformance
+      label: Semantic conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR is valid, semantic, and aligned to the approved pattern.
+      evidence_required: false
+    - id: state_completeness
+      label: State completeness
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Required loading, empty, ready, and error states exist.
+      evidence_required: false
+    - id: product_model_alignment
+      label: Product model alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: User-facing structure and language preserve the Product Frame.
+      evidence_required: true
+    - id: keyboard
+      label: Keyboard operability
+      kind: empirical
+      profile: keyboard_accessibility
+      facet: behavioral
+      requirement: Primary work and selection are operable with keyboard and visible focus.
+      evidence_required: true
+    - id: hierarchy_review
+      label: Hierarchy review
+      kind: assistive
+      profile: semantic_integrity
+      facet: visual_hierarchy
+      requirement: Visual prominence follows SDIR importance rather than implementation convenience.
+      evidence_required: true
+    - id: representation_decided
+      label: Representation decided
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares representation.primary with a non-empty reason.
+      evidence_required: false
+    - id: state_ownership_declared
+      label: State ownership declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: Selection and preview states both have declared owners.
+      evidence_required: false
+    - id: acceptance_contract_present
+      label: Acceptance contract present
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 carries at least one acceptance criterion.
+      evidence_required: false
+    - id: complexity_budget_declared
+      label: Complexity budget declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      evidence_required: false
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+  findings:
+    - check_id: semantic_conformance
+      kind: deterministic
+      outcome: pass
+      message: SDIR is valid, semantic, and aligned to the approved pattern.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_completeness
+      kind: deterministic
+      outcome: pass
+      message: Required loading, empty, ready, and error states exist.
+      source: prax-validator
+      provenance: measured
+    - check_id: representation_decided
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares representation.primary with a non-empty reason.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_ownership_declared
+      kind: deterministic
+      outcome: pass
+      message: Selection and preview states both have declared owners.
+      source: prax-validator
+      provenance: measured
+    - check_id: acceptance_contract_present
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 carries at least one acceptance criterion.
+      source: prax-validator
+      provenance: measured
+    - check_id: complexity_budget_declared
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      source: prax-validator
+      provenance: measured
+    - check_id: product_model_alignment
+      kind: assistive
+      outcome: pass
+      message: 产品对象=Frame 三件套：metric（瓷片）、change_event（事件轨/检查器事件表，含精确时刻与前后值）、metric_history（sparkline+检查器全折线）；用户语言：指标/严重/警告/变化事件，与 frame user_name 一致。
+      source: code_review
+      provenance: attested
+    - check_id: keyboard
+      kind: empirical
+      outcome: inconclusive
+      message: 键盘代码已实现（/ 聚焦搜索、Esc 清除选择/搜索、方向键网格巡览、瓷片为原生 button 可 Tab、焦点环 :focus-visible），但本会话经四路独立验证（ToolSearch 穷举、子代理复核、codex 代理拒绝生成、chrome MCP 未配置）不存在任何命令执行工具，无法产出运行时键盘实证；不伪造证据，留待有浏览器环境的复验。
+      source: not_executable_in_session
+      provenance: attested
+    - check_id: hierarchy_review
+      kind: assistive
+      outcome: pass
+      message: 主导区=tile_wall（flex:1，dominant）；inspector=primary（selection_driven，右侧栏上部）；event_rail=supporting（常驻侧栏下部）；状态显著度 crit>warn>normal（左缘实色+底色渐变+徽标），与 SDIR importance 映射一致；装饰性 chrome 最小化（P-22）。
+      source: code_review
+      provenance: attested
+    - check_id: requirement_alignment
+      kind: assistive
+      outcome: pass
+      message: 对照确认 restatement：单页（根 index.html，零依赖可 file:// 直开）；首屏就绪（同步种子）；异常扫视可见（2 crit+3 warn 常态种子+耐久编码+置顶）；变化可追溯（change_event 精确时刻/前后值/阈值线/事件标注/按指标过滤事件轨）；无闪烁（tabular-nums、结构不重建、FLIP transform-only、事件插入滚动补偿）；无后端/账号/持久化（N6 显式妥协已记录）。
+      source: code_review
+      provenance: attested
+  missing_evidence: []
+  warnings: []
+  readiness:
+    deterministic_passed: true
+    measurement:
+      receipt_ref: null
+      binding: {}
+      error_failures_open: 0
+      warning_dispositions: []
+    convergence:
+      stalled: false
+      unresolved: []
+    evidence_current: true
+    claims:
+      measured:
+        - semantic_conformance
+        - state_completeness
+        - representation_decided
+        - state_ownership_declared
+        - acceptance_contract_present
+        - complexity_budget_declared
+      attested:
+        - product_model_alignment
+        - keyboard
+        - hierarchy_review
+        - requirement_alignment
+      skipped: []

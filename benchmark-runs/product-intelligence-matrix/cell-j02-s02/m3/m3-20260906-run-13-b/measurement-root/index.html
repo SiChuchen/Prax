@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Locus — locate any dataset in three interactions</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='7' cy='7' r='5' fill='none' stroke='%231a66e0' stroke-width='2'/%3E%3Cline x1='11' y1='11' x2='15' y2='15' stroke='%231a66e0' stroke-width='2'/%3E%3C/svg%3E">
+</head>
+<body>
+  <!-- App states: ready (default), empty (0 hits), selected (detail open), error (bad hash link).
+       A "loading" state is unreachable by construction: all data ships inline and boots synchronously,
+       so the measurable state at first paint is always `ready`. The .is-booting class below is removed
+       in the same synchronous tick the script runs — it exists only so the state model is total. -->
+  <div id="app" class="app is-booting" data-state="ready">
+
+    <header class="topbar" role="banner">
+      <div class="brand">
+        <svg class="brand-mark" width="18" height="18" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="2"/><line x1="11" y1="11" x2="15" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span class="brand-name">Locus</span>
+        <span class="brand-sub">OpenCollection&nbsp;Locator</span>
+      </div>
+      <div class="locate" role="search" aria-label="Locate a dataset">
+        <svg class="locate-icon" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="2"/><line x1="11" y1="11" x2="15" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input id="search" class="locate-input" type="text" autocomplete="off" spellcheck="false"
+               placeholder="Search 2,400 datasets — name, id, tag, or description…   ( / to focus )"
+               aria-label="Search datasets" aria-describedby="result-count">
+        <kbd class="locate-kbd" aria-hidden="true">/</kbd>
+      </div>
+      <div class="topbar-right">
+        <span id="result-count" class="result-count" role="status" aria-live="polite"></span>
+        <button id="clear-all" class="btn-ghost" type="button" hidden title="Clear search and all filters">Clear all</button>
+      </div>
+    </header>
+
+    <div id="error-banner" class="error-banner" role="alert" hidden>
+      <span id="error-text"></span>
+      <button id="error-reset" class="btn-ghost" type="button">Reset view</button>
+    </div>
+
+    <div class="chips" id="chips" aria-label="Active filters"></div>
+
+    <div class="workspace">
+      <aside class="rail" aria-label="Filter facets">
+        <nav id="tree" class="tree" aria-label="Collection categories"></nav>
+        <section class="facet" aria-label="Filter by tag">
+          <h3 class="facet-title">Tags <span class="facet-note">any-of</span></h3>
+          <div id="tag-facets" class="tag-facets"></div>
+        </section>
+        <section class="facet" aria-label="Filter by format">
+          <h3 class="facet-title">Format <span class="facet-note">any-of</span></h3>
+          <div id="format-facets" class="check-facets"></div>
+        </section>
+        <section class="facet" aria-label="Filter by license">
+          <h3 class="facet-title">License <span class="facet-note">any-of</span></h3>
+          <div id="license-facets" class="check-facets"></div>
+        </section>
+      </aside>
+
+      <main class="results-pane">
+        <div id="results" class="results" role="listbox" aria-label="Dataset results" tabindex="0"></div>
+        <div id="empty" class="empty" hidden>
+          <div class="empty-art" aria-hidden="true"></div>
+          <h2>No datasets match</h2>
+          <p id="empty-detail"></p>
+          <button id="empty-clear" class="btn" type="button">Clear search &amp; filters</button>
+          <p class="empty-tip">Tip: a shorter query matches more — every word must appear somewhere in the item.</p>
+        </div>
+      </main>
+
+      <aside id="detail" class="detail" role="complementary" aria-label="Selected dataset detail" hidden>
+        <div class="detail-head">
+          <div class="detail-crumb" id="d-crumb"></div>
+          <button id="detail-close" class="icon-btn" type="button" aria-label="Close detail (Esc)" title="Close (Esc)">✕</button>
+        </div>
+        <h2 class="detail-name" id="d-name"></h2>
+        <div class="detail-id-row">
+          <code class="detail-id" id="d-id"></code>
+          <button id="copy-id" class="btn-ghost btn-tiny" type="button">Copy ID</button>
+        </div>
+        <p class="detail-desc" id="d-desc"></p>
+        <dl class="detail-meta" id="d-meta"></dl>
+        <div class="detail-tags" id="d-tags" aria-label="Tags"></div>
+        <p class="detail-context-note">Result list, filters and scroll position are preserved while this panel is open.</p>
+      </aside>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

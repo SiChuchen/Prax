@@ -1,0 +1,84 @@
+{
+  "reviewer": "R2",
+  "package_id": "impl-11",
+  "session_id": "0ab11d69-9c46-4a83-ab1f-2741fe7e3e24",
+  "wall_clock_seconds": 283,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-11",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Brief shape = dimensional-space, high dimensionality/density, object = dataset. Both screenshots (1280x860.png, 1440x900.png) show a dataset console: 14-dimension catalog rail (大洲…名称), center projection bar chart 投影·大洲 over 540 records, right record list + per-record detail. source/assets/data.js:80-95 defines exactly 14 typed dims (cat/ord/num/highcat); app.js:147-155 setProjection re-groups the dataset by any dimension — the representation is the brief's shape, not an analogy."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "Explore/dimension-switching dominates the initial screen in both viewports: the center stage is the projection chart, the left rail the dimension catalog with one-click switching (app.js:282 dim-head data-proj, wired at app.js:548-549), and the header instructs the first action (「点击图表柱体或维度「筛选」开始」, app.js:268). No competing task occupies the first screen."
+      },
+      "time_to_understand": {
+        "score": 4,
+        "evidence": "Model-judged proxy. What/where is conveyed fast: named zones 维度目录/投影·大洲/记录清单/记录详情/操作历史 plus inline guidance (empty-ledger hint top strip, anchor line 「镜点： 未选中 — 点击右侧清单或「名称」…（跨维度保留）」 in both screenshots; app.js:337). Deduction: high-density 3-column dark UI with 10-11px labels takes a second parse; anchor terminology mixes 镜点 (screenshots) and 锚点 (app.js:337), a small comprehension tax."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Single screen, zero routing (index.html:28-65). Primary object reachable in 1 click: dimension head switches projection (app.js:548-549); bar click filters (app.js:562-588); list row selects (app.js:604-607); undo via one button or Ctrl+Z (app.js:636-641). Numeric range via panel is 3-4 steps but a bar click sets the same range in 1 (app.js:575-582)."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "Structurally engineered against context loss: selection lives outside snapshots and survives projection/filter/undo (app.js:29-30, anchor line app.js:333-337); filters, sort, history and even list scroll persist across dimension switch (preserveScroll app.js:241-245; ghost row keeps an excluded selection visible, app.js:432-436; toast on switch states 保留 N 个筛选…历史不变, app.js:154). No page transitions exist at all."
+      },
+      "ui_surface_complexity": {
+        "score": 4,
+        "evidence": "Permanent surfaces map to brief needs — dim catalog (high dimensionality), ledger chips + history (seed: ownership/revertibility), search/sort/list/detail (unbounded dataset) — and every visible control is functional (screenshots both viewports). Deduction: center stage half-empty — chart SVG fixed at H=340 (app.js:364) leaves dead space in both screenshots while the list truncates at 13-14 rows; also permanent top-bar global actions (撤销/重做/重置全部/重采样) are chrome before any state exists."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Receipt fails 3 a11y checks: a11y.contrast, a11y.focus_order, a11y.target_size (measurement-summary.json:13-15). Source corroborates: interactive dim-heads, list rows, history items and SVG bars are click-only divs/li/rects with no tabindex/role/keyboard path (app.js:282, 445, 481, 390-394); faint tokens #5d6b80/#71809a/#8b99ad on dark panels ≈3-4:1 at 10-12px (style.css:5,74,83; app.js:379,402-406); targets below minimums — chip remove ✕ 18×18px (style.css:56-59), .fbtn padding 1px 7px font 11px (style.css:86). Positives: native inputs/select/buttons reachable, focus shown via border (style.css:26)."
+      },
+      "frontend_rework": {
+        "score": 2,
+        "evidence": "layout.overflow: fail and type.min_projected_size: fail (measurement-summary.json:10,16). Visible correlates: 14th list row 布兰格城 clipped at the 记录详情 boundary in screenshots/1440x900.png while body{overflow:hidden} (style.css:14) clips rather than scrolls; chart fixed 340px tall (app.js:364) strands the center column in both viewports; sub-minimum text sizes are pervasive (style.css:83,85,141,145 = 10px). No JS-error banner visible (window.onerror surfaces errors, app.js:652-658), so no runtime-crash rework implied."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed 「过滤/投影状态有归属且可回退」 is covered twice over. Ownership: every filter is a ledger chip carrying owning-dimension color+name+marginal hit count (app.js:253-270, chipCount app.js:102-110; screenshots show the empty-ledger strip), rail dims show ● when filtered (app.js:286) and panels show per-value 命中 counts (app.js:313-322). Revertibility: single-chip ✕ removal (app.js:264, 520-527), undo/redo + Ctrl+Z/Y (app.js:47-71, 636-641), click-any-step rollback in 操作历史 (app.js:481, 609-614; screenshot panels 初始状态), global 重置全部 (app.js:156-159), zero-hit escape panel (app.js:340-347), even sort is a committed, revertible step (app.js:631-634). The success criterion (dimension switch keeps cognition) is additionally enforced via preserved selection/scroll/history (app.js:29-30, 154, 241-245, 432-436)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "layout.overflow check failed (measurement-summary.json:10); visually, the 14th list row (布兰格城) is clipped at the 记录详情 boundary in screenshots/1440x900.png, and body{overflow:hidden} (style.css:14) hides rather than resolves overflow",
+      "Chart SVG fixed at 340px height (app.js:364) leaves most of the center stage empty in both screenshots (1280x860, 1440x900) while the record list and detail panel are cramped",
+      "All three a11y checks failed (a11y.contrast, a11y.focus_order, a11y.target_size, measurement-summary.json:13-15); source shows click-only div/li/SVG-rect controls without keyboard access (app.js:282,445,481,390), 10px text classes (style.css:83,141,145), and an 18×18px remove button (style.css:56-59)",
+      "Screenshot/source label drift: both screenshots' anchor line and detail text read 镜点, while the provided source writes 锚点 (app.js:337,456) — the packaged source does not exactly match the screenshotted build in at least this label",
+      "Dead CSS selector .range-row input[name-q] (style.css:95) never matches the actual data-nameq attribute (correctly styled at style.css:98); .danger class on 重置全部 (index.html:23) has no rule — cosmetic only"
+    ],
+    "missing_evidence": [
+      "Root-cause location of the layout.overflow failure — the sanitized summary gives no element/measurement detail, so the exact overflowing node cannot be named",
+      "What produced the single warning in measurement-summary.json:7 (warnings:1) — no per-check warning detail provided",
+      "Whether undo/redo buttons render disabled at initial state (app.js:237-238 sets disabled at start) cannot be confirmed from the static screenshots alone"
+    ],
+    "overall_note": "The package is a close representation fit for the explore×dimensional-space brief: a synchronous, no-load-state dataset console (data.js:3,170 generates 540 records × 14 dims at parse time) whose center screen is the dimension projection itself, reachable and switchable in one click with no navigation. The acceptance seed is not just met but thematized — an ownership ledger where every filter chip names its dimension with live marginal hit counts, plus four redundant revert paths (chip ✕, undo/redo with shortcuts, click-to-rollback history, global reset), and the success criterion 维度切换不重置认知 is structurally guaranteed by keeping selection outside the snapshot machine and preserving filters, sort, scroll, and history across projection changes. The weaknesses are concentrated in accessibility and finish: 5 of 7 receipt checks failed (layout.overflow, a11y.contrast, a11y.focus_order, a11y.target_size, type.min_projected_size; target_invalid:false), each corroborated by inspectable source causes (keyboard-invisible custom controls, faint 10px text, sub-minimum targets, clipped list row, fixed-height chart stranding half the stage). A minor screenshot/source label mismatch (镜点 vs 锚点) suggests the archived source and the measured build differ slightly in wording. Task completion time, retrieval accuracy, and human preference are not observable in this blind pilot, and these scores are model-judged, not human preference."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 67036,
+      "outputTokens": 13060,
+      "cacheReadInputTokens": 340672,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.832016,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-09-08T21:45:35.354Z"
+}

@@ -1,0 +1,70 @@
+needs:
+  - id: n1-chronological-browse
+    product_action: 按时间顺序浏览 change_set 序列及其元素级变更明细
+    required_experience:
+      - 首屏即渲染完整序列（ready 即初始态）
+      - 节点顺序=数据时间序
+    capabilities:
+      - 内联数据集（data.js 随首屏加载，无 fetch）
+      - 渲染前对 change_set 按时间戳稳定排序
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端组合；数据内联消除一切网络依赖，静态 file:// 可开
+  - id: n2-causal-trace
+    product_action: 从变更集跳转到其因/果并高亮对端
+    required_experience:
+      - 徽标方向与时间同向（因在上方、果在下方）
+      - 跳转不丢失时间位置感
+    capabilities:
+      - 因果徽标（↩ 因/↪ 果）锚点跳转
+      - 目标节点高亮与滚动定位
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端组合：scrollIntoView + 高亮类，因果边在数据层保证 cause.t < effect.t
+  - id: n3-state-asof-replay
+    product_action: 查看截至选中变更集时刻的元素状态
+    required_experience:
+      - 回放结果与逐条应用变更一致（时间结构与变更语义一致）
+      - 选中变化时面板即时更新
+    capabilities:
+      - 纯函数回放：按时间升序应用 change 至选中节点（含）
+      - 派生快照不落存储，随选中即时重算
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端组合；回放与时间轴共用同一排序函数，由构造保证一致
+  - id: n4-filter-focus
+    product_action: 按变更类型/元素筛选聚焦变更子集
+    required_experience:
+      - 筛选后序列仍按时间序
+      - 空态有文案与恢复入口
+    capabilities:
+      - 变更类型 chips 与元素下拉筛选
+      - 筛选保持顺序与因果合法性；选中被筛掉时自动改选最近可见节点
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端组合
+  - id: n5-keyboard-nav
+    product_action: 键盘沿时间序切换选中变更集
+    required_experience:
+      - 上=更早、下=更晚，方向与时间同向
+    capabilities:
+      - ↑/↓ 在时间序上移动选中；焦点跟随选中节点
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端组合
+  - id: n6-static-open
+    product_action: index.html 静态直接打开即用（file://）
+    required_experience:
+      - 不依赖任何外部服务或网络请求
+    capabilities:
+      - 无构建静态交付：index.html + 原生 JS
+      - 无后端、无持久化、无部署
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 交付约束本身；原生 JS + 内联数据即满足

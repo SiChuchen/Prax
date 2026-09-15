@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>落位台 SetPlot · 工作坊开放日布置板</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- 支持区域（SDIR）：toolbar（supporting）→ architecture/dominant_workspace → inspector（contextual, 底部状态条）→ help_overlay（task_driven） -->
+  <header id="toolbar" role="toolbar" aria-label="工具条">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">▚</span>
+      <div class="brand-text">
+        <strong>落位台 SetPlot</strong>
+        <span>工作坊开放日 · 平面布置板</span>
+      </div>
+    </div>
+    <div class="tools">
+      <button id="btn-new" type="button" title="新建物件（N）">＋ 新建 <kbd>N</kbd></button>
+      <button id="btn-delete" type="button" title="删除选中（Del）">删除 <kbd>Del</kbd></button>
+      <span class="sep" aria-hidden="true"></span>
+      <button id="btn-undo" type="button" title="撤销（Ctrl+Z）">撤销 <kbd>Ctrl+Z</kbd></button>
+      <button id="btn-redo" type="button" title="重做（Ctrl+Y）">重做 <kbd>Ctrl+Y</kbd></button>
+      <span class="sep" aria-hidden="true"></span>
+      <button id="btn-snap" type="button" title="网格吸附开关（g）" aria-pressed="true">吸附 <kbd>g</kbd></button>
+      <span class="sep" aria-hidden="true"></span>
+      <button id="btn-help" type="button" title="键盘等价物速查（?）">键位 <kbd>?</kbd></button>
+    </div>
+  </header>
+
+  <!-- dominant_workspace：唯一主导表面，落位关系（placed_in）在此呈现 -->
+  <main id="canvas-wrap" tabindex="0" aria-label="平面板主画布（方向键移动选中物件，Tab 循环选择，? 查看键位）">
+    <div id="scaler">
+      <div id="world">
+        <div id="zones-layer"></div>
+        <div id="guides-layer" aria-hidden="true"></div>
+        <div id="items-layer"></div>
+        <div id="marquee" hidden></div>
+        <div id="empty-hint" hidden>
+          <p><strong>画布已空</strong></p>
+          <p>按 <kbd>N</kbd> 新建物件，或双击任意位置直接落位。</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- contextual_inspector：底部状态条（选中驱动） -->
+  <footer id="status" role="status" aria-live="polite"></footer>
+
+  <!-- keyboard_reference_overlay（task_driven） -->
+  <div id="help-overlay" hidden role="dialog" aria-modal="true" aria-label="键盘等价物速查表">
+    <div class="help-card">
+      <header>
+        <h2>键盘等价物速查</h2>
+        <p>每个空间操作都有键盘等价物 —— 摆放即配置，全程无需表单。</p>
+        <button id="btn-help-close" type="button" title="关闭（Esc）">关闭 <kbd>Esc</kbd></button>
+      </header>
+      <div class="help-groups">
+        <section>
+          <h3>选择</h3>
+          <ul>
+            <li><kbd>Tab</kbd> / <kbd>Shift+Tab</kbd><span>循环选择下一件 / 上一件</span></li>
+            <li><kbd>Ctrl+A</kbd><span>全选</span></li>
+            <li><kbd>Esc</kbd><span>取消选择</span></li>
+            <li><kbd>Shift</kbd>+点击<span>加选 / 减选（指针）</span></li>
+          </ul>
+        </section>
+        <section>
+          <h3>新建与编辑</h3>
+          <ul>
+            <li><kbd>N</kbd><span>新建物件（自动寻找空位）</span></li>
+            <li><kbd>Ctrl+D</kbd><span>复制选中</span></li>
+            <li><kbd>Del</kbd> / <kbd>Backspace</kbd><span>删除选中</span></li>
+            <li><kbd>Enter</kbd><span>重命名选中物件</span></li>
+            <li>双击空白 / 双击物件<span>原地新建 / 重命名（指针）</span></li>
+          </ul>
+        </section>
+        <section>
+          <h3>移动与对齐</h3>
+          <ul>
+            <li><kbd>方向键</kbd><span>微移（一格）</span></li>
+            <li><kbd>Shift+方向键</kbd><span>大步移动</span></li>
+            <li><kbd>Alt+方向键</kbd><span>移动并智能对齐吸附</span></li>
+            <li><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><span>左对齐 / 水平居中 / 右对齐</span></li>
+            <li><kbd>4</kbd><kbd>5</kbd><kbd>6</kbd><span>顶对齐 / 垂直居中 / 底对齐</span></li>
+            <li><kbd>d</kbd> / <kbd>Shift+D</kbd><span>水平均分 / 垂直均分（≥3 件）</span></li>
+            <li>拖拽<span>自动吸附对齐参考线（指针）</span></li>
+          </ul>
+        </section>
+        <section>
+          <h3>层级、撤销与视图</h3>
+          <ul>
+            <li><kbd>[</kbd> / <kbd>]</kbd><span>后移 / 前移一层</span></li>
+            <li><kbd>g</kbd><span>网格吸附 开 / 关</span></li>
+            <li><kbd>Ctrl+Z</kbd><span>撤销</span></li>
+            <li><kbd>Ctrl+Y</kbd> / <kbd>Ctrl+Shift+Z</kbd><span>重做</span></li>
+            <li><kbd>?</kbd> / <kbd>k</kbd><span>打开本速查</span></li>
+          </ul>
+        </section>
+      </div>
+      <footer>落位即意图：把物件移进某个分区（拖拽或方向键），用途标签即时由位置推导。</footer>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

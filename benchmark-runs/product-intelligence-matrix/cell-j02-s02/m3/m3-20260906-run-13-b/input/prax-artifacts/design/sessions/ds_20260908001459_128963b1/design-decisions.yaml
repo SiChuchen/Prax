@@ -1,0 +1,134 @@
+session_id: ds_20260908001459_128963b1
+information_shape:
+  cardinality: unbounded
+  relationality: low
+  hierarchy: medium
+  temporality: low
+  density: medium
+  dimensionality: medium
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: search_results
+    reason: "Canonical locate surface: a query-driven, filterable result list with live counts and hit highlighting; it treats the collection as unbounded rather than forcing a fixed structure"
+  supporting:
+    - type: tree
+      reason: Facet rail uses a collapsible 2-level category tree for medium-hierarchy scoping
+    - type: list
+      reason: Detail panel renders the selected item as a compact metadata list
+  rejected:
+    - option: grid/cards
+      reason: Lower scan density; caps items per viewport
+    - option: table
+      reason: Columnar comparison alignment unneeded (comparison_need=none)
+    - option: tree as primary
+      reason: Medium hierarchy is a scoping aid, not the primary structure; a tree-first UI makes browsing cost more interactions than typing
+  justification_vs_shape: Unbounded + low relationality means the shape is a filterable pool, not a graph or map; medium hierarchy becomes a scoping rail; medium density becomes compact rows. Search-results representation with tree+list support covers every facet of the shape without adding structure the data does not have.
+primary_structure:
+  pattern: PAT-LIST-DETAIL
+  rationale:
+    - "Locate over an unbounded weakly-related collection is a scan-and-narrow job: the result list is the dominant surface and search/facets are permanent levers (H-22 Overview-Filter-Detail)"
+    - "Acceptance seed demands context preservation: adjacent detail region keeps list+filters visible during inspection (PAT-LIST-DETAIL; H-21 Orientation Invariants)"
+    - Medium hierarchy is served by a scoping rail, not drill-down navigation — drilling would burn interactions against the 3-interaction budget
+    - "P-22 Signal over Chrome + H-13 Structured Density: compact professional list, no decorative chrome"
+    - "Realized as: search-first locate bar (query + active filter chips + live count) + facet rail (2-level category tree, tag/format facets with counts) + dominant compact result list + selection-bound detail side panel that opens in place without navigating away"
+  confidence: high
+information_hierarchy:
+  primary:
+    - "Locate bar (dominant action): search input, active filter chips, live result count"
+    - "Result list (dominant surface): compact item rows, hit highlighting, keyboard cursor"
+    - "Facet rail (scoping): 2-level category tree + tag/format facets with live counts"
+    - "Detail panel (selection-driven): opens beside the list, never replaces it"
+  secondary:
+    - Item metadata inside detail panel (description, files, license, updated)
+    - Header with collection identity and total count
+  override:
+    basis: Acceptance seed makes context preservation a hard constraint, so the selection-bound detail panel is demoted below the three permanent locate regions
+    evidence_refs:
+      - "brief.md: 验收种子 定位路径有搜索/过滤支撑且不丢上下文"
+      - H-21 Orientation Invariants
+    risks:
+      - Detail gets less space than a dedicated page; mitigated by panel width and scroll
+    accepted_by: agent
+density:
+  intent: compact
+  strategy:
+    - "Single-line item rows: name + short id + subcategory + one meta line (size/format/updated)"
+    - Facet rail with inline counts and collapsed subgroups
+    - "Detail as a right-edge panel: list stays visible and interactive beside it"
+    - Tight type scale (13px UI), 30–34px row height
+    - Active filters shown as removable chips, not a separate page
+  avoid:
+    - card grids that cap visible items per viewport
+    - multi-step drill-down navigation (drill costs interactions)
+    - modal dialogs that hide the result list
+    - decorative imagery on item rows
+major_choices:
+  - id: mc-domain-skin
+    choice: Open-data catalog of ~2,400 items across 8 domains × 3–6 subcategories, tags, formats, licenses
+    rationale: Concrete unbounded-collection domain gives realistic search/facet vocabulary; object_type=item per brief suggestion
+    confidence: medium
+    references:
+      - item
+      - category
+  - id: mc-instant-search
+    choice: Client-side instant search-as-you-type with hit highlighting (name, id, tags, description), no debounce spinner
+    rationale: ≤3 interactions demands synchronous filtering over the inlined dataset; no loading states anywhere
+    confidence: medium
+    references:
+      - item
+      - locate-lever
+  - id: mc-detail-inplace
+    choice: Detail opens as a right side panel bound to selection; list and filters remain visible and the row keeps a selected state
+    rationale: "Directly implements the acceptance seed: inspecting a hit never discards result context (H-19/H-21)"
+    confidence: medium
+    references:
+      - item
+  - id: mc-chips
+    choice: Active filters rendered as removable chips with AND semantics; counts update everywhere live
+    rationale: Makes the locate path state explicit and reversible; supports refine-without-retyping
+    confidence: medium
+    references:
+      - locate-lever
+  - id: mc-keyboard
+    choice: "Keyboard contract: '/' focuses search, ↑/↓ moves result cursor, Enter opens detail, Esc closes panel"
+    rationale: One declared contract keeps power-user locate path at 1–2 interactions
+    confidence: medium
+    references:
+      - item
+      - locate-lever
+  - id: mc-stack
+    choice: Classic-script vanilla HTML/CSS/JS, no build step, dataset generated deterministically inline
+    rationale: Guarantees file:// static open and first-paint readiness with zero dependencies
+    confidence: medium
+    references:
+      - item
+rejected:
+  - option: PAT-DATA-EXPLORER as primary
+    reason: Tabular alignment and column comparison serve compare jobs; comparison_need=none here, and a table wastes width needed for scannable rows
+  - option: Drill-down navigation into category pages
+    reason: Each drill costs an interaction against the 3-interaction budget and discards sibling context
+  - option: Full-page item detail route
+    reason: Navigation discards the result list and active filters — violates the acceptance seed directly
+  - option: Card grid
+    reason: Caps visible items per viewport, weakening scan speed for a compact locate list
+unresolved:
+  - id: uk-collection-growth
+    impact: low
+    affects:
+      - updated-date display
+      - sort defaults
+complexity_budget:
+  permanent_panels: 3
+  permanent_primary_actions: 1
+  modes: 0
+  state_owners: 1
+  navigation_levels: 1
+  persistent_filters: 3
+  new_semantic_concepts: 2
+  keyboard_contracts: 1
+  mobile_conflicts: 0
+  permanent_surfaces: 1

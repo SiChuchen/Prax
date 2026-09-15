@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>实体目录管理台 · cell-j01-s01</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <span class="brand">实体目录管理台</span>
+    <span class="tagline">批量操作零误伤 · 状态归属显式</span>
+    <span class="spacer"></span>
+    <span class="env">本地静态运行 · 数据内联就绪 · 无网络依赖</span>
+  </header>
+
+  <div class="layout">
+    <!-- region-tree：层级导航与范围划定 -->
+    <aside class="sidebar">
+      <div class="side-head">层级目录（域 / 类别 / 子类别）</div>
+      <div id="tree" role="tree" tabindex="0" aria-label="实体层级目录（方向键移动，Enter 选定范围，左右键展开收起）"></div>
+    </aside>
+
+    <main class="content">
+      <!-- region-table 工具区：query 筛选器（不触碰选择集） -->
+      <div class="toolbar">
+        <div class="toolbar-row">
+          <span id="scope-crumb">范围：全部实体</span>
+          <span class="search-wrap">
+            <input id="search" type="text" placeholder="搜索编码 / 名称 / 负责人 / 标签…" aria-label="关键字搜索">
+            <kbd>/</kbd>
+          </span>
+          <button id="btn-clear-filters" class="btn btn-mini" title="重置范围与全部筛选">清除筛选</button>
+          <span style="flex:1"></span>
+          <button id="btn-sel-visible" class="btn" title="把当前筛选命中的实体加入选择集">选当前筛选结果</button>
+          <button id="btn-sel-subtree" class="btn" title="把当前节点子树下的全部实体加入选择集">选子树全部</button>
+        </div>
+        <div class="toolbar-row chips">
+          <span class="lbl">状态筛选（点击=只显示，全局计数）</span>
+          <span id="status-chips"></span>
+          <span id="sel-summary">已选 0 · 可见 0 · 范围内 0</span>
+        </div>
+      </div>
+
+      <!-- 已选被隐藏警示（零误伤护栏） -->
+      <div id="warn-strip">
+        <div id="warn" hidden>
+          <span class="w-ico">⚠</span>
+          <span id="warn-text"></span>
+          <button class="btn btn-mini" data-act="toggle-list">查看隐藏项</button>
+          <button class="btn btn-mini" data-act="keep-visible" title="把选择集裁剪为当前可见项">仅保留可见项</button>
+        </div>
+        <div id="warn-list" hidden></div>
+      </div>
+
+      <!-- region-table：高密度实体清单（支配工作面） -->
+      <div class="table-wrap" id="tablewrap">
+        <table aria-label="实体清单（方向键移动行，空格选择，回车展开详情）">
+          <thead id="thead">
+            <tr>
+              <th class="c-check"><input type="checkbox" id="head-check" aria-label="全选当前可见行"></th>
+              <th class="c-code" data-sort="id">编码<span class="sort-ind"></span></th>
+              <th class="c-name" data-sort="name">名称<span class="sort-ind"></span></th>
+              <th class="c-status" data-sort="status">状态<span class="sort-ind"></span></th>
+              <th data-sort="path">归属路径（域 / 类别）<span class="sort-ind"></span></th>
+              <th class="c-owner" data-sort="owner">负责人<span class="sort-ind"></span></th>
+              <th>标签</th>
+              <th class="c-date" data-sort="updatedAt">更新<span class="sort-ind"></span></th>
+            </tr>
+          </thead>
+          <tbody id="tbody" aria-label="实体清单行"></tbody>
+        </table>
+      </div>
+
+      <!-- region-actionbar：批量操作条（selection_driven） -->
+      <div id="actionbar" hidden>
+        <span id="ab-count">已选 0 项</span>
+        <span class="spacer"></span>
+        <button class="btn btn-op-main" data-op="status">改状态</button>
+        <button class="btn" data-op="move">移动类别</button>
+        <button class="btn" data-op="tag-add">加标签</button>
+        <button class="btn" data-op="tag-remove">移除标签</button>
+        <button class="btn btn-danger" data-op="delete">删除…</button>
+        <button class="btn" id="btn-ab-clear">清空选择</button>
+      </div>
+
+      <!-- region-statusbar：操作回执与全局信息 -->
+      <div id="statusbar">
+        <span id="receipt"></span>
+        <span class="spacer"></span>
+        <button class="btn btn-mini" id="ops-btn" data-act="toggle-ops">操作记录 (0)</button>
+        <span class="dim" id="sb-total"></span>
+        <div id="ops-panel" hidden></div>
+      </div>
+    </main>
+  </div>
+
+  <!-- region-preview-modal：批量操作逐项预览与确认（mode 状态属主） -->
+  <div id="modal" hidden>
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-head">
+        <h2 id="modal-title">批量操作</h2>
+        <button class="x" id="btn-x" title="关闭 (Esc)">✕</button>
+      </div>
+      <div class="modal-ctrl" id="modal-ctrl"></div>
+      <div id="modal-summary"></div>
+      <div id="modal-list"></div>
+      <div class="modal-error" id="modal-error" role="alert"></div>
+      <div class="modal-foot">
+        <button class="btn" id="btn-cancel">取消</button>
+        <button class="btn btn-primary" id="btn-confirm" disabled>确认执行</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="errbanner" hidden></div>
+  <div id="selftest-out" hidden></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

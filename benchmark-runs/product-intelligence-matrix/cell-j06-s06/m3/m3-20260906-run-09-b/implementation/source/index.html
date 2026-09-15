@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orbit CDN · 变更时间线</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app" aria-busy="false">
+
+  <header class="topbar" id="region-header">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">◈</span>
+      <div class="brand-text">
+        <h1>Orbit CDN · 变更时间线</h1>
+        <p class="meta" id="header-meta">—</p>
+      </div>
+    </div>
+    <div class="legend" aria-label="变更类型图例">
+      <span class="legend-item"><i class="sym t-add">+</i>新增</span>
+      <span class="legend-item"><i class="sym t-modify">~</i>修改</span>
+      <span class="legend-item"><i class="sym t-remove">−</i>移除</span>
+      <span class="legend-item"><i class="sym t-rename">→</i>重命名</span>
+      <span class="legend-sep" aria-hidden="true"></span>
+      <span class="legend-item causal-legend"><i class="sym b-cause">↩</i>因（更早）</span>
+      <span class="legend-item causal-legend"><i class="sym b-effect">↪</i>果（更晚）</span>
+    </div>
+  </header>
+
+  <div class="filterbar" id="region-filters">
+    <div class="chips" role="group" aria-label="按变更类型筛选" id="type-chips"></div>
+    <label class="element-filter">
+      <span>元素</span>
+      <select id="element-select" aria-label="按元素筛选"></select>
+    </label>
+    <button id="clear-filters" class="ghost-btn" hidden>清除筛选（Esc）</button>
+    <p class="filter-note" id="filter-note" role="status"></p>
+  </div>
+
+  <main class="workspace">
+    <section class="timeline-pane" id="region-timeline" aria-label="变更集时间线（按时间升序，自上而下）">
+      <div class="pane-head">
+        <h2>时间线 <span class="pane-sub">上早 ↓ 下晚</span></h2>
+      </div>
+      <div class="timeline-scroll" id="timeline" role="list" aria-label="变更集序列"></div>
+    </section>
+
+    <aside class="side-pane">
+      <section class="inspector" id="region-inspector" aria-label="选中变更集详情"></section>
+      <section class="state-panel" id="region-state-panel" aria-label="状态回放"></section>
+    </aside>
+  </main>
+
+  <div id="app-error" class="app-error" hidden role="alert"></div>
+</div>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

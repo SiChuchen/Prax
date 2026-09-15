@@ -1,0 +1,57 @@
+{
+  "url": "file:///E:/codex-prj/ab-worktrees/pi-matrix/cell-j08-s08-a/index.html",
+  "screenshots": [
+    "01-initial-load.png",
+    "02-after-edits.png",
+    "03-structure-check.png",
+    "04-reload-restored.png"
+  ],
+  "assertions": [
+    {
+      "name": "T1 首屏预览与文档模型逐块一致",
+      "ok": true,
+      "detail": "5 节全部匹配"
+    },
+    {
+      "name": "T2 编辑小节标题→预览即时一致",
+      "ok": true,
+      "detail": "背景与目标（修订版）"
+    },
+    {
+      "name": "T3 编辑段落正文→预览即时一致",
+      "ok": true,
+      "detail": "一致性验证：结构化编辑与 预览 保持实时同步。"
+    },
+    {
+      "name": "T4 新增列表块并填充→预览同步出现且内容一致",
+      "ok": true,
+      "detail": "0→2 [自动填充的列表项 A|自动填充的列表项 B]"
+    },
+    {
+      "name": "T5 清空小节标题→结构检查告警",
+      "ok": true,
+      "detail": "结构检查通过 → 1 个结构问题"
+    },
+    {
+      "name": "T6 撤销→标题与结构检查复原",
+      "ok": true,
+      "detail": "chip=结构检查通过 h2=背景与目标（修订版）"
+    },
+    {
+      "name": "T7 导出Markdown/HTML含完整结构",
+      "ok": true,
+      "detail": "# 「远岫影像」变化检测服务 · 产品说明"
+    },
+    {
+      "name": "T8 同步徽标防抖后回到已同步",
+      "ok": true,
+      "detail": "预览已同步 04:34:03"
+    }
+  ],
+  "pageErrors": [],
+  "hookPresent": true,
+  "restored": {
+    "titleValue": "「远岫影像」变化检测服务 · 产品说明",
+    "stSave": "已恢复本地草稿"
+  }
+}

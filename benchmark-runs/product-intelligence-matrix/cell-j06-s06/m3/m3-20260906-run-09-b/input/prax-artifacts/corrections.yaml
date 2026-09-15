@@ -1,0 +1,54 @@
+version: "0.1"
+corrections:
+  - id: corr-env-no-browser-tooling-keyboard
+    scope:
+      project: cell-j06-s06
+      surfaces:
+        - screen-change-history-timeline
+    finding:
+      type: environment_limitation
+      observed: 本执行会话的工具注册表中不存在任何浏览器/CDP/Shell 类工具（use_browser、chrome、bash 等经
+        ToolSearch 精确与全量检索均无）。两轮真机走查尝试（superpowers-chrome:browser-user 与 claude
+        子代理）均无法打开
+        file:///E:/codex-prj/ab-worktrees/pi-matrix/cell-j06-s06-b/index.html，未能采集任何截图或键盘操作证据。
+    intended:
+      statement: keyboard 检查（↑/↓ 沿时间序移动选中、Esc 清除筛选、:focus-visible 可见焦点）必须在具备浏览器/CDP
+        工具的会话中采集真机证据后才能置为 pass；复验脚本=README「操作」表（打开 index.html
+        后逐步执行即覆盖全部断言）。在证据补齐前，该项保持 inconclusive，不得以静态核对替代真机证据。
+    evidence_refs:
+      - ToolSearch 全量注册表检索（本会话）：仅 cron/task/prax/WebFetch/WebSearch
+        类延迟工具，无任何浏览器/CDP/Shell 工具
+      - 子代理 superpowers-chrome:browser-user（agentId
+        a6f3ef7f88505fbdc）实测报告：use_browser 未注册，未产生任何截图
+      - 子代理 claude（agentId a7440d0afa1f4db53）实测报告：两种命名变体 select 装载与多轮关键词检索均为空
+    regression:
+      check_id: keyboard
+      requirement: 主任务与选中操作可仅用键盘完成（↑/↓ 移动选中，方向与时间同向；Esc 清除筛选），且焦点可见。
+    supersedes: []
+    promotion:
+      candidate: false
+    created_at: 2026-09-07T22:30:02.026Z
+  - id: corr-env-no-browser-tooling-hierarchy
+    scope:
+      project: cell-j06-s06
+      surfaces:
+        - screen-change-history-timeline
+    finding:
+      type: environment_limitation
+      observed: 同 corr-env-no-browser-tooling-keyboard：环境无浏览器工具，styles.css
+        所编码的区域视觉权重（时间线 dominant / 详情与回放 primary / 筛选 supporting）无法以真机渲染截图证实。
+    intended:
+      statement: hierarchy_review 检查（视觉显著性遵循 SDIR importance）必须在具备浏览器工具的会话中截图证实后方可置为
+        pass（断言点：1440×900 视口下时间线为视觉主导区、选中态高亮最显著、chrome 仅顶栏与筛选行、无横向溢出）。证据补齐前保持
+        inconclusive。
+    evidence_refs:
+      - ToolSearch 全量注册表检索（本会话）：无任何浏览器/截图类工具
+      - 子代理实测两轮（a6f3ef7f88505fbdc / a7440d0afa1f4db53）：均无法打开页面或截图
+    regression:
+      check_id: hierarchy_review
+      requirement: 视觉显著性遵循 SDIR importance 而非实现便利：时间线 dominant、inspector/state-panel
+        primary、filters 元信息 supporting。
+    supersedes: []
+    promotion:
+      candidate: false
+    created_at: 2026-09-07T22:30:07.925Z

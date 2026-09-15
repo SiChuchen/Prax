@@ -1,0 +1,79 @@
+version: "0.1"
+session_id: ds_20260907212044_6286240f
+task:
+  surfaces: []
+  primary: 在 3 个候选铺位间并排比较全部指标，结合地理语境确定最优选址
+product_relationships:
+  - id: rel_site_in_map
+    source: candidate_site
+    target: geo_context
+    type: located_in
+    direction: forward
+    meaning: 每个候选在地图上有唯一点位，选中列与地图点双向高亮联动
+    importance: primary
+  - id: rel_weights_score
+    source: criteria_weights
+    target: candidate_site
+    type: scores
+    direction: forward
+    meaning: 加权评分把准则权重映射为每个候选的契合分与排名
+    importance: primary
+  - id: rel_sites_verdict
+    source: candidate_site
+    target: verdict
+    type: summarizes
+    direction: forward
+    meaning: 结论区随比较状态（领先者/选定项）实时更新
+    importance: supporting
+region_relationships:
+  - id: region_rel_data_detail
+    source: data
+    target: detail
+    type: selection_drives_contextual_detail
+decisions:
+  primary_structure: PAT-DATA-EXPLORER
+  density_intent: compact
+  major_choice_ids:
+    - mc-map-inline
+    - mc-weighted-score
+    - mc-select-lock
+must_preserve: []
+regression_points: []
+unresolved:
+  - dataset_fictional
+corrections: []
+representation_portfolio:
+  primary:
+    type: table
+    reason: few 条目高密度、字段共享、逐项最优需一眼可辨：表格列对齐让比较零记忆负担
+  supporting:
+    - type: map
+      reason: 验收种子「地理语境与决策项同屏」：自绘 SVG 示意商圈图常驻，候选点/通勤锚点/地铁/竞品同屏参照（product_object geo_context）
+    - type: form
+      reason: 决策权重滑杆（product_object criteria_weights）是 decide 的操作面，实时驱动契合分
+  rejected:
+    - option: cards
+      reason: 并排卡片字段不对齐，高密度比较需反复扫视对齐
+state_ownership:
+  - state: selection
+    owner: data
+  - state: preview
+    owner: session
+acceptance:
+  - 页面加载完成即同屏呈现 3 个候选铺位的完整指标列、商圈地理语境图与加权契合分；决策者不离开主屏即可调整权重、锁定选择并读出结论。
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - filter_state
+    - comparison_scan
+    - requirement_alignment
+  regression_check_ids: []

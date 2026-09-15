@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>构文 DocForm · 结构化文档编辑器</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23b5432c'/%3E%3Ctext x='16' y='22' font-size='16' font-family='serif' font-weight='700' fill='%23fff' text-anchor='middle'%3E构%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --ui: system-ui, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --serif: Georgia, "Times New Roman", "Noto Serif SC", "Source Han Serif SC", SimSun, serif;
+  --mono: Consolas, "Cascadia Mono", "Courier New", monospace;
+  --bg:#efece6; --panel:#fbfaf7; --panel2:#f6f4ef; --card:#fff;
+  --ink:#201d1a; --muted:#6f6a62; --faint:#a39b8d;
+  --line:#e2ddd3; --line2:#d8d0c2;
+  --accent:#b5432c; --accent-soft:#f6e8e3;
+  --ok:#3e7a4e; --warn:#a06a1f; --danger:#a83a32; --info:#33608d;
+  --ring: 0 0 0 3px rgba(181,67,44,.12);
+}
+*{ box-sizing:border-box; margin:0; padding:0; }
+html,body{ height:100%; }
+body{
+  font-family:var(--ui); color:var(--ink); background:var(--bg);
+  display:flex; flex-direction:column; overflow:hidden; font-size:14px;
+}
+button{ font-family:inherit; }
+.spacer{ flex:1; }
+.vsep{ width:1px; height:20px; background:var(--line); margin:0 2px; }
+
+/* ---------- top bar ---------- */
+#topbar{
+  flex:none; height:54px; display:flex; align-items:center; gap:10px;
+  padding:0 14px; background:var(--panel); border-bottom:1px solid var(--line);
+}
+.logo-mark{
+  width:30px; height:30px; border-radius:8px; background:var(--accent); color:#fff;
+  display:grid; place-items:center; font-family:var(--serif); font-weight:700; font-size:16px;
+  flex:none; box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.25);
+}
+.brand{ line-height:1.15; margin-right:4px; }
+.brand b{ font-size:14.5px; letter-spacing:.02em; display:block; }
+.brand span{ font-size:10.5px; color:var(--faint); letter-spacing:.14em; }
+.chip{
+  display:inline-flex; align-items:center; gap:7px; padding:4px 11px; border-radius:99px;
+  border:1px solid var(--line); background:var(--card); font-size:12px; color:var(--muted);
+  cursor:pointer; white-space:nowrap;
+}
+.chip .dot{ width:7px; height:7px; border-radius:50%; background:var(--faint); flex:none; }
+.chip.ok .dot{ background:var(--ok); }
+.chip.warn .dot{ background:var(--warn); }
+.chip.bad .dot{ background:var(--danger); }
+.chip.ok{ color:#3d6a4b; border-color:#cfe0d2; background:#f4f9f4; }
+.chip.warn{ color:#7d5416; border-color:#e8d9b8; background:#fbf6e9; }
+.chip.bad{ color:#8c332b; border-color:#ecd0cc; background:#fbf0ee; }
+.chip.sync .dot{ background:var(--info); }
+.chip.sync.busy .dot{ animation:pulse .7s ease-in-out infinite; }
+@keyframes pulse{ 50%{ opacity:.25; transform:scale(.7);} }
+#chipWrap{ position:relative; }
+#issuePanel{
+  position:absolute; top:calc(100% + 9px); left:0; width:360px; max-height:320px; overflow:auto;
+  background:var(--card); border:1px solid var(--line); border-radius:12px; padding:10px;
+  box-shadow:0 10px 30px rgba(60,48,25,.16); z-index:60;
+}
+#issuePanel .ip-title{ font-size:11px; letter-spacing:.1em; color:var(--faint); padding:2px 6px 8px; }
+.issue-row{
+  display:flex; gap:9px; align-items:flex-start; padding:7px 9px; border-radius:8px;
+  cursor:pointer; font-size:12.5px; line-height:1.5; text-align:left; width:100%;
+  background:none; border:none; color:var(--ink);
+}
+.issue-row:hover{ background:var(--panel2); }
+.issue-row .dot{ width:7px; height:7px; border-radius:50%; margin-top:6px; flex:none; }
+.issue-row.err .dot{ background:var(--danger); }
+.issue-row.warn .dot{ background:var(--warn); }
+.issue-row .where{ color:var(--faint); font-size:11.5px; }
+.ip-foot{
+  margin-top:8px; padding:9px 10px 3px; border-top:1px dashed var(--line);
+  font-size:11px; color:var(--faint); line-height:1.7;
+}
+.ip-empty{ padding:12px 10px; font-size:12.5px; color:var(--ok); display:flex; gap:8px; align-items:center; }
+
+/* ---------- buttons ---------- */
+.btn{
+  border:1px solid var(--line); background:var(--card); border-radius:8px; padding:5px 11px;
+  font-size:12.5px; cursor:pointer; color:var(--ink); white-space:nowrap;
+}
+.btn:hover{ border-color:var(--line2); background:var(--panel2); }
+.btn:active{ transform:translateY(1px); }
+.btn:disabled{ opacity:.38; cursor:default; transform:none; }
+.btn.icon{ padding:4px 8px; font-size:13px; line-height:1; }
+.btn.primary{ background:var(--accent); border-color:var(--accent); color:#fff; }
+.btn.primary:hover{ background:#a23a25; }
+.btn.ghost{ border-color:transparent; background:transparent; color:var(--muted); }
+.btn.ghost:hover{ background:var(--panel2); border-color:var(--line); }
+.btn.danger-armed{ background:var(--danger); border-color:var(--danger); color:#fff; }
+.btn.mini{
+  padding:2px 7px; font-size:11px; border-radius:6px; color:var(--muted); background:transparent; border-color:transparent;
+}
+.btn.mini:hover{ background:var(--panel2); border-color:var(--line); color:var(--ink); }
+.btn.mini:disabled{ opacity:.3; }
+:focus-visible{ outline:2px solid rgba(181,67,44,.45); outline-offset:1px; }
+
+/* ---------- layout ---------- */
+#layout{
+  flex:1; min-height:0; display:grid;
+  grid-template-columns:236px minmax(400px,1.02fr) minmax(430px,1fr);
+}
+#outlinePane{ border-right:1px solid var(--line); background:var(--panel); display:flex; flex-direction:column; min-height:0; }
+.pane-head{
+  flex:none; display:flex; align-items:center; justify-content:space-between;
+  padding:12px 12px 8px; font-size:11px; letter-spacing:.16em; color:var(--faint); font-weight:600;
+}
+#outlineList{ flex:1; overflow-y:auto; padding:0 8px 8px; }
+.outline-item{
+  display:flex; align-items:center; gap:8px; padding:7px 8px; border-radius:8px;
+  cursor:pointer; border:1px solid transparent; user-select:none;
+}
+.outline-item:hover{ background:#f1ede4; }
+.outline-item.active{ background:var(--card); border-color:var(--line); box-shadow:0 1px 2px rgba(0,0,0,.05); }
+.o-idx{
+  width:19px; height:19px; border-radius:6px; background:#f1ece1; color:#8a8378;
+  font-size:11px; display:grid; place-items:center; flex:none;
+}
+.outline-item.active .o-idx{ background:var(--accent); color:#fff; }
+.o-title{ flex:1; min-width:0; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.o-title.empty{ color:var(--faint); font-style:italic; }
+.o-count{ font-size:10.5px; color:var(--faint); flex:none; }
+.o-ctl{ display:none; gap:1px; flex:none; }
+.outline-item:hover .o-ctl, .outline-item.active .o-ctl{ display:flex; }
+#outlineFoot{
+  flex:none; padding:10px 14px 12px; border-top:1px solid var(--line);
+  font-size:11px; color:var(--faint); line-height:1.7;
+}
+#btnAddSec{ margin:2px 6px 10px; display:block; width:calc(100% - 12px); text-align:center; border-style:dashed; color:var(--muted); }
+
+/* ---------- editor ---------- */
+#editorPane{ overflow-y:auto; padding:20px 22px 80px; background:var(--panel2); min-width:0; }
+.doc-head{ padding-bottom:4px; }
+input[type="text"], textarea, select{
+  font-family:inherit; font-size:13.5px; color:var(--ink); background:var(--card);
+  border:1px solid var(--line); border-radius:8px; padding:8px 11px; width:100%;
+}
+input:focus, textarea:focus, select:focus{ outline:none; border-color:var(--accent); box-shadow:var(--ring); }
+textarea{ resize:none; line-height:1.7; overflow:hidden; min-height:44px; }
+.doc-title{
+  font-family:var(--serif); font-size:21px; font-weight:700; padding:9px 11px;
+}
+.doc-sub{ margin-top:6px; font-size:13px; color:var(--muted); }
+.sec-label{
+  margin:22px 0 8px; font-size:11px; letter-spacing:.16em; color:var(--faint); font-weight:600;
+  display:flex; align-items:center; gap:8px;
+}
+.sec-label::after{ content:""; flex:1; height:1px; background:var(--line); }
+.sec-title{ font-family:var(--serif); font-size:17px; font-weight:700; }
+.blocks{ margin-top:12px; display:flex; flex-direction:column; gap:10px; }
+.block-card{
+  background:var(--card); border:1px solid var(--line); border-radius:11px; padding:11px 13px 13px;
+}
+.block-card:hover{ border-color:var(--line2); }
+.block-head{ display:flex; align-items:center; gap:6px; margin-bottom:9px; }
+.badge-type{
+  font-size:10.5px; letter-spacing:.12em; padding:3px 9px; border-radius:99px;
+  background:#f1ece1; color:#8a8378; font-weight:600;
+}
+.block-card.t-callout .badge-type{ background:var(--accent-soft); color:var(--accent); }
+.block-card.t-list .badge-type{ background:#e9f0f5; color:var(--info); }
+.block-head .spacer{ flex:1; }
+.field-row{ display:flex; gap:8px; align-items:center; }
+.field-row > select{ width:118px; flex:none; }
+.items{ display:flex; flex-direction:column; gap:6px; margin-top:8px; }
+.item-row{ display:flex; gap:8px; align-items:center; }
+.item-row .i-idx{
+  width:18px; height:18px; border-radius:50%; border:1px solid var(--line2); color:var(--faint);
+  font-size:10.5px; display:grid; place-items:center; flex:none;
+}
+.callout-title{ font-family:var(--serif); font-weight:700; }
+.add-row{ margin-top:14px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.add-row .hint{ font-size:11px; color:var(--faint); margin-left:2px; }
+.empty-sec{
+  margin-top:12px; padding:26px 16px; border:1.5px dashed var(--line2); border-radius:12px;
+  text-align:center; color:var(--faint); font-size:12.5px; line-height:2;
+}
+
+/* ---------- preview ---------- */
+#previewPane{ overflow-y:auto; padding:28px 34px 70px; background:#eae5db; border-left:1px solid var(--line); min-width:0; }
+#previewCard{
+  max-width:740px; margin:0 auto; background:#fffdf8; border:1px solid #e4dccb; border-radius:5px;
+  box-shadow:0 3px 18px rgba(70,55,25,.10); padding:50px 58px 70px;
+}
+.pv-title{ font-family:var(--serif); font-size:27px; font-weight:700; line-height:1.4; letter-spacing:.02em; }
+.pv-title.empty, .pv-h2.empty{ color:var(--faint); font-style:italic; font-weight:400; }
+.pv-sub{ margin-top:10px; font-size:14px; color:var(--muted); }
+.pv-byline{
+  margin-top:16px; padding-bottom:16px; font-size:12px; color:var(--faint);
+  border-bottom:3px double #d9cfba; display:flex; gap:14px; flex-wrap:wrap;
+}
+.pv-sec{ padding:26px 0 4px; }
+.pv-h2{
+  font-family:var(--serif); font-size:20px; font-weight:700; display:flex; align-items:center; gap:11px;
+  scroll-margin-top:20px;
+}
+.pv-idx{
+  font-family:var(--ui); font-size:11px; font-weight:600; width:21px; height:21px; border-radius:6px;
+  background:#f1ece1; color:#8a8378; display:inline-grid; place-items:center; flex:none;
+}
+.pv-sec.sel .pv-idx{ background:var(--accent); color:#fff; }
+.pv-sec.sel .pv-h2{ color:var(--accent); }
+.pv-block{ border-radius:7px; padding:3px 8px; margin:13px -8px 0; }
+.pv-block > :first-child{ margin-top:0; }
+.pv-block p{ text-align:justify; line-height:1.9; font-size:14.5px; }
+.pv-block code, .co-text code, .pv-sub code{
+  font-family:var(--mono); font-size:.86em; background:#f1ecdf; border:1px solid #e6ddc8;
+  border-radius:5px; padding:1px 5px; color:#7a5b23;
+}
+.pv-block strong{ font-weight:700; }
+.pv-block em{ font-style:italic; }
+.pv-block ul, .pv-block ol{ padding-left:1.6em; line-height:1.95; font-size:14.5px; }
+.pv-block li::marker{ color:var(--accent); }
+.callout{
+  border-left:3px solid; border-radius:0 9px 9px 0; padding:11px 15px 12px;
+}
+.callout .co-label{ font-size:10.5px; font-weight:700; letter-spacing:.18em; }
+.callout .co-title{ font-family:var(--serif); font-weight:700; font-size:14px; margin-top:3px; }
+.callout .co-text{ font-size:13.5px; line-height:1.8; margin-top:5px; text-align:justify; }
+.callout.info{ border-color:var(--info); background:#eef3f9; }
+.callout.info .co-label{ color:var(--info); }
+.callout.success{ border-color:var(--ok); background:#eef5ef; }
+.callout.success .co-label{ color:var(--ok); }
+.callout.warn{ border-color:var(--warn); background:#faf3e2; }
+.callout.warn .co-label{ color:var(--warn); }
+.callout.danger{ border-color:var(--danger); background:#faeceb; }
+.callout.danger .co-label{ color:var(--danger); }
+@keyframes flashbg{ 0%{ background:#ffedc4; box-shadow:0 0 0 5px #ffedc4; } 100%{ background:transparent; box-shadow:0 0 0 5px transparent; } }
+.pv-block.flash{ animation:flashbg 1.5s ease-out 1; }
+
+/* ---------- status bar / toast ---------- */
+#statusbar{
+  flex:none; height:30px; display:flex; align-items:center; gap:16px; padding:0 14px;
+  font-size:11.5px; color:var(--faint); background:var(--panel2); border-top:1px solid var(--line);
+}
+#statusbar .ok-text{ color:var(--ok); }
+#toasts{
+  position:fixed; bottom:46px; left:50%; transform:translateX(-50%);
+  display:flex; flex-direction:column; align-items:center; gap:8px; z-index:100; pointer-events:none;
+}
+.toast{
+  background:#2b2823; color:#f5f1e8; padding:8px 16px; border-radius:9px; font-size:12.5px;
+  box-shadow:0 6px 20px rgba(0,0,0,.25); animation:rise .18s ease-out;
+}
+@keyframes rise{ from{ opacity:0; transform:translateY(8px);} }
+
+::-webkit-scrollbar{ width:9px; height:9px; }
+::-webkit-scrollbar-thumb{ background:#d4ccbc; border-radius:99px; border:2px solid transparent; background-clip:content-box; }
+::-webkit-scrollbar-thumb:hover{ background:#c2b8a3; background-clip:content-box; border:2px solid transparent; }
+::-webkit-scrollbar-track{ background:transparent; }
+
+@media (max-width:1240px){ #layout{ grid-template-columns:200px minmax(360px,1fr) minmax(380px,1fr);} }
+@media (max-width:1000px){ #layout{ grid-template-columns:1fr 1fr; } #outlinePane{ display:none; } }
+@media (max-width:720px){
+  #layout{ grid-template-columns:1fr; grid-template-rows:1fr 1fr; }
+  #previewPane{ border-top:1px solid var(--line); padding:18px 16px 40px; }
+  #previewCard{ padding:30px 26px 44px; }
+}
+</style>
+</head>
+<body>
+
+<header id="topbar">
+  <div class="logo-mark">构</div>
+  <div class="brand"><b>构文 DocForm</b><span>STRUCTURED DOC EDITOR</span></div>
+  <div id="chipWrap">
+    <button id="chip" class="chip ok" title="点击查看结构检查详情" aria-haspopup="true" aria-expanded="false">
+      <span class="dot"></span><span id="chipText">结构检查通过</span>
+    </button>
+    <div id="issuePanel" hidden></div>
+  </div>
+  <div id="syncBadge" class="chip sync" title="预览由文档数据实时渲染，始终与编辑内容一致">
+    <span class="dot"></span><span id="syncText">预览已同步</span>
+  </div>
+  <div class="spacer"></div>
+  <button id="btnUndo" class="btn" title="撤销 (Ctrl+Z)">↶ 撤销</button>
+  <button id="btnRedo" class="btn" title="重做 (Ctrl+Y)">↷ 重做</button>
+  <span class="vsep"></span>
+  <button id="btnCopy" class="btn" title="复制 Markdown 源码到剪贴板">复制 Markdown</button>
+  <button id="btnMd" class="btn" title="下载 Markdown 文件">导出 .md</button>
+  <button id="btnHtml" class="btn" title="下载独立 HTML 文件">导出 .html</button>
+  <span class="vsep"></span>
+  <button id="btnReset" class="btn ghost" title="丢弃当前内容，恢复内置示例文档">还原示例</button>
+</header>
+
+<main id="layout">
+  <aside id="outlinePane">
+    <div class="pane-head">文档大纲</div>
+    <div id="outlineList"></div>
+    <button id="btnAddSec" class="btn">＋ 新增小节</button>
+    <div id="outlineFoot">结构由模式保证：<br>小节层级固定 · 内容块类型受控 · 全文转义渲染</div>
+  </aside>
+  <section id="editorPane" aria-label="结构化编辑区"></section>
+  <section id="previewPane" aria-label="实时预览区"><div id="previewCard"></div></section>
+</main>
+
+<footer id="statusbar">
+  <span id="stWords"></span>
+  <span id="stSections"></span>
+  <div class="spacer"></div>
+  <span id="stSave"></span>
+  <span id="stUpdated"></span>
+</footer>
+
+<div id="toasts"></div>
+
+<script>
+"use strict";
+/* ============================================================
+ * 构文 DocForm —— 单文档结构化编辑器
+ * 数据模型：{ title, subtitle, updated, sections:[{id,title,blocks:[…]}] }
+ * 内容块类型受控：p（段落）/ list（列表）/ callout（提示框）
+ * 预览由模型实时渲染 —— 编辑与预览天然一致，结构不可能被破坏
+ * ============================================================ */
+
+/* ---------- 小工具 ---------- */
+const byId = id => document.getElementById(id);
+let _uid = 1;
+const uid = () => "n" + (_uid++);
+const clone = o => JSON.parse(JSON.stringify(o));
+const fmtTime = ts => new Date(ts).toLocaleTimeString("zh-CN", { hour12:false });
+const fmtNum = n => n.toLocaleString("zh-CN");
+
+/* DOM 构建助手：值一律走 value / textContent，天然转义 */
+function h(tag, attrs, ...children){
+  const el = document.createElement(tag);
+  if (attrs) for (const k in attrs){
+    const v = attrs[k];
+    if (v == null) continue;
+    if (k === "class") el.className = v;
+    else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v);
+  }
+  const push = c => { if (c == null) return; el.appendChild(typeof c === "string" ? document.createTextNode(c) : c); };
+  for (const c of children){
+    if (Array.isArray(c)){ c.forEach(push); continue; }   // 数组子节点展开
+    push(c);
+  }
+  return el;
+}
+
+/* ---------- 内置示例文档（首屏数据，随页面加载即就绪） ---------- */
+function makeSampleDoc(){
+  const s = (title, blocks) => ({ id: uid(), title, blocks });
+  const p  = text        => ({ id: uid(), type:"p", text });
+  const li = (variant, items) => ({ id: uid(), type:"list", variant, items: items.slice() });
+  const co = (tone, title, text) => ({ id: uid(), type:"callout", tone, title, text });
+  return {
+    title: "「远岫影像」变化检测服务 · 产品说明",
+    subtitle: "v1.2 内部评审稿 · 数据产品线",
+    updated: Date.now(),
+    sections: [
+      s("背景与目标", [
+        p("遥感影像的更新频率在过去三年提高了近四倍，客户不再满足于“按季度交付一张底图”，而是希望第一时间知道**哪里发生了变化**。「远岫」变化检测服务正是在这一背景下立项：以两期影像为输入，自动输出变化图斑及其置信度。"),
+        co("info", "立项结论", "服务定位为独立 API 与批量任务两种形态，首批只服务农业与国土两条行业线，其余行业进入等待名单。")
+      ]),
+      s("核心能力", [
+        p("检测引擎围绕“发现—描述—确认”三个环节构建，当前版本具备以下能力："),
+        li("bullet", [
+          "像素级变化图斑提取，最小图斑 64 平方米",
+          "双时相影像自动配准，配准误差低于 0.5 像素",
+          "图斑置信度分级输出（高 / 中 / 低），支持 `Webhook` 回调通知"
+        ])
+      ]),
+      s("使用流程", [
+        li("number", [
+          "上传两期影像，框选或导入 ROI 边界",
+          "选择检测模板（农业 / 国土 / 通用）",
+          "提交任务并获取回执编号",
+          "在结果页复核图斑，导出边界与统计"
+        ]),
+        p("整个流程平均耗时 8 分钟；任务回执包含每个图斑的边界 `GeoJSON` 以及前后两期影像的裁剪对照图。")
+      ]),
+      s("边界与非目标", [
+        p("本期不做三维变化检测，不处理海洋目标，也不承诺对云量超过 30% 的影像给出可用结果。超出上述范围的请求将被明确拒绝，而不是返回低质量结果。"),
+        co("warn", "已知限制", "冬季落叶林区域的误报率约为 12%，计划在 v1.3 引入物候校正模型后收敛到 6% 以内。")
+      ]),
+      s("评审记录", [
+        p("9 月 2 日初审通过。评审组要求补充与 *底图服务* 的配额联动说明，并在发布前完成一次灾难恢复演练。"),
+        p("后续修订请**追加新的小节**，不要直接改写本节内容，以保持评审记录可追溯。")
+      ])
+    ]
+  };
+}
+
+/* ---------- 状态 ---------- */
+const STORAGE_KEY = "docform.doc.v1";
+const state = {
+  doc: null,
+  selectedSection: null,
+  undo: [], redo: [],
+  storageOK: true
+};
+let lastCoKey = null, lastCoTime = 0;
+
+/* ---------- 行内标记解析：`code`  **bold**  *italic* ---------- */
+function renderInline(text){
+  const frag = document.createDocumentFragment();
+  const re = /(`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*)/g;
+  let last = 0, m;
+  while ((m = re.exec(text)) !== null){
+    if (m.index > last) frag.appendChild(document.createTextNode(text.slice(last, m.index)));
+    const t = m[0];
+    let el = null;
+    if (t.startsWith("`"))      { el = document.createElement("code");   el.textContent = t.slice(1, -1); }
+    else if (t.startsWith("**")){ el = document.createElement("strong"); el.textContent = t.slice(2, -2); }
+    else                        { el = document.createElement("em");     el.textContent = t.slice(1, -1); }
+    frag.appendChild(el);
+    last = m.index + t.length;
+  }
+  if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+  return frag;
+}
+
+/* ---------- 校验：结构检查 ---------- */
+function collectIssues(d){
+  const issues = [];
+  if (!d.title.trim()) issues.push({ level:"error", msg:"文档标题为空", sec:null });
+  if (d.sections.length === 0) issues.push({ level:"error", msg:"文档没有任何小节", sec:null });
+  d.sections.forEach((s, si) => {
+    const name = s.title.trim() ? `「${s.title.trim()}」` : "";
+    if (!s.title.trim()) issues.push({ level:"error", msg:`第 ${si+1} 节标题为空`, sec:s.id });
+    if (s.blocks.length === 0) issues.push({ level:"warn", msg:`第 ${si+1} 节${name}没有内容块`, sec:s.id });
+    s.blocks.forEach((b, bi) => {
+      if (b.type === "p" && !b.text.trim())
+        issues.push({ level:"warn", msg:`第 ${si+1} 节第 ${bi+1} 块是空段落`, sec:s.id });
+      if (b.type === "list" && b.items.some(it => !it.trim()))
+        issues.push({ level:"warn", msg:`第 ${si+1} 节第 ${bi+1} 块的列表含空项`, sec:s.id });
+      if (b.type === "callout" && !b.text.trim())
+        issues.push({ level:"warn", msg:`第 ${si+1} 节第 ${bi+1} 块的提示框正文为空`, sec:s.id });
+    });
+  });
+  return issues;
+}
+
+/* ---------- 统计 ---------- */
+function* allText(d){
+  yield d.title; yield d.subtitle || "";
+  for (const s of d.sections){
+    yield s.title;
+    for (const b of s.blocks){
+      if (b.type === "p") yield b.text;
+      else if (b.type === "list"){ yield b.items.join(" "); }
+      else if (b.type === "callout"){ yield b.title || ""; yield b.text; }
+    }
+  }
+}
+function countWords(d){
+  let cjk = 0, latin = 0;
+  for (const t of allText(d)){
+    cjk  += (t.match(/[一-鿿]/g) || []).length;
+    latin += (t.match(/[A-Za-z0-9][A-Za-z0-9'’\-]*/g) || []).length;
+  }
+  return cjk + latin;
+}
+const totalBlocks = d => d.sections.reduce((n, s) => n + s.blocks.length, 0);
+
+/* ---------- 历史（撤销 / 重做，输入连击自动合并） ---------- */
+function snap(){ return JSON.stringify({ doc: state.doc, sel: state.selectedSection }); }
+function pushUndo(coKey){
+  const now = Date.now();
+  if (coKey && coKey === lastCoKey && now - lastCoTime < 1200){
+    lastCoTime = now; return;               // 连续输入合并为一个撤销点
+  }
+  state.undo.push(snap());
+  if (state.undo.length > 100) state.undo.shift();
+  state.redo.length = 0;
+  lastCoKey = coKey || null; lastCoTime = now;
+}
+function applySnap(json){
+  const o = JSON.parse(json);
+  state.doc = o.doc;
+  state.selectedSection =
+    state.doc.sections.some(s => s.id === o.sel) ? o.sel
+    : (state.doc.sections[0] ? state.doc.sections[0].id : null);
+  lastCoKey = null;
+  renderAll(); saveLocal();
+}
+function undo(){ if (!state.undo.length) return; state.redo.push(snap()); applySnap(state.undo.pop()); toast("已撤销"); }
+function redo(){ if (!state.redo.length) return; state.undo.push(snap()); applySnap(state.redo.pop()); toast("已重做"); }
+
+/* ---------- 变更入口 ----------
+ * textual：纯文本/选项变更 —— 只重渲染预览与状态，不重建编辑器（保持输入焦点） */
+function act(fn, opt){
+  opt = opt || {};
+  pushUndo(opt.coKey);
+  fn(state.doc);
+  state.doc.updated = Date.now();
+  if (opt.textual) renderTextual(opt.flash);
+  else renderAll(opt);
+  saveLocal();
+}
+function renderTextual(flashId){ renderPreview(flashId, true); renderStatus(); bumpSync(); }
+
+/* ---------- 渲染：大纲 ---------- */
+function renderOutline(){
+  const list = byId("outlineList");
+  list.innerHTML = "";
+  const d = state.doc;
+  if (!d.sections.length){
+    list.appendChild(h("div", { style:"padding:14px 10px;font-size:12px;color:var(--faint);" }, "暂无小节"));
+  }
+  d.sections.forEach((s, i) => {
+    const item = h("div", {
+      class: "outline-item" + (s.id === state.selectedSection ? " active" : ""),
+      onclick: () => selectSection(s.id),
+      title: s.title || "未命名小节"
+    },
+      h("span", { class:"o-idx" }, String(i + 1)),
+      h("span", { class:"o-title" + (s.title.trim() ? "" : " empty") }, s.title.trim() || "未命名小节"),
+      h("span", { class:"o-count" }, s.blocks.length + " 块"),
+      h("span", { class:"o-ctl" },
+        h("button", { class:"btn mini", title:"上移小节", disabled: i === 0 ? "" : null,
+          onclick: e => { e.stopPropagation(); moveSection(i, -1); } }, "↑"),
+        h("button", { class:"btn mini", title:"下移小节", disabled: i === d.sections.length - 1 ? "" : null,
+          onclick: e => { e.stopPropagation(); moveSection(i, 1); } }, "↓"),
+        h("button", { class:"btn mini", title:"删除小节",
+          onclick: e => { e.stopPropagation(); armDelete(e.currentTarget, () => deleteSection(s.id)); } }, "×")
+      )
+    );
+    list.appendChild(item);
+  });
+}
+
+/* ---------- 渲染：编辑区 ---------- */
+function renderEditor(focusBlockId){
+  const pane = byId("editorPane");
+  const st = pane.scrollTop;
+  pane.innerHTML = "";
+  const d = state.doc;
+  const sec = d.sections.find(s => s.id === state.selectedSection) || d.sections[0];
+  if (sec) state.selectedSection = sec.id;
+
+  /* 文档头 */
+  pane.appendChild(h("div", { class:"doc-head" },
+    h("input", { class:"doc-title", type:"text", value:d.title, placeholder:"（文档标题）",
+      "aria-label":"文档标题",
+      oninput: e => act(doc => { doc.title = e.target.value; }, { coKey:"doc:title", textual:true }) }),
+    h("input", { class:"doc-sub", type:"text", value:d.subtitle || "", placeholder:"副标题（可选）",
+      "aria-label":"文档副标题",
+      oninput: e => act(doc => { doc.subtitle = e.target.value; }, { coKey:"doc:sub", textual:true }) })
+  ));
+
+  if (!sec){
+    pane.appendChild(h("div", { class:"empty-sec" },
+      "本文档还没有小节。", h("br"),
+      h("button", { class:"btn primary", onclick: addSection }, "＋ 新增第一个小节")));
+    pane.scrollTop = st;
+    return;
+  }
+
+  const idx = d.sections.indexOf(sec);
+  pane.appendChild(h("div", { class:"sec-label" }, `第 ${idx + 1} 节 / 共 ${d.sections.length} 节`));
+  pane.appendChild(h("input", { class:"sec-title", type:"text", value:sec.title, placeholder:"（小节标题）",
+    "aria-label":"小节标题",
+    oninput: e => act(doc => { doc.sections[idx].title = e.target.value; }, { coKey:"sec:" + sec.id, textual:true }) }));
+
+  const blocks = h("div", { class:"blocks" });
+  sec.blocks.forEach((b, bi) => blocks.appendChild(blockCard(b, bi, idx)));
+  pane.appendChild(blocks);
+
+  if (!sec.blocks.length){
+    pane.appendChild(h("div", { class:"empty-sec" }, "这一节还没有内容块，从下方添加。"));
+  }
+
+  pane.appendChild(h("div", { class:"add-row" },
+    h("button", { class:"btn", onclick: () => addBlock("p") },      "＋ 段落"),
+    h("button", { class:"btn", onclick: () => addBlock("list") },   "＋ 列表"),
+    h("button", { class:"btn", onclick: () => addBlock("callout") }, "＋ 提示框"),
+    h("span", { class:"hint" }, "新增内容会立即进入右侧预览，层级与类型由模式约束")
+  ));
+
+  pane.scrollTop = st;
+  if (focusBlockId){
+    const card = pane.querySelector(`[data-block="${focusBlockId}"]`);
+    if (card){
+      const f = card.querySelector("textarea, input[type=text]");
+      if (f){ f.focus(); if (f.select && f.tagName === "INPUT") f.select(); }
+      if (f && f.tagName === "TEXTAREA") autogrow(f);
+    }
+  }
+}
+
+/* 自动增高文本域 */
+function autogrow(t){ t.style.height = "auto"; t.style.height = Math.max(44, t.scrollHeight + 2) + "px"; }
+
+function blockCard(b, bi, secIdx){
+  const card = h("div", { class:"block-card t-" + b.type, "data-block": b.id });
+  const ctl = h("span", { class:"o-ctl", style:"display:flex" },
+    h("button", { class:"btn mini", title:"上移", disabled: bi === 0 ? "" : null,
+      onclick: () => moveBlock(bi, -1) }, "↑"),
+    h("button", { class:"btn mini", title:"下移",
+      onclick: () => moveBlock(bi, 1) }, "↓"),
+    h("button", { class:"btn mini", title:"复制此块",
+      onclick: () => dupBlock(bi) }, "复制"),
+    h("button", { class:"btn mini", title:"删除此块",
+      onclick: e => armDelete(e.currentTarget, () => deleteBlock(bi)) }, "×")
+  );
+  const typeNames = { p:"段落", list:"列表", callout:"提示框" };
+  card.appendChild(h("div", { class:"block-head" },
+    h("span", { class:"badge-type" }, typeNames[b.type]),
+    h("span", { class:"spacer" }), ctl));
+
+  if (b.type === "p"){
+    const t = h("textarea", { rows:2, placeholder:"正文……支持 **加粗** *斜体* `代码`",
+      oninput: e => { autogrow(e.target);
+        act(doc => { doc.sections[secIdx].blocks[bi].text = e.target.value; },
+            { coKey:"p:" + b.id, textual:true, flash:b.id }); } });
+    t.value = b.text;
+    card.appendChild(t);
+    requestAnimationFrame(() => autogrow(t));
+  }
+  else if (b.type === "list"){
+    const sel = h("select", { "aria-label":"列表样式", onchange: e =>
+      act(doc => { doc.sections[secIdx].blocks[bi].variant = e.target.value; }, { flash:b.id }) },
+      h("option", { value:"bullet" }, "• 无序列表"),
+      h("option", { value:"number" }, "1. 有序列表"));
+    sel.value = b.variant;
+    card.appendChild(h("div", { class:"field-row" }, sel));
+
+    const items = h("div", { class:"items" });
+    b.items.forEach((it, ii) => {
+      const input = h("input", { type:"text", value:it, placeholder:"列表项……",
+        oninput: e => act(doc => { doc.sections[secIdx].blocks[bi].items[ii] = e.target.value; },
+          { coKey:`li:${b.id}:${ii}`, textual:true, flash:b.id }) });
+      items.appendChild(h("div", { class:"item-row" },
+        h("span", { class:"i-idx" }, b.variant === "number" ? String(ii + 1) : "•"),
+        input,
+        h("button", { class:"btn mini", title:"删除此列表项", disabled: b.items.length === 1 ? "" : null,
+          onclick: () => act(doc => { doc.sections[secIdx].blocks[bi].items.splice(ii, 1); }) }, "×")
+      ));
+    });
+    card.appendChild(items);
+    card.appendChild(h("div", { style:"margin-top:8px" },
+      h("button", { class:"btn mini", style:"border:1px solid var(--line)",
+        onclick: () => act(doc => { doc.sections[secIdx].blocks[bi].items.push(""); }) },
+        "＋ 添加列表项")));
+  }
+  else if (b.type === "callout"){
+    const tones = { info:"提示", success:"结论", warn:"注意", danger:"风险" };
+    const sel = h("select", { "aria-label":"提示框级别", onchange: e =>
+      act(doc => { doc.sections[secIdx].blocks[bi].tone = e.target.value; }, { textual:true, flash:b.id }) },
+      Object.keys(tones).map(k => h("option", { value:k }, tones[k] + "（" + k + "）")));
+    sel.value = b.tone;
+    const title = h("input", { type:"text", class:"callout-title", value:b.title || "", placeholder:"标题（可选）",
+      oninput: e => act(doc => { doc.sections[secIdx].blocks[bi].title = e.target.value; },
+        { coKey:"co:" + b.id, textual:true, flash:b.id }) });
+    card.appendChild(h("div", { class:"field-row" }, sel, title));
+    const t = h("textarea", { rows:2, placeholder:"提示框正文……",
+      oninput: e => { autogrow(e.target);
+        act(doc => { doc.sections[secIdx].blocks[bi].text = e.target.value; },
+            { coKey:"cot:" + b.id, textual:true, flash:b.id }); } });
+    t.value = b.text || "";
+    card.appendChild(t);
+    requestAnimationFrame(() => autogrow(t));
+  }
+  return card;
+}
+
+/* ---------- 渲染：预览（由数据实时生成） ---------- */
+function renderPreview(flashId, restoreScroll){
+  const pane = byId("previewPane");
+  const st = pane.scrollTop;
+  const card = byId("previewCard");
+  card.innerHTML = "";
+  const d = state.doc;
+
+  card.appendChild(h("h1", { class:"pv-title" + (d.title.trim() ? "" : " empty") },
+    d.title.trim() || "（无标题文档）"));
+  if ((d.subtitle || "").trim())
+    card.appendChild(h("p", { class:"pv-sub" }, renderInline(d.subtitle)));
+  card.appendChild(h("div", { class:"pv-byline" },
+    h("span", {}, "最后更新 " + fmtTime(d.updated)),
+    h("span", {}, "约 " + fmtNum(countWords(d)) + " 字"),
+    h("span", {}, d.sections.length + " 节 · " + totalBlocks(d) + " 个内容块")));
+
+  if (!d.sections.length){
+    card.appendChild(h("div", { class:"pv-sec" },
+      h("p", { style:"color:var(--faint);font-style:italic;" }, "（正文为空——请在左侧添加小节）")));
+  }
+
+  d.sections.forEach((s, i) => {
+    const sec = h("section", { class:"pv-sec" + (s.id === state.selectedSection ? " sel" : ""), id:"pv-" + s.id });
+    sec.appendChild(h("h2", { class:"pv-h2" + (s.title.trim() ? "" : " empty") },
+      h("span", { class:"pv-idx" }, String(i + 1)),
+      s.title.trim() || "（未命名小节）"));
+    s.blocks.forEach(b => sec.appendChild(previewBlock(b)));
+    card.appendChild(sec);
+  });
+
+  if (flashId){
+    const el = card.querySelector(`[data-pv="${flashId}"]`);
+    if (el) el.classList.add("flash");
+  }
+  if (restoreScroll) pane.scrollTop = st;
+}
+function previewBlock(b){
+  const wrap = h("div", { class:"pv-block", "data-pv": b.id });
+  if (b.type === "p"){
+    if (!b.text.trim()) wrap.appendChild(h("p", { style:"color:var(--faint);font-style:italic;" }, "（空段落）"));
+    else wrap.appendChild(h("p", {}, renderInline(b.text)));
+  }
+  else if (b.type === "list"){
+    wrap.appendChild(h(b.variant === "number" ? "ol" : "ul", {},
+      b.items.map(it => {
+        const li = document.createElement("li");
+        if (!it.trim()){ li.style.color = "var(--faint)"; li.style.fontStyle = "italic"; li.textContent = "（空项）"; }
+        else li.appendChild(renderInline(it));
+        return li;
+      })));
+  }
+  else if (b.type === "callout"){
+    const toneNames = { info:"提示", success:"结论", warn:"注意", danger:"风险" };
+    const tone = toneNames[b.tone] ? b.tone : "info";
+    const box = h("aside", { class:"callout " + tone },
+      h("div", { class:"co-label" }, toneNames[tone]),
+      (b.title || "").trim() ? h("div", { class:"co-title" }, b.title) : null,
+      h("div", { class:"co-text" },
+        (b.text || "").trim() ? renderInline(b.text)
+          : (() => { const s = document.createElement("span");
+                     s.style.cssText = "color:var(--faint);font-style:italic;";
+                     s.textContent = "（空）"; return s; })()));
+    wrap.appendChild(box);
+  }
+  return wrap;
+}
+
+/* ---------- 渲染：状态（校验 + 统计 + 按钮） ---------- */
+function renderStatus(){
+  const d = state.doc;
+  const issues = collectIssues(d);
+  const errs = issues.filter(i => i.level === "error").length;
+  const warns = issues.length - errs;
+
+  const chip = byId("chip"), chipText = byId("chipText");
+  chip.className = "chip " + (errs ? "bad" : warns ? "warn" : "ok");
+  chipText.textContent = errs ? `${errs} 个结构问题` + (warns ? ` · ${warns} 项建议` : "")
+    : warns ? `${warns} 项建议` : "结构检查通过";
+
+  const panel = byId("issuePanel");
+  panel.innerHTML = "";
+  panel.appendChild(h("div", { class:"ip-title" }, "结构检查 · STRUCTURE CHECK"));
+  if (!issues.length){
+    panel.appendChild(h("div", { class:"ip-empty" },
+      h("span", { class:"dot", style:"width:7px;height:7px;border-radius:50%;background:var(--ok);display:inline-block" }),
+      "一切正常：标题、小节与内容块完整，编辑与预览保持一致。"));
+  }
+  issues.forEach(it => {
+    panel.appendChild(h("button", { class:"issue-row " + it.level, type:"button",
+      onclick: () => { if (it.sec){ selectSection(it.sec); toggleIssuePanel(false); } } },
+      h("span", { class:"dot" }),
+      h("span", {}, it.msg, it.sec ? h("span", { class:"where" }, "　→ 点击定位") : null)));
+  });
+  panel.appendChild(h("div", { class:"ip-foot" },
+    "结构由模式保证：内容块类型受控、小节层级固定、全文转义渲染——编辑操作不可能破坏文档结构。"));
+
+  byId("stWords").textContent = "约 " + fmtNum(countWords(d)) + " 字";
+  byId("stSections").textContent = d.sections.length + " 节 · " + totalBlocks(d) + " 个内容块";
+  byId("stUpdated").textContent = "上次更新 " + fmtTime(d.updated);
+
+  byId("btnUndo").disabled = !state.undo.length;
+  byId("btnRedo").disabled = !state.redo.length;
+}
+
+function renderAll(opt){
+  opt = opt || {};
+  renderOutline();
+  renderEditor(opt.focusBlock);
+  renderPreview(opt.flash, false);
+  renderStatus();
+  bumpSync();
+}
+
+/* ---------- 选择与结构操作 ---------- */
+function selectSection(id){
+  state.selectedSection = id;
+  renderOutline();
+  renderEditor();
+  renderPreview(null, false);
+  renderStatus();
+  requestAnimationFrame(() => {
+    const el = byId("pv-" + id);
+    if (el) el.scrollIntoView({ behavior:"smooth", block:"start" });
+    byId("editorPane").scrollTop = 0;
+  });
+}
+function addSection(){
+  act(doc => {
+    const s = { id: uid(), title:"", blocks:[] };
+    doc.sections.push(s);
+    state.selectedSection = s.id;
+  }, { focusBlock:null });
+  toast("已新增小节，请填写标题");
+  const inputs = byId("editorPane").querySelectorAll(".sec-title");
+  if (inputs.length){ const last = inputs[inputs.length - 1]; last.focus(); }
+}
+function deleteSection(id){
+  act(doc => {
+    const i = doc.sections.findIndex(s => s.id === id);
+    if (i >= 0) doc.sections.splice(i, 1);
+    if (state.selectedSection === id){
+      const next = doc.sections[Math.min(i, doc.sections.length - 1)];
+      state.selectedSection = next ? next.id : null;
+    }
+  });
+  toast("已删除小节（可撤销）");
+}
+function moveSection(i, dir){
+  act(doc => {
+    const j = i + dir;
+    if (j < 0 || j >= doc.sections.length) return;
+    const [s] = doc.sections.splice(i, 1);
+    doc.sections.splice(j, 0, s);
+    state.selectedSection = s.id;
+  });
+}
+function addBlock(type){
+  const b = type === "p" ? { id: uid(), type:"p", text:"" }
+    : type === "list" ? { id: uid(), type:"list", variant:"bullet", items:["", ""] }
+    : { id: uid(), type:"callout", tone:"info", title:"", text:"" };
+  act(doc => {
+    const s = doc.sections.find(x => x.id === state.selectedSection);
+    if (s) s.blocks.push(b);
+  }, { flash: b.id });
+}
+function deleteBlock(bi){
+  act(doc => {
+    const s = doc.sections.find(x => x.id === state.selectedSection);
+    if (s) s.blocks.splice(bi, 1);
+  });
+}
+function dupBlock(bi){
+  act(doc => {
+    const s = doc.sections.find(x => x.id === state.selectedSection);
+    if (!s) return;
+    const c = clone(s.blocks[bi]); c.id = uid();
+    s.blocks.splice(bi + 1, 0, c);
+  }, { flash: null });
+}
+function moveBlock(bi, dir){
+  act(doc => {
+    const s = doc.sections.find(x => x.id === state.selectedSection);
+    if (!s) return;
+    const j = bi + dir;
+    if (j < 0 || j >= s.blocks.length) return;
+    const [b] = s.blocks.splice(bi, 1);
+    s.blocks.splice(j, 0, b);
+  });
+}
+
+/* ---------- 导出 ---------- */
+function mdInline(s){ return s; } // Markdown 直接保留行内标记
+const TONE_MD = { info:"提示", success:"结论", warn:"注意", danger:"风险" };
+function docToMarkdown(d){
+  let out = "# " + d.title.trim() + "\n\n";
+  if ((d.subtitle || "").trim()) out += "> " + d.subtitle.trim() + "\n\n";
+  d.sections.forEach((s, i) => {
+    out += "## " + (i + 1) + ". " + (s.title.trim() || "（未命名小节）") + "\n\n";
+    s.blocks.forEach(b => {
+      if (b.type === "p"){
+        out += (b.text.trim() || "（空段落）") + "\n\n";
+      } else if (b.type === "list"){
+        b.items.forEach((it, k) => {
+          out += (b.variant === "number" ? (k + 1) + ". " : "- ") + (it.trim() || "（空项）") + "\n";
+        });
+        out += "\n";
+      } else if (b.type === "callout"){
+        out += "> **【" + (TONE_MD[b.tone] || "提示") + "】"
+          + ((b.title || "").trim() ? b.title.trim() : "") + "**\n";
+        (b.text || "(空)").split("\n").forEach(line => { out += "> " + line + "\n"; });
+        out += "\n";
+      }
+    });
+  });
+  return out.trimEnd() + "\n";
+}
+function escHtml(s){
+  return s.replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+}
+function htmlInline(s){
+  return escHtml(s)
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*([^*]+)\*/g, "<em>$1</em>");
+}
+const TONE_HTML = { info:["提示","#33608d","#eef3f9"], success:["结论","#3e7a4e","#eef5ef"],
+                    warn:["注意","#a06a1f","#faf3e2"], danger:["风险","#a83a32","#faeceb"] };
+function docToHTML(d){
+  const secs = d.sections.map((s, i) => {
+    const blocks = s.blocks.map(b => {
+      if (b.type === "p") return `<p>${htmlInline(b.text) || "（空段落）"}</p>`;
+      if (b.type === "list"){
+        const tag = b.variant === "number" ? "ol" : "ul";
+        return `<${tag}>${b.items.map(it => `<li>${htmlInline(it) || "（空项）"}</li>`).join("")}</${tag}>`;
+      }
+      const [label, color, bg] = TONE_HTML[b.tone] || TONE_HTML.info;
+      return `<aside style="border-left:3px solid ${color};background:${bg};padding:11px 15px;border-radius:0 8px 8px 0;margin:13px 0 0">`
+        + `<div style="font-size:11px;font-weight:700;letter-spacing:.15em;color:${color}">${label}</div>`
+        + ((b.title || "").trim() ? `<div style="font-weight:700;margin-top:3px">${escHtml(b.title)}</div>` : "")
+        + `<div style="margin-top:5px;line-height:1.8">${htmlInline(b.text || "（空）")}</div></aside>`;
+    }).join("\n");
+    return `<section><h2><span style="font-size:12px;background:#f1ece1;color:#8a8378;border-radius:6px;padding:2px 7px;vertical-align:3px">${i + 1}</span> `
+      + escHtml(s.title.trim() || "（未命名小节）") + `</h2>\n${blocks}</section>`;
+  }).join("\n");
+  return `<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><title>${escHtml(d.title)}</title>
+<style>body{font-family:Georgia,"Noto Serif SC",SimSun,serif;max-width:740px;margin:40px auto;padding:0 24px;color:#201d1a;line-height:1.85}
+h1{font-size:27px}h2{font-size:20px;margin-top:34px}p,li{text-align:justify;font-size:15px}
+code{font-family:Consolas,monospace;background:#f1ecdf;border-radius:4px;padding:1px 5px}
+.byline{color:#a39b8d;font-size:12px;border-bottom:3px double #d9cfba;padding-bottom:14px}</style></head>
+<body><h1>${escHtml(d.title)}</h1>
+${(d.subtitle || "").trim() ? `<p><em>${escHtml(d.subtitle)}</em></p>` : ""}
+<p class="byline">导出于 ${fmtTime(Date.now())} · 约 ${fmtNum(countWords(d))} 字</p>
+${secs}
+</body></html>`;
+}
+function download(name, content, mime){
+  try{
+    const blob = new Blob([content], { type: mime });
+    const a = h("a", { href: URL.createObjectURL(blob), download: name });
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 600);
+    toast("已导出 " + name);
+  }catch(e){ toast("导出失败：" + e.message); }
+}
+function fileBase(){ return (state.doc.title.trim() || "docform").replace(/[\\/:*?"<>|]/g, "_").slice(0, 40); }
+function copyMarkdown(){
+  const md = docToMarkdown(state.doc);
+  const done = () => toast("Markdown 已复制到剪贴板");
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(md).then(done).catch(() => fallbackCopy(md, done));
+  } else fallbackCopy(md, done);
+}
+function fallbackCopy(text, done){
+  try{
+    const ta = h("textarea", { style:"position:fixed;opacity:0" });
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    document.execCommand("copy"); ta.remove(); done();
+  }catch(e){ toast("复制失败，请改用「导出 .md」"); }
+}
+
+/* ---------- 本地草稿 ---------- */
+function saveLocal(){
+  if (!state.storageOK) return;
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state.doc));
+       byId("stSave").textContent = "本地草稿已保存 " + fmtTime(Date.now());
+       byId("stSave").className = "ok-text";
+  }catch(e){
+    state.storageOK = false;
+    byId("stSave").textContent = "本地草稿不可用（仅内存）";
+    byId("stSave").className = "";
+  }
+}
+function loadLocal(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const d = JSON.parse(raw);
+    if (d && typeof d.title === "string" && Array.isArray(d.sections)) return d;
+  }catch(e){}
+  return null;
+}
+
+/* ---------- 两步删除（确认后执行，避免误删） ---------- */
+function armDelete(btn, onConfirm, armedLabel){
+  if (btn.dataset.armed === "1"){ btn.dataset.armed = ""; onConfirm(); return; }
+  btn.dataset.armed = "1";
+  const old = btn.textContent;
+  btn.textContent = armedLabel || "确认删除？";
+  btn.classList.add("danger-armed");
+  setTimeout(() => {
+    if (btn.isConnected && btn.dataset.armed === "1"){
+      btn.dataset.armed = "";
+      btn.textContent = old;
+      btn.classList.remove("danger-armed");
+    }
+  }, 2600);
+}
+
+/* ---------- 同步徽标 / 提示 ---------- */
+let syncTimer = null;
+function bumpSync(){
+  const badge = byId("syncBadge"), text = byId("syncText");
+  badge.classList.add("busy");
+  text.textContent = "同步中…";
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => {
+    badge.classList.remove("busy");
+    text.textContent = "预览已同步 " + fmtTime(Date.now());
+  }, 220);
+}
+function toast(msg){
+  const t = h("div", { class:"toast" }, msg);
+  byId("toasts").appendChild(t);
+  setTimeout(() => t.remove(), 2200);
+}
+
+/* ---------- 结构检查面板开合 ---------- */
+function toggleIssuePanel(show){
+  const p = byId("issuePanel");
+  const willShow = show === undefined ? p.hidden : show;
+  p.hidden = !willShow;
+  byId("chip").setAttribute("aria-expanded", String(willShow));
+}
+byId("chip").addEventListener("click", e => { e.stopPropagation(); toggleIssuePanel(); });
+document.addEventListener("click", e => {
+  if (!byId("issuePanel").hidden && !byId("chipWrap").contains(e.target)) toggleIssuePanel(false);
+});
+
+/* ---------- 顶层按钮 ---------- */
+byId("btnUndo").addEventListener("click", undo);
+byId("btnRedo").addEventListener("click", redo);
+byId("btnAddSec").addEventListener("click", addSection);
+byId("btnCopy").addEventListener("click", copyMarkdown);
+byId("btnMd").addEventListener("click", () =>
+  download(fileBase() + ".md", docToMarkdown(state.doc), "text/markdown;charset=utf-8"));
+byId("btnHtml").addEventListener("click", () =>
+  download(fileBase() + ".html", docToHTML(state.doc), "text/html;charset=utf-8"));
+byId("btnReset").addEventListener("click", () => {
+  armDelete(byId("btnReset"), () => {
+    state.doc = makeSampleDoc();
+    state.undo = []; state.redo = []; lastCoKey = null;
+    state.selectedSection = state.doc.sections[0].id;
+    try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+    renderAll(); saveLocal(); toast("已还原为示例文档");
+  }, "确认还原？");
+});
+
+/* ---------- 快捷键 ---------- */
+document.addEventListener("keydown", e => {
+  const mod = e.ctrlKey || e.metaKey;
+  if (!mod) return;
+  const k = e.key.toLowerCase();
+  if (k === "z" && !e.shiftKey){ e.preventDefault(); undo(); }
+  else if ((k === "z" && e.shiftKey) || k === "y"){ e.preventDefault(); redo(); }
+  else if (k === "s"){ e.preventDefault(); saveLocal(); toast("已保存到本地草稿"); }
+});
+
+/* ---------- 启动：同步完成首屏渲染，无加载态 ---------- */
+(function init(){
+  const saved = loadLocal();
+  state.doc = saved || makeSampleDoc();
+  // 恢复快照中可能缺失的 id（防御）
+  state.doc.sections.forEach(s => {
+    if (!s.id) s.id = uid();
+    s.blocks.forEach(b => { if (!b.id) b.id = uid(); });
+  });
+  // 推进 id 计数器，避免恢复的草稿与新建节点 id 碰撞
+  state.doc.sections.forEach(s => {
+    [s.id].concat(s.blocks.map(b => b.id)).forEach(id => {
+      const m = /^n(\d+)$/.exec(id || "");
+      if (m) _uid = Math.max(_uid, Number(m[1]) + 1);
+    });
+  });
+  state.selectedSection = state.doc.sections.length ? state.doc.sections[0].id : null;
+  renderAll();
+  if (saved){ byId("stSave").textContent = "已恢复本地草稿"; }
+  bumpSync();
+})();
+
+/* ---------- 测试钩子（不影响产品行为） ---------- */
+window.__docform = { state, renderAll, collectIssues, docToMarkdown, docToHTML, h, renderInline, countWords };
+</script>
+</body>
+</html>

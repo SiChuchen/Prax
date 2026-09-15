@@ -1,0 +1,80 @@
+{
+  "reviewer": "R1",
+  "package_id": "impl-17",
+  "session_id": "fdda03f3-2daf-46d9-8c20-bb012ca91769",
+  "wall_clock_seconds": 151,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-17",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Both screenshots show a search-first catalog of 2,400 dataset items (count '2,400 items' top right; rows are named items with id/category/formats·size·date) — matching the brief's open-collection shape (unbounded, low relation, medium hierarchy via a two-level COLLECTION tree with 8 domains and expandable subcategories, 1280x860/1440x900 left rail). data.js:90 'TOTAL = 2400' supplies the large-collection scale; app.js:150-177 windows the list for it. The brief's judgment that 'the burden is the locate path, not structure presentation' is mirrored in the dominant search box vs. secondary facets."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "The locate search input is the widest, most central control on the initial screen in both viewports (top bar, max-width 680px per styles.css:53), auto-focused at boot (app.js:488 'els.search.focus()'), with a job-stating placeholder 'Search 2,400 datasets — name, id, tag, or description… (/ to focus)' (index.html:26); the document title even names the success criterion: 'locate any dataset in three interactions' (index.html:6)."
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "Model-judged proxy: brand 'Locus — OpenCollection Locator' (screenshots top-left; index.html:20-21), one-line search affordance with '/' hint, live '2,400 items' count, and an immediately scannable result list — what/where is conveyed at first glance in both 1280x860 and 1440x900; no onboarding or loading state intervenes (index.html:11-15, app.js:483-488 synchronous boot)."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Single screen, no mode changes: type query → results rank instantly (app.js:358-361 input→refresh), ArrowDown+Enter or one click selects (app.js:365, 379-382), i.e., locate in 2-3 interactions, within the brief's '三次交互内' criterion. Search starts focused (app.js:488) and '/' re-focuses it (app.js:467), removing one click; facets are one toggle each (app.js:397-406)."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "Selection opens a right-hand detail panel while 'Result list, filters and scroll position are preserved while this panel is open' (index.html:84; app.js:277-302); Escape closes and refocuses the cursor row (app.js:296-302). Active filters persist as removable chips plus a 'Clear all' (app.js:249-270), full view state is URL-encoded (app.js:317-331), and facet counts use an exclusion model so alternatives stay visible (app.js:130-148, 305-310)."
+      },
+      "ui_surface_complexity": {
+        "score": 5,
+        "evidence": "Permanent surfaces are exactly the locate toolset: top bar (search + count), left rail (category tree, tags capped at top-18 with 'Show all 97 tags' expander, Format/License facets — screenshots; app.js:229-237), and the result list. Chips row, 'Clear all', detail panel, and error banner are all hidden until relevant (index.html:32,36,41; app.js:267-269, 280). Nothing decorative or mode-based for a 1-screen brief."
+      },
+      "accessibility": {
+        "score": 4,
+        "evidence": "Receipt a11y checks all 'skipped' with target_invalid:true (measurement-summary.json:13-18), so scoring is from source/UI: strong semantics — role=search (index.html:23), aria-live count (index.html:31), listbox/option with aria-activedescendant and aria-selected (index.html:61; app.js:159,176,462), aria-expanded twisties and aria-pressed facets (app.js:200,210), full keyboard operation incl. arrows/Enter/Escape/'/' (app.js:362-377,465-469), :focus-visible outline (styles.css:30). Deductions: 10-12px text in --faint #8a97a5 ≈3:1 on white (styles.css:9, .row-meta 169, .facet-n 134, .facet-note 125) likely fails AA small-text contrast, and some targets are sub-24px (tree twistie 18x24 styles.css:139-140) — unmeasured, source-visible risks only."
+      },
+      "frontend_rework": {
+        "score": 4,
+        "evidence": "Visible layout defect in BOTH viewports: several rows' right meta wraps to a second line and spills past the fixed 31px row card — e.g., 'Projected Migration Registry' (JSON·Parquet·GeoJSON·524.4MB·Dec 2026), 'Global Sovereign Debt Dataset', 'Historical Sea Surface Temperature Ledger' (1280x860.png), and 'Historical Job Vacancies Compendium'/'Historical Sea Surface Temperature Ledger' (1440x900.png); .row-meta is a fixed 220px with no nowrap (styles.css:169) inside absolute 31px rows (styles.css:157). Receipt shows 0 fails but all 7 checks skipped (measurement-summary.json:4-6), so no measured error evidence either way — defect is screenshot-visible but minor, not screen-breaking."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed '定位路径有搜索/过滤支撑且不丢上下文' is addressed on both paths: search ranks tokens across name/id/tags/category/description (app.js:78-91) and filters span domain/subcategory/tag/format/license with live per-facet counts (index.html:44-57; app.js:130-148,203-246); context is preserved via the in-place detail panel, chips, exclusion-model counts, and hash-encoded state (index.html:84; app.js:295-302,317-331)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "Result-row meta text (long format lists + size + date) wraps and overflows the fixed-height row cards in multiple rows at both 1280x860 and 1440x900 (e.g., 'Projected Migration Registry', 'Historical Job Vacancies Compendium', 'Historical Sea Surface Temperature Ledger') — styles.css:157,169.",
+      "All seven receipt checks are 'skipped' and target_invalid:true (measurement-summary.json:4-18), so no measured layout/a11y/error evidence exists; accessibility could only be judged from source and screenshots.",
+      "Source-visible (unmeasured) a11y risks: 10-12px text in --faint #8a97a5 (~3:1 on white) for row meta, facet counts, and notes (styles.css:9,125,134,169); tree-expander target 18px wide (styles.css:139-140)."
+    ],
+    "missing_evidence": [
+      "a11y.contrast, a11y.focus_order, a11y.target_size, layout.overflow, layout.responsive_collision, text.truncation, type.min_projected_size — all 'skipped' (target_invalid) in measurement-summary.json; no receipt-based verification of contrast, focus order, target size, or overflow."
+    ],
+    "overall_note": "This package is a tightly scoped single-screen locate tool ('Locus') that matches the brief's open-collection cell: a dominant, auto-focused search over 2,400 inline dataset items with a two-level category tree and tag/format/license facets with live counts, achieving the ≤3-interaction locate criterion by construction (search → arrow/click → select, app.js:358-382) and preserving context throughout via an in-place detail panel, removable chips, exclusion-model facet counts, and URL-encoded state. The acceptance seed (search/filter-supported locate path without context loss) is explicitly and verifiably implemented. Two caveats keep it from a clean sweep: a recurring visible defect where long format·size·date meta wraps beyond the fixed 31px result rows in both viewports (styles.css:157,169), and the fact that every receipt check was skipped (target_invalid), leaving accessibility and layout unmeasured — source review shows exemplary ARIA/keyboard support but also plausible small-text contrast (~3:1) and sub-24px targets that would need the skipped checks to confirm or clear. Task completion time, retrieval accuracy, and human preference are not observable in this blind pilot, and model judgment here is not human preference."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 65212,
+      "outputTokens": 7524,
+      "cacheReadInputTokens": 191296,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.6098079999999999,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-09-08T21:47:51.494Z"
+}

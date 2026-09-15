@@ -1,0 +1,69 @@
+{
+  "receipt_version": "0.2",
+  "tool": { "name": "prax-measure", "version": "0.1.0" },
+  "target": {
+    "app_root": "E:\\codex-prj\\ab-worktrees\\pi-matrix\\cell-j05-s05-b",
+    "base_url": "file:///E:/codex-prj/ab-worktrees/pi-matrix/cell-j05-s05-b/index.html",
+    "build_ref": null
+  },
+  "run_at": "2026-09-08T18:11:30Z",
+  "viewport_matrix": [
+    { "width": 1600, "height": 1000, "label": "desktop-large" }
+  ],
+  "checks": [
+    {
+      "id": "a11y.focus_order",
+      "status": "pass",
+      "severity": "error",
+      "subject": "index.html — SVG map focusables (24 service nodes + 40 dependency edge hit-areas) plus header/trail controls",
+      "measured": {
+        "focusable_objects_tabindex0": 64,
+        "positive_tabindex": 0,
+        "aria_labelled_focusables": 74,
+        "edge_hit_areas": 40,
+        "tab_order": "DOM order: tier bands/labels, then 40 edge hit-paths, then 24 node groups in tier-column order top-to-bottom; header search/filter/reset and trailbar chips are native focusable controls",
+        "activation": "Enter/Space on nodes and edge hit-areas (svg keydown handler, app.js bindEvents); Esc returns to the whole web; / focuses search; ArrowUp/ArrowDown/Enter navigate search matches",
+        "visible_focus": "g.node:focus-visible .node-box white 2.2px ring; .edge-hit:focus-visible cyan dashed 3px; .btn:focus-visible 2px accent outline (styles.css)"
+      },
+      "threshold": {
+        "positive_tabindex_max": 0,
+        "labelled": "all focusable objects",
+        "keyboard_activation": "every role=button object activates via Enter/Space"
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/run-dom-follow.html",
+          "sha256": "d523bb0c3e06cb755cdc7ca161314ac4e1df83a9131715d410d1f408beabe46c"
+        },
+        {
+          "ref": "validation-evidence/run-follow-trail.png",
+          "sha256": "d2d5b7127fa4380c8e100e4314087fc3129a9a82fcd489f8ba38fcb35e2db932"
+        }
+      ],
+      "supported_fixes": []
+    }
+  ],
+  "summary": { "pass": 1, "fail": 0, "skipped": 0, "warnings": 0 },
+  "binding": {
+    "run_id": "run-20260908T181130Z-headless-edge-file",
+    "entry": "/index.html",
+    "scenario": "follow-dependency-chain-with-global-context",
+    "implementation": {
+      "root": "E:\\codex-prj\\ab-worktrees\\pi-matrix\\cell-j05-s05-b",
+      "digest": "32b408fa67d66c2e8837fd075ef8b28611f8f9cdf6e758e36ed6584fe29eb760",
+      "kind": "static_tree"
+    },
+    "session_id": "ds_20260908180630_9c7f4b24",
+    "contract_digests": {
+      "screen.sdir.yaml": "0c796691bf87648ce6618dba01723170fbcde958064e4ab0e0a6d2a5168ce483",
+      "sdir-delta.yaml": null,
+      "implementation-brief.yaml": "a5928d659230cbfe1f28f56b67bc734620e209f1b2bbe2b7a085cdf7807d90cd"
+    }
+  },
+  "target_validation": {
+    "status": "valid",
+    "issues": [],
+    "readiness": "document",
+    "ready_selector": null
+  }
+}

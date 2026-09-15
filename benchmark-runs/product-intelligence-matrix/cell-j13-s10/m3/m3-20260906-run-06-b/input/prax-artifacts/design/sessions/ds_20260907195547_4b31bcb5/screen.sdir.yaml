@@ -1,0 +1,95 @@
+version: "0.1"
+screen:
+  id: data_explorer_screen
+  intent:
+    primary_task: 在维度之间切换投影并按维度值过滤，观察数据分布变化，且任何一步都可回退
+    secondary_tasks:
+      - 查看单条记录明细
+      - 撤销最近一次状态变更 / 一键重置全部状态
+      - 在过滤后的子集上继续切换维度（认知连续）
+  archetype:
+    pattern_ref: PAT-DATA-EXPLORER
+  density_intent: compact
+  regions:
+    - id: data
+      role: collection
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - comparison_group
+        - filter_then_inspect
+    - id: collection
+      role: experimental:collection
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: active_state
+      role: experimental:active_state
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: data = 投影工作面：当前维度分布图 + 过滤后记录表，explore 主任务的主工作面
+      role: experimental:data = 投影工作面：当前维度分布图 + 过滤后记录表，explore 主任务的主工作面
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: collection = 维度轨：dimension 维度清单与可选值
+      role: experimental:collection = 维度轨：dimension 维度清单与可选值
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: active_state = 生效状态清单：归属维度+来源+逐条回退，常驻
+      role: experimental:active_state = 生效状态清单：归属维度+来源+逐条回退，常驻
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: inspector 选中记录明细；dataset 元信息
+      role: experimental:inspector 选中记录明细；dataset 元信息
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: detail
+      role: contextual_inspector
+      importance: contextual
+      visibility:
+        condition: selection_driven
+      behavior_intent:
+        - selection_driven
+  relationships:
+    - id: region_rel_data_detail
+      source: data
+      target: detail
+      type: selection_drives_contextual_detail
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved: []
+  rejected_alternatives:
+    - option: PAT-LIST-DETAIL 作为主导模式
+      reason: 其契约『collection order matters』不成立：记录序无叙事意义；主导必须是过滤/投影（Router 的 PAT-DATA-EXPLORER confidence=high），它降级为记录明细的辅助形态
+    - option: PAT-CANVAS-WORKSPACE
+      reason: Router 已排除：domain 不匹配，且 spatiality=none，拓扑不主导
+    - option: 卡片网格壳层
+      reason: myth-card-grid-default 驳斥：density=high + cardinality=unbounded 下卡片网格是反模式 card-grid-for-dense-comparison
+    - option: tree 层级树主导
+      reason: hierarchy=medium 不是主要负担；树强迫单一维度序，违背任意维度切换

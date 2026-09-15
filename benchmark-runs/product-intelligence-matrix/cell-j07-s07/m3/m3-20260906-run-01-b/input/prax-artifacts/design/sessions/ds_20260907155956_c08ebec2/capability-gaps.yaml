@@ -1,0 +1,122 @@
+needs:
+  - id: need-create
+    product_action: 新建物件（工具条按钮、双击画布空白、键盘 N 三等价入口）
+    required_experience:
+      - 落点即为新物件位置，进入落位推导
+    capabilities:
+      - DOM/SVG 直接渲染
+      - 几何命中测试
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯 DOM 状态机 + 事件处理，无后端
+  - id: need-move
+    product_action: 移动物件：拖拽；方向键 1 格、Shift 4 格、Alt+方向智能对齐吸附
+    required_experience:
+      - 移动过程中显示对齐参考线与落位预览
+      - 键盘与拖拽产生相同状态变更
+    capabilities:
+      - 指针拖拽状态机
+      - keydown 处理器
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 统一的 move 语义函数被指针与键盘两条路径复用
+  - id: need-placement-inference
+    product_action: 落位即意图：物件中心点落入分区 ⇒ 用途标签实时推导（placed_in）
+    required_experience:
+      - 无表单/菜单参与语义设定
+      - 落位结果即时可见
+    capabilities:
+      - 矩形几何求交
+      - 渲染层即时更新
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 点在矩形判定，每次位置变更后重算
+  - id: need-select
+    product_action: 选择：点选、Shift+点选多选、框选、Tab/Shift+Tab 键盘循环
+    required_experience:
+      - 选中态视觉清晰且键盘可达
+    capabilities:
+      - 焦点管理
+      - z 序选择列表
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 单一 selection 状态所有者
+  - id: need-align-distribute
+    product_action: 对齐（1-6）与均分（d / Shift+D）
+    required_experience:
+      - 单选时对齐所在分区，多选时组内对齐
+      - 不足条件时状态条给出提示
+    capabilities:
+      - 批量几何变换
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯计算
+  - id: need-zorder
+    product_action: 层级调整 [/]
+    required_experience:
+      - 与拖拽置顶等效的键盘路径
+    capabilities:
+      - 渲染顺序数组
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: items 数组重排
+  - id: need-duplicate-delete-undo
+    product_action: 复制 Ctrl+D、删除 Del、撤销重做 Ctrl+Z / Ctrl+Y
+    required_experience:
+      - 操作可逆（reversible）
+    capabilities:
+      - 深拷贝物件
+      - 撤销栈
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 命令快照栈
+  - id: need-rename
+    product_action: Enter 内联重命名物件
+    required_experience:
+      - 命名也可键盘完成，不依赖属性面板
+    capabilities:
+      - contenteditable/inline input
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 卡片内联输入
+  - id: need-first-screen
+    product_action: 首屏即就绪：初始平面图（分区+12 物件）内联首屏
+    required_experience:
+      - 加载完成即可用，无加载态
+    capabilities:
+      - 静态 JS 数据常量
+      - 同步渲染
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 数据作为 JS 常量随脚本载入，同步首渲染
+  - id: need-static-open
+    product_action: 静态可打开：index.html 直接 file:// 打开，本地可构建，不部署外部
+    required_experience:
+      - 无外部依赖/CDN
+    capabilities:
+      - 经典脚本（非 module）
+      - 可选静态构建产 dist/
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 零依赖原生实现 + build.mjs 自包含构建
+  - id: need-keyboard-help
+    product_action: 键盘等价物可见：? 速查覆盖层 + 状态条提示
+    required_experience:
+      - 键盘契约可发现、可学习
+    capabilities:
+      - 覆盖层
+      - 状态条常驻键位提示
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: DOM 覆盖层

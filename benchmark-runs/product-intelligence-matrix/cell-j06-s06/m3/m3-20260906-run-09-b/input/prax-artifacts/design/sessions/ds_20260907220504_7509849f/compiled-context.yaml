@@ -1,0 +1,94 @@
+version: "0.1"
+session_id: ds_20260907220504_7509849f
+task:
+  surfaces: []
+  primary: 按时间顺序浏览 change_set 序列，读取每个变更集内的元素级变更（增/改/删，含前后值）
+product_relationships:
+  - id: rel_cs_contains_change
+    source: change_set
+    target: change
+    type: contains
+    direction: forward
+    meaning: 一个变更集包含若干条元素级变更
+    importance: primary
+  - id: rel_change_on_element
+    source: change
+    target: element
+    type: acts_on
+    direction: forward
+    meaning: 变更作用于某元素；同一元素可被多个变更集先后作用
+    importance: primary
+  - id: rel_causal_effect
+    source: causal_link
+    target: change_set
+    type: causes_effect
+    direction: forward
+    meaning: 因果链接指向作为『果』的较晚变更集；链接的因端（更早变更集）记录在链接数据本身
+    importance: primary
+  - id: rel_causal_ground
+    source: change_set
+    target: causal_link
+    type: grounds_cause
+    direction: forward
+    meaning: 较早的因变更集实例化该因果链接（作为因端）
+    importance: primary
+  - id: rel_state_replay
+    source: change_set
+    target: state_snapshot
+    type: derived_from
+    direction: forward
+    meaning: 状态快照 = 按时间序回放该变更集（含）之前的所有变更
+    importance: supporting
+region_relationships: []
+decisions:
+  primary_structure: PAT-LIST-DETAIL
+  density_intent: regular
+  major_choice_ids:
+    - mc-state-replay
+    - mc-causal-badge
+    - mc-domain-flavor
+    - mc-vanilla-stack
+    - mc-keyboard
+must_preserve: []
+regression_points: []
+unresolved:
+  - u1-domain-flavor
+  - u2-causal-density
+corrections: []
+representation_portfolio:
+  primary:
+    type: timeline
+    reason: temporality=high：时间轴方向直接承载变更集的顺序语义，是因果方向可读的视觉基础
+  supporting:
+    - type: list
+      reason: 选中变更集的元素级变更行以列表呈现，行内含类型徽标与 before→after 单行 diff，承载 hierarchy=medium 的第二层
+    - type: table
+      reason: 右侧状态回放以紧凑两列（元素→当前值）呈现派生快照，medium 密度下保持可扫读
+  rejected:
+    - option: graph（DAG 画布）
+      reason: spatiality=none，引入无关空间语义
+    - option: calendar
+      reason: 强调日历周期而非序列因果
+    - option: table
+      reason: 时间方向性与两层结构表达力弱
+state_ownership:
+  - state: selection
+    owner: 时间轴上的变更集序列（节点顺序 = 时间顺序 = 因果合法顺序）
+  - state: preview
+    owner: session
+acceptance:
+  - 用户在单屏内任选一个变更集，能立刻看到：它包含哪些元素级变更（前后值）、它因何发生（指向更早的因）、它引发了什么（指向更晚的果）、以及截至该时刻系统各元素的状态；且界面上所有因果箭头都严格从较早指向较晚，回放状态与按时间逐条应用变更的结果完全一致。
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - requirement_alignment
+  regression_check_ids: []

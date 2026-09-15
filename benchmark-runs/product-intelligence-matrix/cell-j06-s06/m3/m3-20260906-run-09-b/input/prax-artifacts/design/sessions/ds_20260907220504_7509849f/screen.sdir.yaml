@@ -1,0 +1,152 @@
+version: "0.2"
+screen:
+  id: list_detail_screen
+  intent:
+    primary_task: 按时间顺序浏览 change_set 序列，读取每个变更集内的元素级变更（增/改/删，含前后值）
+    secondary_tasks:
+      - 追踪因果：从某个变更跳到它的因（更早的变更）或它的果（更晚的变更）
+      - 查看『截至选中变更集时刻』的系统整体状态（回放结果）
+      - 按变更类型或元素筛选，聚焦感兴趣的变更子集
+  archetype:
+    pattern_ref: PAT-LIST-DETAIL
+  density_intent: regular
+  regions:
+    - id: 时间轴上的变更集序列（节点顺序 = 时间顺序 = 因果合法顺序）
+      role: experimental:时间轴上的变更集序列（节点顺序 = 时间顺序 = 因果合法顺序）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 选中变更集的元素级变更明细（类型/元素/before→after）
+      role: experimental:选中变更集的元素级变更明细（类型/元素/before→after）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 因果链接（因徽标 → 与果徽标 →，带跳转）
+      role: experimental:因果链接（因徽标 → 与果徽标 →，带跳转）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 截至选中时刻的状态回放面板
+      role: experimental:截至选中时刻的状态回放面板
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 变更集元信息（作者/触发源/标签）
+      role: experimental:变更集元信息（作者/触发源/标签）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 筛选器（变更类型、元素）
+      role: experimental:筛选器（变更类型、元素）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 回放统计（已应用 N 条变更 / 元素 M 个）
+      role: experimental:回放统计（已应用 N 条变更 / 元素 M 个）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: workspace
+      role: dominant_workspace
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - preserve_context
+  relationships: []
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved: []
+  rejected_alternatives:
+    - option: 全局 Graph/DAG 画布呈现因果
+      reason: 空间性=none，且关系性仅中；图布局会引入与时间轴无关的空间语义，破坏时间/因果同向约束的可读性
+    - option: Calendar/时间刻度优先视图
+      reason: 粒度为发布周期内的离散变更集，日历强调日-周结构而非序列因果；时间线更贴切
+    - option: 纯 Table/数据集视图
+      reason: 丢掉时间轴的方向性视觉锚点，变更明细的前后 diff 在行式表格中层级感弱
+    - option: PAT-APPLICATION-SHELL（全局导航+可切换工作区）
+      reason: 已检选该模式：其契约 does_not_apply_when=the product is a single workspace；单屏无第二工作区
+    - option: 块面平铺默认布局（grid-of-blocks）
+      reason: cardinality=many 的序列成员若平铺为块面，时间顺序退化为布局巧合，与 temporality=high 的主语义冲突；对应决策器提示的默认谬误方向（myth 条目在本门不可路由，无法展开检选，故按其结论方向规避并如实记录）
+  user_job:
+    verb: understand
+    target: 随时间演化、由多个 change_set 组成的状态变更序列
+    success: 变更因果可读：用户能说出每次改了什么、为何发生、引发了什么，且时间先后与因果方向不冲突
+  primary_object:
+    type: change_set
+    label: 变更集（change_set）
+  information_shape:
+    cardinality: many
+    relationality: medium
+    hierarchy: medium
+    temporality: high
+    density: medium
+    dimensionality: medium
+    spatiality: none
+    volatility: medium
+    uncertainty: low
+    comparison_need: none
+  representation:
+    primary:
+      type: timeline
+      reason: temporality=high：时间轴方向直接承载变更集的顺序语义，是因果方向可读的视觉基础
+    supporting:
+      - type: list
+        reason: 选中变更集的元素级变更行以列表呈现，行内含类型徽标与 before→after 单行 diff，承载 hierarchy=medium 的第二层
+      - type: table
+        reason: 右侧状态回放以紧凑两列（元素→当前值）呈现派生快照，medium 密度下保持可扫读
+  priority:
+    primary:
+      - 时间轴上的变更集序列（节点顺序 = 时间顺序 = 因果合法顺序）
+      - 选中变更集的元素级变更明细（类型/元素/before→after）
+      - 因果链接（因徽标 → 与果徽标 →，带跳转）
+      - 截至选中时刻的状态回放面板
+      - workspace
+    contextual:
+      - 变更集元信息（作者/触发源/标签）
+      - 筛选器（变更类型、元素）
+      - 回放统计（已应用 N 条变更 / 元素 M 个）
+  interaction:
+    preview: none
+    inspect: select
+    navigate: none
+    locate: none
+  state_ownership:
+    - state: selection
+      owner: 时间轴上的变更集序列（节点顺序 = 时间顺序 = 因果合法顺序）
+    - state: preview
+      owner: session
+  complexity_budget:
+    permanent_panels: 3
+    permanent_primary_actions: 3
+    modes: 0
+    state_owners: 1
+    navigation_levels: 1
+    persistent_filters: 2
+    new_semantic_concepts: 3
+    keyboard_contracts: 1
+    mobile_conflicts: 0
+    permanent_surfaces: 1
+  acceptance:
+    - 用户在单屏内任选一个变更集，能立刻看到：它包含哪些元素级变更（前后值）、它因何发生（指向更早的因）、它引发了什么（指向更晚的果）、以及截至该时刻系统各元素的状态；且界面上所有因果箭头都严格从较早指向较晚，回放状态与按时间逐条应用变更的结果完全一致。

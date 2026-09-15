@@ -1,0 +1,67 @@
+user:
+  expertise: intermediate
+  familiarity: medium
+task:
+  primary: 探索多维数据：切换维度投影、施加/回退过滤，理解数据分布
+  modes:
+    - 切换投影维度
+    - 按维度值过滤
+    - 回退/撤销状态
+    - 查看记录明细
+  frequency: high
+domain:
+  type: data-analytics / multidimensional dataset exploration
+  entities:
+    - dataset
+    - dimension
+    - dimension_value
+    - filter
+    - projection
+    - record
+    - active_state
+information:
+  volume: high
+  relationship_complexity: medium
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: none
+  error_cost: low
+priorities:
+  - 维度切换保持认知连续（过滤/投影/选中不因切维度而重置）
+  - 生效状态可见且有归属（active state 列表，标注来源）
+  - 每条状态可单独回退，支持撤销与重置
+  - 高密度信息呈现：分布、聚合与明细同屏
+  - 首屏即用：数据内联，无加载态
+density_intent: compact
+confidence:
+  overall: high
+unknowns: []
+classification:
+  version: "1"
+  task_type: compare_filter_records
+  domain_id: observability_analytics
+  interaction_mode: collection_with_contextual_detail
+  product_type: unknown
+  primary_object_type: dimension
+  secondary_object_types:
+    - dataset
+    - filter
+    - projection
+    - active_state
+    - record
+  confidence: high
+  evidence:
+    - task_type=compare_filter_records ← token '过滤' in context.task and frame.tasks
+    - domain_id=observability_analytics ← token 'analytics' in context.domain
+    - interaction_mode=collection_with_contextual_detail ← token '列表' in context.task, frame.tasks, and context.priorities
+    - primary_object_type=dimension ← most referenced product object in the Product Frame
+  open_questions:
+    - product_type could not be derived; record the intended audience and product kind

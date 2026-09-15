@@ -1,0 +1,85 @@
+version: "0.1"
+session_id: ds_20260908185319_49573e7a
+task:
+  surfaces: []
+  primary: 按阶段→步骤→检查项逐步执行高后果流程，完成全部步骤与检查项
+product_relationships:
+  - id: rel-wf-phase
+    source: workflow
+    target: phase
+    type: composed_of
+    direction: forward
+    meaning: 流程由有序阶段组成
+    importance: primary
+  - id: rel-phase-step
+    source: phase
+    target: step
+    type: composed_of
+    direction: forward
+    meaning: 阶段包含有序步骤，前序完成才解锁后序
+    importance: primary
+  - id: rel-step-check
+    source: step
+    target: check
+    type: composed_of
+    direction: forward
+    meaning: 步骤包含检查项，全部通过才可提交
+    importance: primary
+  - id: rel-step-recovery
+    source: step
+    target: recovery_path
+    type: recovers_via
+    direction: forward
+    meaning: 不可逆步骤执行后可经恢复路径回滚
+    importance: primary
+region_relationships: []
+decisions:
+  primary_structure: PAT-LIST-DETAIL-INSPECTOR
+  density_intent: spacious
+  major_choice_ids:
+    - mc-confirm
+    - mc-recovery
+    - mc-guardrail
+    - mc-certificate
+must_preserve: []
+regression_points: []
+unresolved: []
+corrections: []
+representation_portfolio:
+  primary:
+    type: wizard
+    reason: complete 任务要求按序逐步推进且门控严格（前序未完成不得进入后序），向导语义与零失误主线一致
+  supporting:
+    - type: list
+      reason: 左侧阶段→步骤有序列表提供全局位置感与不可逆标识（⚠），即 PAT-LIST-DETAIL 的列表区
+    - type: feed
+      reason: 执行日志按时间倒序留痕全部动作与护栏拦截，支撑零失误凭证
+  rejected:
+    - option: table
+      reason: 无比较需求、低密度，表格把执行语义降级为浏览语义
+    - option: diagram/canvas
+      reason: 空间性 none，无空间隐喻价值
+    - option: document
+      reason: 纯文档无法承载强制门控、确认与恢复动作
+state_ownership:
+  - state: selection
+    owner: 步骤执行卡（指令、检查项、提交/确认动作）
+  - state: preview
+    owner: session
+acceptance:
+  - 零失误走完全程：全部检查项通过、3 个不可逆步骤均经显式确认执行、漏项与越序被护栏拦截并留痕，最终取得完成凭证；任一不可逆步骤可随时进入恢复路径回滚。
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - destructive_recovery
+    - requirement_alignment
+  regression_check_ids: []

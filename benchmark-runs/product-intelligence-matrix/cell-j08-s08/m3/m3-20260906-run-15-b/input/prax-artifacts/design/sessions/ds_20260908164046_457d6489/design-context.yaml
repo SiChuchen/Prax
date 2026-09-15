@@ -1,0 +1,61 @@
+user:
+  expertise: intermediate
+  familiarity: medium
+task:
+  primary: 对唯一文档做结构化编辑（节字段 + 层级大纲操作），保证编辑不破坏结构且与预览一致
+  modes:
+    - structured_editing
+    - structure_manipulation
+    - preview_review
+    - undo_redo
+  frequency: medium
+domain:
+  type: document_authoring
+  entities:
+    - document
+    - section
+    - outline_tree
+    - structure_report
+information:
+  volume: low
+  relationship_complexity: low
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: low
+  error_cost: medium
+priorities:
+  - 结构化编辑与预览一致（验收种子）
+  - 编辑不破坏结构：结构操作受完整性规则约束
+  - 首屏即就绪：初始文档内联
+  - 低密度、可扫读的工作台布局
+  - 操作可撤销
+density_intent: spacious
+confidence:
+  overall: high
+unknowns: []
+classification:
+  version: "1"
+  task_type: browse_collection
+  domain_id: unknown
+  interaction_mode: unknown
+  product_type: unknown
+  primary_object_type: document
+  secondary_object_types:
+    - section
+    - structure_report
+  confidence: low
+  evidence:
+    - task_type=browse_collection ← token '浏览' in context.task and frame.tasks
+    - primary_object_type=document ← most referenced product object in the Product Frame
+  open_questions:
+    - domain_id could not be classified from the provided context; refine the context fields or record a custom classification
+    - interaction_mode could not be classified from the provided context; refine the context fields or record a custom classification
+    - product_type could not be derived; record the intended audience and product kind

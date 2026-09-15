@@ -1,0 +1,84 @@
+{
+  "reviewer": "R2",
+  "package_id": "impl-15",
+  "session_id": "b428d1ce-3a71-4fd9-bed2-bd37f8f47e1c",
+  "wall_clock_seconds": 151,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-15",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Open-collection locate job is served by a search-first faceted registry over 1,728 generated items: dominant search field (screenshots/1280x860.png top bar), collections tree with 8 domains × 4 categories (source/gen.js:17-26), format/license/access facets with live counts (source/app.js:199-221), ranked result list (source/app.js:58-90). No spatial/compare/time-series surfaces, matching the brief's none/low facets."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "Search is the largest single control, centered top on both viewports with placeholder naming the task ('Search 1,700+ datasets — name, tag, category, id…'), a '/' shortcut hint, autofocus on boot (source/app.js:482), and sidebar filters secondary; the brief's success criterion (locate within 3 interactions) is one keystroke away."
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "Within seconds the screen states what and where: title 'LOCI · Open Collection Registry' (source/index.html:6), '1,728 datasets' top-right, context bar 'All collections · 1,728 datasets · showing first 80' (source/app.js:295-297), all legible in both screenshots."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Target reachable in 1 interaction (type in search, app.js:368-373) or 2-3 (domain → category → item via tree buttons, app.js:418-428); keyboard path '/' → arrows → Enter (app.js:442-464); URL-hash deep link restores query, filters and even a selected item (app.js:118-143); initial screen is fully populated, no loading state (app.js:477-482)."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "Detail opens as a right-side panel while list and filters stay mounted ('The result list and filters stay put', app.js:304-306; styles.css:231-239); 'Match N of M in current view · list position preserved' (app.js:312-314) with reveal-and-flash 'Show in list' (app.js:350-364); removable filter chips and breadcrumb keep current view visible (app.js:231-251); all state survives refresh/back via hash (app.js:474-475) — directly satisfies the acceptance seed."
+      },
+      "ui_surface_complexity": {
+        "score": 4,
+        "evidence": "Every permanent control maps to the locate job (search, tree, 3 facet groups, sort, list, deferred detail) with no decorative surfaces; but the sidebar carries ~24 permanent rows and at 1280x860 the ACCESS facet overflows below the fold (screenshot 1280x860.png ends at 'registration 482'; 'gated' requires sidebar scroll)."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Receipt fails three a11y checks — a11y.contrast=fail, a11y.focus_order=fail, a11y.target_size=fail — plus type.min_projected_size=fail (measurement-summary.json). Source shows real effort (role=search/tree/listbox, aria-pressed/expanded, aria-live summary, index.html:19-62; keyboard support app.js:442-464; :focus-visible ring styles.css:178), but rows use tabindex='-1' (app.js:255) reachable only via a custom arrow handler, small 11px tags/counts (styles.css:186-189), and low-contrast faint text (#8b98a8 on white, styles.css:8)."
+      },
+      "frontend_rework": {
+        "score": 3,
+        "evidence": "No visible layout defects: layout.overflow=pass, layout.responsive_collision=pass, text.truncation=pass and both screenshots render cleanly; however 4 of 7 receipt checks fail (a11y.contrast, a11y.focus_order, a11y.target_size, type.min_projected_size — measurement-summary.json), each implying a fix-and-remeasure rework cycle."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed 'locate path backed by search/filter without losing context' is addressed on every axis: multi-token search over name/tags/category/id (app.js:16-17, 46-56), domain/category tree + format/license/access facets with under-query live counts (app.js:93-115), and context preserved via chips, breadcrumb, side detail, and hash-restorable selection (app.js:118-156, 231-251, 300-345)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "Receipt failures: a11y.contrast=fail, a11y.focus_order=fail, a11y.target_size=fail, type.min_projected_size=fail (measurement-summary.json)",
+      "Result rows are tabindex='-1' (source/app.js:255) and reachable only through a custom ArrowDown/ArrowUp handler, so keyboard-only Tab users cannot step into the list — consistent with the focus_order failure",
+      "ACCESS facet's 'gated' row sits below the fold at 1280x860 (screenshots/1280x860.png ends at 'registration 482'), requiring a sidebar scroll to reach",
+      "Baseline facet counts are uniform — every collection shows exactly 216 in both screenshots (generator round-robins domains/categories, source/gen.js:90-135) — so sidebar counts carry no narrowing signal until a query is entered",
+      "No h1 heading on the page; the first heading level is the h2 in the detail panel (source/app.js:322)"
+    ],
+    "missing_evidence": [
+      "Sanitized receipt reports pass/fail only; the specific elements failing contrast, target size, and focus order are not identified, so severity of each failure cannot be ranked",
+      "Only the initial page is captured (two static screenshots); search ranking quality, detail-panel behavior, and filter interactions were not exercised",
+      "Error rate and token cost are operator/receipt data not rescored in blind review per rubric.md"
+    ],
+    "overall_note": "impl-15 is a coherent, search-first faceted registry ('LOCI') that fits the open-collection locate cell almost exactly: the primary locate task dominates the initial screen via an autofocused search bar with '/' hint, a collections tree and three facet groups with live counts provide the filter path, and the side detail panel plus chips, breadcrumb, and URL-hash state are explicitly engineered to preserve context — directly covering the brief's acceptance seed, with 1,728 synchronously generated datasets making the first paint ready (no loading state). Static layout is clean at both 1280x860 and 1440x900 (overflow, collision, truncation all pass). The clear weakness is measured accessibility: three of four a11y-type checks fail (contrast, focus order, target size) plus a typography minimum-size failure, consistent with source-level patterns (rows removed from tab order via tabindex=-1 with only a custom arrow-key path, 11px tag text, faint #8b98a8 secondary text), so the interaction design is strong but the accessibility layer needs a rework pass. Minor costs: the ACCESS facet overflows the fold at 860px, and uniform baseline counts (216 per collection) make sidebar counts uninformative until a query narrows them. Task completion time, retrieval accuracy, and human preference are not observable in this blind pilot, and model judgment here is not a substitute for human preference."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 56818,
+      "outputTokens": 6931,
+      "cacheReadInputTokens": 90112,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.502421,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-09-08T21:57:33.191Z"
+}

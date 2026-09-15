@@ -1,0 +1,81 @@
+{
+  "reviewer": "R2",
+  "package_id": "impl-10",
+  "session_id": "03fa78f6-04c4-4141-8371-35b1e1e7ccc4",
+  "wall_clock_seconds": 140,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-10",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Brief asks for edit × single-document (medium hierarchy, low density, success = structure not broken). Screenshots 1280x860/1440x900 show a three-pane structured document editor (大纲 tree | 节编辑器 | 文档预览) whose data model is a sectioned document tree (source/app.js:17-59) with 4-level hierarchy support (MAX_DEPTH, app.js:61) — a canonical fit for the shape bundle; spacious low-density layout (styles.css:4-25 tokens, generous padding styles.css:205, 260-264)."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "Editing dominates the initial screen: center pane is pre-loaded with the first section's editable fields (节标题 input, 状态 select, 正文 textarea, both screenshots) wired to the primary task (index.html:48-54, app.js:521-533); structural edit actions (添加子节/添加同级节/上移/下移/升级/降级/删除本节) sit directly beneath the body field (screenshot 1280x860; app.js:557-565). No competing modes — it IS the edit surface at load."
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "Both screenshots label all three panes (大纲/编辑/预览) plus a subtitle naming the app 单文档结构化编辑器 (topbar, index.html:15); the selected node is simultaneously highlighted in outline, editor breadcrumb and preview (1280x860: 概述 selected in all three), and the preview header states 与编辑实时一致 (index.html:59) — what/where is conveyed at a glance."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Zero steps to the primary object: the first section is selected and ready at startup (app.js:68 sets selectedId to first section; app.js:829-831 renders immediately, no loading state — satisfying the brief's 首屏就绪 constraint). Any other section is one click in outline or preview (app.js:712-730, 783-791); screenshots show node 1 pre-selected. No navigation hierarchy or modes exist."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "Source shows context-preserving structure: selection survives all operations and focus is restored after structural commits (app.js:157-176 restores activeElement or focuses the outline row); field typing does not re-render the editor, protecting the caret (app.js:303-305, opUpdateSection 295-305); destructive delete/reset require an alertdialog with explicit choices (app.js:221-234, 336-351; index.html:68-74); full snapshot undo/redo (app.js:148-176, 316-334) plus Ctrl+Z/Y (app.js:800-812)."
+      },
+      "ui_surface_complexity": {
+        "score": 5,
+        "evidence": "Permanent surfaces = topbar + 3 panes (styles.css:100-107), matching the brief's 主屏 1 个 cap; every visible control maps to a brief-relevant edit operation. Secondary controls stay out of the way: outline row actions are hidden until hover/focus-within (styles.css:143-144), the structure-check panel is hidden until invoked (index.html:41 hidden; app.js:702-708), feedback uses transient toast + live region (index.html:77-78). No accounts/settings/export surfaces beyond need."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Receipt fails all three a11y checks: a11y.contrast=fail, a11y.focus_order=fail, a11y.target_size=fail (measurement-summary.json). Code shows real a11y effort — :focus-visible outlines (styles.css:344-347), role=tree/treeitem with aria-selected/aria-level and roving tabindex (app.js:423-424, keyboard nav 733-747), aria-live status region (index.html:77), alertdialog modal (index.html:69), disabled-button aria-label reasons (app.js:446-451) — but the measured failures dominate: plausibly the 11px meta type on #8a94a3 tokens (styles.css:11,118,140) for contrast, and 11px outline buttons with 3px/4px padding (styles.css:145-153) for target size."
+      },
+      "frontend_rework": {
+        "score": 2,
+        "evidence": "5 of 7 receipt checks fail (measurement-summary.json summary: pass 2, fail 5): layout.overflow=fail, type.min_projected_size=fail, a11y.contrast/focus_order/target_size=fail — all implying rework. Consistent with source: sub-12px text (.pv-status 10.5px styles.css:282; .pane-name/.ol-num/.obtn 11px styles.css:118,140,146). Visible defect: at 1280x860 the editor action row wraps, leaving 降级 orphaned on a second line (screenshot 1280x860.png vs single row at 1440x900). Mitigating: layout.responsive_collision=pass and text.truncation=pass, and neither screenshot shows overlap, clipping, or misalignment."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed 结构化编辑与预览一致 is addressed head-on: preview renders from the same state model (renderPreview walks state.doc, app.js:580-620), an explicit sync affordance 与编辑实时一致 is visible in both screenshots (index.html:59), the editor body field states 正文将原样渲染到预览 (app.js:531), and preview headings are clickable to verify selection correspondence (app.js:783-791). The success criterion 编辑不破坏结构 is covered by a constrained operation whitelist that cannot create orphans/level-jumps (app.js:178-291), a live structure-check panel with invariants display (app.js:630-647), and status badges consistent across editor and preview (screenshots)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "Receipt layout.overflow=fail at both viewports, yet no visible overflow appears in either screenshot; body uses overflow:hidden with inner scroll panes (styles.css:37, 124, 205, 259), so the failing geometry cannot be visually located from provided evidence.",
+      "type.min_projected_size=fail consistent with multiple sub-12px text sizes: .pv-status 10.5px (styles.css:282), .pane-name 11px (styles.css:118), .ol-num 11px (styles.css:140), .obtn 11px (styles.css:146).",
+      "a11y.target_size=fail consistent with outline hover buttons at 11px font with 3px/4px padding (styles.css:145-153).",
+      "a11y.contrast=fail, plausibly from low-contrast meta tokens --ink-3 #8a94a3 / --ink-2 #5b6572 on white used for labels, numbers and hints (styles.css:10-11, 118, 140, 211).",
+      "a11y.focus_order=fail despite roving tabindex, focus-visible styles and focus restoration (styles.css:344-347; app.js:424, 157-176) — the specific offending sequence is not identifiable from the sanitized summary.",
+      "At 1280x860 the editor structural-action row wraps to a second line (降级 alone, screenshot 1280x860.png) while fitting on one line at 1440x900 — minor, no collision (layout.responsive_collision=pass)."
+    ],
+    "missing_evidence": [],
+    "overall_note": "impl-10 is a coherent single-screen structured document editor that fits the brief almost exactly: the edit verb is the dominant and immediately available surface (fields pre-loaded at startup, app.js:829-831), navigation cost is zero-to-one click, structure-preserving edit operations with undo, guarded deletion and a live structure-check panel directly serve the success criterion 编辑不破坏结构, and the same-model preview with a visible 与编辑实时一致 affordance covers the acceptance seed 结构化编辑与预览一致 end to end. The measured weakness is concentrated in the receipt: five of seven checks fail (layout.overflow, a11y.contrast, a11y.focus_order, a11y.target_size, type.min_projected_size per measurement-summary.json), corroborated in source by pervasive 10.5-11px type and 3-4px-padded hover-only outline buttons, plus a wrapped action row at 1280x860; notably layout.responsive_collision and text.truncation pass and both screenshots render cleanly, so the functional/visual core shows little rework need while the accessibility and minimum-type layer would. The exact elements triggering the overflow and focus-order failures cannot be pinpointed from the sanitized summary and screenshots alone. Task completion time, information retrieval accuracy, and human preference are not observable in this blind pilot, and no human-preference claim is implied by these scores."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 60290,
+      "outputTokens": 6530,
+      "cacheReadInputTokens": 129792,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.5295960000000001,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-09-08T21:40:52.556Z"
+}

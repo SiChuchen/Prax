@@ -1,0 +1,16 @@
+{
+  "run": "run-01",
+  "cell": "cell-j07-s07",
+  "arm": "b",
+  "session_id": "944e54bd-c383-43a5-8dbf-0243e2af77f3",
+  "metric_source": "result.modelUsage (per-message assistant usage absent in this CLI/backend stream)",
+  "input_tokens": 418985,
+  "output_tokens": 133967,
+  "cache_read_input_tokens": 10277568,
+  "cache_creation_input_tokens": 0,
+  "cost_usd": 10.583,
+  "token_budget_metric": "input+output (AB-001-compatible, addendum D5v2)",
+  "token_in_out": 552952,
+  "determination": "within 1.2M budget",
+  "note": "D5 v1 wording (in+out+cache_read+cache_creation vs final result.usage) was a coordinator misreading; AB-001 summaries record model_usage as input+output with cache_read listed separately (60M-100M per run). D5v2 registered before run-02. Run-01 completed at 64.8min; its in+out=552,952 is within budget, so the metric defect did not change this run outcome. Monitor bug (cumulative counter stayed 0 because assistant events carry no usage) recorded and fixed."
+}

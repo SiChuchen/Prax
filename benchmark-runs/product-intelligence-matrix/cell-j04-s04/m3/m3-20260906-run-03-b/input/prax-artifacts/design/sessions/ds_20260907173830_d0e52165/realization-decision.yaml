@@ -1,0 +1,17 @@
+version: "0.1"
+realization_mode: direct_code
+conditions:
+  - id: defect_fix_fit
+    holds: true
+    basis: 本会话不含 defect_fix 变更；该条件对 greenfield 单屏交付无约束冲突，direct_code 不受缺陷修复面影响
+  - id: visual_polish_fit
+    holds: true
+    basis: 视觉要求由 SDIR/decide 完整承载（compact 密度、状态色语义、稳定布局纪律），无超出语义规格的细粒度视觉打磨需求
+  - id: small_modification
+    holds: true
+    basis: 交付面为主屏 1 个、单页、无导航层级（navigation_levels=1），属小修改量级
+  - id: mature_design_system
+    holds: true
+    basis: 设计系统由本会话 decide 密度/层级决策定义（状态色三元、等宽字、定高瓷片 token），规模小且自洽，无遗留系统约束
+proposed_at: 2026-09-07T17:46:58.025Z
+overridden: false

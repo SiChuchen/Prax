@@ -1,0 +1,73 @@
+version: "0.1"
+session_id: ds_20260907195547_4b31bcb5
+task:
+  surfaces: []
+  primary: 在维度之间切换投影并按维度值过滤，观察数据分布变化，且任何一步都可回退
+product_relationships:
+  - id: rel-dim-ds
+    source: dataset
+    target: dimension
+    type: has_axis
+    direction: none
+    meaning: 维度是数据集的轴，数据集由维度+记录构成
+    importance: primary
+  - id: rel-filter-dim
+    source: filter
+    target: dimension
+    type: constrains
+    direction: forward
+    meaning: 每条过滤器绑定一个维度，过滤器的归属即其维度
+    importance: primary
+  - id: rel-proj-dim
+    source: projection
+    target: dimension
+    type: selects
+    direction: forward
+    meaning: 投影是维度的一个子集组合，切换投影=改变维度组合
+    importance: primary
+  - id: rel-state
+    source: active_state
+    target: filter
+    type: aggregates
+    direction: forward
+    meaning: 生效状态清单逐条引用过滤器与投影选择，支持回退
+    importance: primary
+  - id: rel-rec-ds
+    source: dataset
+    target: record
+    type: contains
+    direction: forward
+    meaning: 当前投影+过滤决定哪些记录可见
+    importance: supporting
+region_relationships:
+  - id: region_rel_data_detail
+    source: data
+    target: detail
+    type: selection_drives_contextual_detail
+decisions:
+  primary_structure: PAT-DATA-EXPLORER
+  density_intent: compact
+  major_choice_ids:
+    - MC-1-projection-vs-filter
+    - MC-2-state-ownership
+    - MC-3-inline-data
+must_preserve: []
+regression_points: []
+unresolved: []
+corrections: []
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - filter_state
+    - comparison_scan
+    - requirement_alignment
+  regression_check_ids: []

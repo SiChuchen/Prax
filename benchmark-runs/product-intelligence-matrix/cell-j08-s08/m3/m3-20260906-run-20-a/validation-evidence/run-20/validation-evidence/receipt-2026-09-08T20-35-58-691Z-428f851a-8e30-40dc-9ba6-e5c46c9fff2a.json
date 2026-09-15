@@ -1,0 +1,714 @@
+{
+  "receipt_version": "0.2",
+  "tool": {
+    "name": "prax-measure",
+    "version": "0.2.0"
+  },
+  "target": {
+    "app_root": "E:\\codex-prj\\Prax\\Prax\\benchmark-runs\\product-intelligence-matrix\\cell-j08-s08\\m3\\m3-20260906-run-20-a\\measurement-root",
+    "base_url": "http://127.0.0.1:1979/",
+    "build_ref": null
+  },
+  "run_at": "2026-09-08T20:35:58.691Z",
+  "viewport_matrix": [
+    {
+      "width": 1280,
+      "height": 860
+    },
+    {
+      "width": 1440,
+      "height": 900
+    }
+  ],
+  "checks": [
+    {
+      "id": "layout.overflow",
+      "status": "fail",
+      "severity": "error",
+      "subject": "document.documentElement",
+      "measured": {
+        "scroll_width": 1280,
+        "inner_width": 1280,
+        "overflow_px": 0,
+        "element_overflows": 5,
+        "flagged_elements": [
+          "section#pv-n3",
+          "section#pv-n6",
+          "section#pv-n9",
+          "section#pv-n12",
+          "section#pv-n15"
+        ],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "max_overflow_px": 0,
+        "element_overflow_tolerance_px": 1
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/da32747b-cefc-4841-a868-dba7c88b31be/viewport-0/layout.overflow/overflow-1280x860.png",
+          "sha256": "d5caf8c45cbecd00a77b05865455184eb96b3cc0f395dfb66057914412e2365b"
+        },
+        {
+          "ref": "validation-evidence/da32747b-cefc-4841-a868-dba7c88b31be/viewport-1/layout.overflow/overflow-1440x900.png",
+          "sha256": "4b2af555c4659c712961c29d191df7969dcb782ae8c79072faf25701b655ab43"
+        }
+      ],
+      "supported_fixes": [
+        "find the widest row via the flagged elements and remove the fixed-width cause"
+      ]
+    },
+    {
+      "id": "layout.responsive_collision",
+      "status": "pass",
+      "severity": "error",
+      "measured": {
+        "collisions": 0,
+        "pairs": [],
+        "interactive_elements": 29,
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "pass"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "pass"
+          }
+        ]
+      },
+      "threshold": {
+        "max_collisions": 0
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "text.truncation",
+      "status": "pass",
+      "severity": "error",
+      "measured": {
+        "truncated": 0,
+        "elements": [],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "pass"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "pass"
+          }
+        ]
+      },
+      "threshold": {
+        "max_truncated": 0
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "a11y.contrast",
+      "status": "fail",
+      "severity": "error",
+      "subject": "span; button#btnUndo; button#btnRedo; div; span; button; span; span; span; span; span; span; span; span; div#outlineFoot; div; span; button; span; span; span; span; span; span; span; div; span; span#stWords; span#stSections; span#stUpdated",
+      "measured": {
+        "failing": 30,
+        "pairs": [
+          {
+            "selector": "span",
+            "ratio": 2.64,
+            "required": 4.5,
+            "font_px": 10.5,
+            "bold": false,
+            "foreground": "rgb(163, 155, 141)",
+            "background": "rgb(251,250,247)"
+          },
+          {
+            "selector": "button#btnUndo",
+            "ratio": 2.34,
+            "required": 4.5,
+            "font_px": 12.5,
+            "bold": false,
+            "foreground": "rgb(32, 29, 26)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "button#btnRedo",
+            "ratio": 2.34,
+            "required": 4.5,
+            "font_px": 12.5,
+            "bold": false,
+            "foreground": "rgb(32, 29, 26)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "div",
+            "ratio": 2.64,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": true,
+            "foreground": "rgb(163, 155, 141)",
+            "background": "rgb(251,250,247)"
+          },
+          {
+            "selector": "span",
+            "ratio": 2.75,
+            "required": 4.5,
+            "font_px": 10.5,
+            "bold": false,
+            "foreground": "rgb(163, 155, 141)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "button",
+            "ratio": 1.51,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(111, 106, 98)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.18,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 131, 120)",
+            "background": "rgb(241,236,225)"
+          },
+          {
+            "selector": "span",
+            "ratio": 2.64,
+            "required": 4.5,
+            "font_px": 10.5,
+            "bold": false,
+            "foreground": "rgb(163, 155, 141)",
+            "background": "rgb(251,250,247)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.18,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 131, 120)",
+            "background": "rgb(241,236,225)"
+          },
+          {
+            "selector": "span",
+            "ratio": 2.64,
+            "required": 4.5,
+            "font_px": 10.5,
+            "bold": false,
+            "foreground": "rgb(163, 155, 141)",
+            "background": "rgb(251,250,247)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.18,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 131, 120)",
+            "background": "rgb(241,236,225)"
+          },
+          {
+            "selector": "span",
+            "ratio": 2.64,
+            "required": 4.5,
+            "font_px": 10.5,
+            "bold": false,
+            "foreground": "rgb(163, 155, 141)",
+            "background": "rgb(251,250,247)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.18,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 131, 120)",
+            "background": "rgb(241,236,225)"
+          },
+          {
+            "selector": "span",
+            "ratio": 2.64,
+            "required": 4.5,
+            "font_px": 10.5,
+            "bold": false,
+            "foreground": "rgb(163, 155, 141)",
+            "background": "rgb(251,250,247)"
+          },
+          {
+            "selector": "div#outlineFoot",
+            "ratio": 2.64,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(163, 155, 141)",
+            "background": "rgb(251,250,247)"
+          },
+          {
+            "selector": "div",
+            "ratio": 2.5,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": true,
+            "foreground": "rgb(163, 155, 141)",
+            "background": "rgb(246,244,239)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.18,
+            "required": 4.5,
+            "font_px": 10.5,
+            "bold": true,
+            "foreground": "rgb(138, 131, 120)",
+            "background": "rgb(241,236,225)"
+          },
+          {
+            "selector": "button",
+            "ratio": 1.51,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(111, 106, 98)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 2.5,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(163, 155, 141)",
+            "background": "rgb(246,244,239)"
+          },
+          {
+            "selector": "span",
+            "ratio": 2.71,
+            "required": 4.5,
+            "font_px": 12,
+            "bold": false,
+            "foreground": "rgb(163, 155, 141)",
+            "background": "rgb(255,253,248)"
+          },
+          {
+            "selector": "span",
+            "ratio": 2.71,
+            "required": 4.5,
+            "font_px": 12,
+            "bold": false,
+            "foreground": "rgb(163, 155, 141)",
+            "background": "rgb(255,253,248)"
+          },
+          {
+            "selector": "span",
+            "ratio": 2.71,
+            "required": 4.5,
+            "font_px": 12,
+            "bold": false,
+            "foreground": "rgb(163, 155, 141)",
+            "background": "rgb(255,253,248)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.18,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": true,
+            "foreground": "rgb(138, 131, 120)",
+            "background": "rgb(241,236,225)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.18,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": true,
+            "foreground": "rgb(138, 131, 120)",
+            "background": "rgb(241,236,225)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.18,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": true,
+            "foreground": "rgb(138, 131, 120)",
+            "background": "rgb(241,236,225)"
+          },
+          {
+            "selector": "div",
+            "ratio": 4.15,
+            "required": 4.5,
+            "font_px": 10.5,
+            "bold": true,
+            "foreground": "rgb(160, 106, 31)",
+            "background": "rgb(250,243,226)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.18,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": true,
+            "foreground": "rgb(138, 131, 120)",
+            "background": "rgb(241,236,225)"
+          },
+          {
+            "selector": "span#stWords",
+            "ratio": 2.5,
+            "required": 4.5,
+            "font_px": 11.5,
+            "bold": false,
+            "foreground": "rgb(163, 155, 141)",
+            "background": "rgb(246,244,239)"
+          },
+          {
+            "selector": "span#stSections",
+            "ratio": 2.5,
+            "required": 4.5,
+            "font_px": 11.5,
+            "bold": false,
+            "foreground": "rgb(163, 155, 141)",
+            "background": "rgb(246,244,239)"
+          },
+          {
+            "selector": "span#stUpdated",
+            "ratio": 2.5,
+            "required": 4.5,
+            "font_px": 11.5,
+            "bold": false,
+            "foreground": "rgb(163, 155, 141)",
+            "background": "rgb(246,244,239)"
+          }
+        ],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "normal_min_ratio": 4.5,
+        "large_min_ratio": 3
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/da32747b-cefc-4841-a868-dba7c88b31be/viewport-0/a11y.contrast/contrast-1280x860.png",
+          "sha256": "adb6ae5c1e9e8d5fffc0e02caf0320e9fbd6e3567d819d735534e06fc99d3a57"
+        },
+        {
+          "ref": "validation-evidence/da32747b-cefc-4841-a868-dba7c88b31be/viewport-1/a11y.contrast/contrast-1440x900.png",
+          "sha256": "4b2af555c4659c712961c29d191df7969dcb782ae8c79072faf25701b655ab43"
+        }
+      ],
+      "supported_fixes": [
+        "darken the failing text color (or lighten it against a dark background) until the measured ratio meets the required minimum"
+      ]
+    },
+    {
+      "id": "a11y.focus_order",
+      "status": "fail",
+      "severity": "error",
+      "subject": "tab order contradicts visual order: button#btnAddSec → input; tab order contradicts visual order: button → textarea",
+      "measured": {
+        "stops": 26,
+        "sequence": [
+          "button#chip",
+          "button#btnCopy",
+          "button#btnMd",
+          "button#btnHtml",
+          "button#btnReset",
+          "button",
+          "button",
+          "button#btnAddSec",
+          "input",
+          "input",
+          "input",
+          "button",
+          "button",
+          "button",
+          "textarea",
+          "button",
+          "button",
+          "button",
+          "button",
+          "select",
+          "input",
+          "textarea",
+          "button",
+          "button",
+          "button",
+          "section#previewPane"
+        ],
+        "missing_indicators": [],
+        "inversions": [
+          {
+            "from": "button#btnAddSec",
+            "to": "input"
+          },
+          {
+            "from": "button",
+            "to": "textarea"
+          }
+        ],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "max_missing_focus_indicators": 0,
+        "max_order_inversions": 0
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/da32747b-cefc-4841-a868-dba7c88b31be/viewport-0/a11y.focus_order/focus-order-1280x860.png",
+          "sha256": "88976b2f0d66bc7d7574bcdbdbf4b91821e8b734d7cc7df5471e3d57754234d7"
+        },
+        {
+          "ref": "validation-evidence/da32747b-cefc-4841-a868-dba7c88b31be/viewport-1/a11y.focus_order/focus-order-1440x900.png",
+          "sha256": "5159d358a5ac377dbeb6ab7fcb444e138c0b768aa3141494211ebc8ee64465bc"
+        }
+      ],
+      "supported_fixes": [
+        "restore a visible focus indicator (outline or box-shadow) on the listed elements and order the tab sequence to follow the visual reading order (positive tabindex or DOM reordering)"
+      ]
+    },
+    {
+      "id": "a11y.target_size",
+      "status": "fail",
+      "severity": "error",
+      "subject": "button; button; button; button; button; button; button; button; button; button; button",
+      "measured": {
+        "undersized": 11,
+        "elements": [
+          {
+            "selector": "button",
+            "width": 21.5,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 21.5,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 24.17,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 21.5,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 21.5,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 38,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 24.17,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 21.5,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 21.5,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 38,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 24.17,
+            "height": 20
+          }
+        ],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "min_target_px": 24
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/da32747b-cefc-4841-a868-dba7c88b31be/viewport-0/a11y.target_size/target-size-1280x860.png",
+          "sha256": "aacee3e2972dc215a0af40db5a9749c319aaa19d269f7fdba822d9502342d087"
+        },
+        {
+          "ref": "validation-evidence/da32747b-cefc-4841-a868-dba7c88b31be/viewport-1/a11y.target_size/target-size-1440x900.png",
+          "sha256": "7c72e482fb3fa70381ea2dc00e059afb9a99f9515b7cd6816e2ce415156bd4d8"
+        }
+      ],
+      "supported_fixes": [
+        "raise the listed targets to at least 24×24 CSS px, or declare an equivalent alternative control via data-target-alternative"
+      ]
+    },
+    {
+      "id": "type.min_projected_size",
+      "status": "fail",
+      "severity": "warning",
+      "subject": "div; span; span; button; button; button; span; span; button; button; button; span; span; button; button; button; span; span; button; button; button; span; span; button; button; button; div#outlineFoot; div; span; button; button; button; button; span; button; button; button; button; span; span; div; span; span; span; div; span",
+      "measured": {
+        "min_font_px": 10.5,
+        "undersized": 46,
+        "elements": [
+          "div",
+          "span",
+          "span",
+          "button",
+          "button",
+          "button",
+          "span",
+          "span",
+          "button",
+          "button",
+          "button",
+          "span",
+          "span",
+          "button",
+          "button",
+          "button",
+          "span",
+          "span",
+          "button",
+          "button",
+          "button",
+          "span",
+          "span",
+          "button",
+          "button",
+          "button",
+          "div#outlineFoot",
+          "div",
+          "span",
+          "button",
+          "button",
+          "button",
+          "button",
+          "span",
+          "button",
+          "button",
+          "button",
+          "button",
+          "span",
+          "span",
+          "div",
+          "span",
+          "span",
+          "span",
+          "div",
+          "span"
+        ],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "min_projected_px": 12
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/da32747b-cefc-4841-a868-dba7c88b31be/viewport-0/type.min_projected_size/min-projected-size-1280x860.png",
+          "sha256": "adb6ae5c1e9e8d5fffc0e02caf0320e9fbd6e3567d819d735534e06fc99d3a57"
+        },
+        {
+          "ref": "validation-evidence/da32747b-cefc-4841-a868-dba7c88b31be/viewport-1/type.min_projected_size/min-projected-size-1440x900.png",
+          "sha256": "7c72e482fb3fa70381ea2dc00e059afb9a99f9515b7cd6816e2ce415156bd4d8"
+        }
+      ],
+      "supported_fixes": [
+        "raise the listed primary-content text to at least 12px, or declare a density intent that justifies the smaller projection"
+      ]
+    }
+  ],
+  "summary": {
+    "pass": 2,
+    "fail": 5,
+    "skipped": 0,
+    "warnings": 1
+  },
+  "binding": {
+    "run_id": "da32747b-cefc-4841-a868-dba7c88b31be",
+    "entry": "/",
+    "scenario": "entry",
+    "implementation": {
+      "root": "E:\\codex-prj\\Prax\\Prax\\benchmark-runs\\product-intelligence-matrix\\cell-j08-s08\\m3\\m3-20260906-run-20-a\\measurement-root",
+      "digest": "f0518eea9189b7e1c2904e8a943e9dca1104a93180e02574238579b618fcff82",
+      "kind": "static_tree"
+    },
+    "session_id": null,
+    "contract_digests": {
+      "screen.sdir.yaml": null,
+      "sdir-delta.yaml": null,
+      "implementation-brief.yaml": null
+    }
+  },
+  "target_validation": {
+    "status": "valid",
+    "issues": [],
+    "readiness": "document",
+    "ready_selector": null
+  }
+}

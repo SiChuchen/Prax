@@ -1,0 +1,72 @@
+user:
+  expertise: expert
+  familiarity: high
+task:
+  primary: 复盘一次发布周期：沿时间线读 change_set 序列，理解每步变更及其因果
+  modes:
+    - chronological_browse
+    - causal_trace
+    - state_asof_inspect
+    - filter_focus
+  frequency: low
+domain:
+  type: release/system operations —— 配置与服务状态的变更历史（changelog / release train 领域）
+  entities:
+    - change_set
+    - change
+    - element
+    - causal_link
+    - state_snapshot
+information:
+  volume: medium
+  relationship_complexity: medium
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: none
+  error_cost: low
+priorities:
+  - P0 时间轴上按序呈现 change_set，序即真（数据已按时间排序且因果边不逆时）
+  - P0 因果可读：每个变更集可见其因（更早）与果（更晚），点击可跳转高亮
+  - P1 选中即回放：右侧状态面板 = 按时间回放至选中变更集的结果
+  - P1 变更明细前后值 diff（add/modify/remove/rename 四类语义着色）
+  - P2 按变更类型/元素筛选；键盘上下切换变更集
+density_intent: regular
+confidence:
+  overall: high
+unknowns:
+  - id: u1-domain-flavor
+    impact: low
+    affects:
+      - 示例数据集规模与文本
+  - id: u2-causal-density
+    impact: low
+    affects:
+      - 因果边的视觉形式
+classification:
+  version: "1"
+  task_type: compare_filter_records
+  domain_id: preferences
+  interaction_mode: collection_with_contextual_detail
+  product_type: configuration_surface
+  primary_object_type: change_set
+  secondary_object_types:
+    - change
+    - causal_link
+    - element
+    - state_snapshot
+  confidence: high
+  evidence:
+    - task_type=compare_filter_records ← token 'filter' in context.task and frame.tasks
+    - domain_id=preferences ← token '配置' in context.domain
+    - interaction_mode=collection_with_contextual_detail ← token 'filter' in context.task, frame.tasks, and context.priorities
+    - product_type=configuration_surface ← preferences domain
+    - primary_object_type=change_set ← most referenced product object in the Product Frame
+  open_questions: []

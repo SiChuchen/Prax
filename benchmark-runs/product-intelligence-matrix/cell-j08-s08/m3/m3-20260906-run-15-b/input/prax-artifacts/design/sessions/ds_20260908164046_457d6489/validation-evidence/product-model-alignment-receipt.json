@@ -1,0 +1,14 @@
+{
+  "check_id": "product_model_alignment",
+  "receipt_version": 1,
+  "measured_at": "2026-09-08T17:26:00Z",
+  "result": "pass",
+  "method": "DOM text extraction + full-viewport screenshots over the same CDP session; UI vocabulary cross-checked against Product Frame product_objects",
+  "assertions": [
+    {"object": "document", "ui_terms_observed": ["文档标题 (toolbar input aria-label)", "文档 crumb root", "10 节 · 15 段 · 约 560 字 (preview meta)"]},
+    {"object": "section", "ui_terms_observed": ["大纲 row numbering 1 / 1.1 / 2.1.1", "节标题 / 正文 / 状态 field labels", "添加子节 / 添加同级节 / 升级 / 降级 / 删除本节 action labels"]},
+    {"object": "structure_report", "ui_terms_observed": ["结构检查 · 完整 badge", "结构约束全部满足：层级连续（≤ 4 级）· 无孤儿节 · 操作经白名单校验", "同级重复标题/标题为空 issue rows"]},
+    {"backend_leak_scan": "no ids, JSON, records, tables, or storage vocabulary anywhere in visible UI"}
+  ],
+  "artifacts": ["evidence/01-initial-load.png", "evidence/03-field-edit-consistency.png", "evidence/07-validation-locate.png"]
+}

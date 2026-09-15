@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>目录矩阵 · 商品层级管理台</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='24' rx='6' fill='%233b5bdb'/><path d='M7 8h10M7 12h10M7 16h6' stroke='white' stroke-width='2' stroke-linecap='round'/></svg>">
+</head>
+<body>
+
+<!-- ===== 顶栏 ===== -->
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark">目</div>
+    <div class="brand-text">
+      <strong>目录矩阵</strong>
+      <span>商品层级管理台 · cell-j01-s01</span>
+    </div>
+  </div>
+  <div class="topbar-search">
+    <svg viewBox="0 0 24 24" width="15" height="15"><path d="M21 21l-4.3-4.3M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    <input id="globalSearch" type="search" placeholder="搜索商品名 / SKU / 供应商 / 负责人…" autocomplete="off">
+  </div>
+  <div class="topbar-right">
+    <button id="btnLog" class="btn btn-ghost" type="button">
+      <svg viewBox="0 0 24 24" width="14" height="14"><path d="M12 8v5l3 2M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      操作日志 <span id="logCount" class="count-chip" hidden>0</span>
+    </button>
+    <button id="btnReset" class="btn btn-ghost" type="button" title="恢复初始快照">重置演示</button>
+  </div>
+</header>
+
+<!-- ===== 状态筛选条 ===== -->
+<div class="filterbar" id="statusBar"><!-- 状态 chips 由 JS 渲染 --></div>
+
+<!-- ===== 主体 ===== -->
+<div class="layout">
+  <aside class="sidebar" id="treePanel">
+    <div class="sidebar-head">
+      <span>组织层级</span>
+      <button id="btnExpandAll" class="linklike" type="button">全部展开</button>
+      <button id="btnCollapseAll" class="linklike" type="button">收起</button>
+    </div>
+    <div class="tree" id="tree"><!-- 树由 JS 渲染 --></div>
+    <div class="sidebar-foot" id="treeFoot"></div>
+  </aside>
+
+  <main class="main">
+    <div class="table-headbar">
+      <div class="scope-info" id="scopeInfo"></div>
+      <div class="table-tools">
+        <button id="btnSelectFiltered" class="btn btn-ghost btn-sm" type="button" title="把当前筛选命中的全部商品加入选择">选中全部筛选结果</button>
+        <button id="btnInvert" class="btn btn-ghost btn-sm" type="button">反选（当前视图）</button>
+        <button id="btnClearSel" class="btn btn-ghost btn-sm" type="button">清空选择</button>
+      </div>
+    </div>
+
+    <div class="hidden-sel-banner" id="hiddenBanner" hidden></div>
+
+    <div class="table-wrap" id="tableWrap">
+      <table class="grid" id="grid">
+        <thead>
+          <tr>
+            <th class="col-check"><input type="checkbox" id="masterCheck" aria-label="全选当前视图"></th>
+            <th class="col-name">商品</th>
+            <th class="col-path">归属路径</th>
+            <th class="col-status">状态</th>
+            <th class="col-price">价格</th>
+            <th class="col-stock">库存</th>
+            <th class="col-tags">标签</th>
+            <th class="col-owner">负责人</th>
+          </tr>
+        </thead>
+        <tbody id="gridBody"><!-- 行由 JS 渲染 --></tbody>
+      </table>
+      <div class="empty" id="emptyState" hidden>当前筛选条件下没有商品。<button class="linklike" id="btnClearFilter" type="button">清除筛选</button></div>
+    </div>
+  </main>
+</div>
+
+<!-- ===== 底部批量操作栏 ===== -->
+<div class="batchbar" id="batchbar" hidden>
+  <div class="batch-sel">
+    <strong id="batchCount">0</strong>
+    <div class="batch-sel-meta" id="batchMeta"></div>
+  </div>
+  <div class="batch-actions">
+    <button class="btn btn-op" data-op="setOnline" type="button">批量上架</button>
+    <button class="btn btn-op" data-op="setOffline" type="button">批量下架</button>
+    <button class="btn btn-op" data-op="move" type="button">批量移动品类</button>
+    <button class="btn btn-op btn-danger" data-op="remove" type="button">批量删除</button>
+  </div>
+</div>
+
+<!-- ===== 商品详情抽屉 ===== -->
+<aside class="drawer" id="detailDrawer" hidden>
+  <div class="drawer-head">
+    <strong>商品详情</strong>
+    <button class="icon-btn drawer-close" data-close="detailDrawer" type="button" aria-label="关闭">✕</button>
+  </div>
+  <div class="drawer-body" id="detailBody"></div>
+</aside>
+
+<!-- ===== 操作日志抽屉 ===== -->
+<aside class="drawer drawer-wide" id="logDrawer" hidden>
+  <div class="drawer-head">
+    <strong>操作日志 <span class="muted">（本会话 · 状态归属全留痕）</span></strong>
+    <button class="icon-btn drawer-close" data-close="logDrawer" type="button" aria-label="关闭">✕</button>
+  </div>
+  <div class="drawer-body" id="logBody"></div>
+</aside>
+
+<!-- ===== 遮罩 ===== -->
+<div class="scrim" id="scrim" hidden></div>
+
+<!-- ===== 批量操作确认弹窗（预演清单） ===== -->
+<div class="modal-wrap" id="confirmModal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="cmTitle">
+    <div class="modal-head">
+      <strong id="cmTitle">批量操作确认</strong>
+      <button class="icon-btn" data-close="confirmModal" type="button" aria-label="关闭">✕</button>
+    </div>
+    <div class="modal-body" id="cmBody"></div>
+    <div class="modal-foot" id="cmFoot"></div>
+  </div>
+</div>
+
+<!-- ===== 轻提示 ===== -->
+<div class="toasts" id="toasts"></div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

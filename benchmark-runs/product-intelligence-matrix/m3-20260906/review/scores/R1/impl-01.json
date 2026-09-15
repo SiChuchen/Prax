@@ -1,0 +1,84 @@
+{
+  "reviewer": "R1",
+  "package_id": "impl-01",
+  "session_id": "fbc52ba1-e95e-435f-8c13-dab3816b36c7",
+  "wall_clock_seconds": 320,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-01",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Both viewports (1280x860, 1440x900) show a 29-metric tile grid — the brief's primary object 'metric' — grouped into 4 services, plus a one-segment-per-metric fleet strip, per-tile value/delta/sparkline, an evidence-stream feed, and an annotated change-trace chart. This matches the volatile-evidence-stream bundle facet-for-facet: many (29 tiles), high density (4-col grid), high temporality (sparklines, 'crit · 54s' ages, timestamped event rows), high volatility (z-score spike detection app.js:219-229); no spatial/comparison surfaces are faked, consistent with those facets being none."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "The initial screen is dominated by live monitoring: header counters '29 metrics 23 ok 5 warn 1 crit' (index.html:22-29), the single crit tile (p99 latency 2443ms ▲645.6%, red tint, 'crit · 54s') is the most visually salient element at 1280x860, and the app deep-links the trace panel to the active crit incident at load (app.js:633-636), making anomaly discovery the primary read within a glance."
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "Title/subtitle 'PULSEWALL · volatile metric monitor' (index.html:17-18), group headers with rollups ('PAYMENTS API 3/8 ok · 4 warn · 1 crit'), per-tile name/value/unit/status lines, and a labeled trace panel with legend are all legible within seconds in both viewports; the model-judged label proxy is satisfied by these explicit labels rather than inference."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Structurally zero-to-one steps: the primary object (active crit metric) is preselected at first paint via deep-link hash (app.js:633-636); any other metric is one click or Enter on its tile (app.js:284-285) or one click on its strip segment, which selects and locate-scrolls (app.js:306, app.js:563-567); '/' focuses the filter (app.js:615-618). Only cost: the Ingest Pipeline group is below the fold at both viewports (screenshots), but its tiles remain reachable through the strip without browsing."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "All primary actions are in-place: selection swaps right-panel content without route change (app.js:548-562), the severity filter toggles classes on the existing grid (app.js:588-595), pause freezes the timer without clearing state (app.js:606-614), Esc clears filter/selection incrementally (app.js:615-618); no modal, reload, or navigation discards the monitoring context."
+      },
+      "ui_surface_complexity": {
+        "score": 5,
+        "evidence": "Permanent surfaces are exactly header, glance strip, grouped grid, evidence stream, change trace (index.html:13-71), each mapping to a brief need (strip → anomaly-in-a-glance; feed+trace → high temporality/traceability); total controls are one search input, three severity chips, one pause button (index.html:32-38). No decorative chrome despite 29 metrics of required density."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Receipt checks a11y.contrast, a11y.focus_order, and a11y.target_size all fail (measurement-summary.json). Structural corroboration: strip segments and feed entries are click-only divs with no tabindex/role (app.js:303-308, app.js:330) while only tiles get tabIndex/role (app.js:271-272); clickable strip targets are 11px tall (style.css:55); faint #55657a labels on dark panels (style.css:5; style.css:110, style.css:142, style.css:150, style.css:180) plus .entry.done at opacity .5 (style.css:132) leave the dimmed feed rows barely legible in both screenshots. Partial affordance effort (aria-pressed chips index.html:34-36, :focus-visible outline style.css:90, tile aria-labels app.js:272) keeps it above 1."
+      },
+      "frontend_rework": {
+        "score": 2,
+        "evidence": "5 of 7 receipt checks fail (measurement-summary.json: layout.overflow, a11y.contrast, a11y.focus_order, a11y.target_size, type.min_projected_size). Visible composition is otherwise clean — text.truncation pass, layout.responsive_collision pass, no overlap/clipping seen at either viewport — but type.min_projected_size failure is corroborated in source by 8.5–10px styles (style.css:167 badge 8.5px; style.css:121 10px; style.css:150 9.5px; style.css:180 9.5px), and the layout.overflow fail is an objective defect implying rework."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed '指标变化可追溯，无闪烁噪声' is directly addressed and visible: the change-trace event list shows a timestamped SPIKE→WARN→CRIT escalation chain (06:56:56 SPIKE 681→848ms z=6.4 → 06:56:57 WARN 848→1036ms · 2s persist → 06:57:01 CRIT 1640→1826ms escalated) in both screenshots; chart plots breach/recovered/spike markers (app.js:516-529); a per-metric event log (app.js:161-166) drives the evidence stream with rule text, live peak, and escalation sync (app.js:311-331, app.js:176-179). Anti-flicker mechanics: 2-tick debounce (app.js:207-214), eased sparkline bounds (app.js:342-343), conditional DOM writes (app.js:381-389), spike feed coalescing (app.js:223-227), flatline-vs-noise guard (app.js:104-107, app.js:218-219)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "layout.overflow check fails (measurement-summary.json); the overflowing element is not visually identifiable in either screenshot, though the Ingest Pipeline group sits below the fold at 1280x860 (fully) and 1440x900 (partially), scrollable by design (style.css:66)",
+      "a11y.contrast fails: faint #55657a text on dark panels (style.css:5) and resolved feed entries at opacity .5 (style.css:132) — evidence-stream 'peak …' lines are barely legible in both viewports",
+      "a11y.focus_order fails: clickable strip segments and evidence-feed entries are divs without tabindex/role (app.js:303-308, app.js:330), so they are skipped in keyboard order",
+      "a11y.target_size fails: clickable strip segments are 11px tall (style.css:55) and event rows are thin targets",
+      "type.min_projected_size fails: badges at 8.5px and meta/legend/peak text at 9.5–10px (style.css:167, style.css:121, style.css:150, style.css:180)"
+    ],
+    "missing_evidence": [
+      "Which element/region triggers the layout.overflow failure — the sanitized summary provides only the check id",
+      "The specific failing contrast pairs and focus-order sequence from the raw receipt (only pass/fail is provided)",
+      "Human preference, task completion time, and retrieval accuracy data do not exist in this pilot by rubric design"
+    ],
+    "overall_note": "impl-01 (PULSEWALL) is a single-screen volatile-metric monitor that fits the brief's shape bundle almost facet-for-facet: 29 metric tiles in four service groups (primary object 'metric', many/high-density), a one-segment-per-metric glance strip plus severity tinting serve 'anomalies found within a glance', and a timestamped evidence stream with an annotated change trace — showing a live SPIKE→WARN→CRIT escalation chain in both screenshots — directly satisfies the acceptance seed of traceable changes without flicker, which the source backs with debounce, eased chart bounds, coalesced spike entries, and targeted DOM updates (app.js). Usable-at-load is met by 4 minutes of deterministic backfill before first paint (app.js:629) with the active crit incident preselected via deep link (app.js:633-636), so navigation cost and context loss are minimal. The measurable weaknesses are concentrated in mechanical polish: five of seven receipt checks fail, dominated by accessibility (contrast, focus order, target size) and minimum type size, each structurally corroborated in the source (faint 8.5–10px text, 11px click targets, non-focusable clickable divs), plus a layout.overflow failure whose location the sanitized summary does not reveal. All scores rest on the two initial screenshots, the seven-check receipt, and the source files; task time, retrieval accuracy, and human preference are not observable in this pilot, and nothing here should be read as a human-preference judgment."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 56485,
+      "outputTokens": 10253,
+      "cacheReadInputTokens": 126912,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.602206,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-09-08T20:55:23.499Z"
+}

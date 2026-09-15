@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LOCI · Open Collection Registry</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='7' cy='7' r='5' fill='none' stroke='%234f46e5' stroke-width='2'/%3E%3Cline x1='11' y1='11' x2='15' y2='15' stroke='%234f46e5' stroke-width='2'/%3E%3C/svg%3E">
+</head>
+<body>
+<div id="app" aria-label="LOCI registry">
+
+  <header class="topbar">
+    <div class="brand" title="LOCI — Open Collection Registry">
+      <svg class="brand-mark" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="2"/><line x1="11" y1="11" x2="15" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <span class="brand-name">LOCI</span>
+      <span class="brand-sub">Open Collection Registry</span>
+    </div>
+    <div class="search-wrap" role="search">
+      <svg class="search-icon" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><line x1="11" y1="11" x2="14.5" y2="14.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <input id="search" type="text" placeholder="Search 1,700+ datasets — name, tag, category, id…"
+             autocomplete="off" spellcheck="false" aria-label="Search datasets" aria-describedby="search-hint">
+      <kbd id="search-hint" class="kbd" title="Press / to search">/</kbd>
+      <button id="search-clear" class="icon-btn hidden" aria-label="Clear search" title="Clear search (Esc)">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="topbar-meta">
+      <span id="total-count" class="total-count" aria-hidden="true"></span>
+    </div>
+  </header>
+
+  <div class="body">
+    <aside class="sidebar" aria-label="Filters">
+      <div id="tree" class="tree" role="tree" aria-label="Collections"></div>
+      <div id="facets" class="facets"></div>
+    </aside>
+
+    <main class="main" aria-label="Results">
+      <div class="context-bar">
+        <nav id="breadcrumb" class="breadcrumb" aria-label="Location in collection"></nav>
+        <div class="context-right">
+          <label class="sort-label" for="sort">Sort</label>
+          <select id="sort" aria-label="Sort results">
+            <option value="relevance">Best match</option>
+            <option value="updated">Recently updated</option>
+            <option value="name">Name A→Z</option>
+            <option value="size">Largest</option>
+          </select>
+        </div>
+      </div>
+      <div id="chips" class="chips" aria-label="Active filters"></div>
+      <p id="result-summary" class="result-summary" role="status" aria-live="polite"></p>
+      <ul id="results" class="results" role="listbox" aria-label="Dataset results" aria-multiselectable="false"></ul>
+      <div class="load-more-wrap">
+        <button id="load-more" class="load-more hidden"></button>
+        <p id="end-note" class="end-note hidden">End of results</p>
+      </div>
+      <div id="empty" class="empty hidden" role="status"></div>
+    </main>
+
+    <aside id="detail" class="detail" aria-label="Item detail" aria-hidden="true"></aside>
+  </div>
+
+</div>
+<script src="gen.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,134 @@
+version: "0.2"
+screen:
+  id: workspace_screen
+  intent:
+    primary_task: "Follow a chain: pick a service, read what it depends on and what depends on it, and step through those relationships hop by hop while the full system map stays visible"
+    secondary_tasks:
+      - "Assess blast radius: see direct and transitive dependents (influence) and dependencies for any service"
+      - Locate a service quickly via search
+      - Inspect a single relationship's meaning (type, criticality) and a service's role/team via a detail panel
+  archetype:
+    pattern_ref: PAT-WORKSPACE
+  density_intent: regular
+  regions:
+    - id: The whole web — every service and every dependency edge always visible (global-context anchor)
+      role: experimental:The whole web — every service and every dependency edge always visible (global-context anchor)
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: Current selection + follow trail — the highlighted chain through the web, with position-in-whole readable at all times
+      role: experimental:Current selection + follow trail — the highlighted chain through the web, with position-in-whole readable at all times
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: Contextual inspector — selected node or edge detail with one-click follow actions (depends-on / used-by)
+      role: experimental:Contextual inspector — selected node or edge detail with one-click follow actions (depends-on / used-by)
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: Blast-radius metrics (transitive dependency / dependent counts)
+      role: experimental:Blast-radius metrics (transitive dependency / dependent counts)
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: Edge-type filter (sync call vs data dependency)
+      role: experimental:Edge-type filter (sync call vs data dependency)
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: workspace
+      role: dominant_workspace
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - preserve_context
+  relationships: []
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved: []
+  rejected_alternatives:
+    - option: List-detail as primary structure
+      reason: "Knowledge contract: does_not_apply_when spatial relationships dominate; every follow step would navigate away from the web and lose global context (violates acceptance seed)"
+    - option: Force-directed layout
+      reason: Non-deterministic node positions break H-21 Orientation Invariants; anchors must stay put while the user walks the graph
+    - option: Drill-down navigation (click = enter node view)
+      reason: Drill-down removes the whole web from view — directly violates 关系跟随不丢失全局上下文
+  user_job:
+    verb: understand
+    target: 关系结构 — the dependency & influence web of a service system
+    success: 依赖与影响可跟随 — dependencies and influence can be followed, multi-hop, without losing global context
+  primary_object:
+    type: relationship
+    label: 依赖关系 (dependency edge)
+  information_shape:
+    cardinality: many
+    relationality: high
+    hierarchy: medium
+    temporality: low
+    density: medium
+    dimensionality: medium
+    spatiality: none
+    volatility: medium
+    uncertainty: low
+    comparison_need: none
+  representation:
+    primary:
+      type: graph
+      reason: "Relationships ARE the content: a node-link map renders every dependency as directional, typed content and lets the user follow chains spatially while the whole stays in view — the only representation where multi-hop follow cannot lose global context"
+    supporting:
+      - type: architecture
+        reason: tiered left→right layout doubles as an architecture diagram, giving the medium hierarchy a stable, conventional backbone
+      - type: search_results
+        reason: search box locates a service among many and selects it on the map without navigating away
+  priority:
+    primary:
+      - The whole web — every service and every dependency edge always visible (global-context anchor)
+      - Current selection + follow trail — the highlighted chain through the web, with position-in-whole readable at all times
+      - Contextual inspector — selected node or edge detail with one-click follow actions (depends-on / used-by)
+      - workspace
+    contextual:
+      - Blast-radius metrics (transitive dependency / dependent counts)
+      - Edge-type filter (sync call vs data dependency)
+  interaction:
+    preview: none
+    inspect: select
+    navigate: none
+    locate: none
+  state_ownership:
+    - state: selection
+      owner: The whole web — every service and every dependency edge always visible (global-context anchor)
+    - state: preview
+      owner: session
+  complexity_budget:
+    permanent_panels: 3
+    permanent_primary_actions: 3
+    modes: 1
+    state_owners: 3
+    navigation_levels: 1
+    persistent_filters: 1
+    new_semantic_concepts: 2
+    keyboard_contracts: 1
+    mobile_conflicts: 0
+    permanent_surfaces: 1
+  acceptance:
+    - From any service, the user can follow multi-hop dependency and influence chains, reading each relationship along the way, while the complete system map stays visible with their current position and trail marked in it — 关系跟随不丢失全局上下文.

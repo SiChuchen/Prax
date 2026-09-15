@@ -1,0 +1,74 @@
+{
+  "receipt_version": "0.2",
+  "tool": {
+    "name": "prax-measure",
+    "version": "puppeteer-core@23 CDP keyboard harness (cell-j02-s02-b)"
+  },
+  "target": {
+    "app_root": ".",
+    "base_url": "file:///E:/codex-prj/ab-worktrees/pi-matrix/cell-j02-s02-b/index.html",
+    "build_ref": null
+  },
+  "run_at": "2026-09-08T01:14:40.606Z",
+  "viewport_matrix": [
+    {
+      "width": 1600,
+      "height": 1000,
+      "label": "desktop-large"
+    }
+  ],
+  "checks": [
+    {
+      "id": "a11y.focus_order",
+      "status": "pass",
+      "severity": "error",
+      "subject": "scr-locate-01 (list_detail_screen) — keyboard focus order on fresh load",
+      "measured": {
+        "initial_focus": "search",
+        "tab_steps": 12,
+        "tab_order_follows_dom": true,
+        "keyboard_focus_visible_everywhere": true,
+        "sequence_advances_no_trap": true
+      },
+      "threshold": {
+        "focus_order": "sequential navigation follows DOM order",
+        "focus_visible": ":focus-visible on every keyboard stop"
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/focus-order-run.json",
+          "sha256": "5a15682837ffb2b26e211a85bb4efa9b1b2f364eaecf231120fa13d787907a6d"
+        }
+      ],
+      "supported_fixes": []
+    }
+  ],
+  "summary": {
+    "pass": 1,
+    "fail": 0,
+    "skipped": 0,
+    "warnings": 0
+  },
+  "binding": {
+    "run_id": "cell-j02-s02-b-final-capture",
+    "entry": "/index.html",
+    "scenario": "locate-target-in-3-interactions (type → optional facet → click row; detail opens in place without losing list/filters/scroll). Note: framework-free classic-script implementation chosen per mc-stack to satisfy the frozen brief's static-open constraint; the react-flavored brief is applied as component/region guidance only.",
+    "implementation": {
+      "root": "E:\\codex-prj\\ab-worktrees\\pi-matrix\\cell-j02-s02-b",
+      "digest": "ff177162bf3aea256da3d513a6c06a0c34473231310a3162ccdcf5feefc65410",
+      "kind": "static_tree"
+    },
+    "session_id": "ds_20260908001459_128963b1",
+    "contract_digests": {
+      "screen.sdir.yaml": "cbe8b00766eac845a8988163a0a11416f36deee273dd863536d2aac9a106c319",
+      "sdir-delta.yaml": null,
+      "implementation-brief.yaml": "f3d030c79b5665920d18b071a84db0571fe5fe6f0e30ad6cc4eed2047981a816"
+    }
+  },
+  "target_validation": {
+    "status": "valid",
+    "issues": [],
+    "readiness": "selector",
+    "ready_selector": "#results .row"
+  }
+}

@@ -1,0 +1,57 @@
+version: "0.2"
+jtbd:
+  verb: locate
+  target: a target dataset item in a large, unbounded, weakly-related collection
+  success: Located within three interactions (e.g., type query → optionally click a facet → click item), with search/filter context preserved
+primary_object:
+  type: item
+  label: Dataset item (数据集条目)
+task_model:
+  frequency: high
+  reversibility: reversible
+  consequence: low
+  expertise: mixed
+user:
+  primary_role: Data consumer (analyst/researcher browsing an open dataset catalog)
+  expertise: intermediate
+  familiarity: medium
+goal:
+  primary: Reduce the cost of locating a target in a large, unbounded, weakly-related collection to at most three interactions
+tasks:
+  primary: Locate a specific dataset item using instant search and/or category+facet filters, then confirm it via in-place detail view
+  secondary:
+    - Browse/collapse the category tree to narrow scope without typing
+    - Adjust or clear active filter chips to refine a locate path
+    - Open item detail in a side panel and return to the same result state
+product_objects:
+  - id: item
+    user_name: Dataset item
+    purpose: "The unit being located: a dataset record with name, id, category, tags, size, updated date, description"
+  - id: category
+    user_name: Category
+    purpose: Medium-hierarchy grouping (domain → subcategory) used to scope the pool when the user browses instead of types
+  - id: locate-lever
+    user_name: Search & filter levers
+    purpose: Search box + facet controls that progressively narrow the unbounded pool; removable chips make active state explicit
+relationships:
+  - id: rel-item-category
+    source: item
+    target: category
+    type: belongs_to
+    direction: forward
+    meaning: Each item sits in exactly one subcategory within one domain — grouping for scoping, not a navigational hierarchy to drill through
+    importance: supporting
+mental_model_hypothesis:
+  summary: "Library/catalog model: one large pool of loosely-related items, loosely organized in a 2-level category tree. Users narrow the pool with instant search plus facet filters, then inspect a hit in a side panel — the list and active filters stay visible so the locate path never dead-ends."
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: The user locates the target item in ≤3 interactions, each interaction being one search keystroke-batch, one facet click, or one item click; search and filter support is always present and opening a detail never discards the result list or active filters.
+open_questions: []
+existing_product:
+  stable_user_concepts: []
+  stable_patterns: []
+  current_user_pain_points: []
+  current_constraints: []
+  legacy_debt: []

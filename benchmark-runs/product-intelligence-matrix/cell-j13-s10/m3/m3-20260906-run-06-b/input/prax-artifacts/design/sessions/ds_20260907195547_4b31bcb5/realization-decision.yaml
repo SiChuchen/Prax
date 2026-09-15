@@ -1,0 +1,17 @@
+version: "0.1"
+realization_mode: direct_code
+conditions:
+  - id: defect_fix_fit
+    holds: true
+    basis: 本会话无缺陷修复诉求，无 defect_fix 约束与之冲突；direct_code 不受影响
+  - id: visual_polish_fit
+    holds: true
+    basis: 交付为数据工具界面，视觉不确定性低（结构化密度、常规组件），无营销/编辑类高保真诉求需设计工具先行
+  - id: small_modification
+    holds: true
+    basis: 单屏单页应用，5 区域、无后端，复杂度预算小（4 常驻面板/3 主动作），代码规模适于直接实现
+  - id: mature_design_system
+    holds: true
+    basis: 无既有设计系统可复用（greenfield）；但采用标准 web 桌面组件词汇（表格/列表/工具栏），不依赖自定义设计系统，约束不成立不阻碍 direct_code
+proposed_at: 2026-09-07T20:06:41.155Z
+overridden: false

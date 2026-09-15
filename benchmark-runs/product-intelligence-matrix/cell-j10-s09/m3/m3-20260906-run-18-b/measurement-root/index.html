@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>切换指挥台 · 核心支付库迁移切换（零失误执行）</title>
+<link rel="stylesheet" href="css/app.css"/>
+</head>
+<body>
+<div class="app" id="app" data-loading="false">
+
+  <header class="header">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">切</span>
+      <div class="brand-text">
+        <strong>切换指挥台</strong>
+        <span>零失误执行 · Cutover Console</span>
+      </div>
+    </div>
+    <div class="wf-meta">
+      <span class="chip chip-dark" id="chgCode"></span>
+      <span class="wf-title" id="wfTitle"></span>
+      <span class="chip chip-env" id="wfEnv"></span>
+    </div>
+    <div class="header-status">
+      <div class="progress" title="步骤进度">
+        <div class="progress-bar"><i id="progressFill"></i></div>
+        <span class="progress-text" id="progressText"></span>
+      </div>
+      <span class="chip chip-guard" id="guardChip" title="被护栏拦截并阻止的误操作次数">护栏拦截 0</span>
+      <button class="btn btn-ghost btn-sm" type="button" data-action="restart">↻ 重新演练</button>
+    </div>
+  </header>
+
+  <main class="main">
+    <nav class="panel step-nav" id="stepNav" aria-label="阶段与步骤导航"></nav>
+    <section class="panel step-detail" id="stepDetail" aria-label="步骤执行卡"></section>
+    <aside class="right-col">
+      <section class="panel inspector" id="inspector" aria-label="风险与恢复检查器"></section>
+      <section class="panel run-log" id="runLog" aria-label="执行日志"></section>
+    </aside>
+  </main>
+
+  <div class="modal-root" id="modalRoot" hidden></div>
+  <div class="toast-region" id="toastRegion" aria-live="polite"></div>
+
+  <svg style="display:none" aria-hidden="true">
+    <symbol id="i-check" viewBox="0 0 16 16"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 16 16"><rect x="3.5" y="7" width="9" height="6" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5.5 7V5.5a2.5 2.5 0 0 1 5 0V7" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+    <symbol id="i-warn" viewBox="0 0 16 16"><path d="M8 2 14.5 13.5H1.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 6.5v3.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="11.8" r=".9" fill="currentColor"/></symbol>
+    <symbol id="i-undo" viewBox="0 0 16 16"><path d="M3 7h7a3.5 3.5 0 1 1 0 7H6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M6 4 3 7l3 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-down" viewBox="0 0 16 16"><path d="M8 2v8m0 0 3-3M8 10 5 7" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 13h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-play" viewBox="0 0 16 16"><path d="M5 3.5v9l8-4.5Z" fill="currentColor"/></symbol>
+  </svg>
+
+</div>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

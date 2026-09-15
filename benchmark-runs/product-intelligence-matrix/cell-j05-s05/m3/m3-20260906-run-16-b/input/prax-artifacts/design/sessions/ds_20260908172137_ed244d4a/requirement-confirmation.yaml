@@ -1,0 +1,30 @@
+version: "0.1"
+user_quote:
+  - 动词：understand；对象：关系结构；成功标准：依赖与影响可跟随
+  - 关系本身是内容，跟随依赖与影响不能丢失全局上下文
+  - 验收种子：关系跟随不丢失全局上下文
+  - 交付物必须能直接静态打开（根路径 index.html，或构建产物 dist/）
+  - 应用在页面加载完成时即处于可用状态（初始数据随首屏就绪，不得以加载态作为可测状态）
+restatement: "Build a single-page web app whose core job is understanding a relational structure: the user must be able to follow dependencies and influence (multi-hop, traversing relationships) without ever losing global context of the whole web. Relationships themselves are first-class content. Deliverable: a static, locally-openable single-screen SPA (root index.html or dist/), initial data inlined so the first screen is immediately usable with no loading state; no backend, accounts, persistence, or deployment. Scale cap: one main screen. Budget: ≤90 min wall-clock, ≤1.2M tokens."
+boundaries:
+  in_scope:
+    - Single-page web app, one main screen, greenfield code in this empty workspace
+    - Interactive relational-web view where relationships are first-class content
+    - Following dependencies and influence (multi-hop traversal) while preserving global context of the full web
+    - Initial dataset inlined at page load; page usable immediately, no loading state
+    - Static open via root index.html or dist/ build; runs locally, no external services or deployment
+  out_of_scope:
+    - Backend, account system, persistence services, deployment to external services
+    - Multiple screens/pages beyond the single main screen
+    - Editing/mutating the relational data (understand-only job)
+    - Comparison features, time/history views
+  scope_complete: true
+open_questions: []
+confirmation:
+  status: requirement_is_sufficient
+  evidence:
+    - type: task_brief
+      ref: brief.md (frozen brief, user message REQUIREMENT block, verbatim)
+    - type: conversation_message
+      ref: "user task instruction: Read REQUIREMENT below and build the product it describes, from scratch, in this directory"
+  confirmed_at: 2026-09-09T00:00:00Z

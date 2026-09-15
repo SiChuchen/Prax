@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>driver</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #fff; }
+  iframe { width: 100vw; height: 100vh; border: 0; display: block; }
+  #errbadge {
+    position: fixed; left: 0; top: 0; z-index: 999;
+    font: 12px/1.5 Consolas, monospace;
+    background: #062d0d; color: #6ee7a0;
+    padding: 2px 8px; max-width: 70vw; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+  }
+  #errbadge.bad { background: #7a1207; color: #ffd7cf; }
+</style>
+</head>
+<body>
+<iframe id="f" src="../index.html"></iframe>
+<div id="errbadge">driver: boot</div>
+<script>
+/* 取证驱动器：在 iframe 中驱动应用到目标状态（真实 DOM 事件，非改状态）。
+ * 左上角徽标显示 JS 错误与结束态摘要，随截图一并留证。 */
+(function () {
+  'use strict';
+  var badge = document.getElementById('errbadge');
+  var errs = [];
+  window.onerror = function (m) { errs.push(String(m)); show(); };
+
+  function F() { return document.getElementById('f').contentDocument; }
+  function q(sel) { return F().querySelector(sel); }
+  function qa(sel) { return Array.prototype.slice.call(F().querySelectorAll(sel)); }
+  function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+  function need(el, name) { if (!el) throw new Error('missing ' + name); return el; }
+  function click(sel) { need(q(sel), sel).click(); }
+  function checkAll(sid) {
+    var boxes = qa('input[data-action="toggle-check"][data-step="' + sid + '"]');
+    if (!boxes.length) throw new Error('no checks for ' + sid);
+    boxes.forEach(function (c) { if (!c.checked) c.click(); });
+  }
+  function submitModal(val, inputSel) {
+    var el = need(q(inputSel), inputSel);
+    el.value = val;
+    var f = need(q('form.modal'), 'form.modal');
+    if (f.requestSubmit) f.requestSubmit(); else f.querySelector('button[type="submit"]').click();
+  }
+  async function done(sid) {
+    checkAll(sid); await sleep(120);
+    click('button[data-action="submit-step"][data-step="' + sid + '"]'); await sleep(180);
+  }
+  async function doneIrr(sid, code) {
+    checkAll(sid); await sleep(120);
+    click('button[data-action="submit-step"][data-step="' + sid + '"]'); await sleep(220);
+    submitModal(code, '#confirmCode'); await sleep(240);
+  }
+  async function runPreflight() {
+    await done('S1'); await done('S2'); await done('S3');
+    await done('S4'); await done('S5'); await done('S6');
+  }
+
+  var cases = {
+    '2': async function () { /* 越序点击锁定步骤 S5 → 护栏拦截 */
+      await sleep(600);
+      click('button[data-action="select-step"][data-step="S5"]');
+      await sleep(500);
+    },
+    '3': async function () { /* 走到 S7 → 不可逆确认对话框 */
+      await runPreflight();
+      checkAll('S7'); await sleep(120);
+      click('button[data-action="submit-step"][data-step="S7"]');
+      await sleep(450);
+    },
+    '4': async function () { /* S7 对话框中输错确认码 → 拦截 */
+      await cases['3'](); await sleep(200);
+      submitModal('WRONG', '#confirmCode'); await sleep(450);
+    },
+    '5': async function () { /* 完成 S7/S8 → 选中 S7 → 打开恢复向导 */
+      await cases['3'](); await sleep(200);
+      submitModal('GO-NEWDB', '#confirmCode'); await sleep(260);
+      await doneIrr('S8', 'UNFREEZE-OK');
+      click('button[data-action="select-step"][data-step="S7"]'); await sleep(220);
+      click('button[data-action="start-recovery"][data-step="S7"]'); await sleep(450);
+    },
+    '6': async function () { /* 完成恢复 → S7 回到待执行、S8–S12 重新锁定 */
+      await cases['5'](); await sleep(200);
+      qa('input[data-action="toggle-rec"]').forEach(function (c) { if (!c.checked) c.click(); });
+      await sleep(160);
+      submitModal('RECOVER', '#recoveryCode'); await sleep(500);
+    },
+    '7': async function () { /* 重新走完剩余全部步骤 → 完成凭证 */
+      await cases['6'](); await sleep(250);
+      await doneIrr('S7', 'GO-NEWDB');
+      await doneIrr('S8', 'UNFREEZE-OK');
+      await done('S9'); await done('S10'); await done('S11');
+      await doneIrr('S12', 'RETIRE-OLD'); await sleep(550);
+    },
+    '8': async function () { /* 键盘焦点可见性（programmatic focus, 无指针交互） */
+      await sleep(600);
+      need(q('input[data-action="toggle-check"]'), 'first check').focus();
+      await sleep(300);
+      need(q('button[data-action="submit-step"]'), 'submit btn').focus();
+      await sleep(400);
+    }
+  };
+
+  var n = new URLSearchParams(location.search).get('case') || '2';
+  Promise.resolve().then(function () { return cases[n](); }).then(function () {
+    var t = q('#stepDetail .detail-title');
+    var summary = 'step=' + (t ? t.textContent : '(completion view)')
+      + ' | ' + (q('#guardChip') ? q('#guardChip').textContent : 'guard=?')
+      + ' | modal=' + (q('form.modal') ? 'open' : 'closed')
+      + ' | done=' + (q('#progressText') ? q('#progressText').textContent : '?');
+    badge.textContent = (errs.length ? 'JS错误! ' : 'driver OK · ') + summary + (errs.length ? ' | ' + errs.join(' | ') : '');
+    badge.className = errs.length ? 'bad' : '';
+    document.title = 'DONE-' + n;
+  }).catch(function (e) {
+    errs.push('driver: ' + e.message);
+    badge.textContent = 'JS错误! ' + errs.join(' | ');
+    badge.className = 'bad';
+    document.title = 'ERR-' + n;
+  });
+})();
+</script>
+</body>
+</html>

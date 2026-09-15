@@ -1,0 +1,53 @@
+version: "0.1"
+platform_profile: WEB-DESKTOP
+framework: react
+measurement_target:
+  app_root: .
+  entry: /index.html
+  scenario: 选址决策台：加载即 ready，三候选并排比较，地图联动选中，调权重重算契合分，锁定得出结论
+sdir_ref: screen.sdir.yaml
+decision_ref: design-decisions.yaml
+approved_patterns:
+  - PAT-DATA-EXPLORER
+approved_component_contracts:
+  - DATA-SURFACE
+  - FILTER-CONTROLS
+  - CONTEXTUAL-DETAIL
+states_required:
+  - loading
+  - empty
+  - ready
+  - selected
+  - error
+capability_gaps:
+  - id: n-persist-decision
+    product_action: 跨会话保存决策结果
+    required_experience:
+      - 刷新后保留锁定选择
+    capabilities:
+      - 无（不引入 localStorage/后端）
+    status: gap
+    resolution:
+      type: explicit_compromise
+      notes: 简报明确不要求持久化服务；锁定状态存于页面会话内存，刷新即回默认。接受此妥协
+validation_plan_ref:
+  artifact: validation-plan.yaml
+  revision: 1
+validation_requirements:
+  - semantic_conformance
+  - state_completeness
+  - product_model_alignment
+  - keyboard
+  - hierarchy_review
+  - representation_decided
+  - state_ownership_declared
+  - acceptance_contract_present
+  - complexity_budget_declared
+  - filter_state
+  - comparison_scan
+  - requirement_alignment
+representation_portfolio_ref: compiled-context.yaml#representation_portfolio
+state_ownership_ref: compiled-context.yaml#state_ownership
+acceptance_ref: compiled-context.yaml#acceptance
+realization:
+  mode: direct_code

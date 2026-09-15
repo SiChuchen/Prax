@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Docloom · 单文档结构化编辑器</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- 顶部工具带：文档标题 / 撤销重做 / 结构检查摘要（supporting） -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">◈</span>
+      <span class="brand-name">Docloom</span>
+      <span class="brand-sub">单文档结构化编辑器</span>
+    </div>
+    <div class="doc-title-wrap">
+      <label class="sr-only" for="docTitle">文档标题</label>
+      <input id="docTitle" class="doc-title" type="text" autocomplete="off" spellcheck="false" aria-label="文档标题">
+    </div>
+    <div class="topbar-actions">
+      <span id="editState" class="edit-state">未编辑</span>
+      <button id="btnUndo" class="tbtn" type="button" title="撤销（Ctrl+Z）">↩ 撤销</button>
+      <button id="btnRedo" class="tbtn" type="button" title="重做（Ctrl+Y）">↪ 重做</button>
+      <button id="btnReset" class="tbtn" type="button" title="丢弃全部编辑，恢复初始示例文档">重置示例</button>
+      <button id="btnReport" class="tbtn tbtn-report" type="button" aria-expanded="false"
+              aria-controls="reportPanel" title="结构检查">
+        <span id="reportBadge" class="badge">结构检查</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 主工作台：大纲（primary） | 编辑（dominant） | 预览（primary） -->
+  <main class="workbench">
+    <aside class="pane pane-outline" aria-label="文档大纲">
+      <div class="pane-head">
+        <span class="pane-name">大纲</span>
+        <span id="outlineCount" class="pane-meta"></span>
+      </div>
+      <div id="outlineTree" class="outline-tree" role="tree" aria-label="节大纲树"></div>
+      <div id="reportPanel" class="report" hidden>
+        <div class="report-head">结构检查 <span id="reportState" class="report-state"></span></div>
+        <div class="report-invariants" id="reportInvariants"></div>
+        <ul id="reportList" class="report-list"></ul>
+      </div>
+    </aside>
+
+    <section class="pane pane-editor" aria-label="节编辑器">
+      <div class="pane-head">
+        <span class="pane-name">编辑</span>
+        <nav id="crumbs" class="crumbs" aria-label="所在位置"></nav>
+      </div>
+      <div id="editorBody" class="editor-body"></div>
+    </section>
+
+    <section class="pane pane-preview" aria-label="文档预览">
+      <div class="pane-head">
+        <span class="pane-name">预览</span>
+        <span class="pane-meta pv-sync-hint">与编辑实时一致</span>
+      </div>
+      <div class="preview-scroll" id="previewScroll">
+        <article id="previewDoc" class="pv-doc" aria-label="文档渲染结果"></article>
+      </div>
+    </section>
+  </main>
+
+  <!-- 删除/重置确认（alertdialog：错误成本防护） -->
+  <div id="modalBackdrop" class="modal-backdrop" hidden>
+    <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalBody">
+      <h3 id="modalTitle"></h3>
+      <p id="modalBody"></p>
+      <div id="modalActions" class="modal-actions"></div>
+    </div>
+  </div>
+
+  <!-- 操作反馈：屏幕阅读器实时区域 + 可见轻提示 -->
+  <div id="live" class="sr-only" role="status" aria-live="polite"></div>
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

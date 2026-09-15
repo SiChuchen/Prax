@@ -1,0 +1,85 @@
+{
+  "reviewer": "R2",
+  "package_id": "impl-12",
+  "session_id": "68ee85cb-e262-4d10-8ec6-bdd3b6e2e3dc",
+  "wall_clock_seconds": 146,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-12",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Brief shape is relational-web (many, high relationality, medium hierarchy; primary object=relationship). Screenshots (1280x860, 1440x900) show a 4-tier left→right dependency map of 24 services / 40 edges; relationships are first-class: every edge is its own selectable object with a dedicated inspector (source/app.js:308-311, 261-276) and typed call/data + critical-path marking (source/data.js:47-88, source/styles.css:129-137). Edge direction semantics are documented on-screen (source/index.html:65)."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "Initial screen in both viewports is dominated (~75% width) by the dependency map; the status line reads '全局视图 · 24 服务 · 40 依赖关系 · 全部可见' (source/app.js:199) and the inspector's default state instructs the primary task verbatim: start at order-service and follow 依赖/被依赖 with the path highlighted (source/index.html:69-74). No competing task occupies the first screen."
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "Title + tagline state the job directly ('跟随依赖与影响 · 全局上下文始终可见', source/index.html:18-19); tier labels T1-T4, counts, legend of 4 line types and the arrow-direction note are all on the initial screen (screenshots 1280x860/1440x900; source/index.html:58-66), so what/where is conveyed within seconds; only the dense T3→T4 edge tangle takes longer to trace per-edge."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Single screen, zero routes: any of 24 nodes reachable in ≤2 actions (click, or '/' focuses search then Enter, source/app.js:369-371, 388-437); a relationship hop is one click on a relation row (source/app.js:302-307, 338-352); deep links (#follow/#select/#impact) allow direct jumps (source/app.js:460-495). No drill-down, no mode switches."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "The acceptance seed is implemented as an explicit discipline: dim-to-focus, nodes/edges never removed or moved (source/app.js:1-2, 143-187 — updateView only toggles classes; styles.css:152-153 dimmed nodes stay in place at opacity .13). Persistent context readout always reports totals and '保持原位可见' (source/app.js:189-201); trail chips allow back-jumps (source/app.js:354-357, 312-317); Esc/reset restores global view (source/app.js:365-372)."
+      },
+      "ui_surface_complexity": {
+        "score": 5,
+        "evidence": "Permanent surfaces are exactly: one topbar (brand, search, one data-dependency toggle, one reset button — source/index.html:14-31), one trailbar hosting the global-context line plus trail chips (source/index.html:33-37), map+legend, and the inspector. No tabs, toolbars, or redundant panels (source/styles.css:32, 85-109); every control maps to the understand/follow job."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Receipt fails all measurable a11y dimensions: a11y.contrast=fail, a11y.focus_order=fail, a11y.target_size=fail, type.min_projected_size=fail (measurement-summary.json checks). Source shows real scaffolding (tabindex+role+aria-label on nodes/edges source/app.js:119-134; combobox/listbox ARIA source/index.html:23-25; :focus-visible styles source/styles.css:80,140-146), but tab order is structurally broken: edge hit-paths render in #layer-edges before all nodes in #layer-nodes (source/index.html:54-56), so keyboard users tab through 40 edges before any service node; SVG text is 10.5-12px in a 1340-wide viewBox (source/styles.css:154-155, source/app.js:65) which scales below minimum at 1280 viewport (~0.7×)."
+      },
+      "frontend_rework": {
+        "score": 2,
+        "evidence": "Visible layer is clean — layout.overflow=pass, text.truncation=pass, and neither screenshot shows breakage or truncation — but 5 of 7 receipt checks failed (pass:2/fail:5, measurement-summary.json summary), implying real rework: layout.responsive_collision=fail plus the four a11y/type failures above. Severity is moderate (structural fixes, not rebuild)."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed '关系跟随不丢失全局上下文' is covered end-to-end and stated in the UI copy: tagline (source/index.html:19), empty-state hint '全图会一直留在原处，路径以青色标出' (source/index.html:73), trail/follow machinery appending steps without altering the map (source/app.js:296-317), impact/dependency closure that dims but never removes (source/app.js:144-159, 341-349), and shareable follow chains (source/app.js:496-509)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "a11y.contrast, a11y.focus_order, a11y.target_size and type.min_projected_size all fail in the receipt (measurement-summary.json)",
+      "Keyboard/tab order traverses all 40 edge hit-paths before any of the 24 service nodes because #layer-edges precedes #layer-nodes in DOM order (source/index.html:54-56, source/app.js:120,132)",
+      "layout.responsive_collision=fail — some surface collides at one of the tested viewports; screenshots alone do not show which",
+      "SVG text sized 10.5-12px inside a fixed 1340x860 viewBox (source/styles.css:154-155, source/app.js:65) projects below minimum size at 1280x860 (type.min_projected_size=fail)",
+      "Faint palette tokens (--faint #5f6f92, tagline/legend/footnote 11-11.5px, source/styles.css:10,45,116) are consistent with the contrast failure on small helper text",
+      "Dense edge crossings in the T3→T4 band (both screenshots) make individual relations hard to trace visually before any selection/dimming aid is used"
+    ],
+    "missing_evidence": [
+      "Per-viewport detail for layout.responsive_collision (sanitized summary gives pass/fail only, so the colliding viewport and elements cannot be identified)",
+      "No interaction-state screenshots: trail/follow/closure behavior is judged from source structure only (allowed as structural review) but not visually confirmed",
+      "Raw contrast ratios and focus-order sequence per check are not in the sanitized summary"
+    ],
+    "overall_note": "impl-12 ('DepAtlas') is a tightly scoped single-screen dependency atlas that matches the brief's relational-web shape almost exactly: 24 services across 4 labeled tiers with 40 typed, clickable dependency edges, on-screen direction semantics, and a follow/trail model whose stated and implemented discipline is dim-to-focus — the map never removes or moves objects, a persistent context line always reports global totals (source/app.js:143-201), and the trail bar allows non-destructive back-jumps, which directly satisfies the acceptance seed 'relationship following without losing global context'. Navigation cost is minimal (everything ≤2 actions, '/' search, deep links) and permanent UI surface is lean. The clear weakness is measured quality of the rendered surface: all four a11y/type checks fail (contrast, focus order, target size, min projected size) plus one responsive-collision failure, and the source shows a concrete cause (edge hit-paths tab-ordered before all nodes; 10.5-12px text in a scaling viewBox). The visual layer itself is clean and defect-free in both screenshots, so the implied rework is targeted accessibility/layout remediation rather than structural rebuilding. Task completion time, retrieval accuracy, and human preference are not observable in this blind pilot, and model-judged legibility here is not human preference."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 64275,
+      "outputTokens": 7130,
+      "cacheReadInputTokens": 81408,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.5403290000000001,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-09-08T21:48:01.171Z"
+}

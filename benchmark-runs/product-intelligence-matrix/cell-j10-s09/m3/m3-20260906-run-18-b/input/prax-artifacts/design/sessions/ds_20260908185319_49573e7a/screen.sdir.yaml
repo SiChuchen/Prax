@@ -1,0 +1,142 @@
+version: "0.2"
+screen:
+  id: list_detail_inspector_screen
+  intent:
+    primary_task: 按阶段→步骤→检查项逐步执行高后果流程，完成全部步骤与检查项
+    secondary_tasks:
+      - 对不可逆步骤执行前确认后果、执行后可进入恢复路径回滚
+      - 查看全程执行日志并取得零失误完成凭证
+  archetype:
+    pattern_ref: PAT-LIST-DETAIL-INSPECTOR
+  density_intent: spacious
+  regions:
+    - id: 步骤执行卡（指令、检查项、提交/确认动作）
+      role: experimental:步骤执行卡（指令、检查项、提交/确认动作）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 阶段→步骤有序导航（含可逆/不可逆与状态标识）
+      role: experimental:阶段→步骤有序导航（含可逆/不可逆与状态标识）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 风险与恢复检查器（当前步骤的后果、恢复窗口、恢复路径）
+      role: experimental:风险与恢复检查器（当前步骤的后果、恢复窗口、恢复路径）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 执行日志（全程留痕与护栏拦截）
+      role: experimental:执行日志（全程留痕与护栏拦截）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 工作流标题与总进度
+      role: experimental:工作流标题与总进度
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 零失误完成凭证（终态）
+      role: experimental:零失误完成凭证（终态）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: workspace
+      role: dominant_workspace
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - preserve_context
+  relationships: []
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved: []
+  rejected_alternatives:
+    - option: 表格化步骤清单（table）
+      reason: 密度低、无比较需求，表格浪费空间且弱化推进语义
+    - option: 画布/流程图空间布局（canvas/diagram）
+      reason: 空间性 none，空间隐喻无用户价值
+    - option: PAT-APPLICATION-SHELL 多区导航
+      reason: 单工作区产品，持久 chrome 浪费空间且增加导航层级
+    - option: 自由跳转的步骤导航（非向导门控）
+      reason: 违反零失误主线，允许越序会引入不可逆误操作风险
+  user_job:
+    verb: complete
+    target: 高后果流程（生产数据库迁移切换 runbook）
+    success: 零失误走完全程：所有检查项通过、不可逆步骤经确认执行、越序/漏项被护栏拦截
+  primary_object:
+    type: workflow
+    label: 高后果切换流程（runbook）
+  information_shape:
+    cardinality: one
+    relationality: low
+    hierarchy: high
+    temporality: low
+    density: low
+    dimensionality: medium
+    spatiality: none
+    volatility: medium
+    uncertainty: medium
+    comparison_need: none
+  representation:
+    primary:
+      type: wizard
+      reason: complete 任务要求按序逐步推进且门控严格（前序未完成不得进入后序），向导语义与零失误主线一致
+    supporting:
+      - type: list
+        reason: 左侧阶段→步骤有序列表提供全局位置感与不可逆标识（⚠），即 PAT-LIST-DETAIL 的列表区
+      - type: feed
+        reason: 执行日志按时间倒序留痕全部动作与护栏拦截，支撑零失误凭证
+  priority:
+    primary:
+      - 步骤执行卡（指令、检查项、提交/确认动作）
+      - 阶段→步骤有序导航（含可逆/不可逆与状态标识）
+      - 风险与恢复检查器（当前步骤的后果、恢复窗口、恢复路径）
+      - 执行日志（全程留痕与护栏拦截）
+      - workspace
+    contextual:
+      - 工作流标题与总进度
+      - 零失误完成凭证（终态）
+  interaction:
+    preview: none
+    inspect: select
+    navigate: none
+    locate: none
+  state_ownership:
+    - state: selection
+      owner: 步骤执行卡（指令、检查项、提交/确认动作）
+    - state: preview
+      owner: session
+  complexity_budget:
+    permanent_panels: 4
+    permanent_primary_actions: 2
+    modes: 2
+    state_owners: 1
+    navigation_levels: 1
+    persistent_filters: 0
+    new_semantic_concepts: 4
+    keyboard_contracts: 0
+    mobile_conflicts: 0
+    permanent_surfaces: 1
+  acceptance:
+    - 零失误走完全程：全部检查项通过、3 个不可逆步骤均经显式确认执行、漏项与越序被护栏拦截并留痕，最终取得完成凭证；任一不可逆步骤可随时进入恢复路径回滚。

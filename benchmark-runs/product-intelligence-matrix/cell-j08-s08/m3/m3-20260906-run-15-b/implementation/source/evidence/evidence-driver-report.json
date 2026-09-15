@@ -1,0 +1,71 @@
+{
+  "driver": ".tooling/evidence-driver.js (puppeteer-core 25.10.0 driving Microsoft Edge headless via CDP)",
+  "target": "file:///E:/codex-prj/ab-worktrees/pi-matrix/cell-j08-s08-b/index.html",
+  "viewport": "1680x960",
+  "consoleErrors": [],
+  "steps": {
+    "A_initial_ready": {
+      "bodyHasLoadingText": false,
+      "outlineCount": "10 节",
+      "editorTitleValue": "概述",
+      "previewH1": "Aurora 桌面应用 2.0 · 发布说明",
+      "badge": "结构检查 · 完整",
+      "undoDisabled": true,
+      "redoDisabled": true,
+      "screenshot": "evidence/01-initial-load.png"
+    },
+    "B_selection_sync": {
+      "editorTitleValue": "离线模式",
+      "crumbs": "文档/新功能/离线模式",
+      "previewSelected": "1",
+      "screenshot": "evidence/02-select-section.png"
+    },
+    "C_field_edit_consistency": {
+      "editorTitleValue": "离线模式（测试）",
+      "previewHeading": "离线模式（测试）",
+      "outlineRowTitle": "离线模式（测试）",
+      "screenshot": "evidence/03-field-edit-consistency.png"
+    },
+    "D_undo_reverts_all_panes": {
+      "editorTitleValue": "离线模式",
+      "previewHeading": "离线模式",
+      "outlineRowTitle": "离线模式",
+      "screenshot": "evidence/04-undo-revert.png"
+    },
+    "E_demote_structure_op": {
+      "demotedNumber": "2.1.2",
+      "nestedInPreview": true,
+      "outlineCount": "10 节",
+      "afterUndoNumber": "2.2",
+      "screenshot": "evidence/05-demote-structure.png"
+    },
+    "F_delete_protection_modal": {
+      "modalVisible": true,
+      "modalTitle": "删除「新功能」",
+      "modalBody": "该节包含 2 个子节。请选择处理方式（两种方式都不会产生无归属的孤儿节）：",
+      "actions": ["子节上移一级（保留 2 个子节）", "连同子节删除（共 3 节）", "取消"],
+      "afterCancel_modalHidden": true,
+      "afterCancel_nodeStillExists": true,
+      "screenshot": "evidence/06-delete-confirm-modal.png"
+    },
+    "G_validation_locate": {
+      "badgeAfterClearingTitle": "结构检查 · 1 项提醒",
+      "reportFirstItem": "4 标题为空",
+      "selectedAfterClickingIssue": "s4",
+      "badgeAfterUndo": "结构检查 · 完整",
+      "screenshot": "evidence/07-validation-locate.png"
+    },
+    "H_keyboard_navigation": {
+      "selectedRowAfterTwoArrowDown": "s1-2",
+      "selectedRowTitle": "目标",
+      "editorTitleValue": "目标",
+      "activeElementIsSelectedRow": true,
+      "screenshot": "evidence/08-keyboard-navigation.png"
+    }
+  },
+  "fixes_applied_during_evidence": [
+    "styles.css: [hidden]{display:none!important} — author display:flex was overriding UA hidden rule (report panel/modal leaked into first screen)",
+    "styles.css: .ol-actions pointer-events:none when hidden — invisible outline buttons were clickable in their layout space",
+    "app.js: outline ArrowUp/ArrowDown now moves keyboard focus with selection (roving tabindex)"
+  ]
+}

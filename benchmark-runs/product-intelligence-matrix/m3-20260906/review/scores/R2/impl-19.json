@@ -1,0 +1,84 @@
+{
+  "reviewer": "R2",
+  "package_id": "impl-19",
+  "session_id": "85c8e946-554f-472d-85c7-81b941df0f0c",
+  "wall_clock_seconds": 195,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-19",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Brief is edit×single-document with medium hierarchy and 'editing must not break structure'; the product is exactly that representation: a fixed two-level schema (sections→blocks) with three controlled block types p/list/callout (source/index.html:316-319), add-buttons limited to those types (source/index.html:571-575), and a live preview rendered from the same data model (source/index.html:666-731). Both screenshots show the single document with 5 sections/10 blocks matching the brief's cardinality-one, low-density shape."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "1280x860.png: the central column is the editing surface with section 1 content already editable (title, section title, paragraph textarea, callout fields) and the right column is its live preview; export/undo/reset chrome is confined to a thin top bar. Editing dominates the initial screen at both viewports."
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "1280x860.png conveys what/where at a glance: brand '构文 DocForm / STRUCTURED DOC EDITOR', labeled panes 文档大纲 / 结构化编辑区 / 实时预览区 (source/index.html:293-299), progress label '第 1 节 / 共 5 节', status chips 结构检查通过 and 同步中, and hint '新增内容会立即进入右侧预览' (source/index.html:575)."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Primary object is on screen at load with zero modes; reaching any other section is one click in the outline (source/index.html:780-791 selectSection), blocks are edited in place (source/index.html:592-663), single fixed screen grid (source/index.html:104-107) satisfying the 1-main-screen constraint."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "Textual edits re-render only preview/status and keep input focus (source/index.html:487-498); editor and preview scroll positions are preserved across re-render (source/index.html:533,578,700); destructive deletes use a two-step inline arm/confirm instead of a modal (source/index.html:970-983); drafts persist via localStorage and restore on reload (source/index.html:948-967,1060-1062); full undo/redo (source/index.html:463-485)."
+      },
+      "ui_surface_complexity": {
+        "score": 5,
+        "evidence": "Permanent surfaces are proportionate to the edit job: one screen, three panes, three add-block buttons (source/index.html:571-575), outline row controls hidden until hover/active (source/index.html:128-129), structure-issue panel hidden by default (source/index.html:275). Only trivial surplus: 复制 Markdown duplicates the 导出 .md path (1280x860.png top bar)."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Receipt fails all three a11y checks plus type size: a11y.contrast=fail, a11y.focus_order=fail, a11y.target_size=fail, type.min_projected_size=fail (measurement-summary.json:13-16). Structural confirmation in source: outline rows are div-on-click with no tabindex/role so sections are keyboard-unreachable (source/index.html:509-525); mini controls are ~11px with 2-7px padding (source/index.html:96-100); 10.5-11.5px low-contrast #a39b8d labels on pane heads/counts/hints (source/index.html:15,111,127). Mitigations present: :focus-visible outline (101), aria-labels on all fields (541-546,559,619,646), aria-expanded on the check chip (272)."
+      },
+      "frontend_rework": {
+        "score": 2,
+        "evidence": "No visible layout defect at 1280x860.png or 1440x900.png (clean three-pane render, no truncation — text.truncation and layout.responsive_collision pass), yet 5 of 7 receipt checks fail (measurement-summary.json:3-8) including layout.overflow=fail, implying nonvisual rework; the overflowing element cannot be located from the sanitized summary."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed '结构化编辑与预览一致' is directly engineered: preview is re-rendered from the same model on every change (source/index.html:489-498,666-731); the sync badge states the invariant '预览由文档数据实时渲染，始终与编辑内容一致' (source/index.html:277); both screenshots show editor and preview mirroring the same title, subtitle, paragraph (raw **哪里发生了变化** in editor, bold in preview) and the info callout 立项结论 verbatim, with matching counts 约533字·5节·10个内容块 in byline and status bar; edited blocks flash in preview (source/index.html:233-234,696-699) and the 结构检查通过 chip reflects collectIssues (source/index.html:421-439,734-743)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "Receipt: a11y.contrast, a11y.focus_order, a11y.target_size and type.min_projected_size all fail (measurement-summary.json:13-16).",
+      "Outline section rows are div-on-click without tabindex/role — not keyboard-operable (source/index.html:509-525), consistent with focus_order fail.",
+      "Receipt layout.overflow=fail although no defect is visible at 1280x860 or 1440x900; root element not identifiable from sanitized summary.",
+      "Low-contrast faint #a39b8d used for 10.5-11.5px pane-head/count/hint text (source/index.html:15,111,127).",
+      "Per-block ↑/↓/复制/× mini buttons are very small targets (~11px font, 2-7px padding, source/index.html:96-100).",
+      "addBlock rebuilds the editor without restoring keyboard focus into the new block's field (source/index.html:822-830 passes flash but not focusBlock, though focus support exists at 579-586)."
+    ],
+    "missing_evidence": [
+      "Sanitized receipt gives no per-check detail (which element overflows for layout.overflow, which text/nodes fail type.min_projected_size), so those failures cannot be localized to specific source lines.",
+      "No keyboard/interaction capture: focus_order and target_size behavior is judged from the receipt verdicts plus static source, not observed live."
+    ],
+    "overall_note": "impl-19 is a single-file structured document editor whose representation matches the brief almost exactly: a fixed section→block schema with three controlled block types (source/index.html:316-319,571-576) and a preview rendered from the same in-memory model on every change (489-498,666-731), which operationalizes the acceptance seed '结构化编辑与预览一致' — visible in both screenshots where the editor and preview mirror title, subtitle, paragraph (raw **bold** markup vs rendered) and the 立项结论 info callout verbatim with matching 533字/5节/10块 counts. The primary task dominates the initial screen, the document is reachable with zero navigation, context is preserved via focus-safe textual re-renders, scroll restoration, two-step inline deletes, undo/redo and localStorage restore. The clear weaknesses are measurement-backed, not visual: 5 of 7 receipt checks fail (measurement-summary.json:3-8) — all three a11y checks plus layout.overflow and type.min_projected_size — and the source corroborates the a11y story with keyboard-unreachable div-on-click outline rows (509-525), sub-guideline mini-button targets (96-100) and low-contrast faint small text (15,111,127), while the overflow failure cannot be localized from the sanitized summary despite clean rendering at 1280x860 and 1440x900. Task completion time, retrieval accuracy and human preference are not observable in this blind pilot, and model judgment of this screen is not a substitute for human preference."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 73770,
+      "outputTokens": 8961,
+      "cacheReadInputTokens": 76672,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.631211,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-09-08T22:08:59.195Z"
+}

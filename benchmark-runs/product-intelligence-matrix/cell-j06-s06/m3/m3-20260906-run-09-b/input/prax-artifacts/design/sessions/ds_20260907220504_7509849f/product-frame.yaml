@@ -1,0 +1,93 @@
+version: "0.2"
+jtbd:
+  verb: understand
+  target: 随时间演化、由多个 change_set 组成的状态变更序列
+  success: 变更因果可读：用户能说出每次改了什么、为何发生、引发了什么，且时间先后与因果方向不冲突
+primary_object:
+  type: change_set
+  label: 变更集（change_set）
+task_model:
+  frequency: low
+  reversibility: reversible
+  consequence: low
+  expertise: expert
+user:
+  primary_role: 运维/发布负责人（on-call engineer、release manager），需要事后复盘一次发布周期内系统状态如何一步步变化
+  expertise: expert
+  familiarity: high
+goal:
+  primary: 让用户沿时间线读一组 change_set，理解每个时间点系统处于什么状态、每次变更的因与果，而不需要打开任何其他工具
+tasks:
+  primary: 按时间顺序浏览 change_set 序列，读取每个变更集内的元素级变更（增/改/删，含前后值）
+  secondary:
+    - 追踪因果：从某个变更跳到它的因（更早的变更）或它的果（更晚的变更）
+    - 查看『截至选中变更集时刻』的系统整体状态（回放结果）
+    - 按变更类型或元素筛选，聚焦感兴趣的变更子集
+product_objects:
+  - id: change_set
+    user_name: 变更集
+    purpose: 一个时间点上发生的一批相关变更，是时间线上的主节点；含时间戳、作者/触发源、标签、若干元素级 change
+  - id: change
+    user_name: 变更条目
+    purpose: change_set 内对单个元素的一次原子变更：元素、类型（add/modify/remove/rename）、before/after、备注
+  - id: element
+    user_name: 受影响元素
+    purpose: 被变更作用的系统元素（如服务、配置项、开关）；跨变更集出现，构成状态回放的清单
+  - id: causal_link
+    user_name: 因果链接
+    purpose: 连接一个较早变更集（因）与一个较晚变更集（果）的因果断言；保证因果方向与时间方向一致的最小载体
+  - id: state_snapshot
+    user_name: 状态快照（派生）
+    purpose: 把选中变更集之前的全部变更按时间顺序回放得到的系统状态；不是存储对象，是回放派生视图
+relationships:
+  - id: rel_cs_contains_change
+    source: change_set
+    target: change
+    type: contains
+    direction: forward
+    meaning: 一个变更集包含若干条元素级变更
+    importance: primary
+  - id: rel_change_on_element
+    source: change
+    target: element
+    type: acts_on
+    direction: forward
+    meaning: 变更作用于某元素；同一元素可被多个变更集先后作用
+    condition: 每条 change 恰好作用于一个元素
+    importance: primary
+  - id: rel_causal_effect
+    source: causal_link
+    target: change_set
+    type: causes_effect
+    direction: forward
+    meaning: 因果链接指向作为『果』的较晚变更集；链接的因端（更早变更集）记录在链接数据本身
+    condition: 链接两端均为 change_set 实例，且因端时间戳严格早于果端（时间结构与因果语义一致的硬约束）
+    importance: primary
+  - id: rel_causal_ground
+    source: change_set
+    target: causal_link
+    type: grounds_cause
+    direction: forward
+    meaning: 较早的因变更集实例化该因果链接（作为因端）
+    importance: primary
+  - id: rel_state_replay
+    source: change_set
+    target: state_snapshot
+    type: derived_from
+    direction: forward
+    meaning: 状态快照 = 按时间序回放该变更集（含）之前的所有变更
+    importance: supporting
+mental_model_hypothesis:
+  summary: 用户把演化历史理解为『一条按时间排列的变更集链』：每个节点是一批变更，节点之间既有时间先后（必然）也有因果指向（必须与时间同向）；任一时刻的状态是沿链回放的结果。界面应呈现为纵向时间线 + 可选中的节点 + 回放出的状态面板，三者共享同一选中态。
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: 用户在单屏内任选一个变更集，能立刻看到：它包含哪些元素级变更（前后值）、它因何发生（指向更早的因）、它引发了什么（指向更晚的果）、以及截至该时刻系统各元素的状态；且界面上所有因果箭头都严格从较早指向较晚，回放状态与按时间逐条应用变更的结果完全一致。
+open_questions: []
+existing_product:
+  stable_user_concepts: []
+  stable_patterns: []
+  current_user_pain_points: []
+  current_constraints: []
+  legacy_debt: []

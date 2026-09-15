@@ -1,0 +1,120 @@
+session_id: ds_20260907220504_7509849f
+version: "0.2"
+information_shape:
+  cardinality: many
+  relationality: medium
+  hierarchy: medium
+  temporality: high
+  density: medium
+  dimensionality: medium
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: timeline
+    reason: temporality=high：时间轴方向直接承载变更集的顺序语义，是因果方向可读的视觉基础
+  supporting:
+    - type: list
+      reason: 选中变更集的元素级变更行以列表呈现，行内含类型徽标与 before→after 单行 diff，承载 hierarchy=medium 的第二层
+    - type: table
+      reason: 右侧状态回放以紧凑两列（元素→当前值）呈现派生快照，medium 密度下保持可扫读
+  rejected:
+    - option: graph（DAG 画布）
+      reason: spatiality=none，引入无关空间语义
+    - option: calendar
+      reason: 强调日历周期而非序列因果
+    - option: table
+      reason: 时间方向性与两层结构表达力弱
+  justification_vs_shape: temporality=high 是主表示为 timeline 的决定性变量：轴的方向（上早下晚）直接承载顺序语义，不存在则因果方向失去视觉锚点。cardinality=many 决定节点为等距序列成员而非平铺块面；relationality=medium 决定因果用内联徽标+选中驱动详情而非全局图；hierarchy=medium 恰好两层（变更集⊃变更条目），由 timeline 节点内的行列表承载；comparison_need=none 故不设并排比较区；spatiality=none 排除一切空间隐喻视图。本表示不采用首页式块面聚合，因其把顺序降格为布局属性。
+primary_structure:
+  pattern: PAT-LIST-DETAIL
+  rationale:
+    - 路由与检选结论：PAT-LIST-DETAIL 的 applies_when=collection order matters 与本任务本质一致——change_set 序列的顺序即时间序；choice list 与 detail 常驻同屏，检查因果与回放不丢失位置（P-19 Preserve Context、H-21 Orientation Invariants）
+    - 以 PAT-WORKSPACE 作为单屏框架合成（同为路由返回且已检选）：整个产品是一个持久工作区，无第二工作区、无页面跳转；PAT-APPLICATION-SHELL 已检选并排除——其契约 does_not_apply_when=single workspace，导航壳只会消耗空间（P-22 Signal over Chrome）
+    - detail 区承载两种选中驱动内容：选中变更集的因果追踪与其时刻的状态回放，符合 selection_driven 可见性
+    - 时间轴方向的视觉锚点（上=早、下=晚）使因果徽标的方向与时间方向同构，直接服务验收种子『时间结构与变更语义一致』
+  confidence: high
+information_hierarchy:
+  primary:
+    - 时间轴上的变更集序列（节点顺序 = 时间顺序 = 因果合法顺序）
+    - 选中变更集的元素级变更明细（类型/元素/before→after）
+    - 因果链接（因徽标 → 与果徽标 →，带跳转）
+    - 截至选中时刻的状态回放面板
+  secondary:
+    - 变更集元信息（作者/触发源/标签）
+    - 筛选器（变更类型、元素）
+    - 回放统计（已应用 N 条变更 / 元素 M 个）
+density:
+  intent: regular
+  strategy:
+    - 时间线节点内用固定行高的变更条目行：类型徽标 + 元素名 + before → after 单行 diff，专家可扫读
+    - 因果徽标内联在变更集头部，不展开即可读
+    - 时间轴节点等距排布，以日期分组标记提供节奏（时间同向自上而下）
+    - 全局仅两处 chrome：顶栏与筛选行，其余均为信息
+  avoid:
+    - 无分组的长滚动流
+    - 每变更集只显示计数的折叠（隐藏变更语义）
+    - 与主任务无关的仪表盘装饰
+    - 块面平铺布局（节点是序列成员而非平铺块面，顺序语义优先于块面语义）
+major_choices:
+  - id: mc-state-replay
+    choice: 状态回放 = 按 data 中时间升序逐条应用 change 的纯函数（不存快照），保证『时间结构与变更语义一致』由构造保证
+    rationale: 回放与时间轴共用同一排序，语义与结构不可能分叉；无存储即无不一致
+    confidence: high
+    references:
+      - change_set
+      - change
+      - state_snapshot
+  - id: mc-causal-badge
+    choice: 因果边以内联徽标（↩ 因 / ↪ 果 + 目标变更集号）呈现并支持点击跳转高亮，不画全局图
+    rationale: 关系性=中、边数少；徽标保留阅读流，方向性用符号+文字+时间位置三重编码，比图布局更不易误导时间方向
+    confidence: high
+    references:
+      - causal_link
+      - change_set
+  - id: mc-domain-flavor
+    choice: 示例域选『Orbit CDN 一次发布周期』的服务/配置/开关变更史，8 个变更集、约 12 个元素、5 条因果链接
+    rationale: 解决 u1：发布运维域与 change_set 主对象天然契合，变更类型与因果叙事容易构造得真实可信
+    confidence: high
+    references:
+      - change_set
+      - element
+      - change
+  - id: mc-vanilla-stack
+    choice: 纯 HTML/CSS/原生 JS，无构建步骤，数据内联 data.js，file:// 直接可开
+    rationale: 交付约束要求静态直开+首屏就绪（ready 即初始态）；无构建消除一类失败面
+    confidence: high
+    references:
+      - change_set
+  - id: mc-keyboard
+    choice: 首屏默认选中最新变更集；↑/↓ 在时间序上移动选中（上=更早，下=更晚）
+    rationale: 方向键方向与时间方向一致，强化时间/语义一致性；选中是唯一全局状态（H-21 Orientation Invariants）
+    confidence: high
+    references:
+      - change_set
+      - causal_link
+rejected:
+  - option: 全局 Graph/DAG 画布呈现因果
+    reason: 空间性=none，且关系性仅中；图布局会引入与时间轴无关的空间语义，破坏时间/因果同向约束的可读性
+  - option: Calendar/时间刻度优先视图
+    reason: 粒度为发布周期内的离散变更集，日历强调日-周结构而非序列因果；时间线更贴切
+  - option: 纯 Table/数据集视图
+    reason: 丢掉时间轴的方向性视觉锚点，变更明细的前后 diff 在行式表格中层级感弱
+  - option: PAT-APPLICATION-SHELL（全局导航+可切换工作区）
+    reason: 已检选该模式：其契约 does_not_apply_when=the product is a single workspace；单屏无第二工作区
+  - option: 块面平铺默认布局（grid-of-blocks）
+    reason: cardinality=many 的序列成员若平铺为块面，时间顺序退化为布局巧合，与 temporality=high 的主语义冲突；对应决策器提示的默认谬误方向（myth 条目在本门不可路由，无法展开检选，故按其结论方向规避并如实记录）
+unresolved: []
+complexity_budget:
+  permanent_panels: 3
+  permanent_primary_actions: 3
+  modes: 0
+  state_owners: 1
+  navigation_levels: 1
+  persistent_filters: 2
+  new_semantic_concepts: 3
+  keyboard_contracts: 1
+  mobile_conflicts: 0
+  permanent_surfaces: 1

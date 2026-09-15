@@ -1,0 +1,85 @@
+{
+  "reviewer": "R1",
+  "package_id": "impl-11",
+  "session_id": "ca5ea8f0-efcd-4dc9-be78-02401cd6d6e8",
+  "wall_clock_seconds": 142,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-11",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Brief shape is dimensional-space (high density/dimensionality, unbounded cardinality) over a dataset; initial screen (1280x860, 1440x900) is a projection-based facet browser: 14-dimension catalog rail, per-dimension projection bar chart (center), attributed filter ledger (top), ranked record list + detail (right). Source handles cat/ord/num-binned/highcat projections generically (source/assets/app.js:181-223, HIGH_TOPK/NUM_BINS at app.js:21-22), directly matching the unbounded-cardinality/high-dimension facets."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "At 1280x860 the exploration surface (dimension rail + projection chart + record list) dominates the first screen; the chart stage is the largest region; topbar ledger states current projection and the entry hint '点击图表柱体或维度「筛选」开始' (app.js:268) points at the primary task; data meta '540 条记录 · 14 个维度 · 当前命中 540' (app.js:248-249) is visible in the header."
+      },
+      "time_to_understand": {
+        "score": 4,
+        "evidence": "Model-judged proxy: title, dataset meta, projection state and next-action hints are all on the initial screen (1440x900 topbar and anchor-line '锚点：未选中 — 点击右侧清单或「名称」投影柱体设置（跨维度保留）', app.js:337); docked slightly because the domain terms 投影/锚点/状态账本 require reading the inline hints to decode."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Zero navigation: single main screen (source/index.html:28-65); switching projection is one click on a dimension head (app.js:548-549 → setProjection app.js:147-155); filtering is one click on the per-dimension 筛选 button (app.js:529-531); no routes, modes, or page transitions in source."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "Context preservation is structural: anchor/selection is kept outside undo snapshots (app.js:29) and re-expressed in the new projection (app.js:333-337), ghost row pins an anchor excluded by filters (app.js:433-436), list scroll preserved across re-render (preserveScroll app.js:241-245), projection switch keeps filters/sort/history with an explicit toast (app.js:152-155)."
+      },
+      "ui_surface_complexity": {
+        "score": 4,
+        "evidence": "Permanent surfaces: topbar (ledger + 4 action buttons, index.html:19-25), 14 dimension rows each with a 筛选 button (app.js:287), chart head/foot, search+sort+list+detail (index.html:50-62). Dense but proportionate to the brief's 密度=高/维度性=高; complexity cost shows as many small always-visible controls (18px chip ✕, style.css:56-59; 10px legend toggle, app.js:354)."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Receipt: a11y.contrast=fail, a11y.focus_order=fail, a11y.target_size=fail (measurement-summary.json checks). Source corroborates: primary affordances are non-focusable divs/li (dim-head app.js:282, record row app.js:445, history li app.js:481 — no tabindex/role/keyboard path); targets below minimum (chip ✕ 18px style.css:57, fbtn 11px style.css:86, legend toggle 10px app.js:354); faint text #5d6b80 on #0d1117 (style.css:5). Positives: visible focus border for inputs/select (style.css:26), Ctrl+Z/Y (app.js:636-641), title tooltips throughout — not enough to offset three failed checks."
+      },
+      "frontend_rework": {
+        "score": 2,
+        "evidence": "Receipt shows 5 of 7 checks failing (summary pass:2/fail:5) including layout.overflow=fail and type.min_projected_size=fail; the latter is plausibly rooted in sub-pixel projected marks (bar height floor 0.5px app.js:386-387, width floor 0.8px app.js:370-371). Both screenshots are visually clean (no collision, no truncated text — layout.responsive_collision=pass, text.truncation=pass), so defects are receipt-level rather than visible on the initial page."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed '过滤/投影状态有归属且可回退' is addressed on both halves. Attribution: ledger chips carry dimension color+name+live marginal hit count (app.js:253-270, chipCount app.js:102-110), rail shows per-dimension filter dot (app.js:286), history entries name the dimension touched (app.js:477-489). Revertibility: per-chip ✕ removal (app.js:264), undo/redo + Ctrl+Z/Y (index.html:21-22, app.js:47-71, 636-641), click-any-step history rollback (app.js:609-614), reset-all (app.js:156-159), zero-hit state explicitly keeps recoverable state (app.js:341-343). Declared as the design contract at app.js:3-8."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "measurement-summary.json: layout.overflow=fail, a11y.contrast=fail, a11y.focus_order=fail, a11y.target_size=fail, type.min_projected_size=fail (2 pass / 5 fail / 1 warning; target_invalid=false)",
+      "Keyboard-inaccessible primary affordances: clickable div.dim-head (app.js:282), div.row (app.js:445), li history steps (app.js:481) lack tabindex/role, consistent with a11y.focus_order fail",
+      "Sub-minimum targets: 18px chip remove ✕ (style.css:57), 10px legend toggle (app.js:354), consistent with a11y.target_size fail",
+      "Projected marks can render at 0.5px height / 0.8px width (app.js:370-371, 386-387), consistent with type.min_projected_size fail on high-cardinality projections",
+      "Low-contrast faint tier (#5d6b80 text on #0d1117, style.css:5) used for hints, rank numbers, and sublabels, consistent with a11y.contrast fail",
+      "Operation history is pinned to the bottom of the left rail with max-height 210px (style.css:101), showing only its header plus one entry at both viewports until the dimension list is scrolled"
+    ],
+    "missing_evidence": [
+      "layout.overflow=fail is not localized: the sanitized summary does not identify which element overflows at which viewport, and neither screenshot shows visible overflow",
+      "The single warning in measurement-summary.json has no id or description",
+      "Interaction states (dimension switch, filtering, undo, high-cardinality projection) are not screenshotted; context-preservation behavior was judged from source structure (app.js) rather than observed runtime evidence"
+    ],
+    "overall_note": "impl-11 is a single-screen, no-navigation facet browser whose representation matches the brief's dimensional-space shape closely: a 14-dimension catalog drives one-click projection bar charts (categorical, binned numeric, and top-K high-cardinality handling in app.js:181-223), with the initial screen at both 1280x860 and 1440x900 dominated by the explore surface and first-paint data (540 records, seed shown, no loading state — data.js:3). The acceptance seed is engineered deeply rather than bolted on: every filter/projection slice is an attributed ledger chip with a live marginal hit count (app.js:253-270), and four independent revert paths exist (chip removal, undo/redo with shortcuts, click-to-step history, reset-all), while anchor selection, sort, scroll, and history survive dimension switches (app.js:29, 152-155, 241-245, 433-436). The clear weakness is accessibility: three a11y checks fail and the source shows why — the main affordances are non-focusable divs, targets shrink to 10-18px, and faint low-contrast text is used for secondary labels — plus receipt-level layout failures (overflow, sub-pixel projected marks) that do not manifest as visible defects in the two static screenshots. Net: top-tier fit and seed coverage, materially dragged down by accessibility and receipt defect burden. These judgments are model-judged from artifacts only; task time, retrieval accuracy, and human preference are not observable in this pilot."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 44867,
+      "outputTokens": 6682,
+      "cacheReadInputTokens": 187520,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.48514500000000005,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-09-08T21:28:50.218Z"
+}

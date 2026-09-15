@@ -1,0 +1,30 @@
+version: "0.1"
+corrections:
+  - id: COR-1-runtime-vanilla-js
+    scope:
+      project: cell-j08-s08-b
+      surfaces:
+        - editor-main
+    finding:
+      type: runtime_stack_adaptation
+      observed: design_prepare_implementation 的 framework 字段为枚举固定值
+        react，但本项目交付约束要求：交付物可直接静态打开（含 file:// 协议，模块化脚本/CDN 运行时在 file://
+        下不可用）、无外部服务、无必须的构建步骤。React 运行时（CDN 或 type=module 构建产物）无法同时满足这三条；实测确认
+        file:// 直接打开为验收路径（证据截图均经 file:// 加载）。
+    intended:
+      statement: 交付运行时采用原生 HTML/CSS/JS（无框架、无构建、无外部依赖），但完整实现实现简报批准的全部契约：PAT-LIST-DETAIL
+        三栏工作台、单一状态源派生渲染（WORKSPACE）、结构操作白名单与确认弹窗（STATE-FEEDBACK / destructive
+        recovery）、所要求的 loading/empty/ready/selected/error
+        状态模型、键盘契约（Ctrl+Z/Ctrl+Y、大纲方向键 roving tabindex）。所有验证证据均基于 file://
+        真实浏览器（Edge CDP）采集。
+    evidence_refs:
+      - evidence/01-initial-load.png
+      - evidence/08-keyboard-navigation.png
+      - evidence/evidence-driver-report.json
+    regression:
+      check_id: requirement_alignment
+      requirement: 交付物可直接静态打开（file:// 或静态服务器），页面加载完成即处于可用状态，无外部服务依赖；结构化编辑与预览一致。
+    supersedes: []
+    promotion:
+      candidate: false
+    created_at: 2026-09-08T17:14:21.237Z

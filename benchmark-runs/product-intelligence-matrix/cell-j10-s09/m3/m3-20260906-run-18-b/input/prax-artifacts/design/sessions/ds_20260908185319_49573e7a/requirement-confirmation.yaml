@@ -1,0 +1,31 @@
+version: "0.1"
+user_quote:
+  - 动词：complete / 对象：高后果流程 / 成功标准：零失误走完全程
+  - 不可逆步骤有恢复/确认路径
+  - 交付物必须能直接静态打开（根路径 index.html，或构建产物 dist/）
+  - 应用在页面加载完成时即处于可用状态（初始数据随首屏就绪，不得以加载态作为可测状态）
+restatement: 构建一个单页 Web 应用，主对象为单一 workflow（高后果流程）。用户任务：complete —— 引导用户零失误走完一条高后果流程；每个不可逆步骤必须同时具备显式确认路径（执行前强制确认后果）与恢复路径（执行后可按回滚程序恢复）。信息形状为 consequential-flow：单一流程、高层级（阶段→步骤→检查项）、低密度、中等易变性与不确定性、无比较需求。交付物为可静态直接打开的本地单页应用（根 index.html），初始数据随首屏就绪、无加载态，不部署、无后端。
+boundaries:
+  in_scope:
+    - 单一高后果流程的引导式执行主屏（阶段→步骤→检查项三层结构）
+    - 不可逆步骤的显式确认路径（后果展示 + 确认动作）
+    - 不可逆步骤的恢复路径（回滚程序 + 恢复引导）
+    - 逐步推进护栏（未完成检查项不得推进、越序操作被拦截并记录）
+    - 执行日志（全程动作留痕）与零失误完成凭证
+    - 初始数据内联、页面加载即可用、静态打开可运行
+  out_of_scope:
+    - 多流程/多运行实例管理
+    - 后端、账号体系、持久化服务、真实系统联动
+    - 部署到外部服务
+    - 移动端适配（桌面优先）
+    - 多人协同
+  scope_complete: true
+open_questions: []
+confirmation:
+  status: requirement_is_sufficient
+  evidence:
+    - type: task_brief
+      ref: Product Brief — cell-j10-s09 (complete × consequential-flow)，M2 冻结版，随任务消息提供
+    - type: conversation_message
+      ref: 任务消息：Read REQUIREMENT below and build the product it describes, from scratch, in this directory
+  confirmed_at: 2026-09-09T00:00:00Z

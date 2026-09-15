@@ -1,0 +1,47 @@
+version: "0.1"
+session_id: ds_20260907173830_d0e52165
+task:
+  surfaces: []
+  primary: 扫视指标墙，在异常出现的第一时间发现它（无需交互，靠耐久的状态色与置顶排序）
+product_relationships:
+  - id: rel_metric_change
+    source: metric
+    target: change_event
+    type: emits
+    direction: forward
+    meaning: 每个 change_event 属于且仅属于一个 metric，事件流按 metric 可过滤追溯
+    importance: primary
+  - id: rel_metric_history
+    source: metric
+    target: metric_history
+    type: has
+    direction: forward
+    meaning: 每个 metric 持有滚动窗口时序，历史面板按需展开
+    importance: supporting
+region_relationships: []
+decisions:
+  primary_structure: PAT-LIST-DETAIL-INSPECTOR
+  density_intent: compact
+  major_choice_ids:
+    - MC-1
+    - MC-2
+    - MC-3
+    - MC-4
+must_preserve: []
+regression_points: []
+unresolved: []
+corrections: []
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - requirement_alignment
+  regression_check_ids: []

@@ -1,0 +1,82 @@
+{
+  "reviewer": "R2",
+  "package_id": "impl-17",
+  "session_id": "51d302e8-3785-43c8-a87e-2c7ff77c7f00",
+  "wall_clock_seconds": 178,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-17",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Brief cell-j02-s02 asks for a locate surface over an unbounded, weakly-related open collection with medium hierarchy. Impl-17 ('Locus') is exactly that shape: a search + facet + ranked-list catalog of 2,400 dataset items (source/index.html:43-69; visible in both screenshots) — two-level Collection tree with per-domain counts (1280x860 left rail: 'Climate & Weather 301' … 'Demographics & Society 298'), any-of tag/format/license facets with live counts, and rows for the item object (the brief's suggested object_type) showing id / subcategory / format·size·date."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "The locate search box is the widest, centered control of the top bar in both 1280x860 and 1440x900 screenshots ('Search 2,400 datasets — name, id, tag, or description… ( / to focus )'), auto-focused at boot (source/app.js:488 els.search.focus()); the results list is the only other permanent surface and a live '2,400 items' count sits top-right (source/index.html:31). No competing task is on the initial screen."
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "Model-judged proxy: the placeholder states scope, fields, and the '/' shortcut at a glance (both screenshots); brand sub 'OpenCollection Locator' (source/index.html:21) and page title 'Locus — locate any dataset in three interactions' (source/index.html:6) name the job outright. What/where is conveyed on first paint."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Locate fits ≤3 interactions by construction: '/' or click focuses search, typing ranks matches name-prefix > name > id > tag > category > description (source/app.js:78-91), Enter opens the detail with cursor defaulting to row 0 (source/app.js:365); any facet is one click (source/app.js:397-406); the category tree adds one expand step (twisty, source/index.html:210-213); 16 named targets are planted as 'reachable in ≤3 interactions' (source/data.js:69-70); and the whole locate path is URL-addressable via hash (source/app.js:319-331)."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "Selection opens a right-side panel, not a route: 'Result list, filters and scroll position are preserved while this panel is open' (source/index.html:84); Esc closes and refocuses the cursor row (source/app.js:296-302); active filters render as removable chips plus 'Clear all' (source/app.js:249-270); state round-trips through the hash (source/app.js:319-350); facet counts recompute excluding the toggled dimension so the rail stays meaningful (source/app.js:130-148, 305-310)."
+      },
+      "ui_surface_complexity": {
+        "score": 5,
+        "evidence": "Permanent surfaces are exactly three: top bar, 236px facet rail, results list (source/styles.css:114-118, 151); chips, detail, error banner, and empty state are conditional [hidden] panels (source/index.html:32, 36, 62, 71); the tag rail caps at 18 entries with 'Show all 97 tags' progressive disclosure (source/app.js:229-237); no decorative or job-irrelevant controls exist."
+      },
+      "accessibility": {
+        "score": 4,
+        "evidence": "Strong structural affordances in source: role=search (source/index.html:23), aria-pressed facet buttons and aria-expanded twisties (source/app.js:198-213), listbox/option with aria-activedescendant (source/app.js:159-176), aria-live polite result count (source/index.html:31), role=alert error banner (source/index.html:36), :focus-visible outline (source/styles.css:30), full keyboard map ('/', arrows, Enter/Space, Esc; source/app.js:362-469). The receipt cannot corroborate: a11y.contrast, a11y.focus_order, a11y.target_size are all 'skipped' with target_invalid true (measurement-summary.json). Residual risks computed from source: --faint #8a97a5 ≈3.0:1 on white for 11px row meta / facet counts / placeholder (source/styles.css:9, 134, 169), tree-twist target 18×24px (source/styles.css:139-140) and btn-tiny 22px tall (source/styles.css:80) are under a 24px minimum."
+      },
+      "frontend_rework": {
+        "score": 4,
+        "evidence": "One visible defect class, reproduced at both viewports: rows with 4-format chains wrap their fixed 220px meta column onto two lines and overflow the 31px row — 'Global Sovereign Debt Dataset' (DS-11795) and 'Historical Sea Surface Temperature Ledger' (DS-10544) in both 1280x860 and 1440x900 (source/styles.css:169 sets width:220px with no nowrap/ellipsis; .row is 31px, source/styles.css:156-162). No other overflow, collision, or truncation defects visible. The receipt shows 0 failures but 7/7 checks skipped with target_invalid true (measurement-summary.json), so error evidence is absent in both directions."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed '定位路径有搜索/过滤支撑且不丢上下文' is directly addressed in source: multi-field ranked search over name/id/tag/description (source/app.js:75-91), four count-bearing facets with exclusion-model counts (source/app.js:130-148), removable chips + Clear all (source/app.js:253-270), context-preserving detail panel (source/index.html:84), and hash-restorable filter+selection state (source/app.js:319-350)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "Both viewports: the fixed 220px meta column (source/styles.css:169) wraps to two lines and overflows the 31px row for 4-format items — visible on 'Global Sovereign Debt Dataset' (DS-11795) and 'Historical Sea Surface Temperature Ledger' (DS-10544).",
+      "Contrast risk: --faint #8a97a5 ≈3.0:1 on white used for 11px row meta, facet counts, and placeholder (source/styles.css:9, 65, 134, 169) — below AA 4.5:1 for small text (manual computation from source; receipt check skipped).",
+      "Small interactive targets: tree-twist 18×24px (source/styles.css:139-140) and btn-tiny 22px tall (source/styles.css:80) — below the 24px minimum the skipped a11y.target_size check would have tested.",
+      "Measurement receipt invalid for this package: 0/7 checks executed (all 'skipped', target_invalid true — measurement-summary.json), so no objective layout or a11y corroboration exists."
+    ],
+    "missing_evidence": [
+      "measurement-summary.json: layout.overflow, layout.responsive_collision, text.truncation, a11y.contrast, a11y.focus_order, a11y.target_size, type.min_projected_size all 'skipped' (target_invalid true) — receipt-based corroboration unavailable for accessibility and frontend_rework.",
+      "No task completion time, information retrieval accuracy, or human preference data exists in this blind pilot (by design)."
+    ],
+    "overall_note": "impl-17 ('Locus') is a search-first catalog locator that matches the cell-j02-s02 brief closely: the primary object is the dataset item inside an unbounded 2,400-item collection, reached through a dominant auto-focused search with ranked multi-field matching plus a four-facet, count-bearing rail (both screenshots; source/app.js:75-148). The ≤3-interaction locate criterion is met structurally — type+Enter, one-click facets, or a two-level category tree — and 16 named targets are planted to be reachable in ≤3 interactions (source/data.js:69-70). Context preservation, the acceptance seed, is handled by a side-panel detail that keeps the list, filters, and scroll position, removable filter chips, and hash-encoded state (source/index.html:84; source/app.js:296-350). Deductions are confined to polish and verification: a visible meta-column wrap/overflow on two rows at both viewports (source/styles.css:169), roughly 3:1 contrast on 11px 'faint' text plus two sub-24px targets (source/styles.css:9, 80, 139-140), and a measurement receipt where all seven checks were skipped (target_invalid true), so nothing objective corroborates layout or a11y. All interaction-dimension scores are model judgments from screenshots and source only; no human preference or timing data exists in this pilot."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 74339,
+      "outputTokens": 9823,
+      "cacheReadInputTokens": 85568,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.660054,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-09-08T22:02:40.670Z"
+}

@@ -1,0 +1,16 @@
+{
+  "check_id": "keyboard",
+  "receipt_version": 1,
+  "measured_at": "2026-09-08T17:26:00Z",
+  "result": "pass",
+  "method": "CDP real keyboard events: puppeteer-core 25.10.0 + Microsoft Edge headless, viewport 1680x960, target file:///E:/codex-prj/ab-worktrees/pi-matrix/cell-j08-s08-b/index.html",
+  "script": ".tooling/evidence-driver.js (steps D, H)",
+  "assertions": [
+    {"action": "click outline row s1, ArrowDown x2", "observed": "selected row=s1-2 (目标), aria-selected=true, editor fTitle=目标, preview section 1.2 目标 data-selected=1"},
+    {"action": "focus probe", "observed": "document.activeElement === selected .ol-row (activeElementIsSelectedRow=true, roving tabindex)"},
+    {"action": "Control+z", "observed": "editor/outline/preview all reverted to previous values simultaneously; Ctrl+Y redo bound and enabled-state asserted"},
+    {"action": "focus visibility", "observed": ":focus-visible 2px blue ring on focused row in evidence/08-keyboard-navigation.png; all controls are native button/input/select/textarea"}
+  ],
+  "console_errors": [],
+  "artifacts": ["evidence/08-keyboard-navigation.png", "evidence/04-undo-revert.png", "evidence/evidence-driver-report.json"]
+}

@@ -1,0 +1,78 @@
+version: "0.2"
+jtbd:
+  verb: decide
+  target: 位置敏感的选项（候选铺位）
+  success: 决策输入同屏可得
+primary_object:
+  type: location
+  label: 候选铺位（location）
+task_model:
+  frequency: low
+  reversibility: costly
+  consequence: high
+  expertise: mixed
+user:
+  primary_role: 连锁小型品牌创始人／选址评估人
+  expertise: intermediate
+  familiarity: medium
+goal:
+  primary: 让决策者在单屏内完成候选地点的比较与择优：地理语境与全部决策输入同屏可得，调权重即得结论
+tasks:
+  primary: 在 3 个候选铺位间并排比较全部指标，结合地理语境确定最优选址
+  secondary:
+    - 调整决策权重观察契合分与排名变化
+    - 对比各候选相对通勤锚点与竞品分布的位置关系
+    - 锁定最终选择并读出结论摘要
+product_objects:
+  - id: candidate_site
+    user_name: 候选铺位
+    purpose: 承载全部可比较决策维度（租金、人流、通勤、竞争、面积等）的地点条目
+  - id: geo_context
+    user_name: 商圈地图
+    purpose: 提供位置直觉：候选点位、通勤锚点、地铁线路、竞品与人流走廊的示意地图
+  - id: criteria_weights
+    user_name: 决策权重
+    purpose: 表达决策者偏好（各项准则 0–5 权重），驱动各候选契合分实时重算
+  - id: verdict
+    user_name: 决策结论
+    purpose: 驻留同屏的决策结论：领先者、关键差距与选定铺位摘要
+relationships:
+  - id: rel_site_in_map
+    source: candidate_site
+    target: geo_context
+    type: located_in
+    direction: forward
+    meaning: 每个候选在地图上有唯一点位，选中列与地图点双向高亮联动
+    condition: 始终
+    importance: primary
+  - id: rel_weights_score
+    source: criteria_weights
+    target: candidate_site
+    type: scores
+    direction: forward
+    meaning: 加权评分把准则权重映射为每个候选的契合分与排名
+    condition: 权重变动时实时
+    importance: primary
+  - id: rel_sites_verdict
+    source: candidate_site
+    target: verdict
+    type: summarizes
+    direction: forward
+    meaning: 结论区随比较状态（领先者/选定项）实时更新
+    condition: 任一输入变动时
+    importance: supporting
+mental_model_hypothesis:
+  summary: 决策者心智模型是「地图 + 表」并置：左（或上）是商圈地图给出位置直觉，右侧是每个候选一列的指标对比；逐项最优一眼可见，权重可调，总分排序驱动最终拍板。类似购房/选址评估表的成熟惯例。
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: 页面加载完成即同屏呈现 3 个候选铺位的完整指标列、商圈地理语境图与加权契合分；决策者不离开主屏即可调整权重、锁定选择并读出结论。
+open_questions: []
+existing_product:
+  stable_user_concepts: []
+  stable_patterns: []
+  current_user_pain_points: []
+  current_constraints:
+    - 静态交付、无后端：地理语境须以自绘示意地图承载，不得调用外部地图服务
+  legacy_debt: []

@@ -1,0 +1,77 @@
+needs:
+  - id: n1-instant-search
+    product_action: Search-as-you-type across the full collection with hit highlighting
+    required_experience:
+      - Every keystroke synchronously narrows the result list with highlighted matches
+      - No spinner, no debounce visible to the user, no loading state
+    capabilities:
+      - dataset inlined in first-load scripts
+      - client-side substring scan over ~2,400 items (<1ms)
+      - DOM-bounded windowed rendering
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Data ships inline with the page (deterministic seed), filtering is synchronous in-memory, rendering is windowed; no service call anywhere on the path
+  - id: n2-live-facet-counts
+    product_action: AND-composable facet narrowing with live counts that reflect the current query context
+    required_experience:
+      - Facet counts update on every keystroke/click
+      - Counts never require a round trip
+    capabilities:
+      - precomputed category tree
+      - count aggregation per keystroke/click
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Single-pass filter computes both the visible window and facet histograms in one loop
+  - id: n3-context-preserving-detail
+    product_action: Inspect a hit in a detail panel without discarding list, filters, or scroll position
+    required_experience:
+      - Opening/closing detail leaves result list, chips, counts, and scroll exactly as they were
+      - Selected row remains visibly anchored while the panel is open
+    capabilities:
+      - selection-bound side panel
+      - stable row keys
+      - scroll anchoring
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Detail renders in a sibling region, not a route change; Esc/✕ toggles selection only; per the acceptance seed
+  - id: n2-locate-in-3
+    product_action: Reach any known-nameable target within three interactions
+    required_experience:
+      - "Typical path: type query (interaction 1) → click item (interaction 2)"
+      - "Browse path: facet click (1) → facet click (2) → item click (3)"
+    capabilities:
+      - type→click = 2 interactions
+      - type→facet→click = 3 interactions
+      - keyboard path / →type→↑↓→Enter = 2–3 interactions
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Success metric measured in validation with seeded named targets
+  - id: n5-unbounded-growth
+    product_action: Behave predictably as the collection grows beyond what a viewport shows
+    required_experience:
+      - Large match sets render without freezing
+      - Counts remain exact regardless of rendered window
+    capabilities:
+      - inline seed data
+      - windowed render
+      - O(n) filter
+    status: composable
+    resolution:
+      type: explicit_compromise
+      notes: Dataset is an inline deterministic stand-in for an unbounded feed; DOM stays bounded via incremental windowed rendering; growth beyond in-memory scale is out of scope per brief (no backend)
+  - id: n6-state-in-url
+    product_action: Restore a locate path (query + filters + selection) from the URL hash
+    required_experience:
+      - Reload or shared link restores the identical result context
+      - Works over file:// (hash only, no server routing)
+    capabilities:
+      - hash-encoded query/filters/selection
+      - state restored at parse time before first paint
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Pure hash parse/serialize; no history API dependency beyond hashchange

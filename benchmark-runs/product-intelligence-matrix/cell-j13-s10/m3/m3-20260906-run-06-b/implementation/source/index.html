@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prism · 多维数据探索台</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <!-- ============ app-header：全局上下文与全局动作 ============ -->
+    <header class="app-header" id="app-header">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">◮</div>
+        <div class="brand-text">
+          <div class="brand-name">Prism 多维探索台</div>
+          <div class="brand-sub">数据集：<strong id="ds-name">—</strong><span class="dot">·</span>内联就绪，无加载态</div>
+        </div>
+      </div>
+      <div class="header-stats" id="header-stats" aria-live="polite">
+        <!-- 记录总数 / 维度数 / 当前命中 -->
+      </div>
+      <div class="header-actions" role="toolbar" aria-label="全局状态操作">
+        <button class="btn" id="btn-undo" title="撤销最近一次状态变更 (Ctrl+Z)">↶ 撤销</button>
+        <button class="btn" id="btn-redo" title="重做 (Ctrl+Y)">↷ 重做</button>
+        <button class="btn btn-danger-ghost" id="btn-reset" title="清空全部过滤并恢复默认投影">✕ 全部重置</button>
+      </div>
+    </header>
+
+    <!-- ============ 主工作区：维度轨 | 投影工作面 | 状态托盘+明细 ============ -->
+    <main class="workspace">
+      <!-- region: collection —— 维度轨 -->
+      <section class="panel rail-panel" id="dimension-rail" aria-label="维度轨">
+        <div class="panel-hd">
+          <h2 class="panel-title">维度</h2>
+          <span class="panel-hint" id="rail-hint">点名称＝投影 · 勾选值＝过滤</span>
+        </div>
+        <div class="panel-bd" id="rail-body"><!-- 维度列表 --></div>
+      </section>
+
+      <!-- region: data —— 投影工作面 -->
+      <section class="panel center-panel" id="projection-surface" aria-label="投影工作面">
+        <div class="panel-hd projection-hd">
+          <div class="proj-title">
+            <h2 class="panel-title" id="proj-title">投影</h2>
+            <span class="proj-sub" id="proj-sub"></span>
+          </div>
+          <div class="proj-controls">
+            <label class="ctl">度量
+              <select id="measure-select" aria-label="聚合度量"></select>
+            </label>
+            <label class="ctl">细分
+              <select id="breakdown-select" aria-label="细分维度"></select>
+            </label>
+          </div>
+        </div>
+        <div class="panel-bd center-bd">
+          <div class="chart-block" id="chart-block">
+            <div class="block-hd"><h3>分布投影</h3><span class="block-hint">点击条形＝按该值过滤（其他维度过滤已计入）</span></div>
+            <div id="chart" role="group" aria-label="当前维度分布"></div>
+            <div class="legend" id="legend" hidden></div>
+          </div>
+          <div class="table-block" id="table-block">
+            <div class="block-hd"><h3>记录</h3><span class="block-hint" id="table-hint"></span></div>
+            <div class="table-wrap" id="table-wrap"><!-- 记录表 --></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- region: active_state + detail —— 状态托盘与明细 -->
+      <aside class="right-col">
+        <section class="panel tray-panel" id="state-tray" aria-label="生效状态">
+          <div class="panel-hd">
+            <h2 class="panel-title">生效状态 <span class="count-chip" id="tray-count">0</span></h2>
+            <span class="panel-hint">归属维度 + 来源 · 逐条可回退</span>
+          </div>
+          <div class="panel-bd" id="tray-body"><!-- 状态条目 --></div>
+          <div class="panel-ft" id="tray-foot">Ctrl+Z 撤销 · Ctrl+Y 重做 · 状态条目可单独回退</div>
+        </section>
+
+        <section class="panel inspector-panel" id="inspector" aria-label="记录明细">
+          <div class="panel-hd">
+            <h2 class="panel-title">记录明细</h2>
+            <button class="btn btn-ghost" id="btn-deselect" hidden>取消选中 (Esc)</button>
+          </div>
+          <div class="panel-bd" id="inspector-body"><!-- 选中记录字段 --></div>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

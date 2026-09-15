@@ -1,0 +1,88 @@
+version: "0.2"
+jtbd:
+  verb: explore
+  target: 多维数据（单一数据集，多个维度/度量）
+  success: 维度切换不重置认知：投影变了，过滤与投影状态仍归属清晰、可见、可逐条回退
+primary_object:
+  type: dataset
+  label: Dataset
+task_model:
+  frequency: high
+  reversibility: reversible
+  consequence: low
+  expertise: mixed
+user:
+  primary_role: 数据分析师 / 探索型用户
+  expertise: intermediate
+  familiarity: medium
+goal:
+  primary: 让用户在高维数据集上自由探索：切换任意维度投影、按维度值过滤，而探索上下文（过滤、投影、选中）始终可见、有归属且可回退
+tasks:
+  primary: 在维度之间切换投影并按维度值过滤，观察数据分布变化，且任何一步都可回退
+  secondary:
+    - 查看单条记录明细
+    - 撤销最近一次状态变更 / 一键重置全部状态
+    - 在过滤后的子集上继续切换维度（认知连续）
+product_objects:
+  - id: dataset
+    user_name: 数据集
+    purpose: 被探索的高维数据集合，首屏内联就绪，只读
+  - id: dimension
+    user_name: 维度
+    purpose: 数据集的一根轴（类别或数值），投影与过滤都作用在维度上
+  - id: projection
+    user_name: 投影 / 视角
+    purpose: 当前查看数据的维度组合/切片方式，是用户选定的『视角』
+  - id: filter
+    user_name: 过滤器
+    purpose: 作用在某维度上的取值约束，独立于投影存在
+  - id: active_state
+    user_name: 生效状态
+    purpose: 当前生效的过滤/投影状态清单，每条有归属（哪个维度、谁产生）且可单独回退
+  - id: record
+    user_name: 记录
+    purpose: 数据集中的一条记录，是投影/过滤的最终作用对象
+relationships:
+  - id: rel-dim-ds
+    source: dataset
+    target: dimension
+    type: has_axis
+    direction: none
+    meaning: 维度是数据集的轴，数据集由维度+记录构成
+    importance: primary
+  - id: rel-filter-dim
+    source: filter
+    target: dimension
+    type: constrains
+    direction: forward
+    meaning: 每条过滤器绑定一个维度，过滤器的归属即其维度
+    importance: primary
+  - id: rel-proj-dim
+    source: projection
+    target: dimension
+    type: selects
+    direction: forward
+    meaning: 投影是维度的一个子集组合，切换投影=改变维度组合
+    importance: primary
+  - id: rel-state
+    source: active_state
+    target: filter
+    type: aggregates
+    direction: forward
+    meaning: 生效状态清单逐条引用过滤器与投影选择，支持回退
+    importance: primary
+  - id: rel-rec-ds
+    source: dataset
+    target: record
+    type: contains
+    direction: forward
+    meaning: 当前投影+过滤决定哪些记录可见
+    importance: supporting
+mental_model_hypothesis:
+  summary: 用户把数据集想成一张可以被『重新投影』的表：数据不变，视角（当前投影的维度组合）在变。过滤器和维度选择是独立于投影的两个状态层——换投影不该清掉过滤器，反过来也一样。用户预期有一个『当前生效状态』的显式清单（像 Active Filters 面板），每条状态能追溯到来源并能单独撤销。
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: 用户完成『选维度 → 加过滤 → 切换维度』整个序列后，所有生效的过滤/投影状态仍逐条可见（含来源归属），且每条都能被单独回退（撤销）或一键全部重置；数据视图随状态即时更新，全程无加载态。
+open_questions: []

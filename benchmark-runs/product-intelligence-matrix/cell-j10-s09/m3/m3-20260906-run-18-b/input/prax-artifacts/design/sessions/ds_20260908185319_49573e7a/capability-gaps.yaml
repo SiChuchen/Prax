@@ -1,0 +1,85 @@
+needs:
+  - id: need-guide
+    product_action: 向导式门控推进：前序步骤未完成则后序锁定，不可自由跳转
+    required_experience:
+      - 有序步骤导航与锁定态
+      - 当前步骤唯一焦点
+    capabilities:
+      - DOM 渲染
+      - 本地状态机
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端状态机（数组顺序+状态字段）即可完全实现，无外部依赖
+  - id: need-confirm
+    product_action: 不可逆步骤确认对话框：后果说明+恢复路径摘要+确认码强校验
+    required_experience:
+      - 确认码不匹配不生效并计入拦截
+      - 取消可安全退出
+    capabilities:
+      - 模态对话框
+      - 受控输入校验
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 原生 dialog 语义（role=dialog）+输入比对，零依赖
+  - id: need-recovery
+    product_action: 恢复路径常驻可见+可操作恢复向导（回滚检查项+恢复确认码），完成后步骤回到待执行态
+    required_experience:
+      - 恢复窗口倒计时随执行时刻启动
+      - 恢复完成后下游步骤重新锁定
+    capabilities:
+      - 覆盖层 UI
+      - setInterval 倒计时
+      - 状态回退
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 恢复窗口为本地时钟模拟（演示语义），恢复向导为纯前端流程，无后端
+  - id: need-guardrail
+    product_action: 护栏拦截：漏检提交/越序点击/错码尝试被阻止并写入执行日志
+    required_experience:
+      - 即时可见的错误反馈
+      - 全程留痕（倒序日志）
+    capabilities:
+      - 事件拦截
+      - 日志数据结构
+      - 渲染反馈
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 事件层守卫函数+内存日志数组，渲染层倒序展示
+  - id: need-export
+    product_action: 执行日志导出（下载 .json/.txt）与复制
+    required_experience:
+      - file:// 与 http(s):// 下均可获得日志文本
+    capabilities:
+      - Blob+URL.createObjectURL
+      - execCommand('copy') 回退
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: file:// 下 Clipboard API 可能受限，采用 Blob 下载为主、隐藏 textarea+execCommand 复制为回退，日志文本始终可见可手动复制
+  - id: need-inline-firstpaint
+    product_action: 初始数据随首屏就绪：页面加载完成即处于可用状态，无加载态
+    required_experience:
+      - 首帧即渲染完整控制台
+      - 无骨架屏/加载指示器
+    capabilities:
+      - 同步脚本内联数据
+      - 首屏渲染函数
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 数据以 window.RUNBOOK 常量内联于本地脚本，DOMContentLoaded 同步渲染，无任何 fetch/懒加载
+  - id: need-static-open
+    product_action: 交付物静态直接打开：根路径 index.html，file:// 双击可用，亦可经任意静态服务器访问
+    required_experience:
+      - file:// 下无 CORS/模块加载错误
+    capabilities:
+      - 相对路径脚本
+      - 无模块/无 fetch
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯 HTML+CSS+JS（非 ES module、无 CDN、无外链资源），相对路径引用

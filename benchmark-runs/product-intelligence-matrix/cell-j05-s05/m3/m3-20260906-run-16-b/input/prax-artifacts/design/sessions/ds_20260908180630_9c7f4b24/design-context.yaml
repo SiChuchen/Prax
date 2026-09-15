@@ -1,0 +1,63 @@
+user:
+  expertise: expert
+  familiarity: medium
+task:
+  primary: Follow dependency and influence chains across services while keeping the full web in view
+  modes:
+    - navigate
+    - follow/traverse
+    - inspect
+    - locate
+  frequency: medium
+domain:
+  type: software system architecture — service dependency & influence web
+  entities:
+    - service node
+    - team
+    - tier/layer
+    - sync-call dependency
+    - data dependency
+    - criticality
+information:
+  volume: medium
+  relationship_complexity: high
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: none
+  error_cost: low
+priorities:
+  - 关系本身是内容 — relationships rendered as first-class, directional, typed content
+  - 关系跟随不丢失全局上下文 — any follow step keeps the whole web visible and the current position anchored in it
+  - 依赖与影响可跟随 — both directions of traversal (upstream dependencies, downstream dependents) are one-click, multi-hop, and legible
+  - Immediate usability — inline dataset, no loading state at first paint
+density_intent: regular
+confidence:
+  overall: high
+unknowns: []
+classification:
+  version: "1"
+  task_type: inspect_relationships
+  domain_id: data_exploration
+  interaction_mode: canvas_with_contextual_inspector
+  product_type: internal_engineering_tool
+  primary_object_type: service_node
+  secondary_object_types:
+    - dependency_edge
+    - follow_trail
+    - system_map
+  confidence: high
+  evidence:
+    - task_type=inspect_relationships ← token 'inspect' in context.task and frame.tasks
+    - domain_id=data_exploration ← token 'data' in context.domain
+    - interaction_mode=canvas_with_contextual_inspector ← token 'relationship' in context.task, frame.tasks, and context.priorities
+    - product_type=internal_engineering_tool ← expert user in an engineering domain
+    - primary_object_type=service_node ← most referenced product object in the Product Frame
+  open_questions: []

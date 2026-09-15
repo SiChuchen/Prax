@@ -1,0 +1,89 @@
+version: "0.1"
+screen:
+  id: list_detail_screen
+  intent:
+    primary_task: Locate a specific dataset item using instant search and/or category+facet filters, then confirm it via in-place detail view
+    secondary_tasks:
+      - Browse/collapse the category tree to narrow scope without typing
+      - Adjust or clear active filter chips to refine a locate path
+      - Open item detail in a side panel and return to the same result state
+  archetype:
+    pattern_ref: PAT-LIST-DETAIL
+  density_intent: compact
+  regions:
+    - id: "Locate bar (dominant action): search input, active filter chips, live result count"
+      role: "experimental:Locate bar (dominant action): search input, active filter chips, live result count"
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: "Result list (dominant surface): compact item rows, hit highlighting, keyboard cursor"
+      role: "experimental:Result list (dominant surface): compact item rows, hit highlighting, keyboard cursor"
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: "Facet rail (scoping): 2-level category tree + tag/format facets with live counts"
+      role: "experimental:Facet rail (scoping): 2-level category tree + tag/format facets with live counts"
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: "Detail panel (selection-driven): opens beside the list, never replaces it"
+      role: "experimental:Detail panel (selection-driven): opens beside the list, never replaces it"
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: Item metadata inside detail panel (description, files, license, updated)
+      role: experimental:Item metadata inside detail panel (description, files, license, updated)
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: Header with collection identity and total count
+      role: experimental:Header with collection identity and total count
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: workspace
+      role: dominant_workspace
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - preserve_context
+  relationships: []
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved:
+    - id: uk-collection-growth
+      question: uk-collection-growth
+      impact: low
+      affects:
+        - updated-date display
+        - sort defaults
+  rejected_alternatives:
+    - option: PAT-DATA-EXPLORER as primary
+      reason: Tabular alignment and column comparison serve compare jobs; comparison_need=none here, and a table wastes width needed for scannable rows
+    - option: Drill-down navigation into category pages
+      reason: Each drill costs an interaction against the 3-interaction budget and discards sibling context
+    - option: Full-page item detail route
+      reason: Navigation discards the result list and active filters — violates the acceptance seed directly
+    - option: Card grid
+      reason: Caps visible items per viewport, weakening scan speed for a compact locate list

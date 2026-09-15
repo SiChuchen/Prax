@@ -1,0 +1,120 @@
+session_id: ds_20260908150819_48cc0e7b
+information_shape:
+  cardinality: many
+  relationality: medium
+  hierarchy: high
+  temporality: low
+  density: high
+  dimensionality: medium
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: table
+    reason: 高密度、同构字段、需多选与批量对齐操作；many+high density 的最优表示
+  supporting:
+    - type: tree
+      reason: 层级性高：域→类别→子树的导航与范围划定
+    - type: form
+      reason: 批量操作预览确认以结构化表单呈现（受影响清单+级联 opt-in）
+    - type: list
+      reason: 预览模态内的受影响实体紧凑逐项清单
+  rejected:
+    - option: cards
+      reason: 高密度批量对比场景的反模式（pattern 契约明示）
+    - option: graph
+      reason: 空间性 none，关系性仅中，图表示过度
+    - option: kanban
+      reason: 拖拽隐喻难以保证零误伤
+  justification_vs_shape: many×high hierarchy×high density → tree(overview)+table(dense list)；medium relationality 由归属关系与级联计数承载；medium volatility 由即时刷新的计数与撤销承载
+primary_structure:
+  pattern: PAT-DATA-EXPLORER
+  rationale:
+    - "任务=manage 大集合，表格对齐与持续筛选是该场景最优解（pattern contract: find items in a large structured set）"
+    - 组合变体：左树（域→类别，overview 与范围划定）+ 中部高密度实体表格（筛选/排序/多选）+ 选择驱动的批量操作条与逐项预览确认模态；选择集独立于筛选
+    - 层级性高：树导航提供 overview（H-22 Overview-Filter-Detail）；密度高：表格+紧凑行高符合 H-13 Structured Density，卡片栅格是本场景反模式
+    - 零误伤：选择集显式化 + 预览模态，是 Data Explorer『detail on demand』的批量化变体；已对 PAT-DATA-EXPLORER/PAT-LIST-DETAIL/PAT-LIST-DETAIL-INSPECTOR 做 L2 比较检视
+  confidence: high
+information_hierarchy:
+  primary:
+    - data
+    - 实体表格工作面（高密度 collection 清单：筛选/排序/多选，承载主任务）
+    - 当前层级范围（域→类别子树 + 计数）
+    - 实体状态与归属（逐行徽章 + 节点状态分布）
+    - 选择集范围与规模（独立于筛选、含隐藏项警示）
+    - 批量操作预览与执行结果（逐项受影响清单 + 撤销）
+  secondary:
+    - 负责人、标签、编码、备注等元数据
+    - 列排序与关键字搜索
+density:
+  intent: compact
+  strategy:
+    - 13px 表格、紧凑行高，单屏呈现 25+ 行
+    - 树节点内联直接/累计计数与状态微条
+    - 批量操作条单行化，仅在有选择时出现
+    - 预览模态用紧凑逐项清单而非卡片
+  avoid:
+    - 卡片栅格（反模式 card-grid-for-dense-comparison）
+    - 装饰性图表/仪表盘元素
+    - 大面积留白与超大字号
+    - 常驻右侧 Inspector（挤占清单密度且服务低频任务）
+major_choices:
+  - id: mc-selection-model
+    choice: 选择集作为独立状态对象，不随筛选/导航静默增减；表头统计与被隐藏已选警示保证显式
+    rationale: 零误伤的前提是操作对象恒等于用户确认集合；筛选变化若静默改变选择集必然产生误伤
+    confidence: high
+    references:
+      - selection
+      - batch_op
+  - id: mc-select-all-scope
+    choice: 全选按显式范围二选一：『当前筛选结果』或『当前类别子树全部』，按钮旁标注计数
+    rationale: 消除『全选到底选中了什么』的歧义，是批量误伤的最大来源
+    confidence: high
+    references:
+      - selection
+      - entity
+      - category
+  - id: mc-preview-modal
+    choice: 批量操作提交前弹逐项预览模态：列出每个受影响实体、状态迁移前后值、级联子项单独计数并 opt-in
+    rationale: 验收标准=受影响集合与确认集合逐 id 一致，必须让用户看到并确认同一集合
+    confidence: high
+    references:
+      - batch_op
+      - entity
+      - op_record
+  - id: mc-undo
+    choice: 单步撤销（最近一次批量操作）+ 操作记录列表
+    rationale: 误伤可回退兜底；多级历史栈超出单屏工具复杂度预算
+    confidence: high
+    references:
+      - op_record
+      - batch_op
+rejected:
+  - option: PAT-LIST-DETAIL（常驻相邻详情面板）
+    reason: 任务以批量管理为主、单实体深察为辅；常驻详情挤压高密度清单宽度
+  - option: PAT-LIST-DETAIL-INSPECTOR（常驻 Inspector）
+    reason: 同上；且选择反馈已被操作条+预览模态覆盖，Inspector 语义重复
+  - option: 看板/拖拽式状态管理
+    reason: 拖拽投放目标易产生误伤，与零误伤标准冲突；状态迁移需要逐项预览而非空间隐喻
+unresolved:
+  - id: oq-domain-flavor
+    impact: low
+    affects:
+      - data_seed
+  - id: oq-undo-depth
+    impact: low
+    affects:
+      - interaction
+complexity_budget:
+  permanent_panels: 3
+  permanent_primary_actions: 4
+  modes: 1
+  state_owners: 2
+  navigation_levels: 2
+  persistent_filters: 3
+  new_semantic_concepts: 3
+  keyboard_contracts: 2
+  mobile_conflicts: 0
+  permanent_surfaces: 1

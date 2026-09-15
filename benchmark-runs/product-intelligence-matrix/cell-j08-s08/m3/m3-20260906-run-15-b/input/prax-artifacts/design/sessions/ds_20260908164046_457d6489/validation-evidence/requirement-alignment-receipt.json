@@ -1,0 +1,17 @@
+{
+  "check_id": "requirement_alignment",
+  "receipt_version": 1,
+  "measured_at": "2026-09-08T17:26:00Z",
+  "result": "pass",
+  "method": "End-to-end CDP journey A-H against the confirmed restatement; static-open proof via file:// URL (no server, no external service); node --check syntax pass; zero console errors",
+  "assertions": [
+    {"clause": "单文档主屏 1 个", "observed": "single workbench screen: outline | editor | preview"},
+    {"clause": "结构化编辑与预览一致", "observed": "typing 离线模式（测试）in editor synced outline row + preview heading in same frame (all three read back identically)"},
+    {"clause": "编辑不破坏结构", "observed": "demote produced 2.1.2 nested in preview DOM identically; delete requires orphan-free choice; invariants row green; badge 结构检查 · 完整"},
+    {"clause": "撤销/重做", "observed": "Ctrl+z restored all panes; redo available after undo"},
+    {"clause": "首屏即就绪", "observed": "no loading indicator at load event; initial document inlined (10 节 present at first assertion, bodyHasLoadingText=false)"},
+    {"clause": "静态可打开/无外部服务", "observed": "page loaded and fully interactive over file://; requests limited to local index.html/styles.css/app.js"},
+    {"clause": "运行时适配", "observed": "vanilla HTML/CSS/JS recorded as correction COR-1-runtime-vanilla-js (brief framework enum react conflicts with file:// static-open constraint)"}
+  ],
+  "artifacts": ["evidence/01-initial-load.png", "evidence/03-field-edit-consistency.png", "evidence/05-demote-structure.png", "evidence/07-validation-locate.png", "evidence/evidence-driver-report.json"]
+}

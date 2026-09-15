@@ -1,0 +1,284 @@
+plan_revision: 1
+evidence:
+  submitted_by: 执行臂 Claude（GLM）· Prax 会话 ds_20260907195547_4b31bcb5
+  collected_at: 2026-09-08T05:20:00Z
+  items:
+    - check_id: semantic_conformance
+      outcome: pass
+      source: SDIR validate 网关 + 工件静态核对
+      notes: SDIR 0.2 已通过 design_sdir(mode=validate)（PASS，无 schema/semantic 错误）；四区域落地：data→#projection-surface、collection→#dimension-rail、active_state→#state-tray、detail→#inspector。注意：validate 只校验不落盘，会话内持久化的 screen.sdir.yaml 仍为 canonical v0.1（缺少 0.2 块），此项按 SDIR 语义一致性判定通过
+      artifact_refs:
+        - .prax/design/sessions/ds_20260907195547_4b31bcb5/screen.sdir.yaml
+        - index.html
+        - app.js
+    - check_id: state_completeness
+      outcome: pass
+      source: 代码静态审查（app.js 逐函数走查）
+      notes: ready=同步首渲染（数据内联 1,280 条，无 fetch）；empty=记录表零命中块（含『清空全部过滤』）+托盘空态；selected=行高亮+inspector；error=init try/catch 面板；loading 结构性不可达＝冻结简报『不得以加载态作为可测状态』的正确实现
+      artifact_refs:
+        - app.js
+        - index.html
+    - check_id: product_model_alignment
+      outcome: pass
+      source: 代码/文案静态核对
+      notes: UI 语言与 Product Frame 六个产品对象一一对应：维度/投影/过滤/生效状态/记录明细/数据集元信息；无后端概念泄漏
+      artifact_refs:
+        - index.html
+        - app.js
+        - .prax/design/sessions/ds_20260907195547_4b31bcb5/product-frame.yaml
+    - check_id: keyboard
+      outcome: inconclusive
+      source: 静态实现核对；浏览器执行在本会话不可用
+      notes: 实现完备（原生 button/checkbox、tr[tabindex] Enter/Space、Ctrl+Z/Y/Esc、:focus-visible、渲染后焦点保持），但本会话沙箱无任何浏览器/shell 执行工具（已穷尽 Bash/子代理/Cron/WebFetch/webReader），无法产生真实键盘操作证据；复核路径：双击 evidence/scenario3.html 或运行 evidence/run.ps1
+      artifact_refs:
+        - app.js
+        - evidence/scenario3.html
+        - evidence/run.ps1
+    - check_id: hierarchy_review
+      outcome: inconclusive
+      source: 静态实现核对；渲染证据被沙箱阻塞
+      notes: 三列 grid 按 SDIR importance 分配幅面（data 主导，272px/1fr/316px）；视觉最终核验需渲染截图，本会话无法执行浏览器
+      artifact_refs:
+        - styles.css
+        - index.html
+        - evidence/run.ps1
+    - check_id: representation_decided
+      outcome: inconclusive
+      source: 确定性检查（按会话落盘 SDIR）+ 工件核对
+      notes: 已通过 validate 的 SDIR 0.2 提交含 representation.primary=chart 且 reason 非空；但持久化的会话 SDIR 仍为 v0.1（generate_from_decisions 丢块、validate 不落盘、apply_delta 在 validate 门被门禁拒绝）——此确定性检查按落盘工件判定，如实报告其结果
+      artifact_refs:
+        - .prax/design/sessions/ds_20260907195547_4b31bcb5/screen.sdir.yaml
+    - check_id: state_ownership_declared
+      outcome: inconclusive
+      source: 确定性检查（按会话落盘 SDIR）+ 工件核对
+      notes: 已通过 validate 的 0.2 提交含 state_ownership：selection→data、preview→data（另 query→session、inspector→detail、viewport→data）；落盘 v0.1 缺该块，确定性检查如实报告
+      artifact_refs:
+        - .prax/design/sessions/ds_20260907195547_4b31bcb5/screen.sdir.yaml
+    - check_id: acceptance_contract_present
+      outcome: inconclusive
+      source: 确定性检查（按会话落盘 SDIR）+ 工件核对
+      notes: 已通过 validate 的 0.2 提交含 5 条验收判据（全部可追溯冻结简报）；落盘 v0.1 缺该块，确定性检查如实报告
+      artifact_refs:
+        - .prax/design/sessions/ds_20260907195547_4b31bcb5/screen.sdir.yaml
+    - check_id: complexity_budget_declared
+      outcome: pass
+      source: 确定性检查（prax-validator 判定 pass，附 P-044 advisory）
+      notes: presence-only 检查：已通过 validate 的 0.2 提交含完整 complexity_budget 十项；按检查语义（absence is advisory）报告
+      artifact_refs:
+        - .prax/design/sessions/ds_20260907195547_4b31bcb5/screen.sdir.yaml
+    - check_id: filter_state
+      outcome: pass
+      source: 代码静态审查（数据结构与渲染路径完整闭环）
+      notes: store.filters 带 id/dim/valueIdx/origin；托盘逐条渲染（kind+归属+origin+单条×回退）；命中计数显式（header/表尾/条形）；孤儿过滤器『不在当前投影·仍生效』；S6/S7/S11–S17 断言就绪（自包含页，双击可复核）
+      artifact_refs:
+        - app.js
+        - index.html
+        - evidence/scenario3.html
+    - check_id: comparison_scan
+      outcome: inconclusive
+      source: 静态实现核对；渲染证据被沙箱阻塞
+      notes: 表格按收入/数量/利润率排序+60 行密排；分布条形同度量横向对比；均无需打开单条。渲染行为核验需截图，本会话无法执行浏览器
+      artifact_refs:
+        - app.js
+        - index.html
+        - evidence/run.ps1
+    - check_id: requirement_alignment
+      outcome: inconclusive
+      source: 工件核对；运行时成功路径证据被沙箱阻塞
+      notes: 静态范围逐条对齐（根 index.html 静态打开/首屏内联/单页/无后端/未部署）；『维度切换不重置认知』按构造保证（makeSetProjection 只写 store.projection，不触碰 filters/selectedId）；S8–S15 断言就绪但本会话无浏览器可执行，运行时成功路径留复核
+      artifact_refs:
+        - index.html
+        - app.js
+        - data.js
+        - README.md
+        - evidence/scenario3.html
+evaluation:
+  status: BLOCK
+  checks:
+    - id: semantic_conformance
+      label: Semantic conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR is valid, semantic, and aligned to the approved pattern.
+      evidence_required: false
+    - id: state_completeness
+      label: State completeness
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Required loading, empty, ready, and error states exist.
+      evidence_required: false
+    - id: product_model_alignment
+      label: Product model alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: User-facing structure and language preserve the Product Frame.
+      evidence_required: true
+    - id: keyboard
+      label: Keyboard operability
+      kind: empirical
+      profile: keyboard_accessibility
+      facet: behavioral
+      requirement: Primary work and selection are operable with keyboard and visible focus.
+      evidence_required: true
+    - id: hierarchy_review
+      label: Hierarchy review
+      kind: assistive
+      profile: semantic_integrity
+      facet: visual_hierarchy
+      requirement: Visual prominence follows SDIR importance rather than implementation convenience.
+      evidence_required: true
+    - id: representation_decided
+      label: Representation decided
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares representation.primary with a non-empty reason.
+      evidence_required: false
+    - id: state_ownership_declared
+      label: State ownership declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: Selection and preview states both have declared owners.
+      evidence_required: false
+    - id: acceptance_contract_present
+      label: Acceptance contract present
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 carries at least one acceptance criterion.
+      evidence_required: false
+    - id: complexity_budget_declared
+      label: Complexity budget declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      evidence_required: false
+    - id: filter_state
+      label: Filter state
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Active filters and result state are represented explicitly.
+      evidence_required: true
+    - id: comparison_scan
+      label: Comparison scan
+      kind: empirical
+      profile: state_coverage
+      facet: behavioral
+      requirement: Comparable values can be scanned without opening every item.
+      evidence_required: true
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+  findings:
+    - check_id: semantic_conformance
+      kind: deterministic
+      outcome: pass
+      message: SDIR is valid, semantic, and aligned to the approved pattern.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_completeness
+      kind: deterministic
+      outcome: pass
+      message: Required loading, empty, ready, and error states exist.
+      source: prax-validator
+      provenance: measured
+    - check_id: representation_decided
+      kind: deterministic
+      outcome: fail
+      message: "0.2 session SDIR does not satisfy 'representation_decided': SDIR 0.2 declares representation.primary with a non-empty reason."
+      source: prax-validator
+      provenance: measured
+    - check_id: state_ownership_declared
+      kind: deterministic
+      outcome: fail
+      message: "0.2 session SDIR does not satisfy 'state_ownership_declared': Selection and preview states both have declared owners."
+      source: prax-validator
+      provenance: measured
+    - check_id: acceptance_contract_present
+      kind: deterministic
+      outcome: fail
+      message: "0.2 session SDIR does not satisfy 'acceptance_contract_present': SDIR 0.2 carries at least one acceptance criterion."
+      source: prax-validator
+      provenance: measured
+    - check_id: complexity_budget_declared
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      source: prax-validator
+      provenance: measured
+    - check_id: product_model_alignment
+      kind: assistive
+      outcome: pass
+      message: UI 语言与 Product Frame 六个产品对象一一对应：维度/投影/过滤/生效状态/记录明细/数据集元信息；无后端概念泄漏
+      source: 代码/文案静态核对
+      provenance: attested
+    - check_id: keyboard
+      kind: empirical
+      outcome: inconclusive
+      message: 实现完备（原生 button/checkbox、tr[tabindex] Enter/Space、Ctrl+Z/Y/Esc、:focus-visible、渲染后焦点保持），但本会话沙箱无任何浏览器/shell 执行工具（已穷尽 Bash/子代理/Cron/WebFetch/webReader），无法产生真实键盘操作证据；复核路径：双击 evidence/scenario3.html 或运行 evidence/run.ps1
+      source: 静态实现核对；浏览器执行在本会话不可用
+      provenance: attested
+    - check_id: hierarchy_review
+      kind: assistive
+      outcome: inconclusive
+      message: 三列 grid 按 SDIR importance 分配幅面（data 主导，272px/1fr/316px）；视觉最终核验需渲染截图，本会话无法执行浏览器
+      source: 静态实现核对；渲染证据被沙箱阻塞
+      provenance: attested
+    - check_id: filter_state
+      kind: deterministic
+      outcome: pass
+      message: store.filters 带 id/dim/valueIdx/origin；托盘逐条渲染（kind+归属+origin+单条×回退）；命中计数显式（header/表尾/条形）；孤儿过滤器『不在当前投影·仍生效』；S6/S7/S11–S17 断言就绪（自包含页，双击可复核）
+      source: 代码静态审查（数据结构与渲染路径完整闭环）
+      provenance: attested
+    - check_id: comparison_scan
+      kind: empirical
+      outcome: inconclusive
+      message: 表格按收入/数量/利润率排序+60 行密排；分布条形同度量横向对比；均无需打开单条。渲染行为核验需截图，本会话无法执行浏览器
+      source: 静态实现核对；渲染证据被沙箱阻塞
+      provenance: attested
+    - check_id: requirement_alignment
+      kind: assistive
+      outcome: inconclusive
+      message: 静态范围逐条对齐（根 index.html 静态打开/首屏内联/单页/无后端/未部署）；『维度切换不重置认知』按构造保证（makeSetProjection 只写 store.projection，不触碰 filters/selectedId）；S8–S15 断言就绪但本会话无浏览器可执行，运行时成功路径留复核
+      source: 工件核对；运行时成功路径证据被沙箱阻塞
+      provenance: attested
+  missing_evidence: []
+  warnings:
+    - "complexity_budget_declared: the 0.2 SDIR declares no complexity_budget block — new permanent surfaces, modes, and state owners stay uncounted (P-044)."
+  readiness:
+    deterministic_passed: false
+    measurement:
+      receipt_ref: null
+      binding: {}
+      error_failures_open: 0
+      warning_dispositions: []
+    convergence:
+      stalled: false
+      unresolved: []
+    evidence_current: true
+    claims:
+      measured:
+        - semantic_conformance
+        - state_completeness
+        - representation_decided
+        - state_ownership_declared
+        - acceptance_contract_present
+        - complexity_budget_declared
+      attested:
+        - product_model_alignment
+        - keyboard
+        - hierarchy_review
+        - filter_state
+        - comparison_scan
+        - requirement_alignment
+      skipped: []

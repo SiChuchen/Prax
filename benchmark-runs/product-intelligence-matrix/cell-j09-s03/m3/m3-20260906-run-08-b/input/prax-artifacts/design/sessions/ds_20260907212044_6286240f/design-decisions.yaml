@@ -1,0 +1,98 @@
+session_id: ds_20260907212044_6286240f
+version: "0.2"
+information_shape:
+  cardinality: few
+  relationality: medium
+  hierarchy: low
+  temporality: low
+  density: high
+  dimensionality: medium
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: required
+representation:
+  primary:
+    type: table
+    reason: few 条目高密度、字段共享、逐项最优需一眼可辨：表格列对齐让比较零记忆负担
+  supporting:
+    - type: map
+      reason: 验收种子「地理语境与决策项同屏」：自绘 SVG 示意商圈图常驻，候选点/通勤锚点/地铁/竞品同屏参照（product_object geo_context）
+    - type: form
+      reason: 决策权重滑杆（product_object criteria_weights）是 decide 的操作面，实时驱动契合分
+  rejected:
+    - option: cards
+      reason: 并排卡片字段不对齐，高密度比较需反复扫视对齐
+  justification_vs_shape: few+high density+comparison required → 候选列×准则行矩阵；spatiality none 但验收种子要求地理语境 → map 降为常驻 supporting 面板；维度性 medium → 6 项准则单行列举即可，不需多维图表
+primary_structure:
+  pattern: PAT-DATA-EXPLORER
+  rationale:
+    - "比较需求为 required 且共享字段充分（租金、人流、通勤等），表格列对齐是最优比较结构（pattern_contract applies_when: shared fields support comparison）"
+    - 实例化为比较矩阵变体：候选一列、准则一行，配常驻商圈示意地图（supporting map 表象）与决策轨（权重/契合分/结论）
+    - shape 束 spatiality=none：地理语境是 supporting 语境而非主导画布，故不用 PAT-CANVAS-WORKSPACE，地图仅以固定面板驻留
+    - few（3 列）+高密度：单屏放下全部行，无需抽屉或详情页，比较状态天然驻留
+    - PAT-LIST-DETAIL 会在查看单项时遮蔽其余候选，违背「比较本身是任务」
+  confidence: high
+information_hierarchy:
+  primary:
+    - data
+    - "data comparison matrix main surface: one column per candidate × one row per criterion side-by-side comparison (best-in-row highlight)"
+    - map business district geographic context schematic (co-resident on screen with the main surface)
+  secondary:
+    - form decision weight control column
+    - verdict decision conclusion bar (persistent)
+    - candidate basic profile and one-sentence commentary
+density:
+  intent: compact
+  strategy:
+    - 候选一列、准则一行，共享标签列，全部准则单屏可见
+    - 数值准则内联微条形（相对最优归一），最优行首打「优」徽标
+    - 13px 紧凑字号 + 分组行分隔，信号优先于装饰（P-22/H-13）
+    - 契合分以数字+名次徽标置于列头，结论条以一句话常驻
+  avoid:
+    - card-grid-for-dense-comparison
+    - 点击才可见的隐藏细节
+    - 第二屏/弹窗导航
+major_choices:
+  - id: mc-map-inline
+    choice: 地理语境（product_object geo_context）以自绘 SVG 示意图常驻同屏：候选点、通勤锚点、地铁线、竞品，不调用外部地图服务
+    rationale: 交付约束禁止外部服务；验收种子要求地理语境与决策项同屏驻留；H-21 保持锚点与选择位置稳定
+    confidence: high
+    references:
+      - geo_context
+      - candidate_site
+  - id: mc-weighted-score
+    choice: 决策权重（product_object criteria_weights）用 0–5 滑杆表达，契合分=Σ(归一化准则分×权重)，随输入实时重算并更新 candidate_site 名次
+    rationale: decide 需要可操作的评估；权重变化即「比较状态」的一部分，须驻留同屏
+    confidence: high
+    references:
+      - criteria_weights
+      - candidate_site
+      - verdict
+  - id: mc-select-lock
+    choice: candidate_site 列头与 geo_context 地图点双向联动选中；「锁定选择」为唯一主动作，verdict 结论条实时显示领先者与选定摘要
+    rationale: 比较状态（选中+领先+锁定）必须驻留同屏且不被导航打断
+    confidence: medium
+    references:
+      - candidate_site
+      - verdict
+      - geo_context
+rejected:
+  - option: PAT-CANVAS-WORKSPACE
+    reason: 适用于关系网络主导（spatiality 高）的场景；本格比较以行列对齐为主，画布会稀释 required 的并排比较
+  - option: PAT-LIST-DETAIL
+    reason: 选中即聚焦单项，遮蔽其余候选列，破坏「比较状态必须驻留同屏」
+  - option: 卡片网格（cards）
+    reason: 命中 PAT-DATA-EXPLORER 反模式 card-grid-for-dense-comparison：字段不对齐，逐项比较需记忆
+unresolved: []
+complexity_budget:
+  permanent_panels: 3
+  permanent_primary_actions: 2
+  modes: 0
+  state_owners: 2
+  navigation_levels: 1
+  persistent_filters: 0
+  new_semantic_concepts: 2
+  keyboard_contracts: 1
+  mobile_conflicts: 0
+  permanent_surfaces: 1

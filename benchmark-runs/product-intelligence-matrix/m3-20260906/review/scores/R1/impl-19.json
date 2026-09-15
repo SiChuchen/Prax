@@ -1,0 +1,84 @@
+{
+  "reviewer": "R1",
+  "package_id": "impl-19",
+  "session_id": "22c2c9bb-4234-4f1b-a5a9-07e4e79a1083",
+  "wall_clock_seconds": 157,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-19",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Brief is edit × single-document with 'editing must not break structure'. Implementation is a schema-constrained single-doc editor: model {title, subtitle, sections[{id,title,blocks:p|list|callout}]} (source/index.html:314-319, sample doc 348-389) rendered as a fixed three-pane outline/editor/live-preview grid (source/index.html:104-107, 291-300). Both screenshots show one document, 5 sections, one section in the editor at a time — matches cardinality one, low density, medium hierarchy."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "The structured editor occupies the center pane and dominates the initial screen at both 1280x860 and 1440x900: title/subtitle inputs, section-title input, block cards with type badges, and ＋段落/＋列表/＋提示框 add buttons (screenshots; source/index.html:531-587, add-row 571-576)."
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "Brand + tagline '构文 DocForm / STRUCTURED DOC EDITOR' (source/index.html:270), outline header 文档大纲 (293), panes aria-labeled 结构化编辑区/实时预览区 (298-299), hint '新增内容会立即进入右侧预览' (575); what/where is readable within seconds in both screenshots."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Single screen, zero modes; every section reachable in one click from the persistent outline (source/index.html:508-527 selectSection) with scroll-synced preview anchors (786-790); no routing, tabs, or modals exist in the source."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "Textual edits re-render only preview/status and preserve editor focus and scroll (source/index.html:487-498 comment + renderTextual:498); section selection keeps both panes visible and scrolls the preview (780-791); deletes are inline two-step confirms, not dialogs (970-983); undo/redo with coalesced typing history (465-485)."
+      },
+      "ui_surface_complexity": {
+        "score": 5,
+        "evidence": "Five permanent surfaces (topbar/outline/editor/preview/statusbar, source/index.html:268-308) each map to the edit job; secondary controls are progressive — outline ↑↓× hidden until hover/active (source/index.html:128-129); export/copy/reset are compact top-bar actions. Nothing superfluous visible at either viewport."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Receipt fails a11y.contrast, a11y.focus_order, a11y.target_size (measurement-summary.json checks). Source corroborates: outline controls display:none until hover/active (source/index.html:128-129), .btn.mini padding:2px 7px font-size:11px (96-100), faint #a39b8d labels on light panels (15). Some affordances exist — :focus-visible outline (101), aria-labels on inputs/selects (542,545,560,619,646), aria-expanded on chip (272) — keeping it above 1."
+      },
+      "frontend_rework": {
+        "score": 2,
+        "evidence": "5 of 7 receipt checks fail, including layout.overflow and type.min_projected_size (measurement-summary.json checks). No gross visible defect at 1280x860 or 1440x900, but the failure count implies rework; minor code defect: block 下移 button never disables on the last block while the outline counterpart disables both ends (source/index.html:595-598 vs 518-521)."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed 结构化编辑与预览一致 is satisfied by construction: preview is re-rendered from the same doc model on every mutation (source/index.html:666-701 via act():489-497), sync badge states '预览由文档数据实时渲染，始终与编辑内容一致' (277), structure-check chip + issue panel with click-to-locate (734-768), block types schema-controlled (314-319). Screenshots show the 段落 text and 立项结论 callout mirrored exactly in editor and preview."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "Receipt: 5/7 checks fail — layout.overflow, a11y.contrast, a11y.focus_order, a11y.target_size, type.min_projected_size (measurement-summary.json checks).",
+      "Outline section controls (↑ ↓ ×) render only on hover/active (source/index.html:128-129), effectively unreachable via keyboard — consistent with a11y.focus_order fail.",
+      "Mini controls (.btn.mini 2px/7px padding, 11px font, source/index.html:96-100) and 10.5px labels (43, 127, 162, 222) — consistent with a11y.target_size and type.min_projected_size fails.",
+      "Low-contrast faint tokens (--faint:#a39b8d on #fbfaf7/#efece6, source/index.html:14-15) used for pane heads, counts, hints — consistent with a11y.contrast fail.",
+      "Block 下移 control lacks a disabled state on the last block; click is a silent no-op (source/index.html:595-598; outline version at 518-521 does disable).",
+      "Both screenshots capture the sync badge in its transient '同步中…' busy state right after load (init calls bumpSync, source/index.html:1063, 220ms window at 986-996) — cosmetic only; the document is fully rendered and interactive at first paint (1044-1064), satisfying the brief's no-loading-state constraint."
+    ],
+    "missing_evidence": [
+      "Element-level cause of layout.overflow and type.min_projected_size failures — the sanitized receipt provides check ids only, no selectors or measurements, and no overflowing element is identifiable in either screenshot.",
+      "Actual keyboard focus sequence and screen-reader behavior cannot be verified beyond static source reading; the focus_order failure is inferred from the receipt plus the hover-only control pattern."
+    ],
+    "overall_note": "The package is a single-file three-pane structured document editor (source/index.html) that fits the edit × single-document brief almost exactly: a schema-constrained block model (p/list/callout, index.html:314-319) with a live preview rendered from the same data on every change (666-701) makes the acceptance seed 'structured editing and preview stay consistent' true by construction, and the initial screen is fully populated and editor-dominant at both 1280x860 and 1440x900 with one-click access to all five sections. Navigation, context preservation, and surface economy score high because everything happens on one screen with focus- and scroll-preserving textual updates, inline two-step deletes, and undo/redo. The weaknesses concentrate in the measurement receipt: 5 of 7 checks fail (layout.overflow, a11y.contrast, a11y.focus_order, a11y.target_size, type.min_projected_size), and the source corroborates the accessibility findings — hover-only outline controls, 2px mini buttons, and faint #a39b8d text — even though no gross visual defect is visible at either viewport, so the defect-facing dimensions score low rather than the structural ones. Task completion time, retrieval accuracy, and human preference are not observable in this blind pilot; all scores above are model-judged from the supplied artifacts only, and model preference should not be read as human preference."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 44026,
+      "outputTokens": 8605,
+      "cacheReadInputTokens": 69696,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.470103,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-09-08T21:55:33.338Z"
+}

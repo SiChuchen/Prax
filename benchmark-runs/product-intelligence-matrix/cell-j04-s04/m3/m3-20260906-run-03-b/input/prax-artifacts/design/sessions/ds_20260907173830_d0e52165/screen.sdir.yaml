@@ -1,0 +1,310 @@
+version: "0.2"
+user_job:
+  verb: monitor
+  target: 易变指标流
+  success: 异常在扫视内发现，且变化可追溯、过程无闪烁噪声
+primary_object:
+  type: metric
+  label: 指标瓷片
+information_shape:
+  cardinality: many
+  relationality: low
+  hierarchy: medium
+  temporality: high
+  density: high
+  dimensionality: medium
+  spatiality: none
+  volatility: high
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: grid
+    reason: "many 指标扫视监测：等尺寸瓷片承载值+sparkline+耐久状态色，异常 crit→warn→normal 置顶，空间稳定（comparison_need=none，不落入 Data Explorer 的 card-grid-for-dense-comparison 反模式）"
+  supporting:
+    - type: chart
+      reason: "检查器内完整历史折线+阈值线+事件标注，兑现『变化可追溯』"
+    - type: timeline
+      reason: "全局/按指标过滤的变化事件时间线，异常的可追溯索引"
+priority:
+  primary:
+    - tile_wall
+    - inspector
+    - topbar
+  contextual:
+    - event_rail
+interaction:
+  preview: none
+  inspect: select
+  navigate: none
+  locate: filter
+state_ownership:
+  - state: selection
+    owner: tile_wall
+  - state: preview
+    owner: inspector
+  - state: query
+    owner: topbar
+  - state: mode
+    owner: session
+complexity_budget:
+  permanent_panels: 2
+  permanent_primary_actions: 3
+  modes: 1
+  state_owners: 2
+  navigation_levels: 1
+  persistent_filters: 1
+  new_semantic_concepts: 3
+  keyboard_contracts: 1
+  mobile_conflicts: 0
+  permanent_surfaces: 3
+acceptance:
+  - "打开页面即完整指标板，初始数据随首屏就绪，无可见加载门（loading 状态仅存在于语义模型，因种子数据内联而瞬时通过）"
+  - "crit/warn 瓷片在扫视内可发现（耐久状态色+置顶，无闪烁）"
+  - "点击任意瓷片可见该指标精确变化时刻与前后序列（可追溯）"
+  - "持续更新期间布局零位移、数字无跳动、sparkline 平滑重绘"
+archetype:
+  pattern_ref: PAT-LIST-DETAIL-INSPECTOR
+density_intent: compact
+decision_points:
+  - id: sparkline_tech
+    question: "sparkline/折线渲染技术（canvas vs svg）由适配器选择"
+    adapter_may_choose: ["canvas 2d", "svg"]
+  - id: event_rail_placement
+    question: "事件轨位置（检查器下方 vs 独立侧轨）"
+    adapter_may_choose: ["检查器下方", "独立侧轨"]
+  - id: sort_transition
+    question: "排序变化过渡方式（不得闪烁）"
+    adapter_may_choose: ["300ms 平移", "直接换位"]
+regions:
+  - id: topbar
+    role: "experimental:控制与态势栏（标题/流时钟/暂停恢复/状态过滤/搜索/计数徽标）"
+    importance: primary
+    visibility:
+      condition: always
+    behavior_intent:
+      - "experimental:流时钟显示数据时刻"
+      - "experimental:状态过滤为持久过滤"
+      - "experimental:暂停只冻结渲染推进不丢数据"
+      - "experimental:计数徽标常显 crit/warn/normal 分布"
+  - id: tile_wall
+    role: "experimental:指标状态瓷片墙（等尺寸瓷片，耐久状态色编码，crit→warn→normal 稳定排序置顶异常）"
+    importance: dominant
+    visibility:
+      condition: always
+    behavior_intent:
+      - "experimental:空间稳定位置即记忆"
+      - "experimental:状态变化只改色彩与徽标不改结构"
+      - "experimental:排序过渡≤300ms平移无闪烁"
+      - "experimental:每瓷片含名称/当前值/sparkline/状态与Δ"
+      - preserve_context
+  - id: inspector
+    role: "experimental:追溯检查器（选中指标的完整历史折线、阈值线、事件标注与逐条事件列表）"
+    importance: primary
+    visibility:
+      condition: selection_driven
+    behavior_intent:
+      - "experimental:折线+阈值线+事件点标注"
+      - "experimental:事件列表逐条含时刻与前后值"
+      - "experimental:选中期间实时续接新数据"
+      - "experimental:Esc 或关闭钮清除选择"
+      - preserve_context
+  - id: event_rail
+    role: "experimental:变化事件流（全局或按选中指标过滤的时间线索引，新→旧）"
+    importance: supporting
+    visibility:
+      condition: always
+    behavior_intent:
+      - "experimental:新事件顶部插入但不推挤主墙"
+      - "experimental:hover 事件行高亮对应瓷片"
+      - "experimental:点击事件行选中其指标"
+relationships:
+  - id: rel_sel_inspector
+    source: tile_wall
+    target: inspector
+    type: "experimental:selection_drives_detail"
+  - id: rel_sel_eventrail
+    source: tile_wall
+    target: event_rail
+    type: "experimental:selection_filters_stream"
+  - id: rel_events_metric
+    source: event_rail
+    target: tile_wall
+    type: "experimental:event_click_selects_metric"
+interaction_intents:
+  - "experimental:select_to_inspect"
+  - "experimental:filter_to_narrow"
+  - "experimental:pause_to_freeze"
+  - "experimental:escape_clears_selection"
+  - preserve_context
+  - keyboard_equivalent
+required_states:
+  - loading
+  - empty
+  - ready
+  - selected
+  - error
+rejected_alternatives:
+  - option: "数据表主结构（PAT-DATA-EXPLORER 原型）"
+    reason: "tabular 对齐优化系统比较，而 comparison_need=none；逐行扫描慢于整墙色块扫视"
+  - option: "纯事件流主结构"
+    reason: "新事件推挤位移制造闪烁噪声且失去全局态势"
+  - option: "每瓷片实时动画/滚动数字"
+    reason: "动画即噪声，违背验收种子"
+  - option: "每瓷片重型图表"
+    reason: "many 规模渲染与认知成本过高，细节留给检查器"
+screen:
+  id: monitor_wall_screen
+  intent:
+    primary_task: "扫视指标墙，在异常出现的第一时间发现它（耐久状态色+置顶排序，无需交互）"
+    secondary_tasks:
+      - "点击异常瓷片查看变化历史与触发时刻"
+      - "按状态过滤或搜索指标墙"
+      - "暂停/恢复数据流细读某一时刻"
+  archetype:
+    pattern_ref: PAT-LIST-DETAIL-INSPECTOR
+  density_intent: compact
+  user_job:
+    verb: monitor
+    target: 易变指标流
+    success: "异常在扫视内发现，且变化可追溯"
+  primary_object:
+    type: metric
+    label: 指标瓷片
+  information_shape:
+    cardinality: many
+    relationality: low
+    hierarchy: medium
+    temporality: high
+    density: high
+    dimensionality: medium
+    spatiality: none
+    volatility: high
+    uncertainty: low
+    comparison_need: none
+  representation:
+    primary:
+      type: grid
+      reason: "many 指标扫视监测：等尺寸瓷片承载值+sparkline+耐久状态色，异常置顶，空间稳定"
+    supporting:
+      - type: chart
+        reason: "完整历史折线+阈值线+事件标注兑现变化可追溯"
+      - type: timeline
+        reason: "变化事件时间线为可追溯索引"
+  priority:
+    primary: [tile_wall, inspector, topbar]
+    contextual: [event_rail]
+  interaction:
+    preview: none
+    inspect: select
+    navigate: none
+    locate: filter
+  state_ownership:
+    - state: selection
+      owner: tile_wall
+    - state: preview
+      owner: inspector
+    - state: query
+      owner: topbar
+    - state: mode
+      owner: session
+  complexity_budget:
+    permanent_panels: 2
+    permanent_primary_actions: 3
+    modes: 1
+    state_owners: 2
+    navigation_levels: 1
+    persistent_filters: 1
+    new_semantic_concepts: 3
+    keyboard_contracts: 1
+    mobile_conflicts: 0
+    permanent_surfaces: 3
+  acceptance:
+    - "打开页面即完整指标板，初始数据随首屏就绪，无可见加载门"
+    - "crit/warn 瓷片在扫视内可发现（耐久状态色+置顶，无闪烁）"
+    - "点击任意瓷片可见该指标精确变化时刻与前后序列（可追溯）"
+    - "持续更新期间布局零位移、数字无跳动"
+  regions:
+    - id: topbar
+      role: "experimental:控制与态势栏（标题/流时钟/暂停恢复/状态过滤/搜索/计数徽标）"
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - "experimental:流时钟显示数据时刻"
+        - "experimental:状态过滤为持久过滤"
+        - "experimental:暂停只冻结渲染推进不丢数据"
+        - "experimental:计数徽标常显 crit/warn/normal 分布"
+    - id: tile_wall
+      role: "experimental:指标状态瓷片墙（等尺寸瓷片，耐久状态色编码，crit→warn→normal 稳定排序置顶异常）"
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - "experimental:空间稳定位置即记忆"
+        - "experimental:状态变化只改色彩与徽标不改结构"
+        - "experimental:排序过渡≤300ms平移无闪烁"
+        - "experimental:每瓷片含名称/当前值/sparkline/状态与Δ"
+        - preserve_context
+    - id: inspector
+      role: "experimental:追溯检查器（选中指标的完整历史折线、阈值线、事件标注与逐条事件列表）"
+      importance: primary
+      visibility:
+        condition: selection_driven
+      behavior_intent:
+        - "experimental:折线+阈值线+事件点标注"
+        - "experimental:事件列表逐条含时刻与前后值"
+        - "experimental:选中期间实时续接新数据"
+        - "experimental:Esc 或关闭钮清除选择"
+        - preserve_context
+    - id: event_rail
+      role: "experimental:变化事件流（全局或按选中指标过滤的时间线索引，新→旧）"
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent:
+        - "experimental:新事件顶部插入但不推挤主墙"
+        - "experimental:hover 事件行高亮对应瓷片"
+        - "experimental:点击事件行选中其指标"
+  relationships:
+    - id: rel_sel_inspector
+      source: tile_wall
+      target: inspector
+      type: "experimental:selection_drives_detail"
+    - id: rel_sel_eventrail
+      source: tile_wall
+      target: event_rail
+      type: "experimental:selection_filters_stream"
+    - id: rel_events_metric
+      source: event_rail
+      target: tile_wall
+      type: "experimental:event_click_selects_metric"
+  interaction_intents:
+    - "experimental:select_to_inspect"
+    - "experimental:filter_to_narrow"
+    - "experimental:pause_to_freeze"
+    - "experimental:escape_clears_selection"
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: sparkline_tech
+      question: "sparkline/折线渲染技术（canvas vs svg）由适配器选择"
+      adapter_may_choose: ["canvas 2d", "svg"]
+    - id: event_rail_placement
+      question: "事件轨位置（检查器下方 vs 独立侧轨）"
+      adapter_may_choose: ["检查器下方", "独立侧轨"]
+    - id: sort_transition
+      question: "排序变化过渡方式（不得闪烁）"
+      adapter_may_choose: ["300ms 平移", "直接换位"]
+  unresolved: []
+  rejected_alternatives:
+    - option: "数据表主结构"
+      reason: "逐行扫描慢于整墙色块扫视"
+    - option: "纯事件流主结构"
+      reason: "推挤位移制造闪烁噪声"

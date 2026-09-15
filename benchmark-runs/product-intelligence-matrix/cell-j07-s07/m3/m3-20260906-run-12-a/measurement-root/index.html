@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>落位 Floorcraft · 空间布局工作台</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app" tabindex="0">
+
+  <header id="topbar">
+    <div class="brand">
+      <span class="logo">▤</span>
+      <div>
+        <h1>落位 <i>Floorcraft</i></h1>
+        <p>空间布局工作台 · 落位即意图</p>
+      </div>
+    </div>
+    <div class="tools">
+      <div class="seg" id="typeSeg" role="radiogroup" aria-label="新增对象类型"></div>
+      <button id="btnAdd" class="primary" title="在视图中心新增一个对象">＋ 新增 <kbd>N</kbd></button>
+      <button id="btnSnap" class="toggle on" title="开关网格吸附">吸附 <kbd>G</kbd></button>
+      <button id="btnHelp" title="查看键盘等价操作">⌨ 快捷键 <kbd>?</kbd></button>
+      <button id="btnReset" title="恢复初始布局">↺ 重置</button>
+    </div>
+  </header>
+
+  <div id="main">
+    <div id="stageWrap">
+      <svg id="stage" viewBox="0 0 1280 800" preserveAspectRatio="xMidYMid meet" aria-label="空间画布">
+        <g id="view">
+          <defs>
+            <pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse">
+              <circle cx="10" cy="10" r="1.1" fill="#2b3344"/>
+            </pattern>
+          </defs>
+          <rect id="worldBg" width="1280" height="800" rx="18"/>
+          <g id="gridLayer"></g>
+          <g id="zonesLayer"></g>
+          <g id="objectsLayer"></g>
+          <rect id="marquee" hidden/>
+        </g>
+      </svg>
+      <div id="zoomCtl">
+        <button id="zIn" title="放大 (+)">＋</button>
+        <button id="zOut" title="缩小 (−)">－</button>
+        <button id="zFit" title="复位视图 (0)">⤢</button>
+      </div>
+      <div id="toasts" aria-live="polite"></div>
+    </div>
+
+    <aside id="side">
+      <section class="panel">
+        <h2>意图台账 <span class="tag">摆放位置 = 分区归属</span></h2>
+        <p class="note">对象中心落在哪个分区，即归属哪个分区——不填表单，摆放即数据。拖拽与键盘操作完全等价。</p>
+        <div id="ledgerBody"></div>
+      </section>
+    </aside>
+  </div>
+
+  <footer id="statusbar">
+    <span id="stSel">未选中（Tab 循环选择对象）</span>
+    <span class="grow"></span>
+    <span id="stCount"></span>
+    <span id="stSnap"></span>
+    <span id="stZoom"></span>
+    <span class="hint">移动 ←↑↓→ · 分区 1–4 · 复制 D · 删除 ⌫ · 全部快捷键 ?</span>
+  </footer>
+
+  <div id="helpOverlay" hidden>
+    <div class="sheet">
+      <header>
+        <h2>⌨ 键盘等价操作</h2>
+        <button id="btnCloseHelp">关闭 <kbd>Esc</kbd></button>
+      </header>
+      <table>
+        <tbody>
+          <tr><th>移动选中对象</th><td><kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd>（<kbd>Shift</kbd>+方向 = 大步 5 格）</td></tr>
+          <tr><th>循环选择对象</th><td><kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd></td></tr>
+          <tr><th>全选 / 取消选择</th><td><kbd>A</kbd> / <kbd>Esc</kbd></td></tr>
+          <tr><th>复制 / 删除选中</th><td><kbd>D</kbd> / <kbd>Del</kbd> 或 <kbd>⌫</kbd></td></tr>
+          <tr><th>切换对象类型</th><td><kbd>T</kbd>（椅→桌→屏→植→灯→箱）</td></tr>
+          <tr><th>旋转选中对象</th><td><kbd>[</kbd> <kbd>]</kbd>（每次 15°）</td></tr>
+          <tr><th>发送到分区</th><td><kbd>1</kbd> 工作区 · <kbd>2</kbd> 会议区 · <kbd>3</kbd> 仓储区 · <kbd>4</kbd> 展示区（自动找空位）</td></tr>
+          <tr><th>新增对象</th><td><kbd>N</kbd>（类型由工具栏单选决定）</td></tr>
+          <tr><th>网格吸附开关</th><td><kbd>G</kbd></td></tr>
+          <tr><th>缩放 / 复位视图</th><td><kbd>+</kbd> <kbd>−</kbd> <kbd>0</kbd>（滚轮缩放，按住空格拖拽平移）</td></tr>
+          <tr><th>框选多个对象</th><td>空白处拖拽（<kbd>Shift</kbd>+拖拽 = 追加）</td></tr>
+        </tbody>
+      </table>
+      <p class="note">验收基准：所有空间操作均提供键盘等价物；分区归属由对象在画布上的物理位置决定。</p>
+    </div>
+  </div>
+
+</div>
+<script src="app.js"></script>
+<script src="keys.js"></script>
+</body>
+</html>

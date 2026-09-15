@@ -1,0 +1,137 @@
+<!doctype html>
+<!-- 验收证据 3（自包含，可直接 file:// 打开）：加载应用本体 → 执行行为断言 S1–S17 →
+     停留在「过滤 + 切换投影 + 孤儿过滤器 + 行选中」状态供截图。 -->
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Prism 行为证据</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+  #evidence-log {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 9999;
+    font: 11px/1.5 Consolas, monospace; color: #7ee2b8;
+    background: rgba(15, 18, 32, .93); padding: 6px 14px; white-space: pre-wrap;
+  }
+</style>
+</head>
+<body>
+  <div id="app">
+    <header class="app-header" id="app-header">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">◮</div>
+        <div class="brand-text">
+          <div class="brand-name">Prism 多维探索台</div>
+          <div class="brand-sub">数据集：<strong id="ds-name">—</strong><span class="dot">·</span>内联就绪，无加载态</div>
+        </div>
+      </div>
+      <div class="header-stats" id="header-stats" aria-live="polite"></div>
+      <div class="header-actions" role="toolbar" aria-label="全局状态操作">
+        <button class="btn" id="btn-undo" title="撤销最近一次状态变更 (Ctrl+Z)">↶ 撤销</button>
+        <button class="btn" id="btn-redo" title="重做 (Ctrl+Y)">↷ 重做</button>
+        <button class="btn btn-danger-ghost" id="btn-reset" title="清空全部过滤并恢复默认投影">✕ 全部重置</button>
+      </div>
+    </header>
+    <main class="workspace">
+      <section class="panel rail-panel" id="dimension-rail" aria-label="维度轨">
+        <div class="panel-hd"><h2 class="panel-title">维度</h2><span class="panel-hint" id="rail-hint">点名称＝投影 · 勾选值＝过滤</span></div>
+        <div class="panel-bd" id="rail-body"></div>
+      </section>
+      <section class="panel center-panel" id="projection-surface" aria-label="投影工作面">
+        <div class="panel-hd projection-hd">
+          <div class="proj-title"><h2 class="panel-title" id="proj-title">投影</h2><span class="proj-sub" id="proj-sub"></span></div>
+          <div class="proj-controls">
+            <label class="ctl">度量<select id="measure-select" aria-label="聚合度量"></select></label>
+            <label class="ctl">细分<select id="breakdown-select" aria-label="细分维度"></select></label>
+          </div>
+        </div>
+        <div class="panel-bd center-bd">
+          <div class="chart-block" id="chart-block">
+            <div class="block-hd"><h3>分布投影</h3><span class="block-hint">点击条形＝按该值过滤（其他维度过滤已计入）</span></div>
+            <div id="chart" role="group" aria-label="当前维度分布"></div>
+            <div class="legend" id="legend" hidden></div>
+          </div>
+          <div class="table-block" id="table-block">
+            <div class="block-hd"><h3>记录</h3><span class="block-hint" id="table-hint"></span></div>
+            <div class="table-wrap" id="table-wrap"></div>
+          </div>
+        </div>
+      </section>
+      <aside class="right-col">
+        <section class="panel tray-panel" id="state-tray" aria-label="生效状态">
+          <div class="panel-hd"><h2 class="panel-title">生效状态 <span class="count-chip" id="tray-count">0</span></h2><span class="panel-hint">归属维度 + 来源 · 逐条可回退</span></div>
+          <div class="panel-bd" id="tray-body"></div>
+          <div class="panel-ft" id="tray-foot">Ctrl+Z 撤销 · Ctrl+Y 重做 · 状态条目可单独回退</div>
+        </section>
+        <section class="panel inspector-panel" id="inspector" aria-label="记录明细">
+          <div class="panel-hd"><h2 class="panel-title">记录明细</h2><button class="btn btn-ghost" id="btn-deselect" hidden>取消选中 (Esc)</button></div>
+          <div class="panel-bd" id="inspector-body"></div>
+        </section>
+      </aside>
+    </main>
+  </div>
+  <pre id="evidence-log">running…</pre>
+  <script src="../data.js"></script>
+  <script src="../app.js"></script>
+  <script>
+  (function () {
+    var out = document.getElementById('evidence-log');
+    var lines = [];
+    function say(s) { lines.push(s); out.textContent = lines.join('\n'); }
+    function assert(name, cond) { say((cond ? 'PASS' : 'FAIL') + ' | ' + name); }
+
+    var P = window.__prism;
+    var store = P.store;
+    var D = window.PRISM_DATASET;
+    var total = P.matched().length;
+
+    /* ---- 首屏即用（ready，无加载态） ---- */
+    assert('S1 ready：分布条形已渲染（' + document.querySelectorAll('#chart .bar-row').length + ' 条）', document.querySelectorAll('#chart .bar-row').length > 0);
+    assert('S2 无加载态（初始数据内联首屏）', !document.querySelector('.loading,[data-state="loading"]'));
+    assert('S3 托盘初始 1 条投影状态（有归属）', P.trayEntries().length === 1 && P.trayEntries()[0].kind === 'projection');
+    assert('S4 数据集就绪：records=' + D.records.length + ' dims=' + D.dimensions.length + ' 全量命中=' + total, total === 1280 && D.dimensions.length === 8);
+
+    /* ---- 选中 → 过滤（归属） ---- */
+    var firstRow = document.querySelector('#table-wrap tr[data-rid]');
+    var rid = firstRow.getAttribute('data-rid');
+    firstRow.click();
+    assert('S5 选中 ' + rid + '，inspector 渲染', document.querySelector('#inspector-body .insp-id') !== null);
+
+    P.toggleFilter('region', 0, '维度轨'); /* 区域＝亚太 */
+    var hit1 = P.matched().length;
+    assert('S6 过滤 区域＝亚太：命中 ' + hit1 + ' < ' + total, hit1 > 0 && hit1 < total);
+    var fe = P.trayEntries().filter(function (e) { return e.kind === 'filter'; })[0];
+    assert('S7 状态条目归属：dim=region · origin=维度轨', !!fe && fe.dim === 'region' && fe.origin === '维度轨');
+
+    /* ---- 切换投影：认知不重置 ---- */
+    P.commit(P.makeSetProjection('category', '维度轨')); /* 投影 → 产品线 */
+    assert('S8 切换投影后过滤器原样保留', store.filters.length === 1 && store.filters[0].dim === 'region');
+    assert('S9 切换投影后记录选中保持（H-21）', store.selectedId === rid);
+    var th = document.querySelector('.th-proj');
+    assert('S10 记录表投影列切换为「产品线」', !!th && th.textContent.indexOf('产品线') !== -1);
+    assert('S11 孤儿过滤器标注「不在当前投影·仍生效」', document.querySelector('#tray-body .tag-warn') !== null);
+
+    /* ---- 回退三粒度 ---- */
+    document.querySelector('#tray-body .entry-x[data-act="revert-filter"]').click();
+    assert('S12 托盘 × 单条回退：过滤清空、命中恢复', store.filters.length === 0 && P.matched().length === total);
+    P.undo();
+    assert('S13 Ctrl+Z 撤销：过滤恢复', store.filters.length === 1);
+    P.undo();
+    assert('S14 再撤销：投影回到 区域', store.projection.primary === 'region');
+    P.undo();
+    assert('S15 撤销初始过滤：query 归零', store.filters.length === 0 && P.matched().length === total);
+
+    /* ---- 全部重置（可撤销） ---- */
+    P.toggleFilter('quarter', 4, '分布图');
+    P.commit(P.makeSetBreakdown('channel', '细分下拉'));
+    P.commit(P.makeResetAll('头部重置'));
+    assert('S16 全部重置：默认投影、无细分、无过滤', store.projection.primary === 'region' && store.projection.breakdown === null && store.filters.length === 0);
+    assert('S17 重置可撤销（撤销栈非空，Undo 按钮可用）', store.undoStack.length > 0 && document.getElementById('btn-undo').disabled === false);
+
+    /* ---- 停留在交互后状态供截图 ---- */
+    P.toggleFilter('segment', 3, '维度轨');
+    P.commit(P.makeSetProjection('category', '维度轨'));
+    say('SCENARIO-DONE');
+  })();
+  </script>
+</body>
+</html>

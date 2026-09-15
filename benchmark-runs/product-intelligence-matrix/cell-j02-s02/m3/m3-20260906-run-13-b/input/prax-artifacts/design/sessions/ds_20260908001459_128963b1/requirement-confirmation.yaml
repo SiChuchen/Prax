@@ -1,0 +1,30 @@
+version: "0.1"
+user_quote:
+  - 动词：locate；对象：大型集合中的目标；成功标准：三次交互内定位
+  - 判别：无界弱关系的大集合，主要认知负担是定位路径而非结构呈现
+  - 验收种子：定位路径有搜索/过滤支撑且不丢上下文
+  - 交付物必须能直接静态打开（根路径 index.html，或构建产物 dist/）；应用在页面加载完成时即处于可用状态
+restatement: "Build a single-page web app whose primary job is locating a target item inside a large, unbounded, weakly-related collection (medium hierarchy, medium density). Locate must be achievable within three interactions, backed by search and filter support, and the locate path must never lose user context (no dead-end navigation; selection shows detail without discarding the result list). Deliverable: static index.html at root, initial data inlined and usable at first paint, no backend, no deploy."
+boundaries:
+  in_scope:
+    - Single main screen with instant text search over the collection
+    - Facet/category filtering with counts and removable filter chips
+    - Item detail view that preserves list context (side panel, not page navigation)
+    - Breadcrumb + result counts so the user always knows where they are
+    - Keyboard support for the locate path
+    - Deterministic inline dataset (~2000 items) ready at first paint
+    - Static open via file:// or any static server; no build step required
+  out_of_scope:
+    - Backend, accounts, persistence services
+    - Deployment to any external service
+    - Multi-screen IA, CRUD editing of items
+    - Comparison views (comparison_need = none)
+    - Modifying acceptance criteria (brief frozen by M2)
+  scope_complete: true
+open_questions: []
+confirmation:
+  status: requirement_is_sufficient
+  evidence:
+    - type: task_brief
+      ref: brief.md (cell-j02-s02 product brief, frozen by M2, 2026-09-03)
+  confirmed_at: 2026-09-08T00:00:00Z

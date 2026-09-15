@@ -1,0 +1,60 @@
+needs:
+  - id: N1
+    product_action: 页面加载即呈现完整指标板并持续接收指标更新（高易变流）
+    required_experience:
+      - 首屏即绪（无加载门）
+      - 持续流入的时序数据
+    capabilities: []
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: 种子数据内联（预生成 60 点历史）+ 前端节拍生成器（1s 随机游走 + 确定性事件注入）模拟真实流；无后端、无网络依赖
+  - id: N2
+    product_action: 按阈值与突变检测异常（normal/warn/crit 判级）
+    required_experience:
+      - 每指标阈值
+      - 状态判定与事件生成
+    capabilities: []
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 每指标定义 warn/crit 阈值；前端逐 tick 判级，级别跃迁即生成 change_event（含精确时刻、前后值、类型）
+  - id: N3
+    product_action: 变化可追溯：任一指标的历史序列与逐条变化事件可回查
+    required_experience:
+      - 完整时序折线
+      - 事件时间线
+      - 事件点与折线联动
+    capabilities: []
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 前端滚动窗口环形缓冲（每指标 240 点）+ 全局事件日志；检查器折线渲染事件标记，事件轨点击选中指标
+  - id: N4
+    product_action: 暂停/恢复数据流以细读某一时刻
+    required_experience:
+      - 冻结推进不丢上下文
+      - 恢复续接
+    capabilities: []
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 暂停仅停止节拍器推进，数据与选择保持，恢复从暂停点续接
+  - id: N5
+    product_action: 键盘可达：/聚焦搜索、Esc 清除选择、方向键巡览瓷片
+    required_experience:
+      - 键盘等价操作
+    capabilities: []
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 瓷片为可聚焦元素，标准 tabindex + 方向键巡览
+  - id: N6
+    product_action: 刷新/重开后保留历史与事件
+    required_experience:
+      - 跨会话持久化
+    capabilities: []
+    status: gap
+    resolution:
+      type: explicit_compromise
+      notes: 简报明确不要求持久化服务；流为本地模拟，历史仅存于会话内存，属显式妥协并如实记录

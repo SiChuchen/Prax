@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>舰队变更史 · Fleet Chronicle</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header id="top">
+  <div class="brand">
+    <h1>舰队变更史</h1>
+    <span class="sub">Fleet Chronicle — 服务舰队随时间的状态演化 · 变更因果可读</span>
+  </div>
+  <div class="hdr-right">
+    <span id="chip" class="chip ok">校验中…</span>
+    <div class="legend">
+      <span><i class="dot add"></i>新增</span>
+      <span><i class="dot mod"></i>修改</span>
+      <span><i class="dot rm"></i>下线</span>
+      <span><i class="dot tr"></i>因果链</span>
+    </div>
+  </div>
+</header>
+
+<main id="layout">
+  <!-- 左：时间轴（变更集序列） -->
+  <aside id="left" class="col">
+    <div class="col-head">
+      <h2>时间轴 · 变更集</h2>
+      <div class="replay">
+        <button id="btn-first" title="最早窗口">⏮</button>
+        <button id="btn-prev" title="上一窗口">◀</button>
+        <button id="btn-play" title="自动回放">▶</button>
+        <button id="btn-next" title="下一窗口">⏩</button>
+        <button id="btn-last" title="最新窗口">⏭</button>
+      </div>
+    </div>
+    <div id="tl-list"></div>
+    <p class="kbd-hint">← → 切换窗口 · Esc 退出追踪 · 卡片底部方块 = 该服务在各窗口的变更，点击可跳转</p>
+  </aside>
+
+  <!-- 中：选定时刻的舰队状态（含本窗口 diff） -->
+  <section id="mid" class="col">
+    <div id="state-head"></div>
+    <div id="fleet"></div>
+  </section>
+
+  <!-- 右：窗口详情 + 因果链 -->
+  <aside id="right" class="col">
+    <div id="det-win" class="panel"></div>
+    <div id="det-chain" class="panel"></div>
+  </aside>
+</main>
+
+<noscript><p style="padding:20px">本应用需要启用 JavaScript。</p></noscript>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

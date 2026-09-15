@@ -1,0 +1,103 @@
+session_id: ds_20260907173830_d0e52165
+information_shape:
+  cardinality: many
+  relationality: low
+  hierarchy: medium
+  temporality: high
+  density: high
+  dimensionality: medium
+  spatiality: none
+  volatility: high
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: grid
+    reason: many 指标扫视监测：等尺寸瓷片承载值+sparkline+耐久状态色，异常置顶，空间稳定
+  supporting:
+    - type: chart
+      reason: 检查器内完整历史折线+阈值线+事件标注，兑现『变化可追溯』
+    - type: timeline
+      reason: 全局/按指标过滤的变化事件时间线，异常的可追溯索引
+  rejected:
+    - option: table
+      reason: 服务比较需求，本格 comparison_need=none
+    - option: feed
+      reason: 时间性可以由事件轨承担，但作主结构牺牲空间稳定性与全局扫视
+primary_structure:
+  pattern: PAT-LIST-DETAIL-INSPECTOR
+  rationale:
+    - 主结构 = 路由候选 PAT-LIST-DETAIL-INSPECTOR（L2 已检视）：collection 侧适配为耐久状态编码瓷片墙（many 指标的 overview，异常 crit/warn 置顶），detail 侧为 Contextual Inspector 追溯检查器（metric_history 折线+阈值线+change_event 标注）——保持 selection-based 上下文（P-19、H-19、H-21）
+    - 瓷片墙形态由形状束论证：comparison_need=none，故不落入 Data Explorer 的 anti-pattern 'card-grid-for-dense-comparison'（无比较语义）；等尺寸瓷片提供 preattentive 状态扫视（H-01、P-03）
+    - H-22 Overview-Filter-Detail 分层：墙=overview，状态过滤/搜索=narrow，检查器=detail；H-13 Structured Density 允许 compact 密度但由分组与交互承载可读性
+    - 变化事件轨作为 supporting timeline 嵌入检查器下方，可全局/按选中指标过滤，兑现『变化可追溯』
+  confidence: high
+information_hierarchy:
+  primary:
+    - 指标当前状态（normal/warn/crit 的耐久状态色）
+    - 当前值与变化方向
+    - 异常者置顶（crit → warn → normal 稳定排序）
+  secondary:
+    - 近期轨迹 sparkline
+    - 最近变化事件摘要与时间
+    - 指标所属服务分组（medium 层级）
+    - 最近更新时刻
+density:
+  intent: compact
+  strategy:
+    - 瓷片内 4 行定高网格：名称 / 大号当前值+单位 / sparkline / 状态与相对变化
+    - 统一瓷片尺寸，信息层级靠字号与位置而非边框装饰
+    - 检查器与事件轨同宽定高，滚动区域内滚动，主墙布局永不移位
+  avoid:
+    - 装饰性 chrome（P-22）
+    - 每瓷片多轴重型图表
+    - 要求滚动才能看到异常
+    - 数值频繁重排导致跳动
+major_choices:
+  - id: MC-1
+    choice: 主结构选 PAT-LIST-DETAIL-INSPECTOR：collection 侧不是表格而是等尺寸瓷片墙（耐久状态编码），detail 侧为追溯检查器（完整折线+阈值线+事件标注）
+    rationale: 扫视速度优先：空间稳定的位置记忆 + 状态色 preattentive processing；表格逐行扫描违背『扫视内发现』；comparison_need=none 使 tabular 对齐失去必要性
+    confidence: high
+    references:
+      - metric
+  - id: MC-2
+    choice: 异常可见性采用耐久编码：持续状态色 + crit/warn 置顶稳定排序 + 常驻 badge，禁用瞬时闪烁动画
+    rationale: 验收种子『无闪烁噪声』：状态变化一旦发生即持续可见，不靠动画抢注意力；排序移动做 300ms 平移过渡保持位置可追溯
+    confidence: high
+    references:
+      - metric
+  - id: MC-3
+    choice: 追溯主干为 change_event 时间线：每次越阈/回归/显著跳变记录精确时刻，检查器折线图上标注事件点，事件轨可全局浏览或按选中指标过滤
+    rationale: 高时间性 facet 的直接兑现：变化不仅可见而且可回放定位（何时、从多少到多少、越哪条阈值）
+    confidence: high
+    references:
+      - change_event
+      - metric_history
+  - id: MC-4
+    choice: 更新纪律：1s 节拍推进数据、批量渲染；tabular-nums 等宽数字、canvas sparkline 原地重绘、布局零位移
+    rationale: 高易变 + 无闪烁的组合要求：数据持续流入（真实感）但渲染聚合、稳定，数字宽度不变消除抖动
+    confidence: high
+    references:
+      - metric
+      - metric_history
+rejected:
+  - option: 数据表主结构（PAT-DATA-EXPLORER 原型）
+    reason: tabular 对齐优化系统比较，而 comparison_need=none；逐行扫描慢于整墙色块扫视，违背扫视内发现
+  - option: 纯事件流/日志流主结构
+    reason: 时间性强但丢失空间稳定性：新事件推挤导致内容位移，制造闪烁噪声且 many 指标无全局态势
+  - option: 每瓷片实时动画/滚动数字
+    reason: 动画即噪声；数字跳动破坏扫视阅读，违背验收种子
+  - option: 重型图表网格（每瓷片大图）
+    reason: many 规模下渲染与认知成本过高；轨迹只需 sparkline 级别，细节留给检查器
+unresolved: []
+complexity_budget:
+  permanent_panels: 2
+  permanent_primary_actions: 3
+  modes: 1
+  state_owners: 2
+  navigation_levels: 1
+  persistent_filters: 1
+  new_semantic_concepts: 3
+  keyboard_contracts: 1
+  mobile_conflicts: 0
+  permanent_surfaces: 3

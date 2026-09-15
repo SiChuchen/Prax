@@ -1,0 +1,77 @@
+{
+  "reviewer": "R1",
+  "package_id": "impl-13",
+  "session_id": "db687249-c74d-4e33-a6db-9aac85f53b9d",
+  "wall_clock_seconds": 220,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-13",
+    "scores": {
+      "representation_fit": {
+        "score": 4,
+        "evidence": "Representation matches the brief's shape (many high-hierarchy high-density entities): scoping tree sidebar + dominant dense table with status badges and a 归属路径 breadcrumb column, visible in screenshots/1280x860.png and screenshots/1440x900.png; source/index.html:19-22 (role=tree), :56-73 (table), source/js/app.js:110-119 (per-node direct/cumulative counts + status-distribution micro-bars). Docked one point: every domain renders twice as adjacent identical rows (研发中心 54, 生产运营 42, 数据平台 44, 基础设施 45 each appear at two indent levels in both screenshots); cause visible in source — data.js walk() registers each domain itself as a parentId-null category (source/js/data.js:103-115), so renderTree emits both the SEED.domains row and the DOMAIN_CATS copy (source/js/app.js:20-23, 202-209), giving a phantom 4th level under a header that declares 3 (域/类别/子类别, source/index.html:20)."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "The batch-manage job dominates the initial screen in both screenshots: full-height dense table with per-row checkboxes and tri-state header select (source/index.html:61; source/js/app.js:303-308), bulk-select buttons with live counts 选当前筛选结果 (214) / 选子树全部 (214) (source/index.html:35-36; app.js:228-229), counted status chips, and footer promising 批量操作经逐项预览确认后生效 (screenshots/1280x860.png statusbar). Table is the flex:1 working surface (source/css/styles.css:177)."
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "What/where is conveyed on first paint: title 实体目录管理台 plus tagline 批量操作零误伤 · 状态归属显式 stating the job and its success criteria verbatim (source/index.html:11-12), scope crumb 范围：全部实体（含子层级） (index.html:28; app.js:224-225), selection summary 已选 0 · 可见 214 · 范围内 214 (index.html:41; app.js:309-310), ready statusbar (index.html:88-92). App is synchronous with no loading state (app.js:975-978 wire(); renderAll(); runScene()), matching the brief's usable-on-load constraint; confirmed by both screenshots showing 18-19 populated rows."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Primary object (entities) is at depth 0 — on screen at load in both screenshots. Any subtree is 1 click (tree click sets scope and re-renders, source/js/app.js:636-643) or 1 keyboard action (app.js:663-670); no routing, no pages, single layout (source/index.html:17-96). Bulk reach to any subtree's entities is one button (选子树全部, app.js:369-372)."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "Structurally context-preserving: query filters explicitly never touch the selection set (source/js/app.js:29-36 state ownership comments; 82-108 visibleList), and when filters hide selected items a warning strip states 批量操作仍会包含它们 with 查看隐藏项 / 仅保留可见项 escapes (index.html:45-54; app.js:242-262). The only mode is the selection-driven preview modal, dismissible via 取消/✕/Esc/backdrop (index.html:98-114; app.js:784-789, 807), and every confirmed op keeps an undo path with full-field snapshot (app.js:555-629)."
+      },
+      "ui_surface_complexity": {
+        "score": 5,
+        "evidence": "Permanent surfaces are exactly what the job needs — topbar, scoping tree, 2-row toolbar, dense table, statusbar (both screenshots); everything else is progressive disclosure: action bar hidden until selection (source/index.html:76, app.js:319-327), preview modal hidden (index.html:99), ops panel hidden (index.html:93). Each visible control maps to a brief need (search+`/`, clear filters, two counted bulk-select buttons, five counted status chips, sortable headers, row checkboxes)."
+      },
+      "accessibility": {
+        "score": 5,
+        "evidence": "Receipt: all seven checks pass including a11y.contrast, a11y.focus_order, a11y.target_size and type.min_projected_size (measurement-summary.json, pass 7 / fail 0, target_invalid false). Source affordances corroborate: ARIA tree with arrow/Home/End/Enter conventions (source/js/app.js:644-671; index.html:21), roving tabindex over row checkboxes (app.js:273-280, 709-742), aria-pressed chips and aria-sort headers (app.js:237, 314), aria-modal dialog with role=alert error (index.html:100, 108), :focus-visible outlines and 24px checkbox targets (source/css/styles.css:36, 197-203), contrast tokens annotated for ≥4.5:1 (styles.css:10-18)."
+      },
+      "frontend_rework": {
+        "score": 4,
+        "evidence": "Receipt shows no error-driven rework: 7/7 pass, 0 fail, 0 warnings, target_invalid false (measurement-summary.json), and screenshots at 1280x860 and 1440x900 show no overflow, collision, or truncation (layout.overflow / layout.responsive_collision / text.truncation all pass). One visible structural defect implying touch-up: the sidebar tree duplicates every domain node as an adjacent same-name same-count row at both viewports (screenshots/1280x860.png, screenshots/1440x900.png; source cause source/js/data.js:103-115 + source/js/app.js:20-23, 202-209)."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed 批量选择与操作零误伤，状态归属显式 is addressed end-to-end in source/UI: single computeAffected() is the sole source for both preview list and execution (app.js:130-157; comment at 553 与预览同一函数：作用集合=确认集合), per-item before→after preview with explicit 跳过（无变更） reasons and counted confirm button (app.js:482-511), hidden-selected zero-collateral guard (app.js:242-262; index.html:45-54), delete gated by confirmation checkbox + disabled confirm (index.html:111; app.js:535-547), snapshot undo (app.js:606-629). Status attribution is explicit everywhere: five-status single dictionary (source/js/data.js:13-19), row badges and 归属路径 column (screenshots), counted chips and tree micro-bars (app.js:180-187, 230-239); a built-in self-test even asserts per-item conservation and undo restoration (app.js:917-931)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "Sidebar tree renders each domain twice as adjacent identical rows (name, count, and micro-bar all duplicated) at both 1280x860 and 1440x900 — a phantom level beneath a header declaring three (screenshots; source/js/data.js:103-115 registers domains as root categories, source/js/app.js:20-23 and 202-209 render them twice)",
+      "Minor, source-level only (receipt a11y checks still pass): preview modal has no focus trap or focus restore on close (source/js/app.js:398-411, 784-789) and the statusbar receipt (source/index.html:89) lacks an aria-live announcement"
+    ],
+    "missing_evidence": [],
+    "overall_note": "This package is a close structural match to the manage × entity-hierarchy brief: the initial screen at both viewports is dominated by a high-density hierarchical entity table with per-row selection, counted bulk-select entry points, and counted status chips, and the brief's acceptance seed is implemented as an actual contract rather than a slogan — one shared computeAffected() drives both the per-item preview (with skip reasons) and execution, a warning strip prevents filters from silently dropping selected items, deletion is double-gated, and every operation is undoable from a full snapshot (source/js/app.js:130-157, 242-262, 482-511, 535-629). All seven sanitized receipt checks pass with target_invalid false, so no error-driven rework is implied. The single visible defect is the duplicated domain level in the sidebar tree, consistent across both screenshots and traceable in source to the domain nodes also being registered as root categories; it distorts the displayed hierarchy depth and costs the package points on representation fit and rework but is functionally harmless since both copies scope the same subtree. Navigation, context preservation, surface economy, and accessibility affordances (ARIA tree/table conventions, roving tabindex, contrast-token annotations) are all observable and strong. These are model-judged scores from screenshots, source, and receipt only; task completion time, retrieval accuracy, and human preference are not observable in this blind pilot, and nothing here substitutes for a user study."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 65919,
+      "outputTokens": 11153,
+      "cacheReadInputTokens": 249728,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.733284,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-09-08T21:35:26.776Z"
+}

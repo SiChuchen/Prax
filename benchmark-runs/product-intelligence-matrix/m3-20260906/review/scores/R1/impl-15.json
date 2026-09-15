@@ -1,0 +1,83 @@
+{
+  "reviewer": "R1",
+  "package_id": "impl-15",
+  "session_id": "bac79554-eb19-456f-9fad-553df848b75b",
+  "wall_clock_seconds": 134,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-15",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Search-plus-faceted-list is the canonical representation for locate×open-collection: prominent search over 'name, tag, category, id' (source/index.html:21), two-level collection tree matching the brief's medium hierarchy (gen.js:17-26 domains→categories, rendered app.js:169-197), format/license/access facets matching medium dimensionality (app.js:199-221), and unbounded scale signaled by '1,728 datasets · showing first 80' with windowing (screenshots/1280x860.png; app.js:27,280). No spatial or comparison surfaces, matching shape facets 'none' for spatiality/comparison."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "Search dominates the initial screen: widest top-bar element at both 1280x860 and 1440x900, auto-focused at boot (app.js:482), with '/' hint (index.html:23); results list occupies the full main pane with relevance sort default (index.html:45). No competing tasks (accounts, creation flows) exist anywhere in the source."
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "Model-judged proxy, not human: brand 'LOCI Open Collection Registry' (index.html:16-17), total count '1,728 datasets' top-right, placeholder enumerating searchable fields, and 'All collections / 1,728 datasets · showing first 80' summary (app.js:295-297) convey what/where within the first glance of both screenshots."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Target reachable in ≤3 interactions via several paths: type query→relevance-ranked results (scoring app.js:58-70); or click domain→category→row in the tree (app.js:418-427); or keyboard '/' focus→arrow keys→Enter (app.js:442-464). Live counts beside every facet value (app.js:182,190,216) let the user predict each click's outcome before spending it."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "Full state (q/domain/cat/fmt/lic/acc/sort/sel) lives in the URL hash, surviving refresh/back/forward/share (app.js:2-3,118-156); detail opens as a side pane that explicitly keeps 'The result list and filters stay put' (app.js:306) and 'list position preserved' (app.js:313), with 'Show in list' scroll-and-flash reveal (app.js:350-364); removable filter chips plus breadcrumb plus 'Reset all' (app.js:224-250). Facet counts recompute under all other active filters (app.js:93-115)."
+      },
+      "ui_surface_complexity": {
+        "score": 5,
+        "evidence": "Every permanent surface maps to a brief facet: tree=hierarchy, three facet groups=dimensionality, sort=temporality (mild); detail pane is hidden until selection (styles.css:237-239) and load-more/end-note are hidden initially (index.html:56-57). No decorative or dead controls found in source; all controls are wired (app.js:382-472)."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Receipt fails all three a11y checks plus type size: a11y.contrast=fail, a11y.focus_order=fail, a11y.target_size=fail, type.min_projected_size=fail (measurement-summary.json:13-16). Source corroborates: 11px tag/badge/access text (styles.css:187,193,197), 11.5px counts (styles.css:108), #8b98a8 faint text on white for titles/counts (styles.css:8,94), 26px icon buttons (styles.css:73-74), and rows removed from tab order via tabindex=-1 (app.js:255). Mitigating structure exists — ARIA tree/listbox roles, aria-pressed/aria-expanded/aria-live, focus-visible ring, full keyboard nav (index.html:35,53-54; app.js:442-464; styles.css:178) — but the objective receipt failures cap the score."
+      },
+      "frontend_rework": {
+        "score": 4,
+        "evidence": "No visible layout defects: layout.overflow=pass, layout.responsive_collision=pass, text.truncation=pass (measurement-summary.json:10-12), and both viewports render identically and cleanly (screenshots/1280x860.png, 1440x900.png). However 4/7 checks failing implies pre-acceptance rework, though it is scoped to CSS-level fixes (contrast tokens, font sizes, padding, focus order) rather than structural/layout rewrite."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed '定位路径有搜索/过滤支撑且不丢上下文' is directly addressed: multi-field token search with relevance ranking (app.js:16-17,48-70), filters across tree+format+license+access with live counts (app.js:93-115), and context preservation via hash state, non-modal detail pane, chips and breadcrumb (app.js:118-156,224-250,306,313) — supporting the ≤3-interaction success criterion."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "a11y.contrast, a11y.focus_order, a11y.target_size and type.min_projected_size all fail in the receipt (measurement-summary.json:13-16)",
+      "Sub-minimum text sizes in source: 11px tags/badges/access pills (styles.css:187,193,197), 11.5px facet counts (styles.css:108), 12px meta (styles.css:191)",
+      "Low-contrast faint color #8b98a8 used for small text such as section titles and counts (styles.css:8,94,108)",
+      "Result rows carry tabindex=-1 (app.js:255) so they sit outside the natural tab order, consistent with the focus_order failure",
+      "26px icon buttons (styles.css:73-74) are below common minimum target-size guidance, consistent with the target_size failure"
+    ],
+    "missing_evidence": [
+      "measurement-summary.json reports 1 warning but the sanitized summary provides no per-check detail identifying it",
+      "Only initial-page screenshots were provided; search-results, filtered, and detail-open states were judged structurally from source (app.js) rather than observed at runtime"
+    ],
+    "overall_note": "impl-15 presents a search-first, faceted registry ('LOCI', screenshots 1280x860/1440x900) whose representation matches the brief's open-collection locate job almost exactly: dominant search with relevance ranking (app.js:58-70), a two-level collection tree plus format/license/access facets with live counts (app.js:93-115,169-221), and hash-encoded state with a non-modal detail pane that preserves list position and filters (app.js:118-156,306,313) — directly satisfying the acceptance seed and the ≤3-interaction success criterion, with data generated synchronously so the first paint is fully populated (gen.js:81-138; app.js:477-482). Layout is defect-free per receipt (layout.*, text.truncation all pass) and stable across viewports. The clear weak spot is accessibility: all three a11y receipt checks plus minimum type size fail (measurement-summary.json:13-16), corroborated by 11px pills, #8b98a8 faint text, 26px icon buttons, and rows outside the tab order (styles.css:108,187,193,197; app.js:255) — genuinely ironic given otherwise strong keyboard support (app.js:442-464). Task completion time, retrieval accuracy, and human preference are not observable in this blind pilot, and the positive scores here are model-judged, not human preference."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 55485,
+      "outputTokens": 6407,
+      "cacheReadInputTokens": 197312,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.5362560000000001,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-09-08T21:41:34.226Z"
+}

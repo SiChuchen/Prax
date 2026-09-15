@@ -1,0 +1,60 @@
+user:
+  expertise: expert
+  familiarity: high
+task:
+  primary: 持续监控一组高易变指标，异常在扫视内发现并追溯其变化
+  modes:
+    - monitor
+    - locate
+    - inspect
+  frequency: high
+domain:
+  type: observability / service health monitoring（实时指标流监控）
+  entities:
+    - metric
+    - change_event
+    - threshold
+    - history
+    - stream
+information:
+  volume: high
+  relationship_complexity: low
+  change_rate: high
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: none
+  error_cost: medium
+priorities:
+  - 异常在一次扫视内可见（耐久状态编码，非瞬时闪烁）
+  - 每次指标变化可追溯到精确时刻
+  - 高密度下的可读性与稳定布局
+  - 页面加载即处于可用状态
+density_intent: compact
+confidence:
+  overall: high
+unknowns: []
+classification:
+  version: "1"
+  task_type: compare_filter_records
+  domain_id: observability_analytics
+  interaction_mode: unknown
+  product_type: unknown
+  primary_object_type: metric
+  secondary_object_types:
+    - change_event
+    - metric_history
+  confidence: medium
+  evidence:
+    - task_type=compare_filter_records ← token '过滤' in context.task and frame.tasks
+    - domain_id=observability_analytics ← token 'observability' in context.domain
+    - primary_object_type=metric ← most referenced product object in the Product Frame
+  open_questions:
+    - interaction_mode could not be classified from the provided context; refine the context fields or record a custom classification
+    - product_type could not be derived; record the intended audience and product kind

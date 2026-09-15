@@ -1,0 +1,80 @@
+{
+  "reviewer": "R1",
+  "package_id": "impl-12",
+  "session_id": "88fb4a39-1ad7-493f-873c-657ee66fc96b",
+  "wall_clock_seconds": 176,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-12",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Layered node-link dependency map matches the relational-web bundle (many / high relationality / medium hierarchy / no comparison): 4 tier columns, 24 nodes, 40 typed edges all resident (screenshots 1280x860 and 1440x900; source/index.html:41-42 aria-label '四层 24 个服务、40 条依赖关系，全部常驻可见'). The brief's suggested primary object 'relationship' is first-class: edges are individually selectable with a dedicated inspector (source/app.js:119-121, 308-311, 261-275) and typed call/data/critical (source/data.js:47-88, legend source/index.html:59-64)."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "Initial screen is dominated by the full-graph map (~75% width, both viewports); the empty-state inspector states the brief's job verbatim — click service node or dependency line, then '试试从 order-service 出发，沿「依赖」或「被依赖」逐跳跟随' (source/index.html:72-73); tagline '跟随依赖与影响 · 全局上下文始终可见' (source/index.html:19); context bar '全局视图 · 24 服务 · 40 依赖关系 · 全部可见' (screenshot 1280x860)."
+      },
+      "time_to_understand": {
+        "score": 4,
+        "evidence": "What/where is conveyed immediately: T1–T4 tier labels, 4-item legend, and the arrow-semantics note 'A → B 表示「A 依赖 B」；B 变更时，影响沿箭头反方向…传播' (screenshots; source/index.html:59-65), plus a concrete guided first hop (source/index.html:73). Deduction: the T3→T4 region is a dense crossing hairball and the semantics-carrying footnote is 11.5px faint text (source/styles.css:116-117). Model-judged proxy per rubric, not a human measurement."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Primary object reachable in one action from the initial screen — every node and edge is permanently visible and directly clickable (screenshots); keyboard equivalents via tabindex+Enter/Space on nodes and edge hit-paths (source/app.js:119-121, 131-134, 331-336); '/' focuses search and picking a result selects in place without leaving the map (source/app.js:369-371, 433-437); hash deep-links #follow/#select/#impact reach a state directly (source/app.js:460-495). No modes, tabs, or drill-down pages."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "The acceptance seed is the stated core discipline: 'dim-to-focus，从不移除节点/边' (source/app.js:2) — updateView only toggles classes (source/app.js:161-187), dimmed items stay in place at opacity .13/.1 (source/styles.css:136,152); the context bar reports 'N / 24 服务清晰 · 其余置灰仍在原位' (source/app.js:192-200); the trail bar keeps every followed step as a clickable chip with direction separators (source/app.js:204-228, 312-317); Esc/reset restores the global view (source/app.js:365-372). Per rubric this dimension is judged from source/UI structure; populated interaction states were not screenshotted."
+      },
+      "ui_surface_complexity": {
+        "score": 5,
+        "evidence": "Permanent chrome is minimal relative to the job: topbar with search, one filter checkbox, one reset button (source/index.html:22-30); one trailbar carrying the context readout (source/index.html:33-37); map with legend/footnote (source/index.html:58-66); one inspector panel (source/index.html:69-77). No tabs, modes, or decorative panels; on-map density is the data (40 edges), not UI surface."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Receipt fails all three a11y checks: a11y.contrast, a11y.focus_order, a11y.target_size (measurement-summary.json:13-15). Structural effort is visible in source — role/aria-label with dependency counts on every node and edge (source/app.js:119-134), focus-visible outlines (source/styles.css:80,141,146), aria-live context (source/index.html:34), combobox/listbox search semantics (source/index.html:24-25) — but secondary text is small and faint (node-zh 10.5px #8496b8 source/styles.css:155; footnote 11.5px --faint #5f6f92 source/styles.css:45,116-117) and tab order traverses all 40 invisible edge hit-paths before any node (source/app.js:117-140), consistent with the focus_order fail."
+      },
+      "frontend_rework": {
+        "score": 3,
+        "evidence": "No visible overflow, clipping, or truncation at either viewport (screenshots 1280x860, 1440x900; layout.overflow pass, text.truncation pass — measurement-summary.json:11-13). But layout.responsive_collision and type.min_projected_size fail (measurement-summary.json:12,16): the fixed 1340x860 viewBox (source/index.html:41) scales to ~0.7x inside the 1280 viewport minus the 344px inspector column (source/styles.css:109), projecting 10.5px sub-labels far below minimum size — a defect class that implies layout/typography rework rather than a one-line fix."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed '关系跟随不丢失全局上下文' and success criterion '依赖与影响可跟随' are directly implemented: both directions followable via closure('dep')/closure('impact') with 高亮影响面 / 高亮依赖闭包 actions (source/app.js:44-62, 248-257); edge inspector quantifies propagation '变更将波及 X 及其全部上游依赖方（N 项）' (source/app.js:270-271); map aria-label '全部常驻可见' (source/index.html:42); state-ready at load with inline data and synchronous render, no loading state (source/index.html:9-10, source/app.js:511-515)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "layout.responsive_collision: fail (measurement-summary.json:12)",
+      "type.min_projected_size: fail — node sub-labels 10.5px (source/styles.css:155) and legend/footnote 11.5px (source/styles.css:116-117) project below minimum at 1280x860",
+      "a11y.contrast, a11y.focus_order, a11y.target_size all fail (measurement-summary.json:13-15); 5 of 7 checks fail overall (measurement-summary.json:4-6)",
+      "Tab order puts all 40 invisible edge hit-paths before the 24 nodes (source/app.js:117-140)",
+      "Dense edge crossings in the T3→T4 band make individual relations hard to trace visually (both screenshots)"
+    ],
+    "missing_evidence": [],
+    "overall_note": "impl-12 is a single-screen SVG dependency map ('DepAtlas') organized around the brief's discriminator: relationships are first-class selectable objects (source/app.js:119-121, 261-275) and every following action uses dim-to-focus so all 24 nodes and 40 edges stay resident and in place (source/app.js:2, 161-187; context readout source/app.js:192-200), which is exactly the acceptance seed. The initial screen is self-explanatory within seconds via tier labels, legend, arrow-semantics note, and a guided first hop (source/index.html:59-73), with one-click/keyboard/deep-link access to any object. The measured weaknesses are concentrated in rendering quality rather than concept: 5 of 7 receipt checks fail (measurement-summary.json:4-6), comprising all three a11y checks (contrast, focus_order, target_size) plus responsive-collision and minimum-type-size fails that are consistent with the small, faint secondary typography (10.5–11.5px, source/styles.css:116,155) and the fixed 1340x860 viewBox scaling beside a fixed 344px inspector (source/index.html:41, source/styles.css:109); layout.overflow and text.truncation pass and no layout defect is visible at either viewport. Task completion time, information retrieval accuracy, and human preference are not observable in this pilot; time_to_understand here is a model-judged proxy and implies nothing about human preference."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 48554,
+      "outputTokens": 8683,
+      "cacheReadInputTokens": 214528,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.5671090000000001,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-09-08T21:31:46.496Z"
+}

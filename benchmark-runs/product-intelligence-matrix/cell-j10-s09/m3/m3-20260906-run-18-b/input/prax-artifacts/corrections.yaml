@@ -1,0 +1,31 @@
+version: "0.1"
+corrections:
+  - id: corr-env-browser-evidence
+    scope:
+      project: cell-j10-s09-b
+      surfaces:
+        - list_detail_inspector_screen
+    finding:
+      type: environment_gap
+      observed: 交付执行会话（win32 沙箱）的整个工具注册表不含任何 shell/浏览器工具（Bash、use_browser、CDP
+        均不可用；主线程与 claude/general-purpose/codex/browser-user 各代理类型逐一验证）。因此 11
+        项验证中 keyboard 与 hierarchy_review 两项无法产生真实浏览器证据，已如实以 inconclusive 提交；其余 9
+        项以代码层走查为据提交 pass。
+    intended:
+      statement: keyboard/hierarchy_review 的运行时证据由仓库内 _evidence-driver/driver.html 的 8
+        个 case（真实 DOM 事件驱动、含 JS 错误徽标）在任一装有 Chrome/Edge 的环境一键复现（命令见
+        README「浏览器取证」）；回归判读以 driver 徽标摘要与截图内容为准，其中 case=8 验证键盘焦点可见、case=2/4
+        验证护栏拦截、case=6 验证恢复后状态机回退、case=7 验证完成凭证。
+    evidence_refs:
+      - README.md#浏览器取证真实浏览器截图程序
+      - _evidence-driver/driver.html
+      - css/app.css#focus-visible
+      - js/app.js#keydown Esc
+    regression:
+      check_id: keyboard
+      requirement: Primary work and selection are operable with keyboard and visible
+        focus（driver case=8 + :focus-visible 样式 + 原生控件）
+    supersedes: []
+    promotion:
+      candidate: false
+    created_at: 2026-09-08T19:27:43.487Z

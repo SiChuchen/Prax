@@ -1,0 +1,90 @@
+version: "0.2"
+jtbd:
+  verb: manage
+  target: 大量有层级归属的结构化实体集合
+  success: 批量选择与批量操作无误完成：受影响集合与确认集合完全一致（零误伤），状态归属始终显式可见
+primary_object:
+  type: entity
+  label: 实体
+task_model:
+  frequency: high
+  reversibility: reversible
+  consequence: high
+  expertise: mixed
+user:
+  primary_role: 实体目录管理员（资产/清单负责人）
+  expertise: intermediate
+  familiarity: high
+goal:
+  primary: 在大规模层级实体目录中安全地浏览、筛选并批量变更实体状态与归属，做到零误伤且每一步状态归属显式
+tasks:
+  primary: 在层级树中划定范围，显式多选实体集合并执行批量操作（改状态/移动/删除/打标签），经逐项预览确认后提交
+  secondary:
+    - 按节点/子树/状态/关键字筛选定位实体
+    - 查看各层级节点的直接与累计计数及状态分布
+    - 对刚执行的批量操作立即撤销
+    - 核对被筛选隐藏的已选实体警示，避免范围漂移
+product_objects:
+  - id: entity
+    user_name: 实体
+    purpose: 被管理的基本单元，带唯一编码、状态、归属类别、负责人与标签
+  - id: domain
+    user_name: 域
+    purpose: 层级顶层分组，聚合若干类别
+  - id: category
+    user_name: 类别
+    purpose: 层级分组节点，可嵌套形成子树；直接容纳实体；聚合直接/累计计数与状态分布
+  - id: selection
+    user_name: 选择集
+    purpose: 显式维护的实体 id 集合，是所有批量操作的唯一作用对象
+  - id: batch_op
+    user_name: 批量操作
+    purpose: 对选择集的一次待确认变更，提交前必须逐项预览受影响实体
+  - id: op_record
+    user_name: 操作记录
+    purpose: 已提交批量操作的回执，支持单步撤销
+relationships:
+  - source: entity
+    target: category
+    type: belongs_to
+    direction: forward
+    meaning: 实体归属唯一叶子类别，决定其层级位置；类别的嵌套子树关系由 category 对象自身字段表达
+    importance: primary
+    id: rel_entity_category
+  - source: category
+    target: domain
+    type: belongs_to
+    direction: forward
+    meaning: 类别归属域，域提供顶层导航与聚合
+    importance: supporting
+    id: rel_category_domain
+  - source: batch_op
+    target: entity
+    type: affects
+    direction: forward
+    meaning: 批量操作恰好作用于确认过的实体集合，多一个少一个都算失败
+    importance: primary
+    id: rel_batch_op_entity
+  - source: selection
+    target: entity
+    type: explicitly_contains
+    direction: forward
+    meaning: 选择集仅由用户显式勾选的实体构成，不随筛选/导航静默变化
+    importance: primary
+    id: rel_selection_entity
+  - source: batch_op
+    target: op_record
+    type: produces
+    direction: forward
+    meaning: 提交后生成操作回执，供撤销与审计
+    importance: supporting
+    id: rel_batch_op_op_record
+mental_model_hypothesis:
+  summary: 用户心模型=『左侧层级目录 + 右侧高密度清单』；选择集是独立于筛选与导航的显式对象；任何批量操作前必须看到将受影响的完整实体清单（含级联子项），确认后才生效，且可撤销。
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: 一次批量操作从选择到提交完成：实际生效的实体集合与用户在预览中确认的集合逐 id 完全一致（零误伤）；提交后每个受影响实体的状态/归属变化在表格与树的计数中立即可见，并可一步撤销。
+open_questions:
+  - 业务领域口吻（采用中性实体目录语义，见需求确认 oq-domain-flavor）

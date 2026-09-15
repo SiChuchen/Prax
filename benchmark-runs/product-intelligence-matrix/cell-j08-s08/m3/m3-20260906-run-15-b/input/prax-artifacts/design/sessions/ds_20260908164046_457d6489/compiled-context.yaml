@@ -1,0 +1,70 @@
+version: "0.1"
+session_id: ds_20260908164046_457d6489
+task:
+  surfaces: []
+  primary: 选择大纲中的节，编辑其标题与正文；增删节、重排、升降级；在预览中确认渲染结果与编辑一致
+product_relationships:
+  - id: rel_document_section
+    source: document
+    target: section
+    type: contains
+    direction: forward
+    meaning: 文档按序包含一棵节树；节的层级由树深度决定
+    importance: primary
+  - id: rel_document_structure_report
+    source: document
+    target: structure_report
+    type: derived_from
+    direction: forward
+    meaning: 结构检查由文档当前状态实时推导
+    importance: supporting
+region_relationships: []
+decisions:
+  primary_structure: PAT-LIST-DETAIL
+  density_intent: spacious
+  major_choice_ids:
+    - MC-1
+    - MC-2
+    - MC-3
+    - MC-4
+    - MC-5
+must_preserve: []
+regression_points: []
+unresolved: []
+corrections: []
+representation_portfolio:
+  primary:
+    type: document
+    reason: 产品对象是文档：预览按文档语义渲染（标题层级、段落），是验收种子『结构化编辑与预览一致』的呈现面。
+  supporting:
+    - type: tree
+      reason: 大纲树承载中等层级与结构操作（选择、重排、升降级、增删）。
+    - type: form
+      reason: 选中节以结构化字段（标题、正文、状态）表单编辑，而非源码文本。
+  rejected:
+    - option: table
+      reason: 密度低且正文为段落文本，表格化无益。
+    - option: canvas
+      reason: 空间性 none。
+state_ownership:
+  - state: selection
+    owner: 当前选中节与其结构化字段（编辑焦点）
+  - state: preview
+    owner: session
+acceptance:
+  - 对文档的任一结构化编辑操作（改标题/正文、增删节、重排、升降级、撤销/重做）之后：① 大纲树、节编辑器、预览三者内容一致；② 文档结构仍满足完整性规则（层级连续、无孤儿节）；③ 结构检查面板给出实时、可读的校验结论。
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - destructive_recovery
+    - requirement_alignment
+  regression_check_ids: []

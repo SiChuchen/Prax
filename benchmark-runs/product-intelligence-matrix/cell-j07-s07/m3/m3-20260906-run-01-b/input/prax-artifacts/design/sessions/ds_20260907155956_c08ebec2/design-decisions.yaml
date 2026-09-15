@@ -1,0 +1,121 @@
+session_id: ds_20260907155956_c08ebec2
+information_shape:
+  cardinality: many
+  relationality: medium
+  hierarchy: low
+  temporality: low
+  density: medium
+  dimensionality: medium
+  spatiality: physical
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: canvas
+    reason: spatiality=physical 且"落位即意图"：只有空间画布能让位置本身承载并展示语义；cardinality=many 的物件在二维物理平面上排布，关系性由落位与对齐表达
+  supporting: []
+  rejected:
+    - option: list
+      reason: 线性化破坏 physical 空间性
+    - option: tree
+      reason: hierarchy=low，无层级可表达
+    - option: cards/dashboard 壳
+      reason: cardinality 需要位置语义而非栅格陈列；未经 shape 论证的默认壳已被 myth-card-grid-default 反驳
+    - option: kanban 列
+      reason: 降维为一维序列，损失二维排布意图
+  justification_vs_shape: spatiality=physical 且 cardinality=many ⇒ 唯一主导表示是 canvas（空间连续性直接操纵）；relationality=medium 由 placed_in 落位推导与对齐参考线承载，不需要并列第二表示；hierarchy=low ⇒ 不用 tree/dashboard 分区容器；comparison_need=none ⇒ 无多视图并排；density=medium ⇒ regular 画布留白 + 紧凑物件原子。物件卡是画布内渲染原子，不是独立表示模式。
+primary_structure:
+  pattern: PAT-CANVAS-WORKSPACE
+  rationale:
+    - 采用路由返回且已 L2 检视的 PAT-CANVAS-WORKSPACE：dominant spatial canvas + selection-driven contextual detail + quiet supporting chrome
+    - 并按其 composed_of 关系叠加 PAT-WORKSPACE：持久主对象空间，支持操作环绕（顶部工具条 + 底部状态条）；primary work remains in a stable surface
+    - physical 空间性要求画布主导：位置本身是数据也是输出（落位即意图）
+    - 该模式 tradeoff "keyboard and list alternatives are needed" 与验收种子一致：键盘契约是一等公民（上下文检查以底部状态条轻量实现，不开侧栏）
+    - 复杂度预算极小：无侧栏、无多屏，1 屏 3 永久表面
+  confidence: high
+information_hierarchy:
+  primary:
+    - dominant_workspace
+    - 主画布工作区（dominant_workspace 表面）：唯一主导表面，承载 create 落位主任务；obj_item 与 obj_zone 的 placed_in 落位关系在此呈现，位置即语义
+    - selection-and-placement 当前选择及其落位结果：选中物件的用途标签/坐标/对齐状态在底部状态条即时呈现
+    - keyboard-equivalents 键盘等价物：速查覆盖层 + 状态条常驻提示，保证键盘可达性可见
+  secondary:
+    - toolbar 工具条（新建/删除/撤销/帮助）
+    - grid & guides 网格、吸附参考线与对齐可视化
+density:
+  intent: regular
+  strategy:
+    - 画布留白为主，分区用低饱和底色+细边框+角标表达感知分组（P-01 Perceptual Grouping）
+    - 物件原子紧凑：色点+名称+用途标签，尺寸对齐网格
+    - 工具条安静小巧（P-22 Signal over Chrome）：左侧新建/删除/撤销，右侧键盘帮助
+    - 选择信息走底部状态条（单行），不占侧栏
+  avoid:
+    - 侧栏检查器面板（挤压画布、增加面板复杂度）
+    - 强容器/重装饰（与 P-22 冲突）
+    - 加载态与空态首屏
+major_choices:
+  - id: mc-zone-semantics
+    choice: 预定义 4 个语义分区（展示区/体验区/暂存区/调试角）+ 自由区；物件中心点落入分区即推导其用途标签（落位即意图），自由区物件显示"未安置"
+    rationale: 位置推导语义让"落位即意图"可观察、可验证；固定分区控制复杂度且首屏即有意义
+    confidence: high
+    references:
+      - obj_zone
+      - obj_item
+      - obj_board
+  - id: mc-keyboard-map
+    choice: 统一键盘契约（1 个）：Tab/Shift+Tab 循环选择；方向键移 8px、Shift×4、Alt+方向智能对齐吸附；N 新建；Ctrl+D 复制；Del 删除；1-6 对齐；d/Shift+D 水平/垂直均分；[/] 层级；G 网格吸附；Enter 重命名；Esc 取消/关闭；Ctrl+Z/Ctrl+Y 撤销重做；? 键盘速查
+    rationale: 每个指针空间操作都有等价键，作为一等契约设计并文档化（速查覆盖层）
+    confidence: high
+    references:
+      - obj_item
+      - obj_board
+  - id: mc-status-strip
+    choice: 检查器以单行底部状态条实现（选中物件、落位分区、坐标、快捷提示），不开侧栏面板
+    rationale: 上下文检查（Contextual Inspector）的轻量实现：不遮挡画布、零导航、符合复杂度预算
+    confidence: high
+    references:
+      - obj_item
+  - id: mc-initial-data
+    choice: 首屏内联初始数据：~12 个物件预布（含 1-2 个未安置），4 分区均有内容，无加载/空态
+    rationale: 交付约束：页面加载完成即处于可用状态，加载态不得作为可测状态
+    confidence: high
+    references:
+      - obj_item
+      - obj_zone
+  - id: mc-no-persistence
+    choice: 纯内存状态，不持久化；Ctrl+Z 撤销栈保障可逆
+    rationale: 简报明确不要求持久化；静态打开 + 确定性演示更可靠
+    confidence: high
+    references:
+      - obj_board
+      - obj_item
+  - id: mc-tech
+    choice: 零依赖原生实现：index.html + styles.css + app.js（经典脚本），另附 build.mjs 产出自包含 dist/index.html
+    rationale: 保证 file:// 直接静态打开 100% 可靠；预算内最短路径；无框架渲染开销
+    confidence: high
+    references:
+      - obj_board
+rejected:
+  - option: PAT-LIST-DETAIL 侧栏列表+详情
+    reason: 模式契约自述 does_not_apply_when spatial relationships dominate；会把第一信息从空间位置换成线性列表
+  - option: 看板列布局（dashboard 化默认壳）
+    reason: 把 physical 2D 降维成 1D 列，破坏"排布即意图"的二维自由度；亦属未经 shape 论证的默认卡片栅格壳（myth-card-grid-default 所指），本选择由 spatiality=physical 直接推出
+  - option: 自由绘制分区（用户自建分区）
+    reason: hierarchy 低、复杂度预算小；固定语义分区已能承载意图推导
+  - option: React/Vite 单文件构建为唯一交付
+    reason: file:// 下 module 脚本兼容性风险；原生经典脚本零构建更符合"直接静态打开"
+  - option: 属性面板编辑物件元数据
+    reason: 违背"落位即意图"：语义应由位置推导而非表单录入
+unresolved: []
+complexity_budget:
+  permanent_panels: 3
+  permanent_primary_actions: 3
+  modes: 1
+  state_owners: 3
+  navigation_levels: 1
+  persistent_filters: 0
+  new_semantic_concepts: 2
+  keyboard_contracts: 1
+  mobile_conflicts: 0
+  permanent_surfaces: 3

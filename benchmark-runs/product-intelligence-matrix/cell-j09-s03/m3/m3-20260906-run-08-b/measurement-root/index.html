@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>青屿咖啡 · 梧桐区二店选址决策台</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><circle cx='8' cy='8' r='7' fill='%230f766e'/></svg>">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header id="region-header">
+  <div class="brand"><span class="brand-dot" aria-hidden="true"></span>青屿咖啡</div>
+  <div class="head-main">
+    <h1>梧桐区二店选址决策台</h1>
+    <p class="lead">在 3 个候选铺位之间完成选址决策：地理语境（左）与比较矩阵（右）同屏驻留；调整权重即实时重算契合分，比较状态全程不离本屏。</p>
+  </div>
+  <div class="kbd-hints" aria-label="键盘操作">
+    <span><kbd>←</kbd><kbd>→</kbd> 切换候选</span>
+    <span><kbd>1</kbd>–<kbd>3</kbd> 选中</span>
+    <span><kbd>L</kbd> 锁定/改选</span>
+    <span><kbd>R</kbd> 重置权重</span>
+  </div>
+</header>
+
+<main id="region-main">
+
+  <!-- 地理语境：自绘 SVG 商圈示意（product_object: geo_context） -->
+  <section id="region-map" aria-label="商圈地理语境示意地图">
+    <div class="panel-h">商圈地图 · 梧桐区 <span class="panel-sub">示意，非比例</span></div>
+    <svg id="map" viewBox="0 0 640 520" role="img" aria-label="梧桐区商圈示意图：候选铺位、地铁 2 号线、江北商务区通勤锚点、竞品与人流走廊">
+      <!-- 江与桥 -->
+      <path class="river" d="M495,-10 L560,-10 L670,530 L605,530 Z"></path>
+      <text class="river-label" x="560" y="400" transform="rotate(78 560 400)">青 澜 江</text>
+      <line class="bridge" x1="543" y1="245" x2="612" y2="245"></line>
+      <text class="map-micro" x="577" y="262" text-anchor="middle">大成桥</text>
+      <!-- 道路 -->
+      <path class="road" d="M-10,300 L450,300"></path>
+      <path class="road" d="M300,-10 L300,530"></path>
+      <text class="map-micro" x="36" y="292">南横街</text>
+      <text class="map-micro" x="308" y="480">梧桐大道</text>
+      <!-- 通勤锚点：江北商务区 -->
+      <g class="m-anchor">
+        <circle cx="600" cy="88" r="34"></circle>
+        <text x="600" y="84" text-anchor="middle">江北商务区</text>
+        <text class="anchor-sub" x="600" y="98" text-anchor="middle">通勤锚点</text>
+      </g>
+      <text class="district-label" x="585" y="30">江北区</text>
+      <text class="district-label" x="46" y="46">梧桐区</text>
+      <!-- 地铁 2 号线 -->
+      <g class="m-metro" data-rel="commute">
+        <polyline points="25,85 170,160 300,235 450,210 585,150"></polyline>
+        <g class="stn"><circle cx="170" cy="160" r="6"></circle><text x="170" y="142" text-anchor="middle">望江里站</text></g>
+        <g class="stn"><circle cx="300" cy="235" r="6"></circle><text x="300" y="256" text-anchor="middle">市图书馆站</text></g>
+        <g class="stn"><circle cx="450" cy="210" r="6"></circle><text x="450" y="192" text-anchor="middle">环汇广场站</text></g>
+        <g class="stn stn-minor"><circle cx="585" cy="150" r="5"></circle><text x="585" y="134" text-anchor="middle">商务区站</text></g>
+      </g>
+      <!-- 人流走廊 -->
+      <g class="m-flow" data-rel="traffic">
+        <path class="flow weekend" d="M110,120 C160,200 230,270 300,330" marker-end="url(#arr-blue)"></path>
+        <text class="flow-label" x="96" y="108">周末滨河客流</text>
+        <path class="flow weekday" d="M556,130 C500,170 470,200 442,238" marker-end="url(#arr-indigo)"></path>
+        <text class="flow-label" x="520" y="118">工作日通勤流</text>
+      </g>
+      <!-- 竞品咖啡 -->
+      <g class="m-rivals" data-rel="rival">
+        <g class="rival"><circle cx="255" cy="130" r="5"></circle><title>竞品 · 桥畔咖啡</title></g>
+        <g class="rival"><circle cx="285" cy="300" r="5"></circle><title>竞品 · 隅田烘焙</title></g>
+        <g class="rival"><circle cx="505" cy="275" r="5"></circle><title>竞品 · 连锁 X（环汇店）</title></g>
+        <g class="rival"><circle cx="395" cy="320" r="5"></circle><title>竞品 · 连锁 Y（环汇店）</title></g>
+      </g>
+      <!-- 选中联动的步行线（JS 控制） -->
+      <line id="walk-line" x1="0" y1="0" x2="0" y2="0" visibility="hidden"></line>
+      <text id="walk-label" class="walk-label" x="0" y="0" visibility="hidden"></text>
+      <!-- 候选铺位 -->
+      <g id="pins">
+        <g class="pin" data-site="a" tabindex="4" role="button" aria-pressed="false" aria-label="候选 A 望江里临江铺">
+          <circle class="pin-halo" cx="200" cy="190" r="19"></circle>
+          <circle class="pin-dot" cx="200" cy="190" r="13"></circle>
+          <text class="pin-key" x="200" y="195" text-anchor="middle">A</text>
+          <text class="pin-name" x="200" y="218" text-anchor="middle">望江里·临江铺</text>
+        </g>
+        <g class="pin" data-site="b" tabindex="6" role="button" aria-pressed="false" aria-label="候选 B 梧桐巷社区铺">
+          <circle class="pin-halo" cx="150" cy="395" r="19"></circle>
+          <circle class="pin-dot" cx="150" cy="395" r="13"></circle>
+          <text class="pin-key" x="150" y="400" text-anchor="middle">B</text>
+          <text class="pin-name" x="150" y="423" text-anchor="middle">梧桐巷·社区铺</text>
+        </g>
+        <g class="pin" data-site="c" tabindex="5" role="button" aria-pressed="false" aria-label="候选 C 环汇广场商场铺">
+          <circle class="pin-halo" cx="430" cy="245" r="19"></circle>
+          <circle class="pin-dot" cx="430" cy="245" r="13"></circle>
+          <text class="pin-key" x="430" y="250" text-anchor="middle">C</text>
+          <text class="pin-name" x="430" y="273" text-anchor="middle">环汇广场·商场铺</text>
+        </g>
+      </g>
+      <defs>
+        <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#60a5fa"></path>
+        </marker>
+        <marker id="arr-indigo" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#818cf8"></path>
+        </marker>
+      </defs>
+    </svg>
+    <p id="map-info" class="map-info">点击候选点或右侧列头，双向联动选中。</p>
+    <ul id="legend" aria-label="图例">
+      <li><i class="lg-pin"></i>候选铺位</li>
+      <li><i class="lg-rival"></i>竞品咖啡</li>
+      <li><i class="lg-metro"></i>地铁 2 号线</li>
+      <li><i class="lg-anchor"></i>通勤锚点</li>
+      <li><i class="lg-flow"></i>人流走廊</li>
+      <li><i class="lg-river"></i>江 / 桥</li>
+    </ul>
+  </section>
+
+  <!-- 右列：比较矩阵（主工作面） + 决策权重轨 -->
+  <section id="region-right">
+    <section id="region-matrix" aria-label="候选铺位并排比较矩阵">
+      <div class="panel-h">候选铺位 · 并排比较
+        <span class="panel-sub">准则越靠前权重默认越高 · 「优」= 行内最优</span>
+      </div>
+      <div id="matrix-wrap"><!-- JS 渲染 table --></div>
+    </section>
+
+    <section id="region-weights" aria-label="决策权重">
+      <div class="panel-h">决策权重
+        <span id="w-chip" class="chip" hidden>已自定义</span>
+        <button id="w-reset" class="btn-ghost" type="button" tabindex="7">重置默认</button>
+      </div>
+      <div id="weights"><!-- JS 渲染滑杆 --></div>
+      <p class="w-hint">契合分 = Σ(准则分 × 权重) ÷ Σ权重 · 准则分按三案极值归一为 0–100</p>
+    </section>
+  </section>
+</main>
+
+<!-- 决策结论条（常驻） -->
+<footer id="region-verdict" aria-live="polite"><!-- JS 渲染 --></footer>
+
+<div id="app-error" class="app-error" hidden role="alert"></div>
+
+<div class="foot-note">cell-j09-s03 · decide × comparison-panel · <span id="data-note"></span></div>
+
+<noscript><p class="app-error">需要启用 JavaScript 才能进行加权比较。</p></noscript>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

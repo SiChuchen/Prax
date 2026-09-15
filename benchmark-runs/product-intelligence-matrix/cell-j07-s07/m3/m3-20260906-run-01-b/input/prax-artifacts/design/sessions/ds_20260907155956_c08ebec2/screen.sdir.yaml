@@ -1,0 +1,112 @@
+version: "0.1"
+screen:
+  id: canvas_workspace_screen
+  intent:
+    primary_task: 在平面板上新建物件并将其落到表达意图的位置（拖拽或全键盘移动），落位后用途自动确定
+    secondary_tasks:
+      - 键盘循环选择物件（Tab/Shift+Tab）
+      - 方向键微移、Shift 大步移动、Alt 智能对齐吸附
+      - 对齐/分布（对齐键与分布键）
+      - 复制（Ctrl+D）、删除（Del）、层级调整（[/]）
+      - 随时按 ? 查看键盘等价物速查表
+  archetype:
+    pattern_ref: PAT-CANVAS-WORKSPACE
+  density_intent: regular
+  regions:
+    - id: architecture
+      role: dominant_workspace
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - spatial_overview
+        - direct_selection
+        - pan_zoom
+    - id: 主画布工作区（dominant_workspace 表面）：唯一主导表面，承载 create 落位主任务；obj_item 与 obj_zone 的 placed_in 落位关系在此呈现，位置即语义
+      role: experimental:主画布工作区（dominant_workspace 表面）：唯一主导表面，承载 create 落位主任务；obj_item 与 obj_zone 的 placed_in 落位关系在此呈现，位置即语义
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: selection-and-placement 当前选择及其落位结果：选中物件的用途标签/坐标/对齐状态在底部状态条即时呈现
+      role: experimental:selection-and-placement 当前选择及其落位结果：选中物件的用途标签/坐标/对齐状态在底部状态条即时呈现
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: keyboard-equivalents 键盘等价物：速查覆盖层 + 状态条常驻提示，保证键盘可达性可见
+      role: experimental:keyboard-equivalents 键盘等价物：速查覆盖层 + 状态条常驻提示，保证键盘可达性可见
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: toolbar 工具条（新建/删除/撤销/帮助）
+      role: experimental:toolbar 工具条（新建/删除/撤销/帮助）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: grid & guides 网格、吸附参考线与对齐可视化
+      role: experimental:grid & guides 网格、吸附参考线与对齐可视化
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: navigation
+      role: primary_navigation
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent:
+        - preserve_context
+    - id: toolbar
+      role: supporting_toolbar
+      importance: supporting
+      visibility:
+        condition: task_driven
+      behavior_intent:
+        - keyboard_equivalent
+    - id: inspector
+      role: contextual_inspector
+      importance: contextual
+      visibility:
+        condition: selection_driven
+      behavior_intent:
+        - selection_driven
+        - progressive_inspection
+  relationships:
+    - id: region_rel_architecture_inspector
+      source: architecture
+      target: inspector
+      type: selection_drives_contextual_detail
+  interaction_intents:
+    - spatial_overview
+    - direct_selection
+    - pan_zoom
+    - progressive_inspection
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved: []
+  rejected_alternatives:
+    - option: PAT-LIST-DETAIL 侧栏列表+详情
+      reason: 模式契约自述 does_not_apply_when spatial relationships dominate；会把第一信息从空间位置换成线性列表
+    - option: 看板列布局（dashboard 化默认壳）
+      reason: 把 physical 2D 降维成 1D 列，破坏"排布即意图"的二维自由度；亦属未经 shape 论证的默认卡片栅格壳（myth-card-grid-default 所指），本选择由 spatiality=physical 直接推出
+    - option: 自由绘制分区（用户自建分区）
+      reason: hierarchy 低、复杂度预算小；固定语义分区已能承载意图推导
+    - option: React/Vite 单文件构建为唯一交付
+      reason: file:// 下 module 脚本兼容性风险；原生经典脚本零构建更符合"直接静态打开"
+    - option: 属性面板编辑物件元数据
+      reason: 违背"落位即意图"：语义应由位置推导而非表单录入

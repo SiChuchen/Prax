@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PULSEWALL · volatile metric monitor</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<noscript>PULSEWALL needs JavaScript enabled.</noscript>
+<div id="app">
+
+  <header id="hdr">
+    <div class="brand">
+      <span class="live" id="liveDot" title="stream live"></span>
+      <div class="brand-tx">
+        <h1>PULSEWALL</h1>
+        <span class="sub">volatile metric monitor · cell-j04-s04</span>
+      </div>
+    </div>
+
+    <div class="stats">
+      <span class="stat"><b id="cTotal">0</b>metrics</span>
+      <span class="stat sev-ok"><b id="cOk">0</b>ok</span>
+      <span class="stat sev-warn"><b id="cWarn">0</b>warn</span>
+      <span class="stat sev-crit"><b id="cCrit">0</b>crit</span>
+      <span class="stat"><b id="cRate">0</b>ev/min</span>
+      <span class="stat clock"><b id="clock">--:--:--</b></span>
+    </div>
+
+    <div class="ctrl">
+      <input id="q" type="search" placeholder="filter metrics…  ( / )" autocomplete="off" spellcheck="false">
+      <div class="fgrp" id="sevChips" role="group" aria-label="severity filter">
+        <button class="fbtn on" data-f="all" aria-pressed="true">All</button>
+        <button class="fbtn" data-f="warn" aria-pressed="false">Warn+</button>
+        <button class="fbtn" data-f="crit" aria-pressed="false">Crit</button>
+      </div>
+      <button id="pauseBtn" class="pbtn" aria-pressed="false">&#10074;&#10074; Pause</button>
+    </div>
+  </header>
+
+  <div id="strip" aria-label="fleet status strip — one segment per metric"></div>
+
+  <main id="main">
+    <section id="grid" aria-label="metric tiles"></section>
+
+    <aside id="side">
+      <section id="feedPanel" class="panel">
+        <div class="p-head"><h2>Evidence stream</h2><span class="p-sub" id="feedRate"></span></div>
+        <div id="feedList"></div>
+      </section>
+
+      <section id="tracePanel" class="panel">
+        <div class="p-head"><h2>Change trace</h2><span class="p-sub" id="trSub"></span></div>
+        <div id="traceEmpty" class="empty">Select a tile, a strip segment or an anomaly to trace its changes.</div>
+        <div id="traceBody" hidden>
+          <div id="trHead"></div>
+          <div id="chartWrap"><canvas id="chart"></canvas><div id="xhair" hidden></div></div>
+          <div id="trLegend">
+            <span><i class="sw line"></i>value</span>
+            <span><i class="sw warnb"></i>warn band</span>
+            <span><i class="sw critb"></i>crit band</span>
+            <span>&#9650; breach</span>
+            <span>&#9679; recovered</span>
+            <span>&#9670; spike</span>
+          </div>
+          <div id="evList"></div>
+        </div>
+      </section>
+    </aside>
+  </main>
+
+</div>
+<script src="app.js"></script>
+</body>
+</html>

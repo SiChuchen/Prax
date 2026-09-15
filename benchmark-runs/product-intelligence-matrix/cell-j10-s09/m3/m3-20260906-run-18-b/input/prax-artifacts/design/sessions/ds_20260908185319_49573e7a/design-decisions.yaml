@@ -1,0 +1,112 @@
+session_id: ds_20260908185319_49573e7a
+version: "0.2"
+information_shape:
+  cardinality: one
+  relationality: low
+  hierarchy: high
+  temporality: low
+  density: low
+  dimensionality: medium
+  spatiality: none
+  volatility: medium
+  uncertainty: medium
+  comparison_need: none
+representation:
+  primary:
+    type: wizard
+    reason: complete 任务要求按序逐步推进且门控严格（前序未完成不得进入后序），向导语义与零失误主线一致
+  supporting:
+    - type: list
+      reason: 左侧阶段→步骤有序列表提供全局位置感与不可逆标识（⚠），即 PAT-LIST-DETAIL 的列表区
+    - type: feed
+      reason: 执行日志按时间倒序留痕全部动作与护栏拦截，支撑零失误凭证
+  rejected:
+    - option: table
+      reason: 无比较需求、低密度，表格把执行语义降级为浏览语义
+    - option: diagram/canvas
+      reason: 空间性 none，无空间隐喻价值
+    - option: document
+      reason: 纯文档无法承载强制门控、确认与恢复动作
+  justification_vs_shape: 基数 one + 层级性高 → 向导式列表-详情呈现单一流程的三层结构；密度低 → spacious 单卡；易变性中 → 步骤状态机与恢复窗口实时可见；不确定性中 → 每步附预期结果与异常处置；无比较/空间/时间需求 → 不用表格、画布或时间线。
+primary_structure:
+  pattern: PAT-LIST-DETAIL-INSPECTOR
+  rationale:
+    - 路由返回的 PAT-LIST-DETAIL-INSPECTOR（Contextual Inspector）为本决策主模式，并以同批路由的 PAT-LIST-DETAIL 为基础：左列=阶段→步骤有序导航，中=当前步骤执行卡（detail），右=绑定当前选择的风险/恢复检查器（inspector）
+    - "单一有序流程、基数 one：列表即流程导航，顺序即执行顺序（PAT-LIST-DETAIL applies_when: collection order matters）"
+    - "单工作区产品，无多区域导航需求，故不采用同批路由的 PAT-APPLICATION-SHELL（其 does_not_apply_when: the product is a single workspace）"
+    - 向导式门控叠加：前序未完成则后序锁定，保证零失误主线的单一焦点
+  confidence: high
+information_hierarchy:
+  primary:
+    - 步骤执行卡（指令、检查项、提交/确认动作）
+    - 阶段→步骤有序导航（含可逆/不可逆与状态标识）
+    - 风险与恢复检查器（当前步骤的后果、恢复窗口、恢复路径）
+    - 执行日志（全程留痕与护栏拦截）
+  secondary:
+    - 工作流标题与总进度
+    - 零失误完成凭证（终态）
+density:
+  intent: spacious
+  strategy:
+    - 一次只呈现当前步骤，其余步骤收进左侧导航
+    - 检查项逐行独占、行距充裕、预期结果就近标注
+    - 异常处置与恢复程序用渐进披露（展开区/抽屉），不常驻占位
+    - 右栏检查器常驻但内容随当前步骤切换，保持低密度
+    - 不可逆步骤用色彩+徽标+确认码三重信号，不用堆砌文字
+  avoid:
+    - 表格/数据网格
+    - 多栏并列信息
+    - 持久筛选器
+    - 与推进无关的装饰性图表
+major_choices:
+  - id: mc-confirm
+    choice: 不可逆步骤（step.irreversible）执行前弹出确认对话框：后果说明+恢复路径摘要+手动输入确认码，错码/漏检不生效并计入护栏拦截
+    rationale: 验收种子要求不可逆步骤有确认路径；输入确认码是高后果操作的强确认惯例（Recoverable Action 原则：先确认后果再放行破坏性动作）
+    confidence: high
+    references:
+      - step
+      - check
+  - id: mc-recovery
+    choice: 每个不可逆步骤内置恢复路径（recovery_path）：右栏检查器常驻可见（步骤清单+恢复窗口），已执行步骤可启动恢复向导，完成后步骤回到待执行态
+    rationale: 验收种子要求恢复路径；恢复向导让恢复可操作而非仅文档（Recoverable Action 原则：高后果动作必须留有恢复通道）
+    confidence: high
+    references:
+      - recovery_path
+      - step
+  - id: mc-guardrail
+    choice: 强制顺序推进：检查项（check）未全勾不可提交、后续步骤锁定、越序/漏项尝试被拦截并写入执行日志（run_log）
+    rationale: 成功标准为零失误走完全程，护栏把潜在失误变成被阻止的事件
+    confidence: high
+    references:
+      - check
+      - run_log
+      - workflow
+  - id: mc-certificate
+    choice: 完成态给出零失误凭证：检查项通过数、不可逆确认数、护栏拦截数、可导出执行日志（run_log）
+    rationale: complete 任务需要可留证的完成终点
+    confidence: high
+    references:
+      - run_log
+      - workflow
+      - phase
+rejected:
+  - option: 表格化步骤清单（table）
+    reason: 密度低、无比较需求，表格浪费空间且弱化推进语义
+  - option: 画布/流程图空间布局（canvas/diagram）
+    reason: 空间性 none，空间隐喻无用户价值
+  - option: PAT-APPLICATION-SHELL 多区导航
+    reason: 单工作区产品，持久 chrome 浪费空间且增加导航层级
+  - option: 自由跳转的步骤导航（非向导门控）
+    reason: 违反零失误主线，允许越序会引入不可逆误操作风险
+unresolved: []
+complexity_budget:
+  permanent_panels: 4
+  permanent_primary_actions: 2
+  modes: 2
+  state_owners: 1
+  navigation_levels: 1
+  persistent_filters: 0
+  new_semantic_concepts: 4
+  keyboard_contracts: 0
+  mobile_conflicts: 0
+  permanent_surfaces: 1

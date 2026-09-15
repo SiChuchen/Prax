@@ -1,0 +1,59 @@
+needs:
+  - id: n-geo-context
+    product_action: 地理语境与决策项同屏：常驻自绘 SVG 商圈示意地图（候选点/通勤锚点/地铁线/竞品/人流走廊）
+    required_experience:
+      - 地图与比较矩阵同屏常驻，不因交互消失
+      - 候选点可点击选中并与矩阵列联动高亮
+    capabilities:
+      - inline SVG 商圈示意图（道路/地铁线/锚点/POI 标记，纯矢量自绘）
+      - 无外部 tile/地图服务依赖
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端 SVG 自绘示意地图，数据内联；不调用任何外部服务，满足静态交付与验收种子
+  - id: n-compare-matrix
+    product_action: 候选×准则并排比较矩阵：3 列候选、准则行、逐行最优徽标
+    required_experience:
+      - 全部准则行单屏可见，逐行最优一眼可辨
+      - 列头点击选中，比较状态驻留
+    capabilities:
+      - HTML table 列对齐渲染
+      - 行最优计算与徽标标注
+      - 列选中态样式
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 静态表格 + JS 渲染最优标记与选中态
+  - id: n-weighted-score
+    product_action: 权重驱动契合分：0–5 滑杆实时重算 0–100 契合分与名次
+    required_experience:
+      - 任一权重变化后立即更新分数、名次与逐行最优
+      - 可一键恢复默认权重
+    capabilities:
+      - 客户端评分函数（归一化 + 加权求和）
+      - 输入事件驱动的即时重渲染
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯客户端计算，无延迟、无网络
+  - id: n-instant-ready
+    product_action: 首屏即 ready：数据内联，页面加载完成即可比较，无加载态
+    required_experience:
+      - 首帧即含全部指标、地图与契合分
+      - file:// 直接打开可用
+    capabilities:
+      - 内联 <script> 数据 + 首帧同步渲染，无 fetch、无骨架屏
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 全部数据与逻辑随 HTML 内联，无运行时请求
+  - id: n-persist-decision
+    product_action: 跨会话保存决策结果
+    required_experience:
+      - 刷新后保留锁定选择
+    capabilities:
+      - 无（不引入 localStorage/后端）
+    status: gap
+    resolution:
+      type: explicit_compromise
+      notes: 简报明确不要求持久化服务；锁定状态存于页面会话内存，刷新即回默认。接受此妥协

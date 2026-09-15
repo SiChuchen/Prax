@@ -1,0 +1,236 @@
+plan_revision: 1
+evidence:
+  submitted_by: 执行臂（Claude，cell-j08-s08-b）
+  collected_at: 2026-09-08T17:40:00Z
+  items:
+    - check_id: keyboard
+      outcome: pass
+      source: 真实键盘事件（CDP keyboard API，.tooling/evidence-driver.js）
+      notes: CDP 真实按键事件：大纲 ↑/↓ 移动选择且焦点随行；:focus-visible 焦点环可见；Ctrl+Z/Ctrl+Y 全局撤销重做；零控制台错误。
+      artifact_refs:
+        - evidence/08-keyboard-navigation.png
+        - evidence/04-undo-revert.png
+        - evidence/evidence-driver-report.json
+        - .tooling/evidence-driver.js
+      measurement_receipt: validation-evidence/keyboard-receipt.json
+    - check_id: product_model_alignment
+      outcome: pass
+      source: DOM 文本抽取 + 全景截图（CDP 会话）
+      notes: UI 词汇与 Product Frame product_objects（document/section/structure_report）逐一对应：文档/大纲/节/预览/结构检查；无后端概念泄漏。
+      artifact_refs:
+        - evidence/01-initial-load.png
+        - evidence/03-field-edit-consistency.png
+        - evidence/07-validation-locate.png
+      measurement_receipt: validation-evidence/product-model-alignment-receipt.json
+    - check_id: hierarchy_review
+      outcome: pass
+      source: 截图对照 SDIR regions + 面板几何量测（DOM）
+      notes: 视觉权重遵循 SDIR importance：editor dominant 居中；outline/preview primary 等权常驻；structure-report supporting 默认收起、任务驱动展开；密度 spacious。
+      artifact_refs:
+        - evidence/01-initial-load.png
+        - evidence/07-validation-locate.png
+      measurement_receipt: validation-evidence/hierarchy-review-receipt.json
+    - check_id: destructive_recovery
+      outcome: pass
+      source: CDP 交互断言 + 截图
+      notes: 删除含子节的节必经 alertdialog（标题/正文/三动作文案逐字断言），两种处理方式均不产生孤儿节，取消后节点完好；全部操作可撤销；非法操作禁用并说明原因。
+      artifact_refs:
+        - evidence/06-delete-confirm-modal.png
+        - evidence/04-undo-revert.png
+        - evidence/evidence-driver-report.json
+      measurement_receipt: validation-evidence/destructive-recovery-receipt.json
+    - check_id: requirement_alignment
+      outcome: pass
+      source: CDP 端到端旅程（.tooling/evidence-driver.js A–H）
+      notes: A–H 端到端旅程对照确认的 restatement 逐条核验：单文档主屏、三栏一致性、结构操作约束、撤销、首屏即就绪、file:// 静态打开、无外部服务、零控制台错误；运行时适配已记录 COR-1。
+      artifact_refs:
+        - evidence/01-initial-load.png
+        - evidence/03-field-edit-consistency.png
+        - evidence/05-demote-structure.png
+        - evidence/07-validation-locate.png
+        - evidence/evidence-driver-report.json
+      measurement_receipt: validation-evidence/requirement-alignment-receipt.json
+evaluation:
+  status: BLOCK
+  checks:
+    - id: semantic_conformance
+      label: Semantic conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR is valid, semantic, and aligned to the approved pattern.
+      evidence_required: false
+    - id: state_completeness
+      label: State completeness
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Required loading, empty, ready, and error states exist.
+      evidence_required: false
+    - id: product_model_alignment
+      label: Product model alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: User-facing structure and language preserve the Product Frame.
+      evidence_required: true
+    - id: keyboard
+      label: Keyboard operability
+      kind: empirical
+      profile: keyboard_accessibility
+      facet: behavioral
+      requirement: Primary work and selection are operable with keyboard and visible focus.
+      evidence_required: true
+    - id: hierarchy_review
+      label: Hierarchy review
+      kind: assistive
+      profile: semantic_integrity
+      facet: visual_hierarchy
+      requirement: Visual prominence follows SDIR importance rather than implementation convenience.
+      evidence_required: true
+    - id: representation_decided
+      label: Representation decided
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares representation.primary with a non-empty reason.
+      evidence_required: false
+    - id: state_ownership_declared
+      label: State ownership declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: Selection and preview states both have declared owners.
+      evidence_required: false
+    - id: acceptance_contract_present
+      label: Acceptance contract present
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 carries at least one acceptance criterion.
+      evidence_required: false
+    - id: complexity_budget_declared
+      label: Complexity budget declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      evidence_required: false
+    - id: destructive_recovery
+      label: Destructive recovery
+      kind: deterministic
+      profile: runtime_degradation
+      facet: behavioral
+      requirement: Destructive actions match error cost with prevention or recovery.
+      evidence_required: true
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+  findings:
+    - check_id: semantic_conformance
+      kind: deterministic
+      outcome: pass
+      message: SDIR is valid, semantic, and aligned to the approved pattern.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_completeness
+      kind: deterministic
+      outcome: pass
+      message: Required loading, empty, ready, and error states exist.
+      source: prax-validator
+      provenance: measured
+    - check_id: representation_decided
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares representation.primary with a non-empty reason.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_ownership_declared
+      kind: deterministic
+      outcome: pass
+      message: Selection and preview states both have declared owners.
+      source: prax-validator
+      provenance: measured
+    - check_id: acceptance_contract_present
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 carries at least one acceptance criterion.
+      source: prax-validator
+      provenance: measured
+    - check_id: complexity_budget_declared
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      source: prax-validator
+      provenance: measured
+    - check_id: product_model_alignment
+      kind: assistive
+      outcome: pass
+      message: UI 词汇与 Product Frame product_objects（document/section/structure_report）逐一对应：文档/大纲/节/预览/结构检查；无后端概念泄漏。
+      source: DOM 文本抽取 + 全景截图（CDP 会话）
+      provenance: attested
+    - check_id: keyboard
+      kind: empirical
+      outcome: pass
+      message: CDP 真实按键事件：大纲 ↑/↓ 移动选择且焦点随行；:focus-visible 焦点环可见；Ctrl+Z/Ctrl+Y 全局撤销重做；零控制台错误。
+      source: 真实键盘事件（CDP keyboard API，.tooling/evidence-driver.js）
+      provenance: attested
+    - check_id: hierarchy_review
+      kind: assistive
+      outcome: pass
+      message: 视觉权重遵循 SDIR importance：editor dominant 居中；outline/preview primary 等权常驻；structure-report supporting 默认收起、任务驱动展开；密度 spacious。
+      source: 截图对照 SDIR regions + 面板几何量测（DOM）
+      provenance: attested
+    - check_id: destructive_recovery
+      kind: deterministic
+      outcome: pass
+      message: 删除含子节的节必经 alertdialog（标题/正文/三动作文案逐字断言），两种处理方式均不产生孤儿节，取消后节点完好；全部操作可撤销；非法操作禁用并说明原因。
+      source: CDP 交互断言 + 截图
+      provenance: attested
+    - check_id: requirement_alignment
+      kind: assistive
+      outcome: pass
+      message: A–H 端到端旅程对照确认的 restatement 逐条核验：单文档主屏、三栏一致性、结构操作约束、撤销、首屏即就绪、file:// 静态打开、无外部服务、零控制台错误；运行时适配已记录 COR-1。
+      source: CDP 端到端旅程（.tooling/evidence-driver.js A–H）
+      provenance: attested
+  missing_evidence:
+    - keyboard
+  warnings: []
+  codes:
+    - MEASUREMENT_RECEIPT_INVALID
+    - MEASUREMENT_RECEIPT_MISSING
+  readiness:
+    deterministic_passed: true
+    measurement:
+      receipt_ref: null
+      binding:
+        validation-evidence/keyboard-receipt.json: invalid
+        validation-evidence/product-model-alignment-receipt.json: invalid
+        validation-evidence/hierarchy-review-receipt.json: invalid
+        validation-evidence/destructive-recovery-receipt.json: invalid
+        validation-evidence/requirement-alignment-receipt.json: invalid
+      error_failures_open: 0
+      warning_dispositions: []
+    convergence:
+      stalled: true
+      unresolved: []
+    evidence_current: false
+    claims:
+      measured:
+        - semantic_conformance
+        - state_completeness
+        - representation_decided
+        - state_ownership_declared
+        - acceptance_contract_present
+        - complexity_budget_declared
+      attested:
+        - product_model_alignment
+        - keyboard
+        - hierarchy_review
+        - destructive_recovery
+        - requirement_alignment
+      skipped: []

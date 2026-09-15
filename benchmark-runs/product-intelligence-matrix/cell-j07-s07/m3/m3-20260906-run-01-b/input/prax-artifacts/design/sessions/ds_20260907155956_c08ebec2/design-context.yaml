@@ -1,0 +1,60 @@
+user:
+  expertise: intermediate
+  familiarity: medium
+task:
+  primary: 新建空间物件并通过落位（拖拽或键盘移动）表达意图
+  modes:
+    - create（新建物件并落位）
+    - arrange（移动/对齐/分布/层级）
+    - inspect（查看物件与分区归属）
+  frequency: medium
+domain:
+  type: 空间布置/平面规划（spatial workspace planning）
+  entities:
+    - 物件 item（canvas_object）
+    - 分区 zone（语义功能区域）
+    - 平面板 board（画布/工作区）
+    - 选择 selection
+    - 对齐参考线 guide
+information:
+  volume: medium
+  relationship_complexity: medium
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: low
+  error_cost: low
+priorities:
+  - 落位即意图：位置变化即时推导物件用途，零表单
+  - 空间操作全量键盘等价物（验收种子，不可妥协）
+  - 首屏即就绪：初始平面图随页面加载内联呈现
+  - 直接操纵手感：拖拽、吸附、参考线即时反馈
+density_intent: regular
+confidence:
+  overall: high
+unknowns: []
+classification:
+  version: "1"
+  task_type: inspect_relationships
+  domain_id: unknown
+  interaction_mode: unknown
+  product_type: unknown
+  primary_object_type: obj_item
+  secondary_object_types:
+    - obj_zone
+    - obj_board
+  confidence: low
+  evidence:
+    - task_type=inspect_relationships ← token 'inspect' in context.task and frame.tasks
+    - primary_object_type=obj_item ← most referenced product object in the Product Frame
+  open_questions:
+    - domain_id could not be classified from the provided context; refine the context fields or record a custom classification
+    - interaction_mode could not be classified from the provided context; refine the context fields or record a custom classification
+    - product_type could not be derived; record the intended audience and product kind

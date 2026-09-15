@@ -1,0 +1,75 @@
+version: "0.1"
+session_id: ds_20260908180630_9c7f4b24
+task:
+  surfaces: []
+  primary: "Follow a chain: pick a service, read what it depends on and what depends on it, and step through those relationships hop by hop while the full system map stays visible"
+product_relationships:
+  - id: rel_dependency_edge_service_node
+    source: dependency_edge
+    target: service_node
+    type: connects
+    direction: forward
+    meaning: Each dependency edge links exactly two service nodes (from → to)
+    importance: primary
+  - id: rel_follow_trail_dependency_edge
+    source: follow_trail
+    target: dependency_edge
+    type: walks
+    direction: forward
+    meaning: The trail is an ordered sequence of relationship hops; each step extends the trail
+    importance: primary
+  - id: rel_system_map_service_node
+    source: system_map
+    target: service_node
+    type: contains
+    direction: forward
+    meaning: The map always contains every service and edge; focus only dims, never removes
+    importance: primary
+region_relationships: []
+decisions:
+  primary_structure: PAT-WORKSPACE
+  density_intent: regular
+  major_choice_ids:
+    - layout
+    - focus_model
+    - traversal
+    - dataset
+must_preserve: []
+regression_points: []
+unresolved: []
+corrections: []
+representation_portfolio:
+  primary:
+    type: graph
+    reason: "Relationships ARE the content: a node-link map renders every dependency as directional, typed content and lets the user follow chains spatially while the whole stays in view — the only representation where multi-hop follow cannot lose global context"
+  supporting:
+    - type: architecture
+      reason: tiered left→right layout doubles as an architecture diagram, giving the medium hierarchy a stable, conventional backbone
+    - type: search_results
+      reason: search box locates a service among many and selects it on the map without navigating away
+  rejected:
+    - option: table/list of edges
+      reason: "high relationality: pairwise rows destroy the web structure; following multi-hop chains requires re-query per hop with no global anchor"
+    - option: tree
+      reason: medium hierarchy is a facet, not the content; a tree forces single-parent structure onto a graph with fan-out and fan-in
+state_ownership:
+  - state: selection
+    owner: The whole web — every service and every dependency edge always visible (global-context anchor)
+  - state: preview
+    owner: session
+acceptance:
+  - From any service, the user can follow multi-hop dependency and influence chains, reading each relationship along the way, while the complete system map stays visible with their current position and trail marked in it — 关系跟随不丢失全局上下文.
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - requirement_alignment
+  regression_check_ids: []

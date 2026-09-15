@@ -1,0 +1,50 @@
+version: "0.1"
+session_id: ds_20260907155956_c08ebec2
+task:
+  surfaces: []
+  primary: 在平面板上新建物件并将其落到表达意图的位置（拖拽或全键盘移动），落位后用途自动确定
+product_relationships:
+  - id: rel_placed_in
+    source: obj_item
+    target: obj_zone
+    type: placed_in
+    direction: forward
+    meaning: 物件与分区几何重叠 ⇒ 物件的用途标签由该分区推导（落位即意图）
+    importance: primary
+region_relationships:
+  - id: region_rel_architecture_inspector
+    source: architecture
+    target: inspector
+    type: selection_drives_contextual_detail
+decisions:
+  primary_structure: PAT-CANVAS-WORKSPACE
+  density_intent: regular
+  major_choice_ids:
+    - mc-zone-semantics
+    - mc-keyboard-map
+    - mc-status-strip
+    - mc-initial-data
+    - mc-no-persistence
+    - mc-tech
+must_preserve: []
+regression_points: []
+unresolved: []
+corrections: []
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - relationship_trace
+    - context_preservation
+    - canvas_signal_hierarchy
+    - destructive_recovery
+    - requirement_alignment
+  regression_check_ids: []

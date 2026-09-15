@@ -1,0 +1,71 @@
+user:
+  expertise: expert
+  familiarity: high
+task:
+  primary: 按 runbook 逐步执行高后果切换流程并零失误走完全程
+  modes:
+    - 执行推进
+    - 确认不可逆动作
+    - 恢复回滚
+    - 留痕审计
+  frequency: low
+domain:
+  type: 生产变更管理 / 运维 runbook
+  entities:
+    - 流程
+    - 阶段
+    - 步骤
+    - 检查项
+    - 确认码
+    - 后果说明
+    - 恢复路径
+    - 恢复窗口
+    - 执行日志
+    - 护栏拦截
+    - 完成凭证
+information:
+  volume: low
+  relationship_complexity: low
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: high
+  error_cost: high
+priorities:
+  - 不可逆步骤的确认路径醒目且不可跳过
+  - 不可逆步骤的恢复路径随时可见、可执行
+  - 推进护栏：漏项/越序被拦截并记录
+  - 低密度、单主屏、首屏即用
+  - 全程留痕与完成凭证
+density_intent: spacious
+confidence:
+  overall: high
+unknowns: []
+classification:
+  version: "1"
+  task_type: compare_filter_records
+  domain_id: data_exploration
+  interaction_mode: unknown
+  product_type: internal_engineering_tool
+  primary_object_type: step
+  secondary_object_types:
+    - phase
+    - workflow
+    - check
+    - recovery_path
+    - run_log
+  confidence: medium
+  evidence:
+    - task_type=compare_filter_records ← token '日志' in context.task and frame.tasks
+    - domain_id=data_exploration ← token '日志' in context.domain
+    - product_type=internal_engineering_tool ← expert user in an engineering domain
+    - primary_object_type=step ← most referenced product object in the Product Frame
+  open_questions:
+    - interaction_mode could not be classified from the provided context; refine the context fields or record a custom classification

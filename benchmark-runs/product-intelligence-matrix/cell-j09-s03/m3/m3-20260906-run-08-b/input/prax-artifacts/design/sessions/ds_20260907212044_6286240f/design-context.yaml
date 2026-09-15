@@ -1,0 +1,68 @@
+user:
+  expertise: intermediate
+  familiarity: medium
+task:
+  primary: 在少量候选铺位间并排比较全部指标，结合地理语境择优拍板
+  modes:
+    - compare
+    - evaluate
+    - decide
+  frequency: low
+domain:
+  type: 零售/门店选址评估
+  entities:
+    - 候选铺位
+    - 商圈地图
+    - 通勤锚点
+    - 地铁线路
+    - 竞品点位
+    - 决策准则与权重
+    - 契合分
+    - 决策结论
+information:
+  volume: high
+  relationship_complexity: medium
+  change_rate: medium
+  comparison_need: high
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: none
+  error_cost: medium
+priorities:
+  - 地理语境与决策项同屏（验收种子）
+  - 比较状态驻留：逐项最优高亮、选中列、结论常驻
+  - 权重可调、契合分实时重算
+  - 高密度但不牺牲可读性
+density_intent: compact
+confidence:
+  overall: high
+unknowns:
+  - id: dataset_fictional
+    impact: low
+    affects:
+      - data_plausibility
+classification:
+  version: "1"
+  task_type: compare_filter_records
+  domain_id: unknown
+  interaction_mode: canvas_with_contextual_inspector
+  product_type: unknown
+  primary_object_type: candidate_site
+  secondary_object_types:
+    - geo_context
+    - criteria_weights
+    - verdict
+  confidence: medium
+  evidence:
+    - task_type=compare_filter_records ← token 'compare' in context.task and frame.tasks
+    - interaction_mode=canvas_with_contextual_inspector ← token '关系' in context.task, frame.tasks, and context.priorities
+    - primary_object_type=candidate_site ← most referenced product object in the Product Frame
+  open_questions:
+    - domain_id could not be classified from the provided context; refine the context fields or record a custom classification
+    - product_type could not be derived; record the intended audience and product kind

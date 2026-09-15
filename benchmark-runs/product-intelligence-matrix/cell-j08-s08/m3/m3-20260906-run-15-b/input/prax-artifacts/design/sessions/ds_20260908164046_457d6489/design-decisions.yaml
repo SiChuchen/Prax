@@ -1,0 +1,112 @@
+session_id: ds_20260908164046_457d6489
+version: "0.2"
+information_shape:
+  cardinality: one
+  relationality: low
+  hierarchy: medium
+  temporality: medium
+  density: low
+  dimensionality: medium
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: document
+    reason: 产品对象是文档：预览按文档语义渲染（标题层级、段落），是验收种子『结构化编辑与预览一致』的呈现面。
+  supporting:
+    - type: tree
+      reason: 大纲树承载中等层级与结构操作（选择、重排、升降级、增删）。
+    - type: form
+      reason: 选中节以结构化字段（标题、正文、状态）表单编辑，而非源码文本。
+  rejected:
+    - option: table
+      reason: 密度低且正文为段落文本，表格化无益。
+    - option: canvas
+      reason: 空间性 none。
+  justification_vs_shape: 基数 one+密度低+比较 none → 单文档工作台而非集合/比较视图；层级中 → 树形大纲承载结构操作；维度中（标题/正文/层级/顺序/状态）→ 结构化字段表单而非自由文本；时间性中 → 撤销栈。
+primary_structure:
+  pattern: PAT-LIST-DETAIL
+  rationale:
+    - PAT-LIST-DETAIL 为骨架：列表=文档内节集合的大纲树，详情=选中节的结构化编辑器；文档基数 one 不冲突——集合是节而非文档
+    - 叠加 Contextual Inspector：结构检查面板绑定当前选中/文档状态，保持上下文（Preserve Context）
+    - 第三栏实时预览=同一 document 模型的文档渲染，是『结构化编辑与预览一致』的验收呈现面
+    - 层级中：树形大纲承载结构操作（升降级/重排/增删）；密度低：三栏留白、无密集表格；比较 none/空间性 none：排除 canvas
+    - 顶部仅文档级工具带（标题/状态/撤销/检查摘要），不引入多区域导航
+  confidence: high
+information_hierarchy:
+  primary:
+    - 当前选中节与其结构化字段（编辑焦点）
+    - 文档大纲树 + 选中位置（结构上下文）
+    - 整文档实时渲染（预览，与编辑一致性的直接证据）
+    - 结构检查结论（结构完整性的直接证据）
+  secondary:
+    - 文档标题与状态元信息
+    - 撤销/重做可用性
+    - 字数等轻量统计
+density:
+  intent: spacious
+  strategy:
+    - 三栏留白、每栏单一职责，低密度可扫读
+    - 预览采用单栏阅读版式，与最终文档观感一致
+    - 结构操作按钮就地小尺寸放置于大纲项与编辑器，不设全局工具条层级
+  avoid:
+    - 密集表格呈现
+    - 全局导航/多标签
+    - hover 才能发现的隐藏操作
+major_choices:
+  - id: MC-1
+    choice: 三栏固定工作台：大纲树 | 节编辑器 | 实时预览（约 260px | 1fr | 1fr）
+    rationale: LIST-DETAIL 骨架适配：列表=节大纲（集合是文档内的节，不与文档基数 one 冲突）；详情=选中节的结构化编辑器；第三栏为整文档渲染预览，是『编辑与预览一致』的直接可见证据。
+    confidence: medium
+    references:
+      - document
+      - section
+  - id: MC-2
+    choice: 单一状态源：document 数据模型唯一持有真值，大纲、编辑器、预览均为其派生渲染
+    rationale: 一致性的架构保证：三栏不可能各持一份内容，任何编辑即时反映到预览与大纲。
+    confidence: medium
+    references:
+      - document
+      - section
+  - id: MC-3
+    choice: 结构操作收敛为受约束白名单：增子节/增同级节/删除（子节上移而非孤儿化）/上移/下移/升级/降级，非法操作禁用并说明原因
+    rationale: 『编辑不破坏结构』的操作级保证：不存在能产生孤儿节、层级跳级或越界移动的操作路径；操作反馈实时进入结构检查面板。
+    confidence: medium
+    references:
+      - section
+      - structure_report
+  - id: MC-4
+    choice: 快照式撤销/重做栈 + Ctrl+Z / Ctrl+Y
+    rationale: 时间性中：编辑是探索性的，误操作必须可逆（Recoverable Action，路由原则 P-28）。
+    confidence: medium
+    references:
+      - document
+  - id: MC-5
+    choice: 原生 HTML/CSS/JS 单页、无构建、无外部依赖，初始文档内联于首屏
+    rationale: 交付约束：静态可直接打开、加载即可用、本地运行、无外部服务；与平台档案 WEB-DESKTOP（大视口、指针+键盘）一致。
+    confidence: medium
+    references:
+      - document
+rejected:
+  - option: PAT-APPLICATION-SHELL 作为整体骨架
+    reason: 模式契约自述 does_not_apply_when『产品是单一工作区』；本文恰为单工作区。仅保留顶部工具带（无全局导航）。
+  - option: Markdown/纯文本源码编辑 + 渲染
+    reason: 任务要求结构化编辑（层级操作、字段编辑），源码语法无法保证『编辑不破坏结构』，且解析层易造成编辑与预览不一致。
+  - option: PAT-CANVAS-WORKSPACE / 空间画布
+    reason: 空间性 none，关系性 low：无空间隐喻需求。
+  - option: 双栏（编辑+预览，无大纲）
+    reason: 层级中时无结构总览，升降级/重排操作无处安放，破坏结构可见性。
+unresolved: []
+complexity_budget:
+  permanent_panels: 3
+  permanent_primary_actions: 6
+  modes: 0
+  state_owners: 1
+  navigation_levels: 1
+  persistent_filters: 0
+  new_semantic_concepts: 2
+  keyboard_contracts: 2
+  mobile_conflicts: 0
+  permanent_surfaces: 1

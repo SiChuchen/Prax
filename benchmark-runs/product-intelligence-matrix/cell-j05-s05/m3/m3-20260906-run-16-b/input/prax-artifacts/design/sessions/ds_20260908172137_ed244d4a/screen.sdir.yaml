@@ -1,0 +1,75 @@
+version: "0.1"
+screen:
+  id: workspace_screen
+  intent:
+    primary_task: "Follow a chain: pick a service, read what it depends on and what depends on it, and step through those relationships hop by hop while the full system map stays visible"
+    secondary_tasks:
+      - "Assess blast radius: see direct and transitive dependents (influence) and dependencies for any service"
+      - Locate a service quickly via search
+      - Inspect a single relationship's meaning (type, criticality) and a service's role/team via a detail panel
+  archetype:
+    pattern_ref: PAT-WORKSPACE
+  density_intent: regular
+  regions:
+    - id: The whole web — every service and every dependency edge always visible (global-context anchor)
+      role: experimental:The whole web — every service and every dependency edge always visible (global-context anchor)
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: Current selection + follow trail — the highlighted chain through the web, with position-in-whole readable at all times
+      role: experimental:Current selection + follow trail — the highlighted chain through the web, with position-in-whole readable at all times
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: Contextual inspector — selected node or edge detail with one-click follow actions (depends-on / used-by)
+      role: experimental:Contextual inspector — selected node or edge detail with one-click follow actions (depends-on / used-by)
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: Blast-radius metrics (transitive dependency / dependent counts)
+      role: experimental:Blast-radius metrics (transitive dependency / dependent counts)
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: Edge-type filter (sync call vs data dependency)
+      role: experimental:Edge-type filter (sync call vs data dependency)
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: workspace
+      role: dominant_workspace
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - preserve_context
+  relationships: []
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved: []
+  rejected_alternatives:
+    - option: List-detail as primary structure
+      reason: "Knowledge contract: does_not_apply_when spatial relationships dominate; every follow step would navigate away from the web and lose global context (violates acceptance seed)"
+    - option: Force-directed layout
+      reason: Non-deterministic node positions break H-21 Orientation Invariants; anchors must stay put while the user walks the graph
+    - option: Drill-down navigation (click = enter node view)
+      reason: Drill-down removes the whole web from view — directly violates 关系跟随不丢失全局上下文

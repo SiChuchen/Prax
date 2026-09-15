@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>栖居决策台 · 云枢科技园租房四选一</title>
+<style>
+  :root{
+    --bg:#f5f6f8; --panel:#ffffff; --ink:#1c2330; --ink2:#5b6472; --line:#e3e6ec;
+    --accent:#4f46e5; --accent-soft:#eef0fe; --good:#0d9463; --good-soft:#e6f6ef;
+    --warn:#b45309; --best:#4f46e5;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font:13px/1.45 "Segoe UI","Microsoft YaHei",system-ui,sans-serif;background:var(--bg);color:var(--ink);
+       display:flex;flex-direction:column;overflow:hidden}
+
+  /* ---------- header ---------- */
+  header{flex:0 0 auto;display:flex;align-items:center;gap:14px;padding:10px 16px;background:var(--panel);
+         border-bottom:1px solid var(--line)}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.5px}
+  header .sub{color:var(--ink2);font-size:12px}
+  .presets{display:flex;gap:6px;margin-left:auto}
+  .preset{border:1px solid var(--line);background:#fff;border-radius:999px;padding:4px 12px;font-size:12px;
+          color:var(--ink2);cursor:pointer}
+  .preset:hover{border-color:var(--accent);color:var(--accent)}
+  .verdict{display:flex;align-items:center;gap:8px;background:var(--accent-soft);border:1px solid #d8dbfb;
+           border-radius:8px;padding:6px 12px;font-size:13px;font-weight:600;color:var(--accent)}
+  .verdict .score{font-size:17px}
+
+  /* ---------- layout ---------- */
+  main{flex:1;display:flex;min-height:0}
+  aside{flex:0 0 292px;background:var(--panel);border-right:1px solid var(--line);display:flex;
+        flex-direction:column;min-height:0}
+  aside .map-head{padding:10px 14px 4px;font-size:12px;font-weight:700;color:var(--ink2);letter-spacing:1px}
+  aside .map-wrap{flex:1;display:flex;align-items:center;justify-content:center;min-height:0}
+  svg.map{width:100%;height:100%}
+  .legend{flex:0 0 auto;padding:8px 14px 10px;border-top:1px solid var(--line);color:var(--ink2);font-size:11px;
+          display:flex;flex-wrap:wrap;gap:4px 12px}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+
+  section#compare{flex:1;overflow:auto;min-width:0}
+
+  /* ---------- comparison table ---------- */
+  table{border-collapse:separate;border-spacing:0;width:100%;table-layout:fixed}
+  th,td{border-bottom:1px solid var(--line);padding:0 10px;height:30px;text-align:left;overflow:hidden;
+        white-space:nowrap;text-overflow:ellipsis}
+  col.c0{width:236px}
+  thead th{position:sticky;top:0;z-index:3;background:var(--panel);height:auto;padding:10px 10px 8px;
+           border-bottom:2px solid var(--line);cursor:pointer}
+  thead th .cand-name{font-size:14px;font-weight:700}
+  thead th .cand-tag{display:block;color:var(--ink2);font-size:11px;font-weight:400;margin-top:1px}
+  .rank-badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;
+              border-radius:999px;font-size:11px;font-weight:700;margin-right:6px;background:#eef0f3;color:var(--ink2)}
+  th.r1 .rank-badge{background:var(--accent);color:#fff}
+  th.focus{outline:2px solid var(--accent);outline-offset:-2px}
+
+  tr.group td{background:#f0f1f5;color:var(--ink2);font-size:11px;font-weight:700;letter-spacing:1px;height:22px}
+  tbody tr[data-key] td{height:40px}
+  td.crit{color:var(--ink);font-weight:600}
+  .crow{display:flex;align-items:center;gap:8px}
+  .clabel{flex:1;min-width:0;line-height:1.25}
+  .clabel small{display:block;font-weight:400;color:var(--ink2);font-size:11px}
+  td .val{font-variant-numeric:tabular-nums}
+  td .val em{font-style:normal;color:var(--ink2);font-size:11px;margin-left:2px}
+  td.best .val{color:var(--best);font-weight:700}
+  td.best{position:relative}
+  td.best::before{content:"★";position:absolute;right:8px;top:50%;transform:translateY(-50%);
+                  font-size:10px;color:var(--best);opacity:.85}
+  td.col-focus{background:#fbfbff}
+  tr:hover td:not(.crit):not(.group){background:var(--accent-soft)}
+  tr:hover td.best{background:#e3e6fd}
+
+  .wcell{display:flex;align-items:center;gap:4px}
+  .wbtn{width:18px;height:18px;border:1px solid var(--line);border-radius:4px;background:#fff;cursor:pointer;
+        font-size:12px;line-height:1;color:var(--ink2)}
+  .wbtn:hover{border-color:var(--accent);color:var(--accent)}
+  .wnum{min-width:10px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+  .wdots{letter-spacing:1px;color:var(--accent);font-size:9px}
+
+  tfoot td{position:sticky;bottom:0;background:var(--panel);height:auto;padding:8px 10px;
+           border-top:2px solid var(--line);border-bottom:none}
+  tfoot .total{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+  tfoot .bar{height:5px;border-radius:3px;background:#edeff3;margin-top:4px;overflow:hidden}
+  tfoot .bar i{display:block;height:100%;border-radius:3px;background:var(--accent);transition:width .2s}
+  tfoot td.top .total{color:var(--accent)}
+  tfoot td.top .bar i{background:linear-gradient(90deg,#4f46e5,#8b5cf6)}
+  tfoot .vlabel{font-size:11px;color:var(--ink2)}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>栖居决策台</h1>
+    <div class="sub">云枢科技园租房四选一 · 调整权重，比较结果即时同屏更新</div>
+  </div>
+  <div class="presets" id="presets"></div>
+  <div class="verdict" id="verdict"></div>
+</header>
+
+<main>
+  <aside>
+    <div class="map-head">地理语境 · 步行圈示意</div>
+    <div class="map-wrap">
+      <svg class="map" id="map" viewBox="0 0 292 470" aria-label="候选位置示意图"></svg>
+    </div>
+    <div class="legend">
+      <span><i style="background:#334155"></i>公司</span>
+      <span><i style="background:#4f46e5"></i>候选 A–D</span>
+      <span><i style="border:1.5px dashed #94a3b8;background:none"></i>骑行 10/20/30 分钟圈</span>
+      <span>悬停行或点列头联动 · 点击候选可聚焦</span>
+    </div>
+  </aside>
+  <section id="compare"><table id="tbl"></table></section>
+</main>
+
+<script>
+"use strict";
+
+/* ---------------- data (inlined, first-screen ready) ---------------- */
+const CANDS = [
+  {id:"A", name:"桂语兰庭·东苑", tag:"3号线沿线 · 2019年小区", map:{x:78,  y:150},
+   rent:4600, deposit:9200, area:58, metro:22, bike:18, lines:2, noise:2, light:4, floorPct:54, mkt:350, gym:1, food:3},
+  {id:"B", name:"澜庭集公寓",     tag:"单面朝南 · 精装公寓",   map:{x:228, y:392},
+   rent:3900, deposit:7800, area:45, metro:35, bike:28, lines:1, noise:3, light:3, floorPct:33, mkt:900, gym:0, food:4},
+  {id:"C", name:"云栖湾公寓",     tag:"园区旁 · 高区景观",     map:{x:196, y:96},
+   rent:5800, deposit:5800, area:72, metro:12, bike:8,  lines:3, noise:2, light:5, floorPct:69, mkt:200, gym:1, food:5},
+  {id:"D", name:"春和景明里",     tag:"临街 · 老小区低楼层",   map:{x:112, y:300},
+   rent:4200, deposit:8400, area:52, metro:28, bike:15, lines:2, noise:4, light:2, floorPct:17, mkt:150, gym:0, food:4},
+];
+
+const CRITERIA = [
+  {g:"成本"},
+  {k:"rent",    label:"月租金",   unit:"¥/月", lower:true,  w:4},
+  {k:"deposit", label:"押金",     unit:"¥",   lower:true,  w:2},
+  {k:"area",    label:"建筑面积", unit:"m²",  lower:false, w:3},
+  {g:"通勤"},
+  {k:"metro",   label:"地铁通勤", unit:"min", lower:true,  w:5},
+  {k:"bike",    label:"骑行通勤", unit:"min", lower:true,  w:3},
+  {k:"lines",   label:"可乘线路", unit:"条",  lower:false, w:2},
+  {g:"居住品质"},
+  {k:"noise",   label:"噪音水平", unit:"1低–5高", lower:true,  w:3},
+  {k:"light",   label:"采光评价", unit:"1–5",  lower:false, w:3},
+  {k:"floorPct",label:"楼层百分位",unit:"%",   lower:false, w:1},
+  {g:"周边配套"},
+  {k:"mkt",     label:"最近超市", unit:"m",    lower:true,  w:2},
+  {k:"gym",     label:"健身房",   unit:"有/无", lower:false, w:1},
+  {k:"food",    label:"餐饮丰富度",unit:"1–5", lower:false, w:2},
+];
+
+const PRESETS = {
+  "均衡参考":  null, /* null = reset to default weights */
+  "省钱优先":  {rent:5,deposit:4,area:2,metro:2,bike:2,lines:1,noise:2,light:2,floorPct:1,mkt:3,gym:0,food:2},
+  "通勤优先":  {rent:2,deposit:1,area:2,metro:5,bike:4,lines:3,noise:2,light:2,floorPct:1,mkt:2,gym:1,food:2},
+  "品质优先":  {rent:2,deposit:1,area:4,metro:2,bike:2,lines:2,noise:4,light:5,floorPct:3,mkt:2,gym:3,food:4},
+};
+
+/* ---------------- state ---------------- */
+const weights = Object.fromEntries(CRITERIA.filter(c=>c.k).map(c=>[c.k,c.w]));
+let focusId = null;
+
+/* ---------------- scoring ---------------- */
+function norm(c, k, v){
+  const vals = CANDS.map(x=>x[k]);
+  const lo = Math.min(...vals), hi = Math.max(...vals);
+  if (hi === lo) return 1;
+  const t = (v - lo) / (hi - lo);
+  return c.lower ? 1 - t : t;
+}
+function scores(){
+  const out = {};
+  let wsum = 0;
+  for (const cand of CANDS){
+    let s = 0; wsum = 0;
+    for (const c of CRITERIA){
+      if (!c.k) continue;
+      wsum += weights[c.k];
+      s += weights[c.k] * norm(c, c.k, cand[c.k]);
+    }
+    out[cand.id] = wsum ? Math.round(100 * s / wsum) : 0;
+  }
+  return out;
+}
+function bestByRow(){
+  const best = {};
+  for (const c of CRITERIA){
+    if (!c.k) continue;
+    let bi = 0;
+    CANDS.forEach((cand,i)=>{ if (norm(c,c.k,cand[c.k]) > norm(c,c.k,CANDS[bi][c.k])) bi = i; });
+    best[c.k] = CANDS[bi].id;
+  }
+  return best;
+}
+
+/* ---------------- render: map ---------------- */
+const SVGNS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, text){
+  const n = document.createElementNS(SVGNS, tag);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  if (text != null) n.textContent = text;
+  return n;
+}
+function buildMap(){
+  const svg = document.getElementById("map");
+  const OFF = {x:146, y:225};           /* 公司（云枢科技园） */
+  const rings = [[10,60],[20,108],[30,156]];
+  for (const [min,r] of rings)
+    svg.appendChild(el("circle",{cx:OFF.x,cy:OFF.y,r,fill:"none","stroke":"#cbd5e1",
+                                 "stroke-dasharray":"4 4","stroke-width":1.2}));
+  /* ring labels */
+  [[10,60],[20,108],[30,156]].forEach(([min,r])=>
+    svg.appendChild(el("text",{x:OFF.x+4,y:OFF.y-r+11,"font-size":9,fill:"#94a3b8"}, min+"min")));
+
+  /* metro line 3 (stylized polyline) */
+  svg.appendChild(el("path",{d:"M 20 190 L 78 150 L 196 96 L 258 250 L 240 420", fill:"none",
+                             stroke:"#f59e0b","stroke-width":3,opacity:.55,"stroke-linejoin":"round"}));
+  svg.appendChild(el("text",{x:30,y:34,"font-size":10,fill:"#b45309","font-weight":700}," Metro 3号线"));
+
+  /* commute links office -> candidate */
+  for (const c of CANDS){
+    svg.appendChild(el("line",{x1:OFF.x,y1:OFF.y,x2:c.map.x,y2:c.map.y,stroke:"#94a3b8",
+                               "stroke-width":1,"stroke-dasharray":"2 3", class:"link-"+c.id}));
+  }
+  /* office marker */
+  const g = el("g",{class:"office"});
+  g.appendChild(el("rect",{x:OFF.x-34,y:OFF.y-13,width:68,height:26,rx:6,fill:"#334155"}));
+  g.appendChild(el("text",{x:OFF.x,y:OFF.y+4,"text-anchor":"middle",fill:"#fff","font-size":11,
+                           "font-weight":700},"云枢科技园"));
+  svg.appendChild(g);
+  /* candidate markers */
+  for (const c of CANDS){
+    const g = el("g",{class:"node","data-id":c.id,cursor:"pointer"});
+    g.appendChild(el("circle",{cx:c.map.x,cy:c.map.y,r:16,fill:"#4f46e5",opacity:.16,class:"halo"}));
+    g.appendChild(el("circle",{cx:c.map.x,cy:c.map.y,r:11,fill:"#4f46e5",stroke:"#fff","stroke-width":2}));
+    g.appendChild(el("text",{x:c.map.x,y:c.map.y+3.5,"text-anchor":"middle",fill:"#fff","font-size":10,
+                             "font-weight":700}, c.id));
+    g.appendChild(el("text",{x:c.map.x+ (c.map.x>146? -18: 18), y:c.map.y+3,
+                             "text-anchor": c.map.x>146? "end":"start","font-size":10,fill:"#475569",
+                             "font-weight":600}, c.name.split("·")[0].split("公寓")[0]));
+    g.appendChild(el("text",{x:c.map.x+(c.map.x>146? -18: 18), y:c.map.y+15,
+                             "text-anchor": c.map.x>146? "end":"start","font-size":9,fill:"#64748b"},
+                             "地铁 "+c.metro+"min"));
+    svg.appendChild(g);
+  }
+}
+
+/* ---------------- render: table ---------------- */
+function fmtVal(c, cand){
+  const v = cand[c.k];
+  if (c.k === "gym") return v ? "有" : "无";
+  return `<span class="val">${v}<em>${c.unit}</em></span>`;
+}
+function buildTable(){
+  const t = document.getElementById("tbl");
+  let h = `<colgroup><col class="c0">${CANDS.map(()=>`<col>`).join("")}</colgroup>`;
+  h += `<thead><tr><th class="crit">对比维度 <small>权重 ↓ 可调</small></th>${
+    CANDS.map(c=>`<th data-id="${c.id}"><span class="rank-badge">–</span><span class="cand-name">${c.name}</span><span class="cand-tag">${c.tag}</span></th>`).join("")
+  }</tr></thead><tbody>`;
+  for (const c of CRITERIA){
+    if (!c.k){ h += `<tr class="group"><td>${c.g}</td>${CANDS.map(()=>`<td></td>`).join("")}</tr>`; continue; }
+    h += `<tr data-key="${c.k}"><td class="crit"><div class="crow"><div class="clabel"><span>${c.label}</span><small>${c.lower?"低更优":"高更优"}</small></div></div></td>${
+      CANDS.map(cand=>`<td data-id="${cand.id}" data-key="${c.k}">${fmtVal(c,cand)}</td>`).join("")
+    }</tr>`;
+    /* weight stepper is appended into .crow after innerHTML */
+  }
+  h += `</tbody><tfoot><tr><td class="crit">加权综合得分<small>0–100 · 同屏驻留</small></td>${
+    CANDS.map(c=>`<td data-id="${c.id}"><span class="total">–</span><div class="bar"><i></i></div><span class="vlabel"></span></td>`).join("")
+  }</tr></tfoot>`;
+  t.innerHTML = h;
+
+  /* insert weight steppers into criterion cells */
+  for (const c of CRITERIA){
+    if (!c.k) continue;
+    const td = t.querySelector(`tbody tr[data-key="${c.k}"] td.crit`);
+    const div = document.createElement("div");
+    div.className = "wcell";
+    div.innerHTML = `<button class="wbtn" data-k="${c.k}" data-d="-1">−</button>
+                     <span class="wnum" data-k="${c.k}">${weights[c.k]}</span>
+                     <button class="wbtn" data-k="${c.k}" data-d="1">＋</button>
+                     <span class="wdots" data-k="${c.k}">${"●".repeat(weights[c.k])}</span>`;
+    td.querySelector(".crow").appendChild(div);
+  }
+}
+
+/* ---------------- update ---------------- */
+function update(){
+  const sc = scores(), best = bestByRow();
+  const ranked = [...CANDS].sort((a,b)=>sc[b.id]-sc[a.id]);
+  const top = ranked[0];
+
+  /* verdict pill */
+  document.getElementById("verdict").innerHTML =
+    `综合最优 <span class="score">${top.id}</span> ${top.name} · <span class="score">${sc[top.id]}</span> 分`;
+
+  /* header ranks */
+  document.querySelectorAll("thead th[data-id]").forEach(th=>{
+    const id = th.dataset.id;
+    const r = ranked.findIndex(c=>c.id===id)+1;
+    th.querySelector(".rank-badge").textContent = r===1?"①":r===2?"②":r===3?"③":"④";
+    th.classList.toggle("r1", r===1);
+    th.classList.toggle("focus", focusId===id);
+  });
+
+  /* per-cell best highlight + focus dim */
+  document.querySelectorAll("tbody td[data-key]").forEach(td=>{
+    td.classList.toggle("best", best[td.dataset.key]===td.dataset.id);
+    td.classList.toggle("col-focus", focusId===td.dataset.id);
+  });
+
+  /* footer totals */
+  const maxS = Math.max(...CANDS.map(c=>sc[c.id]));
+  document.querySelectorAll("tfoot td[data-id]").forEach(td=>{
+    const id = td.dataset.id, s = sc[id];
+    td.classList.toggle("top", s===maxS);
+    td.classList.toggle("col-focus", focusId===id);
+    td.querySelector(".total").textContent = s;
+    td.querySelector(".bar i").style.width = s+"%";
+    const cand = CANDS.find(c=>c.id===id);
+    const r = ranked.findIndex(c=>c.id===id)+1;
+    td.querySelector(".vlabel").textContent = r===1 ? "第1名 · 当前推荐" : `第${r}名 · 差 ${maxS-s} 分`;
+  });
+
+  /* weight number + dots */
+  document.querySelectorAll(".wnum").forEach(n=> n.textContent = weights[n.dataset.k]);
+  document.querySelectorAll(".wdots").forEach(n=> n.textContent = "●".repeat(weights[n.dataset.k])||"○");
+
+  /* map sync */
+  document.querySelectorAll("#map .node").forEach(n=>{
+    const hot = focusId===null || focusId===n.dataset.id;
+    n.style.opacity = hot ? 1 : .35;
+  });
+  document.querySelectorAll("#map [class^='link-']").forEach(l=>{
+    const on = focusId !== null && l.classList.contains("link-"+focusId);
+    l.style.stroke = on ? "#4f46e5" : "#94a3b8";
+    l.setAttribute("stroke-width", on ? 2 : 1);
+  });
+}
+
+/* ---------------- interactions ---------------- */
+function wire(){
+  document.getElementById("tbl").addEventListener("click", e=>{
+    const btn = e.target.closest(".wbtn");
+    if (btn){
+      const k = btn.dataset.k;
+      weights[k] = Math.max(0, Math.min(5, weights[k] + Number(btn.dataset.d)));
+      update(); return;
+    }
+    const th = e.target.closest("thead th[data-id]");
+    if (th){
+      focusId = focusId === th.dataset.id ? null : th.dataset.id;
+      update();
+    }
+  });
+
+  /* row hover -> highlight its map node via temporary class */
+  const svg = document.getElementById("map");
+  document.getElementById("tbl").addEventListener("mouseover", e=>{
+    const tr = e.target.closest("tbody tr[data-key]");
+    if (!tr) return;
+    const k = tr.dataset.key, bid = bestByRow()[k];
+    svg.querySelectorAll(".node").forEach(n=> n.style.opacity = (focusId===null||focusId===n.dataset.id) ? 1 : .35);
+    const hot = svg.querySelector(`.node[data-id="${bid}"]`);
+    if (hot) hot.style.opacity = 1;
+  });
+  document.getElementById("tbl").addEventListener("mouseleave", update);
+
+  svg.addEventListener("click", e=>{
+    const n = e.target.closest(".node");
+    if (n){ focusId = focusId === n.dataset.id ? null : n.dataset.id; update(); }
+  });
+
+  /* presets */
+  const wrap = document.getElementById("presets");
+  for (const name of Object.keys(PRESETS)){
+    const b = document.createElement("button");
+    b.className = "preset"; b.textContent = name;
+    b.addEventListener("click", ()=>{
+      const p = PRESETS[name];
+      if (p) Object.assign(weights, p);
+      else CRITERIA.filter(c=>c.k).forEach(c=> weights[c.k]=c.w);
+      update();
+    });
+    wrap.appendChild(b);
+  }
+}
+
+/* ---------------- boot: fully usable at load ---------------- */
+buildMap();
+buildTable();
+wire();
+update();
+</script>
+</body>
+</html>

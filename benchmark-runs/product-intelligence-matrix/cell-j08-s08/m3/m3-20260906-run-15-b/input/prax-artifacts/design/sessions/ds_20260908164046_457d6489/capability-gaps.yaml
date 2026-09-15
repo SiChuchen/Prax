@@ -1,0 +1,64 @@
+needs:
+  - id: N-1
+    product_action: 编辑节字段（标题/正文/状态）时，大纲与预览即时同步更新
+    required_experience:
+      - 击键级同步，无手动刷新按钮
+      - 三栏内容始终一致
+    capabilities:
+      - 单一状态源（document 模型）+ 派生渲染函数
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端：输入事件 → 更新模型 → 重派生大纲/预览渲染。无框架依赖，原生 JS 即可。
+  - id: N-2
+    product_action: 结构操作：增子节/增同级节/删除/上移/下移/升级/降级，编辑不破坏结构
+    required_experience:
+      - 非法操作禁用并说明原因
+      - 删除含子节的节时子节不被孤儿化（上移或随树删除，二选一对话框）
+    capabilities:
+      - 节树模型 + 操作白名单 + 操作前约束校验
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端：树的不可变变换 + 白名单操作函数；越界/跳级操作在 UI 层禁用（disabled + title 原因）。
+  - id: N-3
+    product_action: 撤销/重做全部编辑与结构操作
+    required_experience:
+      - Ctrl+Z / Ctrl+Y
+      - 按钮随栈状态启用/禁用
+    capabilities:
+      - 快照栈（undo/redo 双栈）+ 键盘快捷键
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端：每次提交型操作前压入深拷贝快照；输入类操作以防抖提交。
+  - id: N-4
+    product_action: 结构检查：实时校验结论 + 点击定位对应节
+    required_experience:
+      - 工具带徽标计数
+      - 点击检查项选中并滚动定位
+    capabilities:
+      - 结构校验器（空节/重复标题/层级连续）+ 校验项→节点锚点
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端：模型派生校验结果列表；锚点用节 id。
+  - id: N-5
+    product_action: 首屏即就绪：初始文档随 HTML 内联，无加载态
+    required_experience:
+      - 页面加载完成即处于 ready 态
+    capabilities:
+      - 初始文档常量内联于 index.html
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 无构建、无网络请求：数据以 JS 常量随首屏脚本载入。
+  - id: N-6
+    product_action: 编辑内容的持久保存（跨刷新）
+    required_experience:
+      - （简报明确不要求持久化服务）
+    capabilities: []
+    status: gap
+    resolution:
+      type: explicit_compromise
+      notes: 明确妥协：会话内可撤销，刷新后重置为初始文档。简报交付约束明确『不要求持久化服务』，验收不受影响。

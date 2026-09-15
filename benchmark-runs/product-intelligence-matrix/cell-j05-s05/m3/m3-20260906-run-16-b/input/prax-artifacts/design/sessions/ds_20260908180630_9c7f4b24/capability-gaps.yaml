@@ -1,0 +1,88 @@
+needs:
+  - id: follow_chain
+    product_action: Follow dependency/influence chains multi-hop from any node (acceptance seed)
+    required_experience:
+      - one-click traversal of depends-on / used-by from the inspector
+      - whole web stays visible with trail marked at every hop
+      - trail ordering and direction legible
+    capabilities:
+      - inlined dataset (services+edges) available at parse time
+      - adjacency-list traversal
+      - SVG whole-web rendering with dim-to-focus
+      - trail state in app store
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: "Pure client-side: dataset inlined in the page, adjacency computed in memory, SVG rendering; no backend calls at runtime"
+  - id: locate_service
+    product_action: Locate a service among many via search and select it on the map
+    required_experience:
+      - type-ahead match list
+      - selecting a match selects the node without navigation
+    capabilities:
+      - case-insensitive substring match over node names
+      - map select integration
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: In-memory string match over the inlined node list; no search service
+  - id: blast_radius
+    product_action: "Assess blast radius: direct and transitive dependencies/dependents of a node"
+    required_experience:
+      - per-node counts
+      - transitive sets highlightable on the map
+    capabilities:
+      - transitive closure over dependency graph
+      - counts rendered in inspector
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: BFS closure over adjacency lists, recomputed on demand
+  - id: edge_inspect
+    product_action: "Inspect a single relationship: type, criticality, endpoints"
+    required_experience:
+      - clickable edges
+      - edge detail in inspector with endpoint follow actions
+    capabilities:
+      - edge hit-areas
+      - edge detail rendering
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Edges rendered with wide transparent hit areas; detail derived from inlined data
+  - id: instant_ready
+    product_action: First screen usable at page load with initial data, no loading state as measurable state
+    required_experience:
+      - no spinner/skeleton at first paint
+      - graph visible and interactive immediately
+    capabilities:
+      - synchronous inline render on DOMContentLoaded
+      - no fetch at startup
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Dataset inlined as JS in index.html; render is synchronous on script execution; loading state is defined but unreachable by design
+  - id: static_delivery
+    product_action: Deliverable opens statically (root index.html), runs locally, no external services, no deployment
+    required_experience:
+      - file:// or local static server both work
+      - no CDN/API calls
+    capabilities:
+      - static file delivery
+      - zero runtime network dependencies
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Vanilla HTML/CSS/JS, no build step, no external assets; all fonts/styles/scripts local
+  - id: keyboard_clear
+    product_action: Esc / Clear returns to the whole web (clears selection + trail)
+    required_experience:
+      - keyboard equivalent for reset
+      - visible reset affordance
+    capabilities:
+      - keyboard handler on document
+      - visible Clear control
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: document keydown listener + topbar reset button

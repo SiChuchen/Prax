@@ -1,0 +1,54 @@
+version: "0.1"
+session_id: ds_20260908172137_ed244d4a
+task:
+  surfaces: []
+  primary: "Follow a chain: pick a service, read what it depends on and what depends on it, and step through those relationships hop by hop while the full system map stays visible"
+product_relationships:
+  - id: rel_dependency_edge_service_node
+    source: dependency_edge
+    target: service_node
+    type: connects
+    direction: forward
+    meaning: Each dependency edge links exactly two service nodes (from → to)
+    importance: primary
+  - id: rel_follow_trail_dependency_edge
+    source: follow_trail
+    target: dependency_edge
+    type: walks
+    direction: forward
+    meaning: The trail is an ordered sequence of relationship hops; each step extends the trail
+    importance: primary
+  - id: rel_system_map_service_node
+    source: system_map
+    target: service_node
+    type: contains
+    direction: forward
+    meaning: The map always contains every service and edge; focus only dims, never removes
+    importance: primary
+region_relationships: []
+decisions:
+  primary_structure: PAT-WORKSPACE
+  density_intent: regular
+  major_choice_ids:
+    - layout
+    - focus_model
+    - traversal
+    - dataset
+must_preserve: []
+regression_points: []
+unresolved: []
+corrections: []
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - requirement_alignment
+  regression_check_ids: []

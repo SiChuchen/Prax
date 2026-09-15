@@ -1,0 +1,80 @@
+{
+  "reviewer": "R2",
+  "package_id": "impl-20",
+  "session_id": "6f4f25b5-1c75-47bc-8fcb-29eef247e2dd",
+  "wall_clock_seconds": 131,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-20",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Primary representation is a vertical change-set timeline (change_set object, temporal-sequence shape): strict ts-ascending render order (source/app.js:25-27), day separators and '上早 ↓ 下晚' axis label (source/app.js:174, source/index.html:44), causal badges restricted to '因（更早）/果（更晚）' (source/app.js:151-162), plus a state-replay snapshot table keyed to the selected moment (source/app.js:287-324). Matches the brief's high-time/many/medium-hierarchy shape bundle; both screenshots show timeline-dominant layout with cs-01..cs-05 visible in time order."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "Timeline occupies the dominant pane (grid 11fr/9fr, source/styles.css:157) and is the first surface in both 1280x860 and 1440x900 screenshots; causal structure (the brief's success criterion '变更因果可读') is visible on the initial screen without interaction — 因/果 chips on cs-01..cs-05 and a '因何发生' cause card for cs-08 in the right pane; title 'Orbit CDN · 变更时间线' (source/index.html:16) names the task."
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "Model-judged proxy: header meta states scope in one line ('发布列车 R2026-35 · 变更窗口 · 8 个变更集 · 18 条变更 · 7 条因果链接 · 08-31 → 09-04', source/app.js:366-371, visible in both screenshots); legend decodes +/~/−/→ and ↩因/↪果 (source/index.html:20-28); pane labels ('时间线 上早↓下晚', '状态快照 回放至选中时刻') make each region's job readable at a glance."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Single screen, no modes: any change set is 1 click on its timeline node (source/app.js:406-414); causal neighbors are 1 click via 因/果 badges or inspector cards with scroll-center+flash (source/app.js:383-404, 416-419); ArrowUp/ArrowDown steps through the sequence (source/app.js:443-452); state panel and inspector update on selection with no extra step. Primary object reachable in ≤1 interaction from initial state (latest set pre-selected, source/app.js:69)."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "Selection/jumps re-render only inspector + state panel while the timeline stays persistent and scrolls the target into view (source/app.js:383-402); filters never remove nodes — non-matching changes are dimmed/muted with structure preserved ('已置灰保留结构', source/app.js:176-194) and a role=status empty-state note explains (source/app.js:199-204); Esc clears filters (source/app.js:445); no routing/modals, so context is preserved across all primary actions."
+      },
+      "ui_surface_complexity": {
+        "score": 4,
+        "evidence": "Every control has a use (5 type chips, element select, hidden-until-active clear button source/app.js:348-349, legend, three panes), and density suits the 'many' cardinality; scored 4 not 5 because the surface is dense: causal navigation has two permanent parallel affordances (node badges + inspector cards) and the header legend duplicates badge semantics (source/index.html:20-28, source/app.js:151-162, 246-254)."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Receipt checks a11y.contrast=fail, a11y.focus_order=fail, a11y.target_size=fail, type.min_projected_size=fail (measurement-summary.json checks). Consistent with source: 11-12px faint text on dark bg (--text-faint #5f6b7e used for day separators, authors, section labels, table headers, source/styles.css:13,167,250,330-334,375,408-414); chips/badges ~20-26px tall (padding 3px 12px / 2px 7px, source/styles.css:107-116,254-268); timeline articles carry tabindex=\"-1\" so nodes are outside Tab order with no roving focus (source/app.js:184) — arrow keys are the only keyboard path. Some intent exists: :focus-visible outline (source/styles.css:459-463), aria-pressed/aria-label/role=status (source/app.js:340, source/index.html:32-51), prefers-reduced-motion (source/styles.css:232)."
+      },
+      "frontend_rework": {
+        "score": 4,
+        "evidence": "layout.overflow=pass, layout.responsive_collision=pass, text.truncation=pass, target_invalid=false (measurement-summary.json); both 1280x860 and 1440x900 screenshots show clean two-pane layout with no clipping, collision, or truncation. Deducting for the 4 failed checks (contrast, focus order, target size, type size) which imply remediation rework; no visible layout defects and no error-state failures."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed '时间结构与变更语义一致' is directly implemented and enforced: startup validates changeSets are strictly ts-increasing (source/app.js:31-36) and every causalLink has cause.ts < effect.ts (source/app.js:39-50), surfacing violations in an error banner (source/app.js:458-462); state replay applies changes in the same ascending order as the axis via one shared sort (source/app.js:6-7,107-125), and the as-of line reports applied count ('已按时间序应用 18 条变更 · 元素 9 个', source/app.js:317-318, visible in both screenshots). Dataset satisfies the invariants (source/data.js:12-128 timestamps strictly increasing; links cl-1..cl-7 all point earlier→later, source/data.js:130-145)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "a11y.contrast=fail (measurement-summary.json) — consistent with 11-12px #5f6b7e faint text on #10141b background across day separators, author bylines, section labels and table headers (source/styles.css:13,167,250,330-334,375,408-414)",
+      "a11y.focus_order=fail — timeline change-set articles are tabindex=\"-1\" (source/app.js:184) and thus unreachable via Tab; keyboard access relies solely on document-level arrow-key handler (source/app.js:443-452)",
+      "a11y.target_size=fail — filter chips and causal badges are ~20-26px tall (source/styles.css:107-116,254-268)",
+      "type.min_projected_size=fail — base font 13px with many 11px/11.5px/12px secondary texts (source/styles.css:34,167,291,332,375,392,414)",
+      "1 warning in measurement summary (measurement-summary.json summary.warnings) with no detail available in the sanitized file"
+    ],
+    "missing_evidence": [],
+    "overall_note": "impl-20 is a single-screen change-set timeline that fits the brief's understand × temporal-sequence cell almost exactly: the timeline is the dominant initial surface in both 1280x860 and 1440x900 screenshots, causal direction is encoded as 因（更早）/果（更晚） badges and jump cards, and a state-replay table shows evolved state as of the selected change set. The acceptance seed (time structure consistent with change semantics) is not just depicted but validated at startup — strict ts ordering and cause<effect checks feed an error banner (source/app.js:31-53,458-462) — and replay shares the timeline's sort (source/app.js:107-125). Navigation is one-click to any change set or causal neighbor with filters preserving structure via dimming rather than removal, so context loss is minimal. The clear weakness is accessibility: all three a11y receipt checks plus projected type size fail (measurement-summary.json), matching small low-contrast text, sub-24px targets, and timeline nodes excluded from Tab order; layout, responsive-collision, and truncation checks all pass and no visual defects are visible at either viewport. Model-judged proxies only; task time, retrieval accuracy, and human preference are not observable in this blind review."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 64043,
+      "outputTokens": 6164,
+      "cacheReadInputTokens": 115840,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.532235,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-09-08T22:11:10.246Z"
+}

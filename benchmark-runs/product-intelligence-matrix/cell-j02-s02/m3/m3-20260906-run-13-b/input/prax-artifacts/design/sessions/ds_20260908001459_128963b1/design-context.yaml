@@ -1,0 +1,71 @@
+user:
+  expertise: intermediate
+  familiarity: medium
+task:
+  primary: Locate a target dataset item within a large unbounded collection using search + facets, then inspect it in place
+  modes:
+    - search
+    - filter
+    - select
+    - inspect
+  frequency: high
+domain:
+  type: open data catalog
+  entities:
+    - dataset item
+    - domain
+    - subcategory
+    - tag
+    - license
+    - format
+    - search query
+    - filter chip
+information:
+  volume: high
+  relationship_complexity: low
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: none
+  error_cost: low
+priorities:
+  - Locate within ≤3 interactions
+  - "Context preservation: detail never discards list/filters"
+  - Instant search-as-you-type over the full collection
+  - Facet filtering with live counts and removable chips
+  - Compact, scannable result list
+  - Keyboard operability of the locate path
+density_intent: compact
+confidence:
+  overall: high
+unknowns:
+  - id: uk-collection-growth
+    impact: low
+    affects:
+      - dataset freshness display
+      - sort options
+classification:
+  version: "1"
+  task_type: compare_filter_records
+  domain_id: data_exploration
+  interaction_mode: collection_with_contextual_detail
+  product_type: unknown
+  primary_object_type: item
+  secondary_object_types:
+    - category
+    - locate-lever
+  confidence: high
+  evidence:
+    - task_type=compare_filter_records ← token 'filter' in context.task and frame.tasks
+    - domain_id=data_exploration ← token 'data' in context.domain
+    - interaction_mode=collection_with_contextual_detail ← token 'filter' in context.task, frame.tasks, and context.priorities
+    - primary_object_type=item ← most referenced product object in the Product Frame
+  open_questions:
+    - product_type could not be derived; record the intended audience and product kind

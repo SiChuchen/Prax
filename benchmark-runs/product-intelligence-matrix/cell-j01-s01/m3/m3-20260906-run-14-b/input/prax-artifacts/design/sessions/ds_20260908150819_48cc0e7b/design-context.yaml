@@ -1,0 +1,73 @@
+user:
+  expertise: intermediate
+  familiarity: high
+task:
+  primary: 在层级实体目录中划定范围、显式多选并批量变更实体状态/归属，零误伤完成
+  modes:
+    - 浏览筛选
+    - 显式多选
+    - 批量执行
+    - 核对与撤销
+  frequency: high
+domain:
+  type: 结构化实体目录管理（层级归属的组织/资产/清单类领域，中性业务语义）
+  entities:
+    - 域
+    - 类别
+    - 实体
+    - 选择集
+    - 批量操作
+    - 操作记录
+information:
+  volume: high
+  relationship_complexity: medium
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: high
+  error_cost: high
+priorities:
+  - 零误伤：实际生效集合与确认集合逐 id 一致
+  - 状态归属显式：实体状态、节点聚合、操作预览全程可见
+  - 高密度：单屏容纳树+表格+操作条
+  - 可回退：批量操作一步撤销
+density_intent: compact
+confidence:
+  overall: high
+unknowns:
+  - id: oq-domain-flavor
+    impact: low
+    affects:
+      - data_seed
+  - id: oq-undo-depth
+    impact: low
+    affects:
+      - interaction
+classification:
+  version: "1"
+  task_type: compare_filter_records
+  domain_id: data_exploration
+  interaction_mode: collection_with_contextual_detail
+  product_type: unknown
+  primary_object_type: entity
+  secondary_object_types:
+    - category
+    - batch_op
+    - domain
+    - selection
+    - op_record
+  confidence: high
+  evidence:
+    - task_type=compare_filter_records ← token '筛选' in context.task and frame.tasks
+    - domain_id=data_exploration ← token '记录' in context.domain
+    - interaction_mode=collection_with_contextual_detail ← token '筛选' in context.task, frame.tasks, and context.priorities
+    - primary_object_type=entity ← most referenced product object in the Product Frame
+  open_questions:
+    - product_type could not be derived; record the intended audience and product kind

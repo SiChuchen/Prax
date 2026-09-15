@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>棱镜 Prism · 多维数据探索台</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header id="topbar">
+  <div class="brand">
+    <span class="logo">◈</span>
+    <div>
+      <h1>棱镜 <em>Prism · 多维数据探索台</em></h1>
+      <p id="data-meta">…</p>
+    </div>
+  </div>
+  <div id="ledger" title="状态账本：每个筛选/投影片都标注归属维度与实时命中数，均可移除"></div>
+  <div class="top-actions">
+    <button id="btn-undo" title="撤销一步 (Ctrl+Z)">↩ 撤销</button>
+    <button id="btn-redo" title="重做 (Ctrl+Y)">↪ 重做</button>
+    <button id="btn-reset" class="danger" title="清除全部筛选，投影复位（选中锚点保留）">重置全部</button>
+    <button id="btn-reseed" title="重采样数据：状态结构保留，筛选命中重新校验">重采样 ⟳</button>
+  </div>
+</header>
+
+<main id="layout">
+
+  <aside id="rail">
+    <div class="rail-h">维度目录 <span class="hint" id="dim-count"></span></div>
+    <div id="dims"></div>
+    <div class="rail-h">操作历史 <span class="hint">点击任意步骤回退</span></div>
+    <ol id="history"></ol>
+  </aside>
+
+  <section id="stage">
+    <div id="chart-head">
+      <h2 id="proj-title"></h2>
+      <div id="anchor-line"></div>
+    </div>
+    <div id="chart-wrap"></div>
+    <div id="chart-foot">
+      <span id="legend"></span>
+      <span id="proj-note"></span>
+    </div>
+  </section>
+
+  <aside id="side">
+    <div class="rail-h">记录清单 <span id="kept-count"></span></div>
+    <div class="side-tools">
+      <input id="search" placeholder="搜索名称…（归属为「名称搜索」筛选片）">
+      <select id="sort" title="排序（纳入可回退状态）">
+        <option value="population">人口 ↓</option>
+        <option value="gdp_pc">人均GDP ↓</option>
+        <option value="happy">幸福 ↓</option>
+        <option value="aqi">AQI ↑</option>
+        <option value="name">名称</option>
+      </select>
+    </div>
+    <div id="list"></div>
+    <div id="detail"></div>
+  </aside>
+
+</main>
+
+<div id="toast"></div>
+<div id="tip"></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

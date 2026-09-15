@@ -1,0 +1,36 @@
+version: "0.1"
+corrections:
+  - id: corr-sdir-02-persist-gap
+    scope:
+      project: cell-j01-s01-b
+      surfaces:
+        - screen-entity-console
+    finding:
+      type: tooling-gap
+      observed: validate 门期间：design_sdir mode=validate 对完整 0.2 SDIR（含
+        representation/state_ownership/acceptance/complexity_budget）lint PASS
+        但不落盘 session 工件；design_sdir mode=generate_from_decisions
+        被拒（GATE_NOT_SATISFIED）；design_validate mode=evaluate 因此持续读取 generate
+        阶段遗留的 0.1 合成 screen.sdir.yaml，误报
+        representation_decided/state_ownership_declared/acceptance_contract_present
+        三项确定性失败。
+    intended:
+      statement: session screen.sdir.yaml 应为经 design_sdir mode=validate PASS 的同一份 0.2
+        SDIR（representation.primary=table 附 reason；state_ownership 覆盖
+        selection/mode/query/viewport；acceptance ≥1 条；complexity_budget 块齐全）。已将该
+        PASS 内容落盘为会话工件；后续 validate 门期间 design_sdir 的 validate 模式应直接持久化 PASS
+        结果，避免 evaluate 与 lint 读到不同版本的工件。
+    evidence_refs:
+      - .prax/design/sessions/ds_20260908150819_48cc0e7b/screen.sdir.yaml
+      - design_sdir mode=validate 返回 PASS（本会话 2026-09-09 00:0x
+        前后，schema_errors/semantic_errors 均空）
+      - design_sdir mode=generate_from_decisions 返回 GATE_NOT_SATISFIED "not
+        legal while session is at the 'validate' gate"
+    regression:
+      check_id: semantic_conformance
+      requirement: SDIR is valid, semantic, and aligned to the approved
+        pattern（evaluate 的确定性校验与 lint 校验必须读取同一份已持久化的 0.2 SDIR 工件）
+    supersedes: []
+    promotion:
+      candidate: true
+    created_at: 2026-09-08T16:00:28.160Z

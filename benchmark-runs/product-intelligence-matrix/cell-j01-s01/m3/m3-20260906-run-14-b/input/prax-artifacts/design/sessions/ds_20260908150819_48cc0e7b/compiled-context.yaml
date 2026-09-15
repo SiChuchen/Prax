@@ -1,0 +1,78 @@
+version: "0.1"
+session_id: ds_20260908150819_48cc0e7b
+task:
+  surfaces: []
+  primary: 在层级树中划定范围，显式多选实体集合并执行批量操作（改状态/移动/删除/打标签），经逐项预览确认后提交
+product_relationships:
+  - id: rel_entity_category
+    source: entity
+    target: category
+    type: belongs_to
+    direction: forward
+    meaning: 实体归属唯一叶子类别，决定其层级位置；类别的嵌套子树关系由 category 对象自身字段表达
+    importance: primary
+  - id: rel_category_domain
+    source: category
+    target: domain
+    type: belongs_to
+    direction: forward
+    meaning: 类别归属域，域提供顶层导航与聚合
+    importance: supporting
+  - id: rel_batch_op_entity
+    source: batch_op
+    target: entity
+    type: affects
+    direction: forward
+    meaning: 批量操作恰好作用于确认过的实体集合，多一个少一个都算失败
+    importance: primary
+  - id: rel_selection_entity
+    source: selection
+    target: entity
+    type: explicitly_contains
+    direction: forward
+    meaning: 选择集仅由用户显式勾选的实体构成，不随筛选/导航静默变化
+    importance: primary
+  - id: rel_batch_op_op_record
+    source: batch_op
+    target: op_record
+    type: produces
+    direction: forward
+    meaning: 提交后生成操作回执，供撤销与审计
+    importance: supporting
+region_relationships:
+  - id: region_rel_data_detail
+    source: data
+    target: detail
+    type: selection_drives_contextual_detail
+decisions:
+  primary_structure: PAT-DATA-EXPLORER
+  density_intent: compact
+  major_choice_ids:
+    - mc-selection-model
+    - mc-select-all-scope
+    - mc-preview-modal
+    - mc-undo
+must_preserve: []
+regression_points: []
+unresolved:
+  - 业务领域口吻（采用中性实体目录语义，见需求确认 oq-domain-flavor）
+  - oq-domain-flavor
+  - oq-undo-depth
+corrections: []
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - filter_state
+    - comparison_scan
+    - destructive_recovery
+    - requirement_alignment
+  regression_check_ids: []

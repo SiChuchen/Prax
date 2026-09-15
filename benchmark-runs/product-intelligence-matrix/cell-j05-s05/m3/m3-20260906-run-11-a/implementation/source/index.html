@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>星脉 · 服务关系图谱 — 依赖可查 · 影响可追 · 全局恒在</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header id="topbar">
+  <div class="brand">
+    <span class="brand-dot"></span>
+    <div class="brand-text">
+      <h1>星脉 · 服务关系图谱</h1>
+      <p>依赖可查 · 影响可追 · 全局恒在</p>
+    </div>
+  </div>
+  <div class="search-wrap">
+    <svg class="search-ico" viewBox="0 0 16 16" width="14" height="14"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.6"/><line x1="10.6" y1="10.6" x2="14" y2="14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    <input id="search" type="text" placeholder="搜索节点（名称 / ID）" autocomplete="off" spellcheck="false">
+    <div id="search-drop" class="hidden"></div>
+  </div>
+  <div id="global-stats" class="global-stats"></div>
+</header>
+
+<div id="crumbbar" class="hidden">
+  <span class="crumb-label">
+    <svg viewBox="0 0 16 16" width="12" height="12"><path d="M2 8h9M8 4.5 11.5 8 8 11.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    跟随路径
+  </span>
+  <ol id="crumbs"></ol>
+  <button id="crumb-reset" type="button">重置</button>
+  <span class="crumb-hint">点任意一站回跳 · 跟随时整图恒在</span>
+</div>
+
+<main>
+  <section id="canvas-wrap">
+    <svg id="graph" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <marker id="m-call" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0.6 10 5 0 9.4z" fill="#4d6f96"/></marker>
+        <marker id="m-data" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0.6 10 5 0 9.4z" fill="#2f8577"/></marker>
+        <marker id="m-event" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0.6 10 5 0 9.4z" fill="#8d6fd6"/></marker>
+        <marker id="m-trail" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0.6 10 5 0 9.4z" fill="#ffc857"/></marker>
+      </defs>
+      <rect id="bg" x="-10000" y="-10000" width="30000" height="30000" fill="transparent"/>
+      <g id="edges"></g>
+      <g id="nodes"></g>
+    </svg>
+
+    <div id="mode-badge">
+      <span class="pulse-dot"></span>全局视图 · 跟随时整图恒在
+    </div>
+
+    <div id="legend">
+      <div class="legend-title">节点类型（点按过滤）</div>
+      <div class="legend-row" id="legend-types"></div>
+      <div class="legend-title">关系类型 · 箭头指向被依赖方，影响沿箭头反向传播</div>
+      <div class="legend-kinds">
+        <span><i class="lk" style="background:#4d6f96"></i>同步调用</span>
+        <span><i class="lk" style="background:#2f8577"></i>数据读写</span>
+        <span><i class="lk" style="background:#8d6fd6"></i>事件（发布/订阅）</span>
+        <span><i class="lk" style="background:#ffc857"></i>当前跟随路径</span>
+      </div>
+      <label class="p0-toggle"><input type="checkbox" id="p0-only">只看 P0 节点</label>
+    </div>
+
+    <div id="tooltip" class="hidden"></div>
+  </section>
+
+  <aside id="panel"></aside>
+</main>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+version: "0.2"
+jtbd:
+  verb: monitor
+  target: 一组持续更新的易变运行指标（metric stream）
+  success: 任何指标进入异常状态（warn/crit）时，操作者无需交互、在一次扫视内即可发现，并能追溯它何时、如何变化
+primary_object:
+  type: metric
+  label: 指标（Metric）
+task_model:
+  frequency: high
+  reversibility: reversible
+  consequence: medium
+  expertise: expert
+user:
+  primary_role: 值班运维 / 服务健康监控者（SRE on-call）
+  expertise: expert
+  familiarity: high
+goal:
+  primary: 让值班者在持续刷新的指标流中零成本保持全局态势感知，异常发生到被察觉的时间压缩到一次扫视以内。
+tasks:
+  primary: 扫视指标墙，在异常出现的第一时间发现它（无需交互，靠耐久的状态色与置顶排序）
+  secondary:
+    - 点击异常瓷片，查看该指标的变化历史与触发时刻
+    - 按状态（crit/warn/normal）或搜索过滤指标墙
+    - 暂停/恢复数据流以便细读某一时刻
+product_objects:
+  - id: metric
+    user_name: 指标瓷片（Metric tile）
+    purpose: 承载当前值、近期轨迹与阈值状态的监控对象；主屏以 many 规模瓷片呈现全部指标
+  - id: change_event
+    user_name: 变化事件（Change event）
+    purpose: 某指标一次显著变化（突破阈值/回归）的记录；构成可追溯的时间线索引
+  - id: metric_history
+    user_name: 变化历史（History）
+    purpose: 单指标的时序序列（sparkline 展开为完整折线），使任何变化可回放定位
+relationships:
+  - id: rel_metric_change
+    source: metric
+    target: change_event
+    type: emits
+    direction: forward
+    meaning: 每个 change_event 属于且仅属于一个 metric，事件流按 metric 可过滤追溯
+    condition: 值越阈或显著跳变时产生
+    importance: primary
+  - id: rel_metric_history
+    source: metric
+    target: metric_history
+    type: has
+    direction: forward
+    meaning: 每个 metric 持有滚动窗口时序，历史面板按需展开
+    condition: 始终
+    importance: supporting
+mental_model_hypothesis:
+  summary: 操作者把监控屏理解为『一面墙的瓷片，每片代表一个指标的当前值与近期轨迹』；墙扫一眼找红色/排前的异常，片子可点开看该指标的变化历史。状态用持续耐久的视觉编码（颜色+排序），瞬时更新不抢走注意力。
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: 打开页面即见完整指标板；任一指标进入 warn/crit 状态时，其瓷片在扫视内因色彩与排名即可发现；点击该瓷片即见触发异常的精确变化时刻与前后序列；整个更新过程无闪烁、无布局跳动。
+open_questions: []

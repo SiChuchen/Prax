@@ -1,0 +1,72 @@
+# M3 pilot runtime lock — frozen before the first arm run (plan 2026-09-06 Task 2)
+# Created: 2026-09-07 (Chunk 1). No git commit created; the snapshot below IS
+# the pinned content because the live working tree is intentionally dirty.
+
+frozen_runtime:
+  path: E:/codex-prj/pi-m3-frozen-runtime-20260906
+  source_repo: E:/codex-prj/Prax/Prax
+  source_head: 39ac05c0d9c180c211563620bf2e640aff0d5314
+  source_tree: dirty (30 modified/untracked files pinned by content, not by HEAD)
+  copied_excluded:
+    - .git
+    - node_modules            # recreated inside the snapshot via npm ci from the frozen lock
+    - benchmark-runs          # historical experiment data
+    - .prax                   # repo's own historical session state
+    - .prax-state             # historical reliability smoke state
+    - apps/*/node_modules     # derived caches of golden-case apps (sources kept)
+  content_manifest: runtime-content-sha256.txt   # 1020 files, sha256 of manifest:
+  content_manifest_sha256: 23e770b3a48bf75111c9a56e963467fb8a7d40061f10ca06261dc33b5a3a4bab
+  package_lock_sha256: bdb51644fcef90b29a777372d790d8d15155210b03b59f882130db01ac1ac4c5
+  mcp_entry: packages/prax-mcp/dist/stdio.js
+  mcp_entry_sha256: 1ca1783c34c1e1e0a625c6de4fd771dbd2effed7a8ed9ebace2f42d1aeaf8bb5
+  knowledge_assets: packages/prax-knowledge/data  # 54 validated entries (doctor PASS)
+  npm_ci_verification: smoke/npm-ci.log           # "added 133 packages", exit 0
+  doctor: PASS 2026-09-07 (node, knowledge 54 entries, state_store, mcp_protocol 2026-07-28)
+
+host_toolchain:
+  node: v24.14.0
+  npm: 11.9.0
+  os: win32 10.0.19045 x64
+  browser: Chromium chromium-1234 (playwright cache)
+  browser_path: C:/Users/SiChuchen/AppData/Local/ms-playwright/chromium-1234/chrome-win64/chrome.exe
+  playwright: 1.62.1
+
+arm_client:
+  cli: claude (Claude Code) 2.1.251
+  launch_mode: non-interactive fresh session `claude -p` with cwd = the arm workspace
+  model_pin: "--model sonnet"
+  model_resolution: settings model "sonnet" -> ANTHROPIC_DEFAULT_SONNET_MODEL = glm-5.3-flash[1M]
+    via ANTHROPIC_BASE_URL=https://open.bigmodel.cn/api/anthropic
+  settings_source: C:/Users/SiChuchen/.claude/settings.json (identical for both arms:
+    effortLevel high, outputStyle engineer-professional, SessionStart hook, enabled plugins
+    codex/superpowers/superpowers-chrome)
+  permissions: "--dangerously-skip-permissions" (identical both arms)
+  telemetry: "--output-format stream-json --verbose" captures per-message token usage
+  mcp_isolation:
+    flag: "--strict-mcp-config"   # ignores user-scope, project, and plugin MCP sources
+    arm_a: "--mcp-config <operator>/launch/mcp-config-empty.json"   # zero MCP servers
+    arm_b: "--mcp-config <workspace>/.mcp.json"                     # exactly one: prax -> frozen stdio.js
+  known_global_state:
+    - user-scope MCP registry contains a global `prax` server (global npm prax-mcp,
+      NOT the frozen build). Bypassed by --strict-mcp-config on every arm session.
+      Recommendation recorded for the operator: remove after the pilot to reduce
+      accidental-exposure risk; NOT removed during the pilot (config untouched).
+    - global CLAUDE.md, plugins, and SessionStart hook carry no prax strings
+      (grep verified 2026-09-07); they inject identically into both arms.
+    - no claude project memory exists for any pi-matrix workspace path (checked
+      C:/Users/SiChuchen/.claude/projects — only legacy AB-001/mem1 run dirs).
+
+run_policy:
+  scope: 10 cells x 2 arms x 1 planned run = 20 runs (pilot; ab-protocol >=3
+    repetition requirement waived for this pilot per program M3 — see addendum D4)
+  per_run_limits: wall-clock <= 90 min; token <= 1.2M when observable
+  aggregate_ceiling: 30 serial run-hours + preparation/review overhead; observable
+    token caps sum to 24M
+  stop_rules: agent declared done | 90 min | 1.2M observable tokens -> stop and record
+  viewports: [1280x860, 1440x900]
+  entry: "/"
+  scenario_label: entry
+  measurement: operator-run prax-measure (direct CLI, unique --out per run) AFTER the
+    arm session ends; never backfilled into Arm B's session workflow
+  run_order: run-order.yaml (seed 2b71439277291095, mulberry32+fisher-yates, written
+    before any run outcome existed)

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>RELEASEROOM · 发版指挥台 — checkout-api v2.14.0</title>
+<link rel="icon" href="data:,"/>
+<link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="logo">RR</div>
+    <div class="brand-t">
+      <h1>RELEASEROOM <span>发版指挥台</span></h1>
+      <p>高后果流程 · 目标：<b>零失误走完全程</b> — 不可逆步骤均有确认与恢复路径</p>
+    </div>
+  </div>
+  <div class="chips" id="chips"></div>
+</header>
+<div class="pbar"><div id="pfill"></div></div>
+
+<main class="layout">
+  <aside class="col-nav">
+    <h2 class="coltitle">流程</h2>
+    <nav id="nav"></nav>
+    <div class="legend">
+      <p><span class="badge irrev">不可逆</span> 执行前强制确认 · 执行后提供恢复路径</p>
+      <p><span class="badge recov">↺ 可恢复</span> 回滚窗口密封前随时可回滚</p>
+      <p><span class="sdot ok">✓</span> 可逆步骤可撤销重做</p>
+      <p class="legend-note">仓促或证据不足的操作会记一次失误 — 零失误完成将获得无瑕疵交接记录</p>
+    </div>
+  </aside>
+
+  <section class="col-main" id="panel" aria-live="polite"></section>
+
+  <aside class="col-log">
+    <h2 class="coltitle">指挥日志</h2>
+    <ol id="log"></ol>
+  </aside>
+</main>
+
+<div id="modal" class="overlay"></div>
+<div id="completion" class="overlay"></div>
+<div id="toasts"></div>
+
+<noscript><p style="padding:2rem;color:#e9edf7">本应用需要启用 JavaScript。</p></noscript>
+<script src="app.js"></script>
+</body>
+</html>

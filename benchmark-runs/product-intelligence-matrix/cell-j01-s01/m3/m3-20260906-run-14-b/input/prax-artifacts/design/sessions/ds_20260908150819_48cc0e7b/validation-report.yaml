@@ -1,0 +1,261 @@
+plan_revision: 3
+evidence:
+  submitted_by: 执行臂 Claude（cell-j01-s01-b greenfield 会话）
+  collected_at: 2026-09-09T00:38:00Z
+  items:
+    - check_id: product_model_alignment
+      outcome: pass
+      source: 无头 Edge 渲染 DOM 快照 + 独立浏览器走查代理复核
+      notes: 渲染 DOM 快照证实界面语言与 Product Frame 对象一一对应：实体(ENT-xxxx 行)/域(5 域)/类别(层级树)/选择集(操作条「已选 N 项」)/批量操作(5 按钮)/操作记录(状态栏)。层级树+高密度表格+选择驱动操作条结构与 frame relationships 一致；无 backend 术语泄漏。独立走查代理 A 组 5/5 复核。
+      artifact_refs:
+        - evidence/rendered-dom-first-screen.html
+        - evidence/01-first-screen.png
+    - check_id: keyboard
+      outcome: pass
+      source: prax-measure 实测回执（Playwright，7/7 pass）+ 真实浏览器自测
+      notes: 键盘模型：树为容器单 Tab 停留点+方向键巡航；表格 roving tabindex（当前行复选框 tabindex=0，方向键移动、空格选择、回车展开）。prax-measure 实测 a11y.focus_order=pass（完整遍历、无反演、焦点指示齐全）；真实 DOM 事件自测 12/12：/ 聚焦搜索、方向键+空格选行、Esc 关模态、:focus-visible 全局可见。
+      artifact_refs:
+        - evidence/08-selftest-12of12.png
+        - evidence/rendered-dom-selftest.html
+      measurement_receipt: validation-evidence/receipt-2026-09-08T16-34-51-138Z-d0bee1fb-c40b-4142-a215-9ddd0dfa7671.json
+    - check_id: hierarchy_review
+      outcome: pass
+      source: 截图目视 + CSS 令牌核对
+      notes: 视觉比重遵循 SDIR：region-table 支配面占内容区主体；region-tree/actionbar/preview-modal primary（操作条选择驱动出现，深色+accent 顶边）；region-statusbar supporting；密度 compact（13px 基准、树节点内联计数与状态微条）；无装饰元素。
+      artifact_refs:
+        - evidence/01-first-screen.png
+        - evidence/03-preview-status-modal.png
+    - check_id: filter_state
+      outcome: pass
+      source: 真实浏览器自测 + dump-dom + 截图
+      notes: 活跃筛选显式：范围面包屑、状态 chip aria-pressed+全局计数、范围全选按钮计数、表尾三计数；筛选不触碰选择集：自测 C 实测选 42 项后筛出 19 项隐藏并出现警示条，操作条同步「19 项当前不可见，仍将包含」。
+      artifact_refs:
+        - evidence/02-selected-hidden-warning.png
+        - evidence/06-receipt-after-batch.png
+    - check_id: comparison_scan
+      outcome: pass
+      source: 渲染 DOM + 截图
+      notes: 状态归属三处可扫：行五色徽章、树微条（title 带分状态计数）、全局 chip 计数；214 行同屏滚动可及，无需打开任何详情。
+      artifact_refs:
+        - evidence/01-first-screen.png
+        - evidence/07-undo-and-oplog.png
+    - check_id: destructive_recovery
+      outcome: pass
+      source: 真实浏览器自测 + dump-dom + 截图
+      notes: 三重防误伤：逐项预览模态（id+归属+前后对照）、删除勾选确认（未勾选禁用+「请先勾选确认框」）、单步撤销精确恢复（自测 G/H：已停用 chip 34→69→34，回执「已撤销：…」）；操作记录留痕。
+      artifact_refs:
+        - evidence/04-delete-confirm.png
+        - evidence/06-receipt-after-batch.png
+        - evidence/07-undo-and-oplog.png
+    - check_id: requirement_alignment
+      outcome: pass
+      source: 真实浏览器自测(12/12) + prax-measure 回执(7/7 pass) + 走查代理复核
+      notes: 对照需求确认 restatement：①静态单页无后端（file:// 直开，全部取证无网络）；②首屏 ready 无加载态（214 行同步渲染，零 loading/spinner 命中）；③零误伤——预览与执行共用 computeAffected()，自测 F/G 断言 42=35+7 逐项守恒，执行后计数交叉核对一致；④状态归属显式（行/树/预览三处同源）；⑤持久化为简报边界内显式取舍（状态栏注明）。独立走查代理 A 组 5/5 复核；prax-measure 7/7 pass。
+      artifact_refs:
+        - evidence/08-selftest-12of12.png
+        - evidence/rendered-dom-selftest.html
+        - evidence/rendered-dom-first-screen.html
+evaluation:
+  status: PASS
+  checks:
+    - id: semantic_conformance
+      label: Semantic conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR is valid, semantic, and aligned to the approved pattern.
+      evidence_required: false
+    - id: state_completeness
+      label: State completeness
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Required loading, empty, ready, and error states exist.
+      evidence_required: false
+    - id: product_model_alignment
+      label: Product model alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: User-facing structure and language preserve the Product Frame.
+      evidence_required: true
+    - id: keyboard
+      label: Keyboard operability
+      kind: empirical
+      profile: keyboard_accessibility
+      facet: behavioral
+      requirement: Primary work and selection are operable with keyboard and visible focus.
+      evidence_required: true
+    - id: hierarchy_review
+      label: Hierarchy review
+      kind: assistive
+      profile: semantic_integrity
+      facet: visual_hierarchy
+      requirement: Visual prominence follows SDIR importance rather than implementation convenience.
+      evidence_required: true
+    - id: representation_decided
+      label: Representation decided
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares representation.primary with a non-empty reason.
+      evidence_required: false
+    - id: state_ownership_declared
+      label: State ownership declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: Selection and preview states both have declared owners.
+      evidence_required: false
+    - id: acceptance_contract_present
+      label: Acceptance contract present
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 carries at least one acceptance criterion.
+      evidence_required: false
+    - id: complexity_budget_declared
+      label: Complexity budget declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      evidence_required: false
+    - id: filter_state
+      label: Filter state
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Active filters and result state are represented explicitly.
+      evidence_required: true
+    - id: comparison_scan
+      label: Comparison scan
+      kind: empirical
+      profile: state_coverage
+      facet: behavioral
+      requirement: Comparable values can be scanned without opening every item.
+      evidence_required: true
+    - id: destructive_recovery
+      label: Destructive recovery
+      kind: deterministic
+      profile: runtime_degradation
+      facet: behavioral
+      requirement: Destructive actions match error cost with prevention or recovery.
+      evidence_required: true
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+  findings:
+    - check_id: semantic_conformance
+      kind: deterministic
+      outcome: pass
+      message: SDIR is valid, semantic, and aligned to the approved pattern.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_completeness
+      kind: deterministic
+      outcome: pass
+      message: Required loading, empty, ready, and error states exist.
+      source: prax-validator
+      provenance: measured
+    - check_id: representation_decided
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares representation.primary with a non-empty reason.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_ownership_declared
+      kind: deterministic
+      outcome: pass
+      message: Selection and preview states both have declared owners.
+      source: prax-validator
+      provenance: measured
+    - check_id: acceptance_contract_present
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 carries at least one acceptance criterion.
+      source: prax-validator
+      provenance: measured
+    - check_id: complexity_budget_declared
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      source: prax-validator
+      provenance: measured
+    - check_id: product_model_alignment
+      kind: assistive
+      outcome: pass
+      message: 渲染 DOM 快照证实界面语言与 Product Frame 对象一一对应：实体(ENT-xxxx 行)/域(5 域)/类别(层级树)/选择集(操作条「已选 N 项」)/批量操作(5 按钮)/操作记录(状态栏)。层级树+高密度表格+选择驱动操作条结构与 frame relationships 一致；无 backend 术语泄漏。独立走查代理 A 组 5/5 复核。
+      source: 无头 Edge 渲染 DOM 快照 + 独立浏览器走查代理复核
+      provenance: attested
+    - check_id: keyboard
+      kind: empirical
+      outcome: pass
+      message: 键盘模型：树为容器单 Tab 停留点+方向键巡航；表格 roving tabindex（当前行复选框 tabindex=0，方向键移动、空格选择、回车展开）。prax-measure 实测 a11y.focus_order=pass（完整遍历、无反演、焦点指示齐全）；真实 DOM 事件自测 12/12：/ 聚焦搜索、方向键+空格选行、Esc 关模态、:focus-visible 全局可见。
+      source: prax-measure 实测回执（Playwright，7/7 pass）+ 真实浏览器自测
+      provenance: measured
+    - check_id: hierarchy_review
+      kind: assistive
+      outcome: pass
+      message: 视觉比重遵循 SDIR：region-table 支配面占内容区主体；region-tree/actionbar/preview-modal primary（操作条选择驱动出现，深色+accent 顶边）；region-statusbar supporting；密度 compact（13px 基准、树节点内联计数与状态微条）；无装饰元素。
+      source: 截图目视 + CSS 令牌核对
+      provenance: attested
+    - check_id: filter_state
+      kind: deterministic
+      outcome: pass
+      message: 活跃筛选显式：范围面包屑、状态 chip aria-pressed+全局计数、范围全选按钮计数、表尾三计数；筛选不触碰选择集：自测 C 实测选 42 项后筛出 19 项隐藏并出现警示条，操作条同步「19 项当前不可见，仍将包含」。
+      source: 真实浏览器自测 + dump-dom + 截图
+      provenance: attested
+    - check_id: comparison_scan
+      kind: empirical
+      outcome: pass
+      message: 状态归属三处可扫：行五色徽章、树微条（title 带分状态计数）、全局 chip 计数；214 行同屏滚动可及，无需打开任何详情。
+      source: 渲染 DOM + 截图
+      provenance: attested
+    - check_id: destructive_recovery
+      kind: deterministic
+      outcome: pass
+      message: 三重防误伤：逐项预览模态（id+归属+前后对照）、删除勾选确认（未勾选禁用+「请先勾选确认框」）、单步撤销精确恢复（自测 G/H：已停用 chip 34→69→34，回执「已撤销：…」）；操作记录留痕。
+      source: 真实浏览器自测 + dump-dom + 截图
+      provenance: attested
+    - check_id: requirement_alignment
+      kind: assistive
+      outcome: pass
+      message: 对照需求确认 restatement：①静态单页无后端（file:// 直开，全部取证无网络）；②首屏 ready 无加载态（214 行同步渲染，零 loading/spinner 命中）；③零误伤——预览与执行共用 computeAffected()，自测 F/G 断言 42=35+7 逐项守恒，执行后计数交叉核对一致；④状态归属显式（行/树/预览三处同源）；⑤持久化为简报边界内显式取舍（状态栏注明）。独立走查代理 A 组 5/5 复核；prax-measure 7/7 pass。
+      source: 真实浏览器自测(12/12) + prax-measure 回执(7/7 pass) + 走查代理复核
+      provenance: attested
+  missing_evidence: []
+  warnings: []
+  readiness:
+    deterministic_passed: true
+    measurement:
+      receipt_ref: validation-evidence/receipt-2026-09-08T16-34-51-138Z-d0bee1fb-c40b-4142-a215-9ddd0dfa7671.json
+      binding:
+        validation-evidence/receipt-2026-09-08T16-34-51-138Z-d0bee1fb-c40b-4142-a215-9ddd0dfa7671.json: implementation_current
+      error_failures_open: 0
+      warning_dispositions: []
+    convergence:
+      stalled: false
+      unresolved: []
+    evidence_current: true
+    claims:
+      measured:
+        - semantic_conformance
+        - state_completeness
+        - representation_decided
+        - state_ownership_declared
+        - acceptance_contract_present
+        - complexity_budget_declared
+        - keyboard
+      attested:
+        - product_model_alignment
+        - hierarchy_review
+        - filter_state
+        - comparison_scan
+        - destructive_recovery
+        - requirement_alignment
+      skipped: []

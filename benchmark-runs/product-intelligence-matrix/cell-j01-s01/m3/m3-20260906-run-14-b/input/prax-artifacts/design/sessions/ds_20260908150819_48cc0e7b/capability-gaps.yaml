@@ -1,0 +1,84 @@
+needs:
+  - id: n-selection
+    product_action: 显式选择集独立于筛选与导航（仅三种显式动作可变）
+    required_experience:
+      - 选择集状态与筛选器状态完全解耦
+      - 选择集任何变化都在操作条/表头即时可见
+    capabilities:
+      - 内存实体索引
+      - Set<id> 选择集
+      - 行复选+三态表头
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端可组合：Set<entityId> + 显式动作白名单（行复选/范围全选/清空）；无后端依赖
+  - id: n-preview
+    product_action: 批量操作逐项预览：受影响实体清单、状态迁移前后对照、级联子项 opt-in、no-op 跳过
+    required_experience:
+      - 初始数据全量内联，受影响集合可内存精确计算
+      - 预览清单与实际作用集合共用同一计算函数，保证逐 id 一致
+    capabilities:
+      - 实体索引+子树展开
+      - 预览模态组件
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 数据本地全量，computeAffected(selection, op, cascade) 单一函数同时供预览与执行使用，杜绝预览与实际不一致
+  - id: n-scope-selectall
+    product_action: 范围全选：当前筛选结果 / 当前节点子树全部，计数显式标注
+    required_experience:
+      - 两种范围都返回确定性的实体集合并在按钮上标注计数
+    capabilities:
+      - 子树实体枚举
+      - 筛选谓词应用
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 同上，内存枚举
+  - id: n-hidden-warning
+    product_action: 已选实体被筛选隐藏时显式警示（计数+列表入口）
+    required_experience:
+      - selectedSet 减 visibleSet 的差集实时计算并展示
+    capabilities:
+      - 选择集与可见行差集
+      - 警示条组件
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端派生计算
+  - id: n-undo
+    product_action: 批量操作单步撤销与操作回执
+    required_experience:
+      - 提交前快照受影响实体字段，撤销精确还原
+      - 回执展示实际生效数量
+    capabilities:
+      - 不可变快照
+      - 撤销栈(深度1)
+      - 回执渲染
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 内存快照即可，无需持久化
+  - id: n-tree-aggregates
+    product_action: 树节点直接/累计计数与状态分布随批量操作即时刷新
+    required_experience:
+      - 每次数据变更后重算各节点聚合
+      - 树/表格/状态栏三处计数同源
+    capabilities:
+      - 按节点聚合
+      - 细粒度重渲染
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 单一 deriveAggregates() 供三处渲染共用
+  - id: n-persist
+    product_action: 数据变更跨会话持久化
+    required_experience:
+      - 刷新后仍保留批量操作结果
+    capabilities:
+      - localStorage/IndexedDB
+      - 后端存储服务
+    status: gap
+    resolution:
+      type: explicit_compromise
+      notes: 简报交付约束明确『不要求持久化服务』且不得部署外部服务；本实现为会话内存态，刷新重置为种子数据，在界面注明。此为对简报边界的显式取舍而非功能缺失

@@ -1,0 +1,232 @@
+plan_revision: 1
+evidence:
+  submitted_by: claude (execution arm, session ds_20260907220504_7509849f)
+  collected_at: 2026-09-08T00:00:00Z
+  items:
+    - check_id: semantic_conformance
+      outcome: pass
+      source: 静态核对：index.html 骨架 + app.js 渲染函数与 SDIR v0.2 逐区比对
+      notes: SDIR v0.2 合法且对齐 PAT-LIST-DETAIL；实现按声明的 regions 组织：region-timeline（dominant，时间线节点=有序列表成员）、region-inspector/region-state-panel（selection_drives）、region-filters（narrows）。representation.primary=timeline 已实现为纵向时间线（上早下晚），supporting list/table 分别为变更行明细与回放两列表。
+      artifact_refs:
+        - E:/codex-prj/ab-worktrees/pi-matrix/cell-j06-s06-b/index.html
+        - E:/codex-prj/ab-worktrees/pi-matrix/cell-j06-s06-b/app.js
+    - check_id: state_completeness
+      outcome: pass
+      source: 静态核对：app.js renderAll/renderFilters/renderTimeline/integrity 校验与 try/catch
+      notes: "ready=脚本同步渲染内联数据，无任何加载态（交付约束要求 loading 不存在，已在代码头注释与 README 声明）；selected=节点高亮+aria-current+因果对端 linked 描边；empty=筛选 0 匹配时 .timeline-empty 横幅且时间线结构置灰保留、Esc/按钮可清除；error=启动 try/catch 显示 #app-error 横幅，数据不变量违规（时间序/因果逆时）亦以横幅+console.warn 呈现。"
+      artifact_refs:
+        - E:/codex-prj/ab-worktrees/pi-matrix/cell-j06-s06-b/app.js
+    - check_id: product_model_alignment
+      outcome: pass
+      source: 静态核对：UI 文案与 product_frame.product_objects/relationships 对照；data.js 逐条核对 8 个 ts 严格递增、7 条因果链接均因早于果
+      notes: 用户可见语言严格使用 Product Frame 对象名：变更集(cs-N)/变更条目(类型徽标+元素+before→after)/因果(↩因·更早 ↪果·更晚)/状态快照(回放至选中时刻)；change_set 为主对象，关系 contains/acts_on/caused_by/derived_from 全部落地；启动时校验 cause.t<effect.t 与时间序严格递增。
+      artifact_refs:
+        - E:/codex-prj/ab-worktrees/pi-matrix/cell-j06-s06-b/data.js
+        - E:/codex-prj/ab-worktrees/pi-matrix/cell-j06-s06-b/app.js
+    - check_id: keyboard
+      outcome: inconclusive
+      source: 静态核对（键盘处理器存在且正确）+ 环境缺件记录（两次子代理尝试 + 全量注册表检索）
+      notes: 键盘契约已实现：↑/↓ 沿时间序移动选中（上=更早/下=更晚，方向与时间同向）、Esc 清除筛选、:focus-visible 外框 CSS。但本会话执行环境不存在任何浏览器/CDP/Shell 工具（ToolSearch 全量注册表检索为空；superpowers-chrome:browser-user 与 claude 两个子代理分别实测均确认无法打开页面），真机键盘操作证据未能采集。不伪造证据，如实记为 inconclusive；README 操作表即复验脚本。
+      artifact_refs:
+        - E:/codex-prj/ab-worktrees/pi-matrix/cell-j06-s06-b/app.js
+    - check_id: hierarchy_review
+      outcome: inconclusive
+      source: 静态核对：styles.css 区域权重与 SDIR importance 映射；真机渲染截图不可得（环境缺件）
+      notes: CSS 权重编码遵循 SDIR importance：时间线 dominant（grid 11fr/9fr 主列、node-id/选中态最强调色）、详情与回放 primary（右侧常驻面板）、筛选与元信息 supporting（12px 弱化行）；chrome 仅顶栏+筛选行（P-22）。视觉显著性的真机渲染证据因环境无浏览器工具未能采集，不据此做视觉断言。
+      artifact_refs:
+        - E:/codex-prj/ab-worktrees/pi-matrix/cell-j06-s06-b/styles.css
+    - check_id: representation_decided
+      outcome: pass
+      source: Prax design_sdir 返回的 SDIR v0.2 编译产物
+      notes: "SDIR 0.2 representation.primary={type: timeline, reason: temporality=high，轴方向承载顺序语义}，非空理由；supporting=[list, table]。"
+      artifact_refs:
+        - E:/codex-prj/ab-worktrees/pi-matrix/cell-j06-s06-b/index.html
+    - check_id: state_ownership_declared
+      outcome: pass
+      source: Prax SDIR v0.2 state_ownership 块 + app.js 单一 state 对象
+      notes: SDIR 声明 selection/preview 均有 owner（app-single-store / session）；实现侧为单一 store（state.selectedId + type/element query），浏览器滚动归 viewport。
+      artifact_refs:
+        - E:/codex-prj/ab-worktrees/pi-matrix/cell-j06-s06-b/app.js
+    - check_id: acceptance_contract_present
+      outcome: pass
+      source: Prax SDIR v0.2 acceptance 块
+      notes: SDIR 0.2 acceptance 数组含 4 条（时间结构=时间序、因果方向与时间同向、首屏即 ready、单屏静态可开）。
+      artifact_refs:
+        - E:/codex-prj/ab-worktrees/pi-matrix/cell-j06-s06-b/index.html
+    - check_id: complexity_budget_declared
+      outcome: pass
+      source: Prax SDIR v0.2 complexity_budget 块
+      notes: complexity_budget 全字段已声明（3 panels / 3 primary actions / 0 modes / 1 state owner / 1 nav level / 2 filters / 3 new concepts / 1 keyboard contract / 0 mobile conflicts / 1 surface）。
+      artifact_refs:
+        - E:/codex-prj/ab-worktrees/pi-matrix/cell-j06-s06-b/index.html
+    - check_id: requirement_alignment
+      outcome: pass
+      source: 静态核对：交付物文件与 requirement_confirmation.restatement/boundaries 逐条比对；数据不变量人工逐条核验
+      notes: 交付物与确认的重述/范围/成功定义逐条对齐：从零新代码单页应用；index.html 在根路径、file:// 直开可用（无构建无外部请求，仅本地 4 个静态文件）；初始数据内联 data.js 随首屏同步渲染（脚本同步执行，无加载态）；无后端/账号/持久化/部署；验收种子落地为三条构造性保证：①节点顺序=时间序（启动校验严格递增）②因果徽标方向与时间同向（启动校验 cause.t<effect.t）③状态快照=与时间轴共用同一排序的纯函数回放。主屏 1 个。真机浏览器走查未能执行（环境无浏览器工具，已如实记录于 keyboard/hierarchy_review 项）。
+      artifact_refs:
+        - E:/codex-prj/ab-worktrees/pi-matrix/cell-j06-s06-b/index.html
+        - E:/codex-prj/ab-worktrees/pi-matrix/cell-j06-s06-b/data.js
+        - E:/codex-prj/ab-worktrees/pi-matrix/cell-j06-s06-b/app.js
+        - E:/codex-prj/ab-worktrees/pi-matrix/cell-j06-s06-b/styles.css
+        - E:/codex-prj/ab-worktrees/pi-matrix/cell-j06-s06-b/README.md
+evaluation:
+  status: WARN
+  checks:
+    - id: semantic_conformance
+      label: Semantic conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR is valid, semantic, and aligned to the approved pattern.
+      evidence_required: false
+    - id: state_completeness
+      label: State completeness
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Required loading, empty, ready, and error states exist.
+      evidence_required: false
+    - id: product_model_alignment
+      label: Product model alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: User-facing structure and language preserve the Product Frame.
+      evidence_required: true
+    - id: keyboard
+      label: Keyboard operability
+      kind: empirical
+      profile: keyboard_accessibility
+      facet: behavioral
+      requirement: Primary work and selection are operable with keyboard and visible focus.
+      evidence_required: true
+    - id: hierarchy_review
+      label: Hierarchy review
+      kind: assistive
+      profile: semantic_integrity
+      facet: visual_hierarchy
+      requirement: Visual prominence follows SDIR importance rather than implementation convenience.
+      evidence_required: true
+    - id: representation_decided
+      label: Representation decided
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares representation.primary with a non-empty reason.
+      evidence_required: false
+    - id: state_ownership_declared
+      label: State ownership declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: Selection and preview states both have declared owners.
+      evidence_required: false
+    - id: acceptance_contract_present
+      label: Acceptance contract present
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 carries at least one acceptance criterion.
+      evidence_required: false
+    - id: complexity_budget_declared
+      label: Complexity budget declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      evidence_required: false
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+  findings:
+    - check_id: semantic_conformance
+      kind: deterministic
+      outcome: pass
+      message: SDIR is valid, semantic, and aligned to the approved pattern.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_completeness
+      kind: deterministic
+      outcome: pass
+      message: Required loading, empty, ready, and error states exist.
+      source: prax-validator
+      provenance: measured
+    - check_id: representation_decided
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares representation.primary with a non-empty reason.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_ownership_declared
+      kind: deterministic
+      outcome: pass
+      message: Selection and preview states both have declared owners.
+      source: prax-validator
+      provenance: measured
+    - check_id: acceptance_contract_present
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 carries at least one acceptance criterion.
+      source: prax-validator
+      provenance: measured
+    - check_id: complexity_budget_declared
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      source: prax-validator
+      provenance: measured
+    - check_id: product_model_alignment
+      kind: assistive
+      outcome: pass
+      message: 用户可见语言严格使用 Product Frame 对象名：变更集(cs-N)/变更条目(类型徽标+元素+before→after)/因果(↩因·更早 ↪果·更晚)/状态快照(回放至选中时刻)；change_set 为主对象，关系 contains/acts_on/caused_by/derived_from 全部落地；启动时校验 cause.t<effect.t 与时间序严格递增。
+      source: 静态核对：UI 文案与 product_frame.product_objects/relationships 对照；data.js 逐条核对 8 个 ts 严格递增、7 条因果链接均因早于果
+      provenance: attested
+    - check_id: keyboard
+      kind: empirical
+      outcome: inconclusive
+      message: 键盘契约已实现：↑/↓ 沿时间序移动选中（上=更早/下=更晚，方向与时间同向）、Esc 清除筛选、:focus-visible 外框 CSS。但本会话执行环境不存在任何浏览器/CDP/Shell 工具（ToolSearch 全量注册表检索为空；superpowers-chrome:browser-user 与 claude 两个子代理分别实测均确认无法打开页面），真机键盘操作证据未能采集。不伪造证据，如实记为 inconclusive；README 操作表即复验脚本。
+      source: 静态核对（键盘处理器存在且正确）+ 环境缺件记录（两次子代理尝试 + 全量注册表检索）
+      provenance: attested
+    - check_id: hierarchy_review
+      kind: assistive
+      outcome: inconclusive
+      message: CSS 权重编码遵循 SDIR importance：时间线 dominant（grid 11fr/9fr 主列、node-id/选中态最强调色）、详情与回放 primary（右侧常驻面板）、筛选与元信息 supporting（12px 弱化行）；chrome 仅顶栏+筛选行（P-22）。视觉显著性的真机渲染证据因环境无浏览器工具未能采集，不据此做视觉断言。
+      source: 静态核对：styles.css 区域权重与 SDIR importance 映射；真机渲染截图不可得（环境缺件）
+      provenance: attested
+    - check_id: requirement_alignment
+      kind: assistive
+      outcome: pass
+      message: 交付物与确认的重述/范围/成功定义逐条对齐：从零新代码单页应用；index.html 在根路径、file:// 直开可用（无构建无外部请求，仅本地 4 个静态文件）；初始数据内联 data.js 随首屏同步渲染（脚本同步执行，无加载态）；无后端/账号/持久化/部署；验收种子落地为三条构造性保证：①节点顺序=时间序（启动校验严格递增）②因果徽标方向与时间同向（启动校验 cause.t<effect.t）③状态快照=与时间轴共用同一排序的纯函数回放。主屏 1 个。真机浏览器走查未能执行（环境无浏览器工具，已如实记录于 keyboard/hierarchy_review 项）。
+      source: 静态核对：交付物文件与 requirement_confirmation.restatement/boundaries 逐条比对；数据不变量人工逐条核验
+      provenance: attested
+  missing_evidence: []
+  warnings: []
+  readiness:
+    deterministic_passed: true
+    measurement:
+      receipt_ref: null
+      binding: {}
+      error_failures_open: 0
+      warning_dispositions: []
+    convergence:
+      stalled: false
+      unresolved: []
+    evidence_current: true
+    claims:
+      measured:
+        - semantic_conformance
+        - state_completeness
+        - representation_decided
+        - state_ownership_declared
+        - acceptance_contract_present
+        - complexity_budget_declared
+      attested:
+        - product_model_alignment
+        - keyboard
+        - hierarchy_review
+        - requirement_alignment
+      skipped: []

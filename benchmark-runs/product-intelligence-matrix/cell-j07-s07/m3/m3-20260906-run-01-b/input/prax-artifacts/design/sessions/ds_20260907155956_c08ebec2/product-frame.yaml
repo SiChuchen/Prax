@@ -1,0 +1,54 @@
+version: "0.2"
+jtbd:
+  verb: create
+  target: 空间对象（画布上的物件/设备卡）
+  success: 落位即意图：物件被放到某分区后其角色/状态标签即时由位置推导更新，无需任何表单；且每个空间操作都有键盘等价物
+primary_object:
+  type: canvas_object
+  label: 物件（画布空间对象）
+task_model:
+  frequency: medium
+  reversibility: reversible
+  consequence: low
+  expertise: mixed
+user:
+  primary_role: 工作坊/展陈空间布置者（为自己规划开放日场地的个人用户）
+  expertise: intermediate
+  familiarity: medium
+goal:
+  primary: 让用户通过"把物件落到哪个位置/分区"这一单一动作就完成物件的意图设定（角色、状态、关联），全程无需表单或属性面板
+tasks:
+  primary: 在平面板上新建物件并将其落到表达意图的位置（拖拽或全键盘移动），落位后用途自动确定
+  secondary:
+    - 键盘循环选择物件（Tab/Shift+Tab）
+    - 方向键微移、Shift 大步移动、Alt 智能对齐吸附
+    - 对齐/分布（对齐键与分布键）
+    - 复制（Ctrl+D）、删除（Del）、层级调整（[/]）
+    - 随时按 ? 查看键盘等价物速查表
+product_objects:
+  - id: obj_item
+    user_name: 物件
+    purpose: 画布上的可移动实体：有名称/类型/颜色，其位置决定所属分区与用途标签；可被选择、移动、对齐、复制、删除
+  - id: obj_zone
+    user_name: 分区
+    purpose: 地面上的语义功能分区（如展示区/体验区/暂存区）：是物件的"落位意图"来源，物件与其重叠即获得该分区的用途
+  - id: obj_board
+    user_name: 平面板
+    purpose: 整个平面图工作区：网格底、分区、标尺感，承载全部物件与选择状态
+relationships:
+  - id: rel_placed_in
+    source: obj_item
+    target: obj_zone
+    type: placed_in
+    direction: forward
+    meaning: 物件与分区几何重叠 ⇒ 物件的用途标签由该分区推导（落位即意图）
+    condition: 物件中心点落在分区内
+    importance: primary
+mental_model_hypothesis:
+  summary: 用户把画布当成一张物理平面图：分区是地面上的功能区域，物件是可拿取的实体卡；物件落在哪个分区，它就"是"什么（角色随位置变化），相邻即相关，对齐即有序。不填表、不开菜单，摆好即配置好。
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: 首屏即是一个已布满物件的平面图；用户新建/拖动一个物件到任一分区后，该物件的用途标签立即等于分区语义（落位即意图）；同一操作可完全用键盘完成（选择、新建、移动、对齐、分布、复制、删除、层级），无任何仅鼠标可达的空间操作。
+open_questions: []

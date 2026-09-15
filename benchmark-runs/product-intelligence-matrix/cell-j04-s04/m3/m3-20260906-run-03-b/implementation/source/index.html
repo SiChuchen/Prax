@@ -1,0 +1,751 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pulsewall · 易变指标监控</title>
+<style>
+:root{
+  --bg:#0c1117; --panel:#11161d; --panel-2:#151c25; --tile:#161e28; --tile-hover:#1b2430;
+  --line:#232c38; --line-soft:#1c2430;
+  --text:#e6edf3; --text-2:#9aa7b4; --text-3:#5d6b7a;
+  --crit:#f85149; --crit-bg:rgba(248,81,73,.10); --crit-line:rgba(248,81,73,.55);
+  --warn:#d29922; --warn-bg:rgba(210,153,34,.09); --warn-line:rgba(210,153,34,.5);
+  --norm:#3fb950; --norm-dim:#2ea043;
+  --blue:#58a6ff; --spark-norm:#4d6379;
+  --mono:ui-monospace,'Cascadia Mono',Consolas,'Courier New',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--text);
+  font:13px/1.45 -apple-system,'Segoe UI',Roboto,'PingFang SC','Microsoft YaHei',sans-serif;
+  overflow:hidden;
+}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+input{font:inherit}
+
+/* ---------- Topbar ---------- */
+#topbar{
+  height:52px;display:flex;align-items:center;gap:14px;padding:0 14px;
+  background:var(--panel);border-bottom:1px solid var(--line);
+}
+.brand{display:flex;align-items:baseline;gap:8px;white-space:nowrap}
+.brand b{font-size:15px;letter-spacing:.14em;font-family:var(--mono)}
+.brand .sub{color:var(--text-2);font-size:12px}
+.brand .cell{color:var(--text-3);font-size:10.5px;font-family:var(--mono);border:1px solid var(--line);border-radius:3px;padding:1px 5px}
+.clock{display:flex;align-items:center;gap:7px;font-family:var(--mono);white-space:nowrap}
+#clock-time{font-size:15px;color:var(--text);min-width:74px;text-align:center;font-variant-numeric:tabular-nums}
+#clock-state{font-size:10px;letter-spacing:.1em;padding:2px 7px;border-radius:9px;color:var(--norm);border:1px solid rgba(63,185,80,.4)}
+#clock-state.paused{color:var(--warn);border-color:rgba(210,153,34,.45)}
+.chips{display:flex;gap:6px}
+.chip{
+  display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:5px;
+  border:1px solid var(--line);background:var(--panel-2);color:var(--text-2);font-size:12px;
+  transition:border-color .15s,color .15s;
+}
+.chip .dot{width:8px;height:8px;border-radius:50%;background:var(--text-3)}
+.chip .n{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--text);min-width:16px;text-align:right}
+.chip[data-f="crit"] .dot{background:var(--crit)} .chip[data-f="warn"] .dot{background:var(--warn)}
+.chip[data-f="normal"] .dot{background:var(--norm-dim)}
+.chip:hover{border-color:var(--text-3)}
+.chip[aria-pressed="true"]{border-color:var(--blue);color:var(--text)}
+#search{
+  flex:1;max-width:230px;min-width:120px;height:29px;padding:0 10px;border-radius:5px;
+  background:var(--panel-2);border:1px solid var(--line);color:var(--text);outline:none;
+}
+#search:focus{border-color:var(--blue)}
+#search::placeholder{color:var(--text-3)}
+#pause{
+  height:29px;padding:0 13px;border-radius:5px;border:1px solid var(--line);
+  background:var(--panel-2);color:var(--text);white-space:nowrap;
+}
+#pause:hover{border-color:var(--text-3)}
+
+/* ---------- Layout ---------- */
+main{display:flex;height:calc(100% - 52px)}
+#wall{
+  flex:1;overflow-y:auto;padding:12px;display:grid;gap:10px;
+  grid-template-columns:repeat(auto-fill,minmax(176px,1fr));
+  grid-auto-rows:118px;align-content:start;
+}
+#wall::-webkit-scrollbar,#rail-list::-webkit-scrollbar,#ins-events::-webkit-scrollbar{width:8px}
+#wall::-webkit-scrollbar-thumb,#rail-list::-webkit-scrollbar-thumb,#ins-events::-webkit-scrollbar-thumb{background:#2a3442;border-radius:4px}
+.empty-note{
+  grid-column:1/-1;color:var(--text-3);text-align:center;padding:60px 0;font-size:13px;
+}
+
+/* ---------- Tiles ---------- */
+.tile{
+  position:relative;display:flex;flex-direction:column;gap:4px;text-align:left;
+  padding:9px 11px 8px;border-radius:7px;background:var(--tile);
+  border:1px solid var(--line-soft);border-left:3px solid var(--line);
+  height:118px;overflow:hidden;outline:none;
+  transition:background-color .25s,border-color .25s;
+}
+.tile:hover{background:var(--tile-hover)}
+.tile:focus-visible{box-shadow:0 0 0 2px var(--blue)}
+.tile.selected{box-shadow:0 0 0 2px var(--blue)}
+.t-top{display:flex;justify-content:space-between;align-items:center;gap:6px;min-height:16px}
+.t-name{font-size:12px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t-svc{font-size:10px;color:var(--text-3);border:1px solid var(--line-soft);border-radius:3px;padding:0 4px;white-space:nowrap}
+.t-mid{display:flex;align-items:baseline;gap:5px}
+.t-val{font-family:var(--mono);font-size:21px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.1}
+.t-unit{font-size:11px;color:var(--text-3)}
+.t-delta{margin-left:auto;font-family:var(--mono);font-size:11px;font-variant-numeric:tabular-nums;color:var(--text-3)}
+.t-delta.worse{color:var(--crit)} .t-delta.better{color:var(--norm)}
+.t-spark{display:block;width:100%;height:30px;margin-top:auto}
+.t-badge{
+  position:absolute;top:8px;right:10px;font-family:var(--mono);font-size:9.5px;font-weight:700;
+  letter-spacing:.08em;padding:1px 6px;border-radius:3px;display:none;
+}
+.tile.st-warn{border-left-color:var(--warn);background:linear-gradient(to right,var(--warn-bg),var(--tile) 55%)}
+.tile.st-warn .t-badge{display:block;color:var(--warn);border:1px solid var(--warn-line);background:rgba(210,153,34,.12)}
+.tile.st-warn .t-val{color:var(--warn)}
+.tile.st-crit{border-color:var(--crit-line);border-left-color:var(--crit);background:linear-gradient(to right,var(--crit-bg),var(--tile) 55%)}
+.tile.st-crit .t-badge{display:block;color:var(--crit);border:1px solid var(--crit-line);background:rgba(248,81,73,.14)}
+.tile.st-crit .t-val{color:var(--crit)}
+
+/* ---------- Side column ---------- */
+#side{width:332px;flex:none;display:flex;flex-direction:column;border-left:1px solid var(--line);background:var(--panel);min-height:0}
+#inspector{display:flex;flex-direction:column;padding:12px 14px 8px;border-bottom:1px solid var(--line);max-height:62%;min-height:0}
+#inspector[hidden]{display:none}
+.ins-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.ins-name{font-size:14px;font-weight:600}
+.ins-svc{color:var(--text-3);font-size:11px;margin-top:1px}
+#ins-close{color:var(--text-3);font-size:15px;padding:2px 6px;border-radius:4px}
+#ins-close:hover{color:var(--text);background:var(--panel-2)}
+.ins-stats{display:flex;align-items:baseline;gap:10px;margin:8px 0 6px}
+.ins-val{font-family:var(--mono);font-size:26px;font-weight:700;font-variant-numeric:tabular-nums}
+.ins-unit{color:var(--text-3);font-size:12px}
+.ins-state{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.08em;padding:2px 7px;border-radius:3px;border:1px solid}
+.ins-state.normal{color:var(--norm);border-color:rgba(63,185,80,.4)}
+.ins-state.warn{color:var(--warn);border-color:var(--warn-line)}
+.ins-state.crit{color:var(--crit);border-color:var(--crit-line)}
+.ins-limits{color:var(--text-3);font-size:11px;font-family:var(--mono);margin-left:auto;text-align:right}
+#chart-wrap{position:relative;flex:none}
+#chart{display:block;width:100%;height:168px;border:1px solid var(--line-soft);border-radius:6px;background:var(--panel-2)}
+#readout{height:20px;font-family:var(--mono);font-size:11px;color:var(--text-2);padding:3px 2px 0;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ins-ev-head{font-size:11px;color:var(--text-3);letter-spacing:.06em;margin:4px 0 4px}
+#ins-events{list-style:none;overflow-y:auto;min-height:40px}
+#ins-events li{display:flex;gap:8px;align-items:baseline;padding:4px 2px;border-top:1px solid var(--line-soft);font-size:12px}
+.ev-time{font-family:var(--mono);color:var(--text-3);font-size:11px;font-variant-numeric:tabular-nums;flex:none}
+.ev-dot{width:7px;height:7px;border-radius:50%;flex:none;align-self:center}
+.ev-txt{color:var(--text-2)} .ev-txt b{color:var(--text);font-weight:600}
+.ev-txt .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* ---------- Event rail ---------- */
+#rail{flex:1;display:flex;flex-direction:column;min-height:0}
+.rail-head{display:flex;justify-content:space-between;align-items:center;padding:10px 14px 8px;font-size:11px;color:var(--text-3);letter-spacing:.06em}
+.rail-only{display:flex;align-items:center;gap:5px;cursor:pointer;letter-spacing:0;text-transform:none;font-size:11px;color:var(--text-2)}
+.rail-only input{accent-color:var(--blue)}
+.rail-only input:disabled+span{color:var(--text-3)}
+#rail-list{list-style:none;overflow-y:auto;flex:1;padding:0 8px 10px}
+#rail-list li{
+  display:flex;gap:8px;align-items:baseline;padding:5px 6px;border-radius:5px;
+  font-size:12px;cursor:pointer;border:1px solid transparent;
+}
+#rail-list li:hover{background:var(--panel-2);border-color:var(--line-soft)}
+#rail-list li.cur{background:var(--panel-2);border-color:var(--line-soft)}
+.ev-metric{color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:96px}
+.rail-empty{color:var(--text-3);text-align:center;padding:30px 10px;font-size:12px}
+
+/* ---------- Fatal banner ---------- */
+#fatal{
+  position:fixed;inset:auto 16px 16px 16px;z-index:99;padding:12px 16px;border-radius:8px;
+  background:#2d1417;border:1px solid var(--crit-line);color:#ffb3ae;font-size:13px;
+}
+
+/* seed 阶段一次性计算，同步完成 —— 页面首帧即为 ready 态，无加载门 */
+</style>
+</head>
+<body>
+
+<header id="topbar">
+  <div class="brand"><b>PULSEWALL</b><span class="sub">易变指标监控</span><span class="cell">cell-j04-s04</span></div>
+  <div class="clock" title="流时钟（数据时刻）">
+    <span id="clock-time">--:--:--</span><span id="clock-state">LIVE</span>
+  </div>
+  <div class="chips" id="chips" role="group" aria-label="状态过滤">
+    <button class="chip" data-f="all"    aria-pressed="true"><span class="dot"></span>全部</button>
+    <button class="chip" data-f="crit"   aria-pressed="false"><span class="dot"></span>严重<span class="n" id="n-crit">0</span></button>
+    <button class="chip" data-f="warn"   aria-pressed="false"><span class="dot"></span>警告<span class="n" id="n-warn">0</span></button>
+    <button class="chip" data-f="normal" aria-pressed="false"><span class="dot"></span>正常<span class="n" id="n-norm">0</span></button>
+  </div>
+  <input id="search" type="text" placeholder="搜索指标 / 服务（按 /）" aria-label="搜索指标或服务">
+  <button id="pause" aria-label="暂停或恢复数据流">⏸ 暂停</button>
+</header>
+
+<main>
+  <section id="wall" aria-label="指标状态墙"></section>
+
+  <aside id="side">
+    <section id="inspector" hidden aria-label="指标追溯检查器">
+      <div class="ins-head">
+        <div><div class="ins-name" id="ins-name"></div><div class="ins-svc" id="ins-svc"></div></div>
+        <button id="ins-close" title="关闭（Esc）" aria-label="关闭检查器">✕</button>
+      </div>
+      <div class="ins-stats">
+        <span class="ins-val" id="ins-val">—</span><span class="ins-unit" id="ins-unit"></span>
+        <span class="ins-state" id="ins-state">—</span>
+        <span class="ins-limits" id="ins-limits"></span>
+      </div>
+      <div id="chart-wrap"><canvas id="chart"></canvas></div>
+      <div id="readout">悬停折线查看任意时刻取值</div>
+      <div class="ins-ev-head">变化事件（新 → 旧）</div>
+      <ol id="ins-events"></ol>
+    </section>
+
+    <section id="rail">
+      <div class="rail-head">
+        <span>变化事件流</span>
+        <label class="rail-only"><input type="checkbox" id="rail-only-cb" disabled><span>仅看选中指标</span></label>
+      </div>
+      <ol id="rail-list" role="log" aria-live="off"></ol>
+    </section>
+  </aside>
+</main>
+
+<div id="fatal" hidden role="alert"></div>
+
+<script>
+'use strict';
+/* ================================================================
+   Pulsewall — monitor × volatile-evidence-stream (cell-j04-s04)
+   状态瓷片墙（耐久状态编码）+ 追溯检查器 + 变化事件流
+   数据：内联种子历史 + 本地节拍生成器；无网络、无后端、无持久化。
+   ================================================================ */
+
+/* ---------- 参数 & 确定性随机 ---------- */
+const QS = new URLSearchParams(location.search);
+const SEED   = parseInt(QS.get('seed')  || '20260908', 10);
+const TICK_MS= Math.max(120, parseInt(QS.get('speed') || '1000', 10));
+const START_PAUSED = QS.get('paused') === '1';
+const WINDOW = 240;                 // 每指标滚动窗口点数
+const SEED_TICKS = 150;             // 首屏前预生成的历史节拍数
+
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const rnd = mulberry32(SEED);
+function gauss(){let u=0,v=0;while(u===0)u=rnd();while(v===0)v=rnd();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+
+/* ---------- 指标目录（6 服务 × 8 = 48） ---------- */
+// dir:'above' 越高越坏 | 'below' 越低越坏
+const METRICS = [
+ // gateway 网关
+ {id:'gw.qps',  svc:'gateway', name:'入口 QPS',   unit:'req/s', base:8200, sigma:70,  warn:10000, crit:12000, dir:'above', dec:0},
+ {id:'gw.p50',  svc:'gateway', name:'p50 延迟',   unit:'ms',    base:24,   sigma:1.3, warn:60,    crit:100,   dir:'above', dec:0},
+ {id:'gw.p99',  svc:'gateway', name:'p99 延迟',   unit:'ms',    base:110,  sigma:9,   warn:250,   crit:400,   dir:'above', dec:0},
+ {id:'gw.err',  svc:'gateway', name:'错误率',     unit:'%',     base:0.4,  sigma:0.06,warn:2,     crit:5,     dir:'above', dec:2},
+ {id:'gw.4xx',  svc:'gateway', name:'4xx 比例',   unit:'%',     base:1.2,  sigma:0.09,warn:3,     crit:6,     dir:'above', dec:2},
+ {id:'gw.5xx',  svc:'gateway', name:'5xx 比例',   unit:'%',     base:0.3,  sigma:0.05,warn:1.5,   crit:4,     dir:'above', dec:2},
+ {id:'gw.conn', svc:'gateway', name:'活跃连接',   unit:'',      base:4200, sigma:95,  warn:6000,  crit:7500,  dir:'above', dec:0},
+ {id:'gw.retry',svc:'gateway', name:'上游重试',   unit:'次/min',base:210,  sigma:13,  warn:400,   crit:700,   dir:'above', dec:0},
+ // auth 认证
+ {id:'auth.ok', svc:'auth', name:'登录成功率',  unit:'%',     base:99.2,  sigma:0.05, warn:97.5, crit:95,  dir:'below', dec:2},
+ {id:'auth.jwt',svc:'auth', name:'JWT 验证 p99',unit:'ms',    base:12,    sigma:0.7,  warn:30,   crit:60,  dir:'above', dec:0},
+ {id:'auth.ses',svc:'auth', name:'活跃会话',    unit:'',      base:15600, sigma:210,  warn:20000,crit:24000,dir:'above', dec:0},
+ {id:'auth.ref',svc:'auth', name:'令牌刷新',    unit:'次/min',base:940,   sigma:32,   warn:1400, crit:2000,dir:'above', dec:0},
+ {id:'auth.brt',svc:'auth', name:'暴力尝试',    unit:'次/min',base:6,     sigma:1.4,  warn:40,   crit:100, dir:'above', dec:0},
+ {id:'auth.ldap',svc:'auth',name:'LDAP 查询 p99',unit:'ms',   base:45,    sigma:3,    warn:120,  crit:200, dir:'above', dec:0},
+ {id:'auth.cache',svc:'auth',name:'认证缓存命中',unit:'%',    base:96.5,  sigma:0.3,  warn:90,   crit:80,  dir:'below', dec:1},
+ {id:'auth.p99',svc:'auth', name:'登录 p99',    unit:'ms',    base:180,   sigma:11,   warn:350,  crit:600, dir:'above', dec:0},
+ // payments 支付
+ {id:'pay.ok',  svc:'payments', name:'支付成功率', unit:'%',  base:99.1, sigma:0.07, warn:97.5, crit:95,  dir:'below', dec:2},
+ {id:'pay.p99', svc:'payments', name:'支付 p99',   unit:'ms', base:320,  sigma:16,   warn:600,  crit:900, dir:'above', dec:0},
+ {id:'pay.q',   svc:'payments', name:'交易队列深度',unit:'笔', base:120,  sigma:9,    warn:400,  crit:900, dir:'above', dec:0},
+ {id:'pay.rec', svc:'payments', name:'对账滞后',   unit:'min',base:2.1,  sigma:0.3,  warn:8,    crit:15,  dir:'above', dec:1},
+ {id:'pay.ref', svc:'payments', name:'退款率',     unit:'%',  base:1.8,  sigma:0.11, warn:4,    crit:8,   dir:'above', dec:2},
+ {id:'pay.risk',svc:'payments', name:'风控拦截率', unit:'%',  base:3.2,  sigma:0.22, warn:8,    crit:15,  dir:'above', dec:2},
+ {id:'pay.to',  svc:'payments', name:'网关超时率', unit:'%',  base:0.5,  sigma:0.06, warn:2,    crit:5,   dir:'above', dec:2},
+ {id:'pay.set', svc:'payments', name:'结算滞后',   unit:'min',base:5,    sigma:0.8,  warn:15,   crit:30,  dir:'above', dec:1},
+ // search 搜索
+ {id:'se.qps',  svc:'search', name:'查询 QPS',    unit:'req/s', base:3400, sigma:45, warn:5000, crit:6500, dir:'above', dec:0},
+ {id:'se.p99',  svc:'search', name:'查询 p99',    unit:'ms',    base:95,   sigma:6,  warn:220,  crit:380,  dir:'above', dec:0},
+ {id:'se.lag',  svc:'search', name:'索引滞后',    unit:'s',     base:3,    sigma:0.5,warn:15,   crit:30,   dir:'above', dec:1},
+ {id:'se.zero', svc:'search', name:'零结果率',    unit:'%',     base:6,    sigma:0.4,warn:15,   crit:25,   dir:'above', dec:1},
+ {id:'se.repl', svc:'search', name:'副本同步延迟',unit:'s',     base:1.8,  sigma:0.3,warn:10,   crit:20,   dir:'above', dec:1},
+ {id:'se.cache',svc:'search', name:'查询缓存命中',unit:'%',     base:88,   sigma:0.8,warn:75,   crit:60,   dir:'below', dec:1},
+ {id:'se.idx',  svc:'search', name:'索引写入速率',unit:'docs/s',base:1200, sigma:32, warn:2000, crit:3000, dir:'above', dec:0},
+ {id:'se.slow', svc:'search', name:'慢查询率',    unit:'%',     base:2.5,  sigma:0.2,warn:8,    crit:15,   dir:'above', dec:1},
+ // media 媒体
+ {id:'md.q',    svc:'media', name:'转码队列',     unit:'个',      base:22,  sigma:2,   warn:60,  crit:120, dir:'above', dec:0},
+ {id:'md.p95',  svc:'media', name:'转码时长 p95', unit:'s',       base:480, sigma:22,  warn:900, crit:1500,dir:'above', dec:0},
+ {id:'md.up',   svc:'media', name:'上传失败率',   unit:'%',       base:0.8, sigma:0.08,warn:3,   crit:7,   dir:'above', dec:2},
+ {id:'md.cdn',  svc:'media', name:'CDN 命中率',   unit:'%',       base:92,  sigma:0.6, warn:85,  crit:70,  dir:'below', dec:1},
+ {id:'md.stall',svc:'media', name:'卡顿率',       unit:'%',       base:1.1, sigma:0.1, warn:4,   crit:9,   dir:'above', dec:2},
+ {id:'md.disk', svc:'media', name:'存储使用率',   unit:'%',       base:64,  sigma:0.5, warn:85,  crit:95,  dir:'above', dec:1},
+ {id:'md.thumb',svc:'media', name:'缩略图 p99',   unit:'ms',      base:140, sigma:9,   warn:300, crit:500, dir:'above', dec:0},
+ {id:'md.live', svc:'media', name:'直播断流',     unit:'次/10min',base:0.2, sigma:0.15,warn:2,   crit:6,   dir:'above', dec:1},
+ // worker 任务
+ {id:'wk.q',    svc:'worker', name:'队列深度',   unit:'个',      base:310, sigma:16,  warn:800, crit:1600, dir:'above', dec:0},
+ {id:'wk.fail', svc:'worker', name:'任务失败率', unit:'%',       base:0.6, sigma:0.05,warn:2.5, crit:6,    dir:'above', dec:2},
+ {id:'wk.cpu',  svc:'worker', name:'CPU 使用率', unit:'%',       base:47,  sigma:1.6, warn:80,  crit:92,   dir:'above', dec:1},
+ {id:'wk.mem',  svc:'worker', name:'内存占用',   unit:'%',       base:61,  sigma:0.8, warn:82,  crit:93,   dir:'above', dec:1},
+ {id:'wk.ret',  svc:'worker', name:'重试率',     unit:'%',       base:1.4, sigma:0.12,warn:6,   crit:12,   dir:'above', dec:2},
+ {id:'wk.sch',  svc:'worker', name:'调度延迟',   unit:'ms',      base:240, sigma:16,  warn:600, crit:1200, dir:'above', dec:0},
+ {id:'wk.dlq',  svc:'worker', name:'死信队列',   unit:'条',      base:4,   sigma:0.8, warn:25,  crit:80,   dir:'above', dec:0},
+ {id:'wk.hb',   svc:'worker', name:'心跳丢失',   unit:'次/10min',base:0.1, sigma:0.1, warn:3,   crit:10,   dir:'above', dec:1},
+];
+const SVC_LABEL = {gateway:'网关',auth:'认证',payments:'支付',search:'搜索',media:'媒体',worker:'任务'};
+
+/* ---------- 流引擎 ---------- */
+let tickIndex = 0;                 // 全局节拍序号（0 = 窗口最早点）
+const bootTime = Date.now();
+const timeOf = i => new Date(bootTime + (i - SEED_TICKS) * TICK_MS);
+const metrics = new Map();         // id -> runtime
+const events = [];                 // 全局事件（新→旧）
+let incidents = [];                // 活跃事故
+
+function statusOf(m, v){
+  const bad = m.dir === 'above' ? v : -v;
+  const w = m.dir === 'above' ? m.warn : -m.warn;
+  const c = m.dir === 'above' ? m.crit : -m.crit;
+  return bad >= c ? 'crit' : bad >= w ? 'warn' : 'normal';
+}
+function targetFor(m, level){
+  const span = Math.max(Math.abs(m.crit - m.base), m.sigma * 6);
+  return m.dir === 'above'
+    ? (level === 'crit' ? m.crit + span * .25 : m.warn + span * .12)
+    : (level === 'crit' ? m.crit - span * .25 : m.warn - span * .12);
+}
+function pushEvent(m, tick, kind, from, to){
+  events.unshift({ id:'e'+tick+'-'+m.id, tick, metricId:m.id, kind, from, to });
+  if (events.length > 400) events.length = 400;
+}
+const KIND_LABEL = {upWarn:'升至警告', upCrit:'升至严重', downWarn:'降至警告', recover:'恢复正常', spike:'突跳'};
+
+function stepMetric(m){
+  const st = metrics.get(m.id);
+  let v = st.v;
+  const inc = st.incident;
+  if (inc){
+    v += (inc.target - v) / inc.remaining + gauss() * m.sigma * .4;
+    if (--inc.remaining <= 0) st.incident = null;
+  } else {
+    v += (m.base - v) * .03 + gauss() * m.sigma;
+  }
+  if (m.min !== undefined) v = Math.max(m.min, v);
+  if (m.max !== undefined) v = Math.min(m.max, v);
+  st.hist.push(v);
+  if (st.hist.length > WINDOW) st.hist.shift();
+  const prev = st.status;
+  const now = statusOf(m, v);
+  if (now !== prev){
+    const kind = now==='crit' ? 'upCrit' : now==='warn' ? (prev==='normal'?'upWarn':'downWarn') : 'recover';
+    st.since = tickIndex; st.status = now;
+    pushEvent(m, tickIndex, kind, st.hist[st.hist.length-2], v);
+  } else {
+    const lastSpike = st.lastSpike || -99;
+    if (Math.abs(v - st.hist[st.hist.length-2]) > m.sigma * 4.5 && tickIndex - lastSpike > 10){
+      st.lastSpike = tickIndex;
+      pushEvent(m, tickIndex, 'spike', st.hist[st.hist.length-2], v);
+    }
+  }
+  st.v = v;
+}
+function startIncident(m, level, persistent){
+  const st = metrics.get(m.id);
+  if (st.incident) return;
+  st.incident = { target: targetFor(m, level), remaining: persistent ? 1e9 : 6 + Math.floor(rnd()*5) };
+}
+let nextIncidentIn = 8;
+function maybeLiveIncident(){
+  if (--nextIncidentIn > 0) return;
+  nextIncidentIn = 8 + Math.floor(rnd()*7);
+  const active = METRICS.filter(m => metrics.get(m.id).incident);
+  if (active.length >= 3) return;
+  const pool = METRICS.filter(m => !metrics.get(m.id).incident && metrics.get(m.id).status === 'normal');
+  if (!pool.length) return;
+  startIncident(pool[Math.floor(rnd()*pool.length)], rnd() < .35 ? 'crit' : 'warn', false);
+}
+
+/* ---------- 种子：预生成首屏历史（同步，页面首帧即 ready） ---------- */
+const SEED_SCRIPT = [           // 转为持续事故 → 首屏常态异常（耐久可见）
+  {at:35,  id:'gw.5xx',    level:'crit'},
+  {at:70,  id:'pay.p99',   level:'warn'},
+  {at:95,  id:'se.lag',    level:'warn'},
+  {at:120, id:'auth.cache',level:'crit'},
+  {at:140, id:'md.stall',  level:'warn'},
+];
+const SEED_TRANSIENT = [        // 瞬时事故 → 种子期内已恢复，留下可追溯事件对
+  {at:18, id:'wk.q',     level:'warn'},
+  {at:52, id:'se.p99',   level:'crit'},
+  {at:84, id:'pay.to',   level:'warn'},
+  {at:108,id:'gw.retry', level:'warn'},
+  {at:128,id:'md.live',  level:'warn'},
+];
+for (const m of METRICS){
+  const v0 = m.base + gauss() * m.sigma;
+  metrics.set(m.id, { cfg:m, v:v0, hist:[v0], status:statusOf(m, v0), since:0, incident:null, lastSpike:-99 });
+}
+for (let i = 1; i <= SEED_TICKS; i++){
+  tickIndex = i;
+  for (const s of SEED_SCRIPT)    if (s.at === i) startIncident(metrics.get(s.id).cfg, s.level, true);
+  for (const s of SEED_TRANSIENT) if (s.at === i) startIncident(metrics.get(s.id).cfg, s.level, false);
+  for (const m of METRICS) stepMetric(m);
+}
+
+/* ---------- 状态 ---------- */
+let filter = 'all';
+let query = '';
+let selectedId = QS.get('select') || null;
+let paused = START_PAUSED;
+let railOnly = false;
+
+/* ---------- 工具 ---------- */
+const $ = s => document.querySelector(s);
+const fmt = (v, dec) => Number(v).toFixed(dec);
+const hhmmss = d => d.toTimeString().slice(0, 8);
+const stateLabel = {normal:'NORMAL', warn:'WARN', crit:'CRIT'};
+const stateColor = {normal:'#3fb950', warn:'#d29922', crit:'#f85149'};
+function setupCanvas(cv, w, h){
+  const dpr = window.devicePixelRatio || 1;
+  cv.width = Math.max(1, Math.round(w * dpr)); cv.height = Math.max(1, Math.round(h * dpr));
+  const ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return ctx;
+}
+
+/* ---------- 瓷片墙 ---------- */
+const wall = $('#wall');
+const tileEls = new Map();
+function rank(m){ const s = metrics.get(m.id).status; return s === 'crit' ? 0 : s === 'warn' ? 1 : 2; }
+function orderKey(m){ return `${rank(m)}/${m.svc}/${m.name}`; }
+
+function buildTiles(){
+  const frag = document.createDocumentFragment();
+  for (const m of [...METRICS].sort((a,b) => orderKey(a).localeCompare(orderKey(b), 'zh'))){
+    const el = document.createElement('button');
+    el.className = 'tile'; el.dataset.id = m.id; el.type = 'button';
+    el.setAttribute('role', 'listitem');
+    el.innerHTML =
+      `<span class="t-top"><span class="t-name"></span><span class="t-svc">${SVC_LABEL[m.svc]}</span></span>` +
+      `<span class="t-mid"><span class="t-val"></span><span class="t-unit">${m.unit}</span><span class="t-delta"></span></span>` +
+      `<canvas class="t-spark"></canvas><span class="t-badge"></span>`;
+    el.addEventListener('click', () => selectMetric(m.id));
+    frag.appendChild(el);
+    tileEls.set(m.id, el);
+  }
+  wall.appendChild(frag);
+}
+
+function updateTile(m){
+  const st = metrics.get(m.id), el = tileEls.get(m.id);
+  el.querySelector('.t-name').textContent = m.name;
+  el.querySelector('.t-val').textContent = fmt(st.v, m.dec);
+  const ref = st.hist[Math.max(0, st.hist.length - 61)];
+  const d = st.v - ref, dr = ref !== 0 ? d / Math.abs(ref) : 0;
+  const worse = m.dir === 'above' ? d > 0 : d < 0;
+  const dEl = el.querySelector('.t-delta');
+  dEl.textContent = Math.abs(dr) < .002 ? '→ 0%' : `${d > 0 ? '▲' : '▼'} ${(Math.abs(dr)*100).toFixed(1)}%`;
+  dEl.className = 't-delta' + (Math.abs(dr) < .002 ? '' : worse ? ' worse' : ' better');
+  el.querySelector('.t-badge').textContent = stateLabel[st.status];
+  const cls = `tile st-${st.status}` + (m.id === selectedId ? ' selected' : '');
+  if (el.className !== cls) el.className = cls;
+  el.title = `${SVC_LABEL[m.svc]} · ${m.name} — 当前 ${fmt(st.v, m.dec)} ${m.unit}（${stateLabel[st.status]}）`;
+  drawSpark(el.querySelector('.t-spark'), m, st);
+}
+function drawSpark(cv, m, st){
+  const w = cv.clientWidth || 150, h = cv.clientHeight || 30;
+  const ctx = setupCanvas(cv, w, h);
+  const hist = st.hist, n = hist.length;
+  let lo = Infinity, hi = -Infinity;
+  for (const v of hist){ if (v < lo) lo = v; if (v > hi) hi = v; }
+  if (hi - lo < m.sigma * 3){ const mid = (hi+lo)/2; lo = mid - m.sigma*1.5; hi = mid + m.sigma*1.5; }
+  const pad = (hi - lo) * .12; lo -= pad; hi += pad;
+  const x = i => 1 + i * (w - 2) / (n - 1), y = v => h - 2 - (v - lo) * (h - 4) / (hi - lo);
+  ctx.clearRect(0, 0, w, h);
+  const col = stateColor[st.status === 'normal' ? 'normal' : st.status];
+  ctx.beginPath();
+  for (let i = 0; i < n; i++) i ? ctx.lineTo(x(i), y(hist[i])) : ctx.moveTo(x(i), y(hist[i]));
+  ctx.strokeStyle = st.status === 'normal' ? '#4d6379' : col;
+  ctx.lineWidth = 1.4; ctx.stroke();
+  ctx.lineTo(x(n-1), h); ctx.lineTo(x(0), h); ctx.closePath();
+  ctx.fillStyle = st.status === 'normal' ? 'rgba(77,99,121,.14)' :
+                  st.status === 'warn' ? 'rgba(210,153,34,.13)' : 'rgba(248,81,73,.14)';
+  ctx.fill();
+}
+
+/* FLIP 重排：仅 transform，位置变化可动画追溯且无布局抖动 */
+function reorderWall(){
+  const sorted = [...METRICS].sort((a,b) => orderKey(a).localeCompare(orderKey(b), 'zh'));
+  const target = sorted.map(m => tileEls.get(m.id));
+  const cur = [...wall.children];
+  if (cur.length !== target.length || target.some((el,i) => el !== cur[i])){
+    const first = new Map(cur.map(el => [el, el.getBoundingClientRect()]));
+    for (const el of target) wall.appendChild(el);
+    for (const el of wall.children){
+      const f = first.get(el); if (!f) continue;
+      const r = el.getBoundingClientRect(), dx = f.left - r.left, dy = f.top - r.top;
+      if (dx || dy){
+        el.style.transition = 'none';
+        el.style.transform = `translate(${dx}px,${dy}px)`;
+        requestAnimationFrame(() => {
+          el.style.transition = 'transform .3s cubic-bezier(.22,.9,.26,1)';
+          el.style.transform = '';
+        });
+        el.addEventListener('transitionend', () => { el.style.transition = ''; }, { once:true });
+      }
+    }
+  }
+}
+
+/* 过滤 / 搜索 → 显示/隐藏（结构不重建，无闪烁） */
+function applyFilterVisibility(){
+  let visible = 0;
+  for (const m of METRICS){
+    const el = tileEls.get(m.id);
+    const okF = filter === 'all' || metrics.get(m.id).status === filter;
+    const q = query.trim().toLowerCase();
+    const okQ = !q || m.name.toLowerCase().includes(q) || m.svc.toLowerCase().includes(q) || SVC_LABEL[m.svc].includes(q);
+    const show = okF && okQ;
+    el.style.display = show ? '' : 'none';
+    if (show) visible++;
+  }
+  let note = wall.querySelector('.empty-note');
+  if (!visible){
+    if (!note){ note = document.createElement('div'); note.className = 'empty-note'; wall.appendChild(note); }
+    note.textContent = '没有匹配当前过滤 / 搜索的指标（Esc 清除）';
+  } else if (note) note.remove();
+}
+
+/* ---------- 检查器 ---------- */
+const inspector = $('#inspector');
+let chartHover = -1;
+function selectMetric(id){
+  selectedId = id;
+  for (const [mid, el] of tileEls) el.classList.toggle('selected', mid === id);
+  if (!id){ inspector.hidden = true; $('#rail-only-cb').disabled = true; applyRailFilter(); return; }
+  inspector.hidden = false;
+  $('#rail-only-cb').disabled = false;
+  const m = metrics.get(id).cfg;
+  $('#ins-name').textContent = m.name;
+  $('#ins-svc').textContent = `${SVC_LABEL[m.svc]} · ${m.id} · ${m.unit || '无量纲'} · 阈值方向：越${m.dir === 'above' ? '高' : '低'}越坏`;
+  $('#ins-close').focus({ preventScroll:true });
+  renderInspector();
+  applyRailFilter();
+}
+function renderInspector(){
+  if (!selectedId) return;
+  const st = metrics.get(selectedId), m = st.cfg;
+  $('#ins-val').textContent = fmt(st.v, m.dec);
+  $('#ins-unit').textContent = m.unit;
+  const sEl = $('#ins-state');
+  sEl.textContent = stateLabel[st.status];
+  sEl.className = 'ins-state ' + st.status;
+  $('#ins-limits').innerHTML =
+    `警告${m.dir === 'above' ? '≥' : '≤'} ${fmt(m.warn, m.dec)}<br>严重${m.dir === 'above' ? '≥' : '≤'} ${fmt(m.crit, m.dec)}`;
+  drawChart(m, st);
+  const list = $('#ins-events');
+  const keepScroll = list.scrollTop;
+  list.innerHTML = '';
+  const mine = events.filter(e => e.metricId === selectedId).slice(0, 40);
+  for (const e of mine){
+    const li = document.createElement('li');
+    li.innerHTML = `<span class="ev-time">${hhmmss(timeOf(e.tick))}</span>` +
+      `<span class="ev-dot" style="background:${kindColor(e.kind)}"></span>` +
+      `<span class="ev-txt"><span class="mono">${fmt(e.from, m.dec)} → ${fmt(e.to, m.dec)}</span> · ${KIND_LABEL[e.kind]}</span>`;
+    list.appendChild(li);
+  }
+  if (!mine.length) list.innerHTML = '<li style="border:0;color:var(--text-3)">窗口内暂无变化事件</li>';
+  list.scrollTop = keepScroll;
+}
+function kindColor(k){ return k==='upCrit' ? 'var(--crit)' : k==='upWarn' ? 'var(--warn)' : k==='downWarn' ? '#e3b341' : k==='recover' ? 'var(--norm)' : 'var(--blue)'; }
+
+function drawChart(m, st){
+  const cv = $('#chart');
+  const w = cv.parentElement.clientWidth, h = 168;
+  const ctx = setupCanvas(cv, w, h);
+  const hist = st.hist, n = hist.length;
+  let lo = Math.min(m.warn, m.crit), hi = Math.max(m.warn, m.crit);
+  for (const v of hist){ if (v < lo) lo = v; if (v > hi) hi = v; }
+  const pad = (hi - lo) * .1 || 1; lo -= pad; hi += pad;
+  const X = i => 10 + i * (w - 42) / (WINDOW - 1);
+  const off = WINDOW - n;
+  const x = i => X(off + i), y = v => h - 14 - (v - lo) * (h - 26) / (hi - lo);
+  ctx.clearRect(0, 0, w, h);
+  // 网格
+  ctx.strokeStyle = '#1c2430'; ctx.lineWidth = 1;
+  for (let g = 1; g < 4; g++){ ctx.beginPath(); ctx.moveTo(10, g*h/4); ctx.lineTo(w-32, g*h/4); ctx.stroke(); }
+  // 阈值线（虚线 + 标签）
+  const thr = [[m.warn, 'warn', '#d29922'], [m.crit, 'crit', '#f85149']];
+  ctx.setLineDash([4, 3]); ctx.font = '10px ' + getComputedStyle(document.body).getPropertyValue('--mono');
+  for (const [v, name, col] of thr){
+    const yy = y(v);
+    ctx.strokeStyle = col; ctx.beginPath(); ctx.moveTo(10, yy); ctx.lineTo(w-32, yy); ctx.stroke();
+    ctx.fillStyle = col; ctx.fillText(`${name} ${fmt(v, m.dec)}`, w - 30, yy + 3);
+  }
+  ctx.setLineDash([]);
+  // 主折线 + 填充
+  const col = stateColor[st.status === 'normal' ? 'normal' : st.status];
+  ctx.beginPath();
+  for (let i = 0; i < n; i++) i ? ctx.lineTo(x(i), y(hist[i])) : ctx.moveTo(x(i), y(hist[i]));
+  ctx.strokeStyle = st.status === 'normal' ? '#58a6ff' : col; ctx.lineWidth = 1.6; ctx.stroke();
+  ctx.lineTo(x(n-1), h-12); ctx.lineTo(x(0), h-12); ctx.closePath();
+  ctx.fillStyle = st.status === 'normal' ? 'rgba(88,166,255,.08)' :
+                  st.status === 'warn' ? 'rgba(210,153,34,.08)' : 'rgba(248,81,73,.09)';
+  ctx.fill();
+  // 事件标注：窗口内变化点
+  const firstTick = tickIndex - (n - 1);
+  for (const e of events){
+    if (e.metricId !== m.id) continue;
+    const idx = e.tick - firstTick;
+    if (idx < 0 || idx >= n) continue;
+    ctx.fillStyle = kindColor(e.kind);
+    ctx.beginPath(); ctx.arc(x(idx), y(hist[idx]), 3.4, 0, 7); ctx.fill();
+    ctx.strokeStyle = 'rgba(230,237,243,.35)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x(idx), y(hist[idx])); ctx.lineTo(x(idx), h-12); ctx.stroke();
+  }
+  // 悬停十字线
+  if (chartHover >= 0 && chartHover < n){
+    const i = chartHover;
+    ctx.strokeStyle = 'rgba(230,237,243,.4)'; ctx.setLineDash([2, 3]);
+    ctx.beginPath(); ctx.moveTo(x(i), 8); ctx.lineTo(x(i), h-12); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = '#e6edf3';
+    ctx.beginPath(); ctx.arc(x(i), y(hist[i]), 3, 0, 7); ctx.fill();
+  }
+}
+$('#chart').addEventListener('mousemove', e => {
+  if (!selectedId) return;
+  const st = metrics.get(selectedId), n = st.hist.length;
+  const rect = e.target.getBoundingClientRect();
+  const rel = (e.clientX - rect.left - 10) / (rect.width - 42) * (WINDOW - 1) - (WINDOW - n);
+  chartHover = Math.max(0, Math.min(n - 1, Math.round(rel)));
+  const i = chartHover;
+  $('#readout').textContent = `${hhmmss(timeOf(tickIndex - (n - 1) + i))} · ${fmt(st.hist[i], st.cfg.dec)} ${st.cfg.unit} · ${stateLabel[statusOf(st.cfg, st.hist[i])]}`;
+  drawChart(st.cfg, st);
+});
+$('#chart').addEventListener('mouseleave', () => {
+  chartHover = -1;
+  if (selectedId){ $('#readout').textContent = '悬停折线查看任意时刻取值'; renderInspector(); }
+});
+$('#ins-close').addEventListener('click', () => selectMetric(null));
+
+/* ---------- 事件轨 ---------- */
+const railList = $('#rail-list');
+const railOnlyCb = $('#rail-only-cb');
+function eventRow(e){
+  const m = metrics.get(e.metricId).cfg;
+  const li = document.createElement('li');
+  li.dataset.id = e.metricId;
+  li.innerHTML = `<span class="ev-time">${hhmmss(timeOf(e.tick))}</span>` +
+    `<span class="ev-dot" style="background:${kindColor(e.kind)}"></span>` +
+    `<span class="ev-metric">${m.name}</span>` +
+    `<span class="ev-txt"><span class="mono">${fmt(e.from, m.dec)}→${fmt(e.to, m.dec)}</span> ${KIND_LABEL[e.kind]}</span>`;
+  li.addEventListener('click', () => selectMetric(e.metricId));
+  li.addEventListener('mouseenter', () => { const el = tileEls.get(e.metricId); if (el && el.style.display !== 'none') el.style.outline = '1px solid var(--blue)'; });
+  li.addEventListener('mouseleave', () => { const el = tileEls.get(e.metricId); if (el) el.style.outline = ''; });
+  return li;
+}
+function prependEvents(fresh){
+  if (!fresh.length) return;
+  const had = railList.children.length > 0;
+  const keep = railList.scrollTop;
+  for (const e of fresh) railList.prepend(eventRow(e));
+  while (railList.children.length > 80) railList.lastChild.remove();
+  railList.scrollTop = had ? keep + fresh.length * 27 : 0;   // 新行插入不移动视口内容
+  markRailSelection();
+}
+function markRailSelection(){
+  for (const li of railList.children) li.classList.toggle('cur', !!selectedId && li.dataset.id === selectedId);
+}
+function applyRailFilter(){
+  const only = railOnly && selectedId;
+  let shown = 0;
+  for (const li of railList.children){
+    const ok = !only || li.dataset.id === selectedId;
+    li.style.display = ok ? '' : 'none';
+    if (ok) shown++;
+  }
+  let empty = railList.querySelector('.rail-empty');
+  if (!shown && only){
+    if (!empty){ empty = document.createElement('li'); empty.className = 'rail-empty'; empty.style.cursor = 'default'; railList.appendChild(empty); }
+    empty.textContent = '该指标暂无事件';
+  } else if (empty && !only){ empty.remove(); }
+  markRailSelection();
+}
+railOnlyCb.addEventListener('change', () => { railOnly = railOnlyCb.checked; applyRailFilter(); });
+
+/* ---------- 顶栏 ---------- */
+const chips = $('#chips');
+chips.addEventListener('click', e => {
+  const chip = e.target.closest('.chip'); if (!chip) return;
+  filter = chip.dataset.f;
+  for (const c of chips.children) c.setAttribute('aria-pressed', String(c === chip));
+  applyFilterVisibility();
+});
+const searchEl = $('#search');
+searchEl.addEventListener('input', () => { query = searchEl.value; applyFilterVisibility(); });
+const pauseBtn = $('#pause'), clockState = $('#clock-state');
+pauseBtn.addEventListener('click', togglePause);
+function togglePause(){
+  paused = !paused;
+  pauseBtn.textContent = paused ? '▶ 恢复' : '⏸ 暂停';
+  clockState.textContent = paused ? 'PAUSED' : 'LIVE';
+  clockState.classList.toggle('paused', paused);
+}
+if (START_PAUSED) togglePause();
+
+/* ---------- 键盘 ---------- */
+document.addEventListener('keydown', e => {
+  if (e.key === '/' && document.activeElement !== searchEl && !e.ctrlKey && !e.metaKey){
+    e.preventDefault(); searchEl.focus(); return;
+  }
+  if (e.key === 'Escape'){
+    if (document.activeElement === searchEl){ searchEl.value = ''; query = ''; applyFilterVisibility(); searchEl.blur(); }
+    else if (selectedId) selectMetric(null);
+    return;
+  }
+  const tiles = [...wall.querySelectorAll('.tile')].filter(el => el.style.display !== 'none');
+  const idx = tiles.indexOf(document.activeElement);
+  if (idx === -1 || !e.key.startsWith('Arrow')) return;
+  e.preventDefault();
+  let cols = 1;
+  for (let i = 1; i < tiles.length; i++){ if (tiles[i].offsetTop === tiles[0].offsetTop) cols++; else break; }
+  let next = idx;
+  if (e.key === 'ArrowRight') next = idx + 1;
+  if (e.key === 'ArrowLeft')  next = idx - 1;
+  if (e.key === 'ArrowDown')  next = idx + cols;
+  if (e.key === 'ArrowUp')    next = idx - cols;
+  if (next >= 0 && next < tiles.length) tiles[next].focus();
+});
+
+/* ---------- 主循环：数据每拍推进，渲染批量、稳定、零位移 ---------- */
+const clockTime = $('#clock-time');
+function renderTick(freshEvents){
+  clockTime.textContent = hhmmss(timeOf(tickIndex));
+  let nc = 0, nw = 0;
+  for (const m of METRICS){
+    updateTile(m);
+    const s = metrics.get(m.id).status;
+    if (s === 'crit') nc++; else if (s === 'warn') nw++;
+  }
+  $('#n-crit').textContent = nc; $('#n-warn').textContent = nw; $('#n-norm').textContent = METRICS.length - nc - nw;
+  reorderWall();
+  prependEvents(freshEvents);
+  if (selectedId) renderInspector();
+}
+function streamTick(){
+  if (paused) return;
+  tickIndex++;
+  maybeLiveIncident();
+  const before = events.length;
+  for (const m of METRICS) stepMetric(m);
+  const fresh = events.slice(0, events.length - before);
+  renderTick(fresh);
+}
+buildTiles();
+renderTick(events.slice(0, 60));
+applyFilterVisibility();
+if (selectedId && metrics.has(selectedId)) selectMetric(selectedId);
+setInterval(streamTick, TICK_MS);
+window.addEventListener('resize', () => { renderTick([]); });
+
+/* ---------- 防御性错误呈现（error 态） ---------- */
+window.addEventListener('error', e => {
+  const f = $('#fatal');
+  f.hidden = false;
+  f.textContent = '运行时错误：' + (e.message || 'unknown') + '（数据流已停止，请刷新页面）';
+});
+</script>
+</body>
+</html>

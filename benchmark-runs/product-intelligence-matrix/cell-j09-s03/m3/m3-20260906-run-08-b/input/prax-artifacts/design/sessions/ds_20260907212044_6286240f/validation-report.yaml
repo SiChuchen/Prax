@@ -1,0 +1,242 @@
+plan_revision: 1
+evidence:
+  submitted_by: claude-execution-arm
+  collected_at: 2026-09-08T06:45:00Z
+  items:
+    - check_id: keyboard
+      outcome: pass
+      source: prax-measure+chrome-cdp-keyboard
+      notes: 双重验证（冻结实现终测）：① prax-measure a11y.focus_order=pass（14 停靠点、0 倒置、0 缺失指示，error 级全过）；② CDP 真实键事件：checks.json keyboard_select/locked/reset_works 全 true。
+      artifact_refs:
+        - validation-evidence/receipt-2026-09-07T22-01-56-608Z-8a248ce1-3a74-4912-9ec3-3ebc87a26b4b.json
+        - validation-evidence/cdp-run.log
+        - validation-evidence/checks.json
+      measurement_receipt: validation-evidence/receipt-2026-09-07T22-01-56-608Z-8a248ce1-3a74-4912-9ec3-3ebc87a26b4b.json
+    - check_id: product_model_alignment
+      outcome: pass
+      source: chrome-cdp-screenshot+dom
+      notes: 界面语言与结构保留 Product Frame 对象命名（候选铺位/商圈地图/决策权重/决策结论）与三条产品关系；列↔点双向联动（selection_sync 全 true）。
+      artifact_refs:
+        - validation-evidence/01-initial-ready.png
+        - validation-evidence/02-select-b-sync.png
+        - validation-evidence/checks.json
+    - check_id: hierarchy_review
+      outcome: pass
+      source: chrome-cdp-screenshot
+      notes: 1440×900 真实截图：全部决策输入单屏完整（含一句话点评行）；矩阵 dominant、地图 primary、权重/结论 supporting；无溢出/截断（prax-measure layout/text 检查 pass）。
+      artifact_refs:
+        - validation-evidence/01-initial-ready.png
+    - check_id: filter_state
+      outcome: pass
+      source: chrome-cdp-dom+screenshot
+      notes: 权重与结果状态显式呈现：「已自定义」chip、数值 output、重置默认；零权重空态与禁用锁定（zero_weights/reset_works）。
+      artifact_refs:
+        - validation-evidence/04-weight-customized.png
+        - validation-evidence/06-zero-weights-empty.png
+        - validation-evidence/checks.json
+    - check_id: comparison_scan
+      outcome: pass
+      source: chrome-cdp-screenshot
+      notes: 6 准则 × 3 候选数值、微条形、行最优「优」徽标（bestBadges=6）与契合分名次（57/34/63）同屏可扫，无需打开任何条目。
+      artifact_refs:
+        - validation-evidence/01-initial-ready.png
+        - validation-evidence/02-select-b-sync.png
+    - check_id: requirement_alignment
+      outcome: pass
+      source: chrome-cdp-e2e
+      notes: 加载即 ready（readyState complete、无加载占位、评分已填充、verdictClean）、验收种子（地理语境与决策项同屏）shot 01/02、锁定结论驻留 shot 05、静态 file:// 零外部请求、控制台零异常。
+      artifact_refs:
+        - validation-evidence/checks.json
+        - validation-evidence/cdp-run.log
+        - validation-evidence/01-initial-ready.png
+        - validation-evidence/05-locked-verdict.png
+evaluation:
+  status: PASS
+  checks:
+    - id: semantic_conformance
+      label: Semantic conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR is valid, semantic, and aligned to the approved pattern.
+      evidence_required: false
+    - id: state_completeness
+      label: State completeness
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Required loading, empty, ready, and error states exist.
+      evidence_required: false
+    - id: product_model_alignment
+      label: Product model alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: User-facing structure and language preserve the Product Frame.
+      evidence_required: true
+    - id: keyboard
+      label: Keyboard operability
+      kind: empirical
+      profile: keyboard_accessibility
+      facet: behavioral
+      requirement: Primary work and selection are operable with keyboard and visible focus.
+      evidence_required: true
+    - id: hierarchy_review
+      label: Hierarchy review
+      kind: assistive
+      profile: semantic_integrity
+      facet: visual_hierarchy
+      requirement: Visual prominence follows SDIR importance rather than implementation convenience.
+      evidence_required: true
+    - id: representation_decided
+      label: Representation decided
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares representation.primary with a non-empty reason.
+      evidence_required: false
+    - id: state_ownership_declared
+      label: State ownership declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: Selection and preview states both have declared owners.
+      evidence_required: false
+    - id: acceptance_contract_present
+      label: Acceptance contract present
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 carries at least one acceptance criterion.
+      evidence_required: false
+    - id: complexity_budget_declared
+      label: Complexity budget declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      evidence_required: false
+    - id: filter_state
+      label: Filter state
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Active filters and result state are represented explicitly.
+      evidence_required: true
+    - id: comparison_scan
+      label: Comparison scan
+      kind: empirical
+      profile: state_coverage
+      facet: behavioral
+      requirement: Comparable values can be scanned without opening every item.
+      evidence_required: true
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+  findings:
+    - check_id: semantic_conformance
+      kind: deterministic
+      outcome: pass
+      message: SDIR is valid, semantic, and aligned to the approved pattern.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_completeness
+      kind: deterministic
+      outcome: pass
+      message: Required loading, empty, ready, and error states exist.
+      source: prax-validator
+      provenance: measured
+    - check_id: representation_decided
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares representation.primary with a non-empty reason.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_ownership_declared
+      kind: deterministic
+      outcome: pass
+      message: Selection and preview states both have declared owners.
+      source: prax-validator
+      provenance: measured
+    - check_id: acceptance_contract_present
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 carries at least one acceptance criterion.
+      source: prax-validator
+      provenance: measured
+    - check_id: complexity_budget_declared
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      source: prax-validator
+      provenance: measured
+    - check_id: product_model_alignment
+      kind: assistive
+      outcome: pass
+      message: 界面语言与结构保留 Product Frame 对象命名（候选铺位/商圈地图/决策权重/决策结论）与三条产品关系；列↔点双向联动（selection_sync 全 true）。
+      source: chrome-cdp-screenshot+dom
+      provenance: attested
+    - check_id: keyboard
+      kind: empirical
+      outcome: pass
+      message: 双重验证（冻结实现终测）：① prax-measure a11y.focus_order=pass（14 停靠点、0 倒置、0 缺失指示，error 级全过）；② CDP 真实键事件：checks.json keyboard_select/locked/reset_works 全 true。
+      source: prax-measure+chrome-cdp-keyboard
+      provenance: measured
+    - check_id: hierarchy_review
+      kind: assistive
+      outcome: pass
+      message: 1440×900 真实截图：全部决策输入单屏完整（含一句话点评行）；矩阵 dominant、地图 primary、权重/结论 supporting；无溢出/截断（prax-measure layout/text 检查 pass）。
+      source: chrome-cdp-screenshot
+      provenance: attested
+    - check_id: filter_state
+      kind: deterministic
+      outcome: pass
+      message: 权重与结果状态显式呈现：「已自定义」chip、数值 output、重置默认；零权重空态与禁用锁定（zero_weights/reset_works）。
+      source: chrome-cdp-dom+screenshot
+      provenance: attested
+    - check_id: comparison_scan
+      kind: empirical
+      outcome: pass
+      message: 6 准则 × 3 候选数值、微条形、行最优「优」徽标（bestBadges=6）与契合分名次（57/34/63）同屏可扫，无需打开任何条目。
+      source: chrome-cdp-screenshot
+      provenance: attested
+    - check_id: requirement_alignment
+      kind: assistive
+      outcome: pass
+      message: 加载即 ready（readyState complete、无加载占位、评分已填充、verdictClean）、验收种子（地理语境与决策项同屏）shot 01/02、锁定结论驻留 shot 05、静态 file:// 零外部请求、控制台零异常。
+      source: chrome-cdp-e2e
+      provenance: attested
+  missing_evidence: []
+  warnings: []
+  readiness:
+    deterministic_passed: true
+    measurement:
+      receipt_ref: validation-evidence/receipt-2026-09-07T22-01-56-608Z-8a248ce1-3a74-4912-9ec3-3ebc87a26b4b.json
+      binding:
+        validation-evidence/receipt-2026-09-07T22-01-56-608Z-8a248ce1-3a74-4912-9ec3-3ebc87a26b4b.json: implementation_current
+      error_failures_open: 0
+      warning_dispositions: []
+    convergence:
+      stalled: false
+      unresolved: []
+    evidence_current: true
+    claims:
+      measured:
+        - semantic_conformance
+        - state_completeness
+        - representation_decided
+        - state_ownership_declared
+        - acceptance_contract_present
+        - complexity_budget_declared
+        - keyboard
+      attested:
+        - product_model_alignment
+        - hierarchy_review
+        - filter_state
+        - comparison_scan
+        - requirement_alignment
+      skipped: []

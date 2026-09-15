@@ -1,0 +1,150 @@
+version: "0.2"
+screen:
+  id: list_detail_screen
+  intent:
+    primary_task: 选择大纲中的节，编辑其标题与正文；增删节、重排、升降级；在预览中确认渲染结果与编辑一致
+    secondary_tasks:
+      - 撤销/重做误操作
+      - 查看结构校验状态（空节、层级异常等）
+      - 浏览整篇文档的渲染预览
+  archetype:
+    pattern_ref: PAT-LIST-DETAIL
+  density_intent: spacious
+  regions:
+    - id: 当前选中节与其结构化字段（编辑焦点）
+      role: experimental:当前选中节与其结构化字段（编辑焦点）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 文档大纲树 + 选中位置（结构上下文）
+      role: experimental:文档大纲树 + 选中位置（结构上下文）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 整文档实时渲染（预览，与编辑一致性的直接证据）
+      role: experimental:整文档实时渲染（预览，与编辑一致性的直接证据）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 结构检查结论（结构完整性的直接证据）
+      role: experimental:结构检查结论（结构完整性的直接证据）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 文档标题与状态元信息
+      role: experimental:文档标题与状态元信息
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 撤销/重做可用性
+      role: experimental:撤销/重做可用性
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 字数等轻量统计
+      role: experimental:字数等轻量统计
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: workspace
+      role: dominant_workspace
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - preserve_context
+  relationships: []
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved: []
+  rejected_alternatives:
+    - option: PAT-APPLICATION-SHELL 作为整体骨架
+      reason: 模式契约自述 does_not_apply_when『产品是单一工作区』；本文恰为单工作区。仅保留顶部工具带（无全局导航）。
+    - option: Markdown/纯文本源码编辑 + 渲染
+      reason: 任务要求结构化编辑（层级操作、字段编辑），源码语法无法保证『编辑不破坏结构』，且解析层易造成编辑与预览不一致。
+    - option: PAT-CANVAS-WORKSPACE / 空间画布
+      reason: 空间性 none，关系性 low：无空间隐喻需求。
+    - option: 双栏（编辑+预览，无大纲）
+      reason: 层级中时无结构总览，升降级/重排操作无处安放，破坏结构可见性。
+  user_job:
+    verb: edit
+    target: 文档
+    success: 编辑不破坏结构；结构化编辑与预览始终保持一致
+  primary_object:
+    type: document
+    label: 文档
+  information_shape:
+    cardinality: one
+    relationality: low
+    hierarchy: medium
+    temporality: medium
+    density: low
+    dimensionality: medium
+    spatiality: none
+    volatility: medium
+    uncertainty: low
+    comparison_need: none
+  representation:
+    primary:
+      type: document
+      reason: 产品对象是文档：预览按文档语义渲染（标题层级、段落），是验收种子『结构化编辑与预览一致』的呈现面。
+    supporting:
+      - type: tree
+        reason: 大纲树承载中等层级与结构操作（选择、重排、升降级、增删）。
+      - type: form
+        reason: 选中节以结构化字段（标题、正文、状态）表单编辑，而非源码文本。
+  priority:
+    primary:
+      - 当前选中节与其结构化字段（编辑焦点）
+      - 文档大纲树 + 选中位置（结构上下文）
+      - 整文档实时渲染（预览，与编辑一致性的直接证据）
+      - 结构检查结论（结构完整性的直接证据）
+      - workspace
+    contextual:
+      - 文档标题与状态元信息
+      - 撤销/重做可用性
+      - 字数等轻量统计
+  interaction:
+    preview: none
+    inspect: select
+    navigate: none
+    locate: none
+  state_ownership:
+    - state: selection
+      owner: 当前选中节与其结构化字段（编辑焦点）
+    - state: preview
+      owner: session
+  complexity_budget:
+    permanent_panels: 3
+    permanent_primary_actions: 6
+    modes: 0
+    state_owners: 1
+    navigation_levels: 1
+    persistent_filters: 0
+    new_semantic_concepts: 2
+    keyboard_contracts: 2
+    mobile_conflicts: 0
+    permanent_surfaces: 1
+  acceptance:
+    - 对文档的任一结构化编辑操作（改标题/正文、增删节、重排、升降级、撤销/重做）之后：① 大纲树、节编辑器、预览三者内容一致；② 文档结构仍满足完整性规则（层级连续、无孤儿节）；③ 结构检查面板给出实时、可读的校验结论。

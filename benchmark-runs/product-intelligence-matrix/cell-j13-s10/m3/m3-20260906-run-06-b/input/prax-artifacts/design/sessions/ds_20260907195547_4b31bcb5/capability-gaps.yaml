@@ -1,0 +1,76 @@
+needs:
+  - id: N1-inline-dataset
+    product_action: 首屏内联数据集（~1.2k 确定性记录，6 维 3 度量），加载完成即 ready，无加载态
+    required_experience:
+      - 数据随 HTML/JS 内联，无网络请求
+      - 确定性生成保证每次打开一致
+    capabilities:
+      - 内联数据模块
+      - 确定性种子生成器
+      - 客户端聚合
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯静态资源即可满足；无加载态与交付约束一致
+  - id: N2-projection-switch
+    product_action: 切换投影维度：点击维度设为投影轴，分布图与记录表即时重投影
+    required_experience:
+      - 切换不动过滤器与选中（若仍命中）
+      - 60ms 级即时响应
+    capabilities:
+      - 单一 query store
+      - 维度键索引
+      - 正交状态层
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 过滤器按维度持有，投影切换只改 projection 键；重算聚合纯内存
+  - id: N3-dimension-filter
+    product_action: 按维度值过滤：维度轨勾选值 / 点击分布图条 / inspector 快捷动作
+    required_experience:
+      - 同维度多值为 OR，跨维度 AND
+      - 来源 origin 记录到状态条目
+    capabilities:
+      - 按维度索引的谓词集
+      - 计数徽标
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 谓词函数 + 归属元数据随条目入 store
+  - id: N4-state-ownership-revert
+    product_action: 过滤/投影状态有归属且可回退：状态托盘逐条 ×、Ctrl+Z 撤销、Reset All
+    required_experience:
+      - 每条状态可见归属维度与来源
+      - 三粒度回退
+    capabilities:
+      - 带 id 状态条目（kind/dimension/origin）
+      - 撤销栈
+      - 批量重置
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: command 式变更日志：每次变更为可逆操作（存 before/after），撤销即逆放
+  - id: N5-record-inspect
+    product_action: 记录明细检查：行点击驱动 contextual inspector，保留工作区上下文（P-19）
+    required_experience:
+      - 选中跨投影保持（若仍命中过滤）
+      - inspector 提供『按此值过滤』快捷动作
+    capabilities:
+      - 选中高亮
+      - 明细键值表
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: selection 存记录 id，inspector 渲染该记录全字段
+  - id: N6-empty-state
+    product_action: 零命中与边界态：过滤命中 0 时 empty 态+『清空过滤』；无选中时 inspector 引导文案
+    required_experience:
+      - empty 引导一键恢复
+      - 无选中非错误
+    capabilities:
+      - 内联 SVG/样式
+      - 语义色
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端条件渲染

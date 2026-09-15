@@ -1,0 +1,78 @@
+{
+  "reviewer": "R1",
+  "package_id": "impl-18",
+  "session_id": "1e008a85-43ec-43be-a3f5-c6e709ed9246",
+  "wall_clock_seconds": 305,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-18",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Both viewports (1280x860, 1440x900) show a 48-tile metric status wall (name, service tag, large mono value, unit, direction-aware 60-tick delta, 240-pt sparkline) plus a timestamped from→to change-event rail — a canonical fit for monitor × volatile-evidence-stream (many, high temporality/density/volatility, low relationality). source/index.html:233-288 (48 metrics across 6 services with warn/crit thresholds), :311-315 (event kinds 突跳/升至警告/升至严重/恢复正常), :447-466 (sparkline window)."
+      },
+      "primary_task_salience": {
+        "score": 4,
+        "evidence": "Wall + event rail occupy ~97% of both screenshots with only a 52px chrome bar (index.html:29-31), and the live clock/LIVE/pause apparatus makes the monitoring job unmistakable. Docked because at capture the anomaly channel is empty: chips read 严重0/警告0/正常48 and no tile shows a WARN/CRIT badge at either viewport, so the brief's success object — anomaly visible within a glance — is present only indirectly (red deltas 直播断流 ▲490.5%, 对账滞后 ▲118.0%; historical rail events). Root cause is the inert persistent-incident seeding (see defects_observed)."
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "What/where reads in about a second at both viewports: brand subtitle 易变指标监控 (index.html:165), stream clock + LIVE state (:166-168), count chips, plain-verb event labels 升至警告/恢复正常/突跳 (:315, visible in rail), per-tile unit + directional colored arrows (:437-441), search placeholder documenting the / shortcut (:175)."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Zero navigation to the primary object: all 48 metric tiles are on the first screen at both viewports (grid auto-fill, index.html:67-71). Detail costs one click on a tile (:424 click→selectMetric) or one click on a rail event row (:634); arrow keys walk the grid (:698-709), '/' focuses search (:690-692), ?select= deep-link supported (:391,:739)."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "Primary actions preserve context: selection opens the inspector as an in-place side panel while the wall stays visible and live (index.html:511-526, inspector max-height 62% of a 332px column at :110-111); filter/search toggle tile visibility without rebuilding structure (:492-509); Esc/✕ closes with no route change (:621, :693-697); rail offers a scoped 仅看选中指标 toggle in the same view (:202, :651-665)."
+      },
+      "ui_surface_complexity": {
+        "score": 5,
+        "evidence": "Permanent surfaces are one 52px topbar (brand, clock, 4 severity chips, search, pause — index.html:29-63, 164-177) and a 332px side column (:110); the inspector is hidden until a tile is selected (:112, :183 hidden). Every control maps to the monitor job (severity filter, search, pause, event stream); the 48-tile density is demanded by the brief's many/high-density facets rather than being ornament."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Receipt fails all four presentation checks: a11y.contrast=fail, a11y.focus_order=fail, a11y.target_size=fail, type.min_projected_size=fail (measurement-summary.json checks). Visible correlates: 9.5-10px labels (t-badge index.html:99, t-svc :91), low-contrast gray tier --text-3:#5d6b7a on dark tiles (:11, used for units/tags/timestamps), ~29px chip/search/pause targets (:42-56, :59-62). Offsetting semantic effort is real: button tiles with focus-visible ring (:87, :417-419), aria-pressed chips (:52, :673), aria-labels on search/pause/close (:175-176, :186), role=log rail (:204), arrow-key grid navigation (:698-709) — but the objective receipt failures cap the score."
+      },
+      "frontend_rework": {
+        "score": 3,
+        "evidence": "No visible layout defects: layout.overflow=pass, layout.responsive_collision=pass, text.truncation=pass (measurement-summary.json), and both screenshots show clean, aligned grids at 1280 and 1440. Rework is implied by the four receipt a11y/type failures plus the functional seeding bug (index.html:322, :349, :363) that suppresses the intended first-screen anomaly content (screenshots: 0/0/48 chips, zero WARN/CRIT badges) — a content-level fix and re-verification, though nothing visually broken."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed 指标变化可追溯: every change emits a timestamped from→to event with kind (index.html:311-315, :626-637), the inspector lists per-metric events new→old with values (:538-550), chart annotates event points with dots + leader lines (:588-597), hover crosshair gives value at any past tick (:607-616). Seed 无闪烁噪声: durable encodings — delta computed vs a 60-tick reference, not the previous tick (:435), FLIP transform-only reorder with no layout thrash (:469-490), filter/search via visibility toggle without DOM rebuild (:493-509), rail prepend preserves scrollTop (:639-647), tabular-nums throughout (:38, :48, :93)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "Persistent seed incidents are inert: startIncident sets remaining=1e9 for persistent incidents (index.html:349), so the per-tick pull (target-v)/remaining at :322 is ~0 and the five scripted 首屏常态异常 anomalies (:363-369) never approach their thresholds. Both screenshots corroborate: chips read 严重0/警告0/正常48 with no WARN/CRIT badge or threshold styling on any tile at 1280x860 or 1440x900.",
+      "All four receipt presentation checks fail: a11y.contrast, a11y.focus_order, a11y.target_size, type.min_projected_size (measurement-summary.json checks); consistent with visibly small gray type and compact controls in the source.",
+      "At capture, large red deltas (直播断流 ▲490.5%, 对账滞后 ▲118.0%, 错误率 ▲56.7% — both screenshots) coexist with 0 severe/0 warn chips and a rail full of 升至警告/恢复正常 history: change-delta and threshold-state semantics are both shown but nothing reconciles them at a glance, so the header reads as self-contradictory on first sight."
+    ],
+    "missing_evidence": [],
+    "overall_note": "impl-18 is a purpose-fit representation for monitor × volatile-evidence-stream: a 48-metric status wall (value, unit, direction-aware delta, sparkline) plus a timestamped from→to change-event rail and an in-place inspector with threshold lines, event markers, and a hover readout, all reachable with zero navigation and no context loss. The acceptance seed (changes traceable, no flicker) is addressed by concrete, inspectable mechanisms — a persistent event log with kinds, FLIP transform-only resorting, scrollTop-preserving prepend, and non-rebuilding filters — and all three layout checks pass at both viewports, so the strongest parts of this package are representation and interaction design. Two gaps hold it back: first, all four receipt presentation checks fail (a11y.contrast, a11y.focus_order, a11y.target_size, type.min_projected_size), consistent with the small low-contrast labels and ~29px controls in the source; second, the scripted persistent first-screen anomalies are mathematically inert (remaining=1e9 makes the pull term ~0), so both screenshots capture an all-normal wall (0 severe / 0 warn / 48 normal, no badges) at exactly the moment the brief's success criterion — anomaly visible within a glance — applies, leaving only indirect cues (red deltas, rail history). All judgments here are model-judged from screenshots, source, and the sanitized receipt; no human-preference or task-time data exists in this pilot."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 71395,
+      "outputTokens": 15278,
+      "cacheReadInputTokens": 45504,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.7616769999999999,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-09-08T21:52:56.409Z"
+}

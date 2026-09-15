@@ -1,0 +1,37 @@
+version: "0.1"
+session_id: ds_20260908185319_49573e7a
+task_ref: 按阶段→步骤→检查项逐步执行高后果流程，完成全部步骤与检查项
+selected:
+  - ref: product_relationships
+    reason:
+      - rel-wf-phase:workflow->phase
+      - rel-phase-step:phase->step
+      - rel-step-check:step->check
+      - rel-step-recovery:step->recovery_path
+  - ref: region_relationships
+    reason: []
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-LIST-DETAIL-INSPECTOR
+  - ref: unresolved
+    reason: []
+  - ref: corrections
+    reason: []
+  - ref: validation-plan@1
+    reason:
+      - semantic_conformance
+      - state_completeness
+      - product_model_alignment
+      - keyboard
+      - hierarchy_review
+      - representation_decided
+      - state_ownership_declared
+      - acceptance_contract_present
+      - complexity_budget_declared
+      - destructive_recovery
+      - requirement_alignment
+excluded:
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata

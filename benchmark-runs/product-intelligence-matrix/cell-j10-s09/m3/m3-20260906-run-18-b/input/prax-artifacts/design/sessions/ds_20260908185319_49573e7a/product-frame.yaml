@@ -1,0 +1,81 @@
+version: "0.2"
+jtbd:
+  verb: complete
+  target: 高后果流程（生产数据库迁移切换 runbook）
+  success: 零失误走完全程：所有检查项通过、不可逆步骤经确认执行、越序/漏项被护栏拦截
+primary_object:
+  type: workflow
+  label: 高后果切换流程（runbook）
+task_model:
+  frequency: low
+  reversibility: irreversible
+  consequence: high
+  expertise: expert
+user:
+  primary_role: 生产变更值班负责人（变更执行人，需按 runbook 逐步执行并留痕）
+  expertise: expert
+  familiarity: high
+goal:
+  primary: 让执行人在单一高后果流程中零失误走完全程，每个不可逆步骤都有确认与恢复路径
+tasks:
+  primary: 按阶段→步骤→检查项逐步执行高后果流程，完成全部步骤与检查项
+  secondary:
+    - 对不可逆步骤执行前确认后果、执行后可进入恢复路径回滚
+    - 查看全程执行日志并取得零失误完成凭证
+product_objects:
+  - id: workflow
+    user_name: 切换流程
+    purpose: 单一高后果流程的整体，由有序阶段组成
+  - id: phase
+    user_name: 阶段
+    purpose: 流程的顶层分组（预检/冻结备份/切换执行/验证收尾）
+  - id: step
+    user_name: 步骤
+    purpose: 阶段内的原子执行单元，分可逆与不可逆；不可逆步骤带确认码、后果说明与恢复窗口
+  - id: check
+    user_name: 检查项
+    purpose: 步骤内必须逐项确认的验证点，附预期结果
+  - id: recovery_path
+    user_name: 恢复路径
+    purpose: 不可逆步骤执行后的回滚程序（含步骤清单与恢复窗口）
+  - id: run_log
+    user_name: 执行日志
+    purpose: 全程动作留痕与护栏拦截记录，用于零失误凭证
+relationships:
+  - id: rel-wf-phase
+    source: workflow
+    target: phase
+    type: composed_of
+    direction: forward
+    meaning: 流程由有序阶段组成
+    importance: primary
+  - id: rel-phase-step
+    source: phase
+    target: step
+    type: composed_of
+    direction: forward
+    meaning: 阶段包含有序步骤，前序完成才解锁后序
+    importance: primary
+  - id: rel-step-check
+    source: step
+    target: check
+    type: composed_of
+    direction: forward
+    meaning: 步骤包含检查项，全部通过才可提交
+    importance: primary
+  - id: rel-step-recovery
+    source: step
+    target: recovery_path
+    type: recovers_via
+    direction: forward
+    meaning: 不可逆步骤执行后可经恢复路径回滚
+    condition: 仅不可逆步骤
+    importance: primary
+mental_model_hypothesis:
+  summary: 用户把流程理解为一张有序的 runbook 清单：像登机前检查单一样逐项打勾，遇到红灯（不可逆动作）必须先确认后果并知道如何回滚，全程留痕以备审计。
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: 零失误走完全程：全部检查项通过、3 个不可逆步骤均经显式确认执行、漏项与越序被护栏拦截并留痕，最终取得完成凭证；任一不可逆步骤可随时进入恢复路径回滚。
+open_questions: []

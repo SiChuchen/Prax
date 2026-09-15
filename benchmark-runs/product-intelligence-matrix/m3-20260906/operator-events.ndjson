@@ -1,0 +1,122 @@
+{"ts":"2026-09-07T10:30:29.988Z","kind":"operator_note","note":"Chunk 1 preparation started (m3-20260906)"}
+{"ts":"2026-09-07T10:37:41.055Z","kind":"operator_note","note":"Chunk 1: freeze+repair complete (runtime-lock.yaml, protocol-addendum.md D1-D10, preflight.md, run-order.yaml seed 2b71439277291095)"}
+{"ts":"2026-09-07T10:37:41.056Z","kind":"operator_note","note":"Chunk 1: smoke S1-S5 PASS (see smoke/smoke-report.md); frozen runtime validated end-to-end before run 01"}
+{"ts":"2026-09-07T10:37:41.056Z","kind":"operator_note","note":"Chunk 1 gate: awaiting operator budget/launch-mode confirmation before run 01"}
+{"ts":"2026-09-07T15:37:04.951Z","kind":"operator_decision","note":"Budget confirmed: 20 runs x 90min wall-clock + 1.2M observable tokens each (24M aggregate); preparation/review overhead separate. Arm client pinned: claude 2.1.251, --model sonnet (resolves glm-5.3-flash[1M]), non-interactive -p sessions with --strict-mcp-config isolation per addendum D5. Chunk 2 execution approved by operator 2026-09-07."}
+{"ts":"2026-09-07T15:55:56.432Z","kind":"run_start","run":"run-01","cell":"cell-j07-s07","arm":"b"}
+{"ts":"2026-09-07T15:56:01.698Z","kind":"run_end","run":"run-01","stop_reason":"cli_exit_1","wall_clock_seconds":5,"tokens":0}
+{"ts":"2026-09-07T15:58:41.789Z","kind":"infrastructure_fault","run":"run-01","note":"launch attempt 1 failed: prompt never written to stdin (script bug), CLI exited in 5s, no agent turn, no session id; script fixed; metadata preserved as run-metadata.launch-failure-1.json; relaunching run-01 in same package"}
+{"ts":"2026-09-07T15:59:21.697Z","kind":"run_start","run":"run-01","cell":"cell-j07-s07","arm":"b"}
+{"ts":"2026-09-07T17:04:07.409Z","kind":"run_end","run":"run-01","stop_reason":"agent_completed","wall_clock_seconds":3886,"tokens":0}
+{"ts":"2026-09-07T17:10:15.991Z","kind":"protocol_amendment","note":"D5 v2 registered before run-02: token cap metric = modelUsage input+output (AB-001 convention, evidence in PRAX-AB-001 replicates summaries); cache_read excluded and recorded; retrospective evaluation (per-message usage absent in CLI stream); wall clock remains the enforced live guard. Run-01 audit: in+out=552,952 within budget; monitor bug (zero counter) and D5 v1 wording defect recorded; no budget size, prompt, runtime, or population change."}
+{"ts":"2026-09-07T17:10:15.992Z","kind":"run_end_audit","run":"run-01","note":"run-01 (cell-j07-s07-b) agent_completed at 3886s, 100 turns, session 944e54bd, token_in_out=552952, cost_usd=10.58"}
+{"ts":"2026-09-07T17:11:03.215Z","kind":"packaged","run":"run-01","cell":"cell-j07-s07","arm":"b","measurement":"invalid_or_incomplete","screenshots":"captured","source_files":9}
+{"ts":"2026-09-07T17:15:45.721Z","kind":"packaged","run":"run-01","cell":"cell-j07-s07","arm":"b","staging_case":"R_root_static_tree","measurement":"error_failures","measurement_exit":1,"screenshots":"captured","source_files":9}
+{"ts":"2026-09-07T17:16:28.182Z","kind":"run_start","run":"run-02","cell":"cell-j06-s06","arm":"a"}
+{"ts":"2026-09-07T17:36:32.008Z","kind":"run_end","run":"run-02","stop_reason":"agent_completed","wall_clock_seconds":1204,"token_in_out":194618,"cost_usd":2.128}
+{"ts":"2026-09-07T17:36:48.789Z","kind":"packaged","run":"run-02","cell":"cell-j06-s06","arm":"a","staging_case":"R_root_static_tree","measurement":"error_failures","measurement_exit":1,"screenshots":"captured","source_files":7}
+{"ts":"2026-09-07T17:37:03.232Z","kind":"run_start","run":"run-03","cell":"cell-j04-s04","arm":"b"}
+{"ts":"2026-09-07T18:33:41.772Z","kind":"run_end","run":"run-03","stop_reason":"agent_completed","wall_clock_seconds":3398,"token_in_out":587483,"cost_usd":7.979}
+{"ts":"2026-09-07T18:34:06.184Z","kind":"packaged","run":"run-03","cell":"cell-j04-s04","arm":"b","staging_case":"R_root_static_tree","measurement":"error_failures","measurement_exit":1,"screenshots":"captured","source_files":3}
+{"ts":"2026-09-07T18:34:06.277Z","kind":"run_start","run":"run-04","cell":"cell-j02-s02","arm":"a"}
+{"ts":"2026-09-07T19:09:51.135Z","kind":"run_end","run":"run-04","stop_reason":"agent_completed","wall_clock_seconds":2145,"token_in_out":497943,"cost_usd":5.285}
+{"ts":"2026-09-07T19:10:28.519Z","kind":"packaged","run":"run-04","cell":"cell-j02-s02","arm":"a","staging_case":"R_root_static_tree","measurement":"error_failures","measurement_exit":1,"screenshots":"captured","source_files":17}
+{"ts":"2026-09-07T19:10:42.078Z","kind":"run_start","run":"run-05","cell":"cell-j01-s01","arm":"a"}
+{"ts":"2026-09-07T19:54:34.090Z","kind":"run_end","run":"run-05","stop_reason":"agent_completed","wall_clock_seconds":2632,"token_in_out":581899,"cost_usd":5.889}
+{"ts":"2026-09-07T19:55:00.274Z","kind":"packaged","run":"run-05","cell":"cell-j01-s01","arm":"a","staging_case":"R_root_static_tree","measurement":"error_failures","measurement_exit":1,"screenshots":"captured","source_files":12}
+{"ts":"2026-09-07T19:55:12.411Z","kind":"run_start","run":"run-06","cell":"cell-j13-s10","arm":"b"}
+{"ts":"2026-09-07T20:55:10.737Z","kind":"run_end","run":"run-06","stop_reason":"agent_completed","wall_clock_seconds":3598,"token_in_out":648222,"cost_usd":10.3}
+{"ts":"2026-09-07T20:55:37.321Z","kind":"packaged","run":"run-06","cell":"cell-j13-s10","arm":"b","staging_case":"R_root_static_tree","measurement":"error_failures","measurement_exit":1,"screenshots":"captured","source_files":12}
+{"ts":"2026-09-07T20:55:52.218Z","kind":"run_start","run":"run-07","cell":"cell-j09-s03","arm":"a"}
+{"ts":"2026-09-07T21:18:22.741Z","kind":"run_end","run":"run-07","stop_reason":"agent_completed","wall_clock_seconds":1350,"token_in_out":124361,"cost_usd":1.844}
+{"ts":"2026-09-07T21:18:41.418Z","kind":"packaged","run":"run-07","cell":"cell-j09-s03","arm":"a","staging_case":"R_root_static_tree","measurement":"error_failures","measurement_exit":1,"screenshots":"captured","source_files":2}
+{"ts":"2026-09-07T21:19:19.784Z","kind":"run_start","run":"run-08","cell":"cell-j09-s03","arm":"b"}
+{"ts":"2026-09-07T22:03:24.896Z","kind":"run_end","run":"run-08","stop_reason":"agent_completed","wall_clock_seconds":2645,"token_in_out":462889,"cost_usd":10.072}
+{"ts":"2026-09-07T22:03:41.841Z","kind":"packaged","run":"run-08","cell":"cell-j09-s03","arm":"b","staging_case":"R_root_static_tree","measurement":"completed","measurement_exit":0,"screenshots":"captured","source_files":14}
+{"ts":"2026-09-07T22:03:55.748Z","kind":"run_start","run":"run-09","cell":"cell-j06-s06","arm":"b"}
+{"ts":"2026-09-07T22:31:06.282Z","kind":"run_end","run":"run-09","stop_reason":"agent_completed","wall_clock_seconds":1631,"token_in_out":331510,"cost_usd":4.619}
+{"ts":"2026-09-07T22:31:23.531Z","kind":"packaged","run":"run-09","cell":"cell-j06-s06","arm":"b","staging_case":"R_root_static_tree","measurement":"error_failures","measurement_exit":1,"screenshots":"captured","source_files":6}
+{"ts":"2026-09-07T22:31:34.623Z","kind":"run_start","run":"run-10","cell":"cell-j04-s04","arm":"a"}
+{"ts":"2026-09-07T22:57:34.626Z","kind":"run_end","run":"run-10","stop_reason":"agent_completed","wall_clock_seconds":1560,"token_in_out":267604,"cost_usd":4.418}
+{"ts":"2026-09-07T22:57:51.729Z","kind":"packaged","run":"run-10","cell":"cell-j04-s04","arm":"a","staging_case":"R_root_static_tree","measurement":"error_failures","measurement_exit":1,"screenshots":"captured","source_files":12}
+{"ts":"2026-09-07T22:58:05.986Z","kind":"run_start","run":"run-11","cell":"cell-j05-s05","arm":"a"}
+{"ts":"2026-09-07T23:40:02.109Z","kind":"run_end","run":"run-11","stop_reason":"agent_completed","wall_clock_seconds":2516,"token_in_out":536203,"cost_usd":6.929}
+{"ts":"2026-09-07T23:40:28.980Z","kind":"packaged","run":"run-11","cell":"cell-j05-s05","arm":"a","staging_case":"R_root_static_tree","measurement":"error_failures","measurement_exit":1,"screenshots":"captured","source_files":8}
+{"ts":"2026-09-07T23:40:41.234Z","kind":"run_start","run":"run-12","cell":"cell-j07-s07","arm":"a"}
+{"ts":"2026-09-08T00:12:47.114Z","kind":"run_end","run":"run-12","stop_reason":"agent_completed","wall_clock_seconds":1926,"token_in_out":225526,"cost_usd":3.072}
+{"ts":"2026-09-08T00:13:11.221Z","kind":"packaged","run":"run-12","cell":"cell-j07-s07","arm":"a","staging_case":"R_root_static_tree","measurement":"error_failures","measurement_exit":1,"screenshots":"captured","source_files":6}
+{"ts":"2026-09-08T00:13:29.969Z","kind":"run_start","run":"run-13","cell":"cell-j02-s02","arm":"b"}
+{"ts":"2026-09-08T01:09:10.655Z","kind":"operator_decision","note":"Pause after run-13 (current run) completes and is packaged; resume with run-14 (cell-j06... per run-order.yaml: run-14 = cell-j01-s01-b) after 23:00 local tonight 2026-09-08. No runs may start in the pause window."}
+{"ts":"2026-09-08T01:16:06.448Z","kind":"run_end","run":"run-13","stop_reason":"agent_completed","wall_clock_seconds":3756,"token_in_out":553621,"cost_usd":13.693}
+{"ts":"2026-09-08T01:16:29.912Z","kind":"packaged","run":"run-13","cell":"cell-j02-s02","arm":"b","staging_case":"R_root_static_tree","measurement":"invalid_or_incomplete","measurement_exit":2,"screenshots":"captured","source_files":3478}
+{"ts":"2026-09-08T01:17:13.038Z","kind":"run_end_audit","run":"run-13","note":"run-13 (cell-j02-s02-b) agent_completed 3756s, token_in_out=553621, session 2d2f7c03. Anomalies recorded as data: (1) agent vendored a 45MB tools/ tree into the workspace (3478 snapshot files); (2) measurement exit 2 invalid_target: app navigated to #_ during measurement - diagnostic skipped receipt retained; operator screenshots still captured on stopped snapshot."}
+{"ts":"2026-09-08T01:17:13.039Z","kind":"operator_note","note":"PAUSE per operator instruction: 13/20 runs complete. No further runs until 23:00 local 2026-09-08. Resume point: run-14 cell-j01-s01-b."}
+{"ts":"2026-09-08T15:05:55.312Z","kind":"operator_note","note":"RESUME after operator-instructed pause window (>=23:00 local 2026-09-08). Continuing from run-14 cell-j01-s01-b per run-order.yaml. Frozen runtime, prompts, briefs, and configs unchanged during pause."}
+{"ts":"2026-09-08T15:06:22.903Z","kind":"run_start","run":"run-14","cell":"cell-j01-s01","arm":"b"}
+{"ts":"2026-09-08T15:54:17.464Z","kind":"operator_decision","note":"Execution window rule (operator, 2026-09-08 ~23:10 local): run only between 23:00 and 09:00 local; stop before 09:00. Implementation: no new arm session is launched after 07:30 local (90-min budget guarantees completion + packaging before 09:00); a daily 23:05 automation resumes remaining slots idempotently. Runs in progress at the time of this rule (run-14, started 23:06) continue to their natural stop."}
+{"ts":"2026-09-08T16:36:24.228Z","kind":"run_end","run":"run-14","stop_reason":"budget_exceeded_wall_clock","wall_clock_seconds":5401,"token_in_out":0,"cost_usd":0}
+{"ts":"2026-09-08T16:37:14.713Z","kind":"packaged","run":"run-14","cell":"cell-j01-s01","arm":"b","staging_case":"R_root_static_tree","measurement":"completed","measurement_exit":0,"screenshots":"captured","source_files":16}
+{"ts":"2026-09-08T16:38:53.511Z","kind":"run_end_audit","run":"run-14","note":"run-14 (cell-j01-s01-b) FIRST budget_exceeded_wall_clock: killed at 5401s, agent had not declared completion; artifact present (16 files, root static tree), operator measurement completed exit 0 (all checks pass), screenshots captured. Tokens not_observable (no result event) - script corrected to record not_observable instead of zeros for killed runs; original metadata preserved."}
+{"ts":"2026-09-08T16:39:00.707Z","kind":"packaged","run":"run-14","cell":"cell-j01-s01","arm":"b","staging_case":"R_root_static_tree","measurement":"completed","measurement_exit":0,"screenshots":"captured","source_files":16}
+{"ts":"2026-09-08T16:39:30.297Z","kind":"run_start","run":"run-15","cell":"cell-j08-s08","arm":"b"}
+{"ts":"2026-09-08T17:18:26.099Z","kind":"run_end","run":"run-15","stop_reason":"agent_completed","wall_clock_seconds":2336,"token_in_out":382667,"cost_usd":6.485}
+{"ts":"2026-09-08T17:19:12.218Z","kind":"packaged","run":"run-15","cell":"cell-j08-s08","arm":"b","staging_case":"R_root_static_tree","measurement":"error_failures","measurement_exit":1,"screenshots":"captured","source_files":2257}
+{"ts":"2026-09-08T17:19:52.750Z","kind":"run_start","run":"run-16","cell":"cell-j05-s05","arm":"b"}
+{"ts":"2026-09-08T18:10:53.130Z","kind":"run_end","run":"run-16","stop_reason":"agent_completed","wall_clock_seconds":3060,"token_in_out":432233,"cost_usd":13.16}
+{"ts":"2026-09-08T18:11:41.608Z","kind":"packaged","run":"run-16","cell":"cell-j05-s05","arm":"b","staging_case":"R_root_static_tree","measurement":"error_failures","measurement_exit":1,"screenshots":"captured","source_files":13}
+{"ts":"2026-09-08T18:12:07.259Z","kind":"run_start","run":"run-17","cell":"cell-j10-s09","arm":"a"}
+{"ts":"2026-09-08T18:48:33.916Z","kind":"run_end","run":"run-17","stop_reason":"agent_completed","wall_clock_seconds":2187,"token_in_out":390986,"cost_usd":4.773}
+{"ts":"2026-09-08T18:49:22.294Z","kind":"packaged","run":"run-17","cell":"cell-j10-s09","arm":"a","staging_case":"R_root_static_tree","measurement":"invalid_or_incomplete","measurement_exit":2,"screenshots":"captured","source_files":6}
+{"ts":"2026-09-08T18:49:50.414Z","kind":"run_start","run":"run-18","cell":"cell-j10-s09","arm":"b"}
+{"ts":"2026-09-08T19:28:22.492Z","kind":"run_end","run":"run-18","stop_reason":"agent_completed","wall_clock_seconds":2312,"token_in_out":391365,"cost_usd":5.499}
+{"ts":"2026-09-08T19:29:48.053Z","kind":"packaged","run":"run-18","cell":"cell-j10-s09","arm":"b","staging_case":"R_root_static_tree","measurement":"error_failures","measurement_exit":1,"screenshots":"captured","source_files":7}
+{"ts":"2026-09-08T19:30:33.156Z","kind":"run_start","run":"run-19","cell":"cell-j13-s10","arm":"a"}
+{"ts":"2026-09-08T20:02:40.001Z","kind":"run_end","run":"run-19","stop_reason":"agent_completed","wall_clock_seconds":1927,"token_in_out":213805,"cost_usd":3.11}
+{"ts":"2026-09-08T20:05:53.003Z","kind":"packaged","run":"run-19","cell":"cell-j13-s10","arm":"a","staging_case":"R_root_static_tree","measurement":"error_failures","measurement_exit":1,"screenshots":"captured","source_files":6}
+{"ts":"2026-09-08T20:08:05.288Z","kind":"run_start","run":"run-20","cell":"cell-j08-s08","arm":"a"}
+{"ts":"2026-09-08T20:35:13.142Z","kind":"run_end","run":"run-20","stop_reason":"agent_completed","wall_clock_seconds":1628,"token_in_out":436604,"cost_usd":4.71}
+{"ts":"2026-09-08T20:35:59.713Z","kind":"packaged","run":"run-20","cell":"cell-j08-s08","arm":"a","staging_case":"R_root_static_tree","measurement":"error_failures","measurement_exit":1,"screenshots":"captured","source_files":9}
+{"ts":"2026-09-08T20:41:00.127Z","kind":"task5_complete","note":"run-ledger.yaml built: attempted 20/20, agent_completed 19, wall_clock_exceeded 1 (run-14), receipts 20/20, measurement_valid 18/20 (run-13 cell-j02-s02-b and run-17 cell-j10-s09-a invalid_target), blind_review_eligible 20/20, token_observable 19/20 (run-14 not_observable). Freeze verified: briefs, runtime manifest, live rehash (1020 files), MCP entry all unchanged. State separation verified: 0 A workspaces with .prax, 10 unique B roots. M3 gate NOT_CLOSED: 8/10 cells have both arms measurement_valid; partial results retained, no substitution."}
+{"ts":"2026-09-08T20:53:44.843Z","kind":"review_scored","reviewer":"R2","package_id":"impl-01","parsed_ok":true,"wall_clock_seconds":201,"session_id":"7fed2f84-2655-4bc1-ab79-10ab81f83c8c"}
+{"ts":"2026-09-08T20:55:23.500Z","kind":"review_scored","reviewer":"R1","package_id":"impl-01","parsed_ok":true,"wall_clock_seconds":320,"session_id":"fbc52ba1-e95e-435f-8c13-dab3816b36c7"}
+{"ts":"2026-09-08T20:56:29.017Z","kind":"review_scored","reviewer":"R2","package_id":"impl-02","parsed_ok":true,"wall_clock_seconds":164,"session_id":"ade6ab06-761e-4672-aa36-95fa9fafd0bf"}
+{"ts":"2026-09-08T21:00:18.247Z","kind":"review_scored","reviewer":"R1","package_id":"impl-02","parsed_ok":true,"wall_clock_seconds":295,"session_id":"ca398d57-5fb2-4f5e-a5dd-a3ce6f150b46"}
+{"ts":"2026-09-08T21:04:22.032Z","kind":"review_scored","reviewer":"R2","package_id":"impl-03","parsed_ok":true,"wall_clock_seconds":473,"session_id":"86bce39f-5150-4d87-8765-9673908facbf"}
+{"ts":"2026-09-08T21:06:32.539Z","kind":"review_scored","reviewer":"R1","package_id":"impl-03","parsed_ok":true,"wall_clock_seconds":374,"session_id":"b0ff9230-e33b-4e98-acca-eeb392cab9db"}
+{"ts":"2026-09-08T21:09:53.213Z","kind":"review_scored","reviewer":"R1","package_id":"impl-04","parsed_ok":true,"wall_clock_seconds":201,"session_id":"3c39ff8c-222f-4d5b-a87e-9ab355dfe449"}
+{"ts":"2026-09-08T21:12:50.135Z","kind":"review_scored","reviewer":"R1","package_id":"impl-05","parsed_ok":true,"wall_clock_seconds":177,"session_id":"95dd8400-8622-418d-9a30-b6e4fa9cdbc2"}
+{"ts":"2026-09-08T21:14:10.619Z","kind":"review_scored","reviewer":"R2","package_id":"impl-04","parsed_ok":true,"wall_clock_seconds":589,"session_id":"87053df3-3145-4c6f-9ced-370df794940a"}
+{"ts":"2026-09-08T21:17:23.548Z","kind":"review_scored","reviewer":"R1","package_id":"impl-06","parsed_ok":true,"wall_clock_seconds":273,"session_id":"3d4b33df-3efc-4273-87e8-e63c0e20d143"}
+{"ts":"2026-09-08T21:17:34.073Z","kind":"review_scored","reviewer":"R2","package_id":"impl-05","parsed_ok":true,"wall_clock_seconds":203,"session_id":"3f331271-6183-49ea-ab45-2452e09ad60e"}
+{"ts":"2026-09-08T21:20:00.644Z","kind":"review_scored","reviewer":"R1","package_id":"impl-07","parsed_ok":true,"wall_clock_seconds":157,"session_id":"72f0b944-9671-4256-9778-18cdc034a1c7"}
+{"ts":"2026-09-08T21:22:18.028Z","kind":"review_scored","reviewer":"R1","package_id":"impl-08","parsed_ok":true,"wall_clock_seconds":137,"session_id":"fec37938-d6c1-4da9-a1b4-b76a9c72e5ba"}
+{"ts":"2026-09-08T21:24:49.374Z","kind":"review_scored","reviewer":"R1","package_id":"impl-09","parsed_ok":true,"wall_clock_seconds":151,"session_id":"f88b751d-c46e-45d0-835b-c6dfc0cf9354"}
+{"ts":"2026-09-08T21:26:27.980Z","kind":"review_scored","reviewer":"R1","package_id":"impl-10","parsed_ok":true,"wall_clock_seconds":99,"session_id":"1423cd88-c15f-4427-a9b3-334766ed0126"}
+{"ts":"2026-09-08T21:28:50.219Z","kind":"review_scored","reviewer":"R1","package_id":"impl-11","parsed_ok":true,"wall_clock_seconds":142,"session_id":"ca5ea8f0-efcd-4dc9-be78-02401cd6d6e8"}
+{"ts":"2026-09-08T21:31:05.988Z","kind":"review_scored","reviewer":"R2","package_id":"impl-06","parsed_ok":true,"wall_clock_seconds":812,"session_id":"d50b136e-b308-45f6-ae92-3392efe9454c"}
+{"ts":"2026-09-08T21:31:46.496Z","kind":"review_scored","reviewer":"R1","package_id":"impl-12","parsed_ok":true,"wall_clock_seconds":176,"session_id":"88fb4a39-1ad7-493f-873c-657ee66fc96b"}
+{"ts":"2026-09-08T21:33:59.001Z","kind":"review_scored","reviewer":"R2","package_id":"impl-07","parsed_ok":true,"wall_clock_seconds":173,"session_id":"8ab3d4d0-d997-478b-8ab2-e6d5dc6fc89c"}
+{"ts":"2026-09-08T21:35:26.777Z","kind":"review_scored","reviewer":"R1","package_id":"impl-13","parsed_ok":true,"wall_clock_seconds":220,"session_id":"db687249-c74d-4e33-a6db-9aac85f53b9d"}
+{"ts":"2026-09-08T21:36:03.666Z","kind":"review_scored","reviewer":"R2","package_id":"impl-08","parsed_ok":true,"wall_clock_seconds":125,"session_id":"4e4684b5-cde5-4b1e-90fb-afa4f47468e9"}
+{"ts":"2026-09-08T21:38:32.729Z","kind":"review_scored","reviewer":"R2","package_id":"impl-09","parsed_ok":true,"wall_clock_seconds":149,"session_id":"f202d997-4cda-44aa-bb78-5b43fd062f53"}
+{"ts":"2026-09-08T21:39:19.930Z","kind":"review_scored","reviewer":"R1","package_id":"impl-14","parsed_ok":true,"wall_clock_seconds":233,"session_id":"1a3e1d70-f962-4aff-b19f-04d05194db14"}
+{"ts":"2026-09-08T21:40:52.557Z","kind":"review_scored","reviewer":"R2","package_id":"impl-10","parsed_ok":true,"wall_clock_seconds":140,"session_id":"03fa78f6-04c4-4141-8371-35b1e1e7ccc4"}
+{"ts":"2026-09-08T21:41:34.227Z","kind":"review_scored","reviewer":"R1","package_id":"impl-15","parsed_ok":true,"wall_clock_seconds":134,"session_id":"bac79554-eb19-456f-9fad-553df848b75b"}
+{"ts":"2026-09-08T21:45:20.548Z","kind":"review_scored","reviewer":"R1","package_id":"impl-16","parsed_ok":true,"wall_clock_seconds":226,"session_id":"ca9926e6-c9bd-490f-93e6-48111b4b6a8c"}
+{"ts":"2026-09-08T21:45:35.354Z","kind":"review_scored","reviewer":"R2","package_id":"impl-11","parsed_ok":true,"wall_clock_seconds":283,"session_id":"0ab11d69-9c46-4a83-ab1f-2741fe7e3e24"}
+{"ts":"2026-09-08T21:47:51.494Z","kind":"review_scored","reviewer":"R1","package_id":"impl-17","parsed_ok":true,"wall_clock_seconds":151,"session_id":"fdda03f3-2daf-46d9-8c20-bb012ca91769"}
+{"ts":"2026-09-08T21:48:01.171Z","kind":"review_scored","reviewer":"R2","package_id":"impl-12","parsed_ok":true,"wall_clock_seconds":146,"session_id":"68ee85cb-e262-4d10-8ec6-bdd3b6e2e3dc"}
+{"ts":"2026-09-08T21:52:10.980Z","kind":"review_scored","reviewer":"R2","package_id":"impl-13","parsed_ok":true,"wall_clock_seconds":250,"session_id":"d4f09f1a-613d-44e3-8ead-8027e8c7743c"}
+{"ts":"2026-09-08T21:52:56.410Z","kind":"review_scored","reviewer":"R1","package_id":"impl-18","parsed_ok":true,"wall_clock_seconds":305,"session_id":"1e008a85-43ec-43be-a3f5-c6e709ed9246"}
+{"ts":"2026-09-08T21:55:02.636Z","kind":"review_scored","reviewer":"R2","package_id":"impl-14","parsed_ok":true,"wall_clock_seconds":172,"session_id":"9dc718a5-4e15-4f41-a46f-ab441b887ca0"}
+{"ts":"2026-09-08T21:55:33.338Z","kind":"review_scored","reviewer":"R1","package_id":"impl-19","parsed_ok":true,"wall_clock_seconds":157,"session_id":"22c2c9bb-4234-4f1b-a5a9-07e4e79a1083"}
+{"ts":"2026-09-08T21:57:33.192Z","kind":"review_scored","reviewer":"R2","package_id":"impl-15","parsed_ok":true,"wall_clock_seconds":151,"session_id":"b428d1ce-3a71-4fd9-bed2-bd37f8f47e1c"}
+{"ts":"2026-09-08T21:57:40.040Z","kind":"review_scored","reviewer":"R1","package_id":"impl-20","parsed_ok":true,"wall_clock_seconds":127,"session_id":"d2792bb3-1098-4b86-bde5-102c8bf366d0"}
+{"ts":"2026-09-08T21:59:43.079Z","kind":"review_scored","reviewer":"R2","package_id":"impl-16","parsed_ok":true,"wall_clock_seconds":130,"session_id":"698a92a5-9e52-4502-ac88-e1045047253f"}
+{"ts":"2026-09-08T22:02:40.670Z","kind":"review_scored","reviewer":"R2","package_id":"impl-17","parsed_ok":true,"wall_clock_seconds":178,"session_id":"51d302e8-3785-43c8-a87e-2c7ff77c7f00"}
+{"ts":"2026-09-08T22:05:44.511Z","kind":"review_scored","reviewer":"R2","package_id":"impl-18","parsed_ok":true,"wall_clock_seconds":184,"session_id":"4934a838-0936-4c39-ac42-8cd1f4021e5d"}
+{"ts":"2026-09-08T22:08:59.195Z","kind":"review_scored","reviewer":"R2","package_id":"impl-19","parsed_ok":true,"wall_clock_seconds":195,"session_id":"85c8e946-554f-472d-85c7-81b941df0f0c"}
+{"ts":"2026-09-08T22:11:10.246Z","kind":"review_scored","reviewer":"R2","package_id":"impl-20","parsed_ok":true,"wall_clock_seconds":131,"session_id":"6f4f25b5-1c75-47bc-8fcb-29eef247e2dd"}
+{"ts":"2026-09-08T22:11:32.480Z","kind":"scores_locked","files":40,"lock_sha256":"92bec810ea6d2538ed319eab3f70119956f0c5a00acdf93b1ccd29ce63c8c6c9"}
+{"ts":"2026-09-08T22:11:32.576Z","kind":"analysis_written","overall_tally":{"n":10,"b_better":7,"a_better":1,"tie":2,"mean_diff":0.32},"sensitivity_no_leak":{"n":7,"b_better":6,"a_better":0,"tie":1,"mean_diff":0.41},"sensitivity_valid_only":{"n":8,"b_better":5,"a_better":1,"tie":2,"mean_diff":0.14}}
+{"ts":"2026-09-08T22:15:39.092Z","kind":"pilot_complete","note":"M3 pilot Chunks 1-3 complete: 20/20 attempted, 19 agent_completed, 18/20 measurement_valid, 20/20 blind-reviewed by R1+R2 (40/40 parsed, locked before unblinding). Paired B-A overall +0.32 (7-1-2), no-leak +0.41 (6-0-1, n=7), valid-only +0.14 (5-1-2, n=8); B wall 1.7x, cost 2.2x. M3 gate NOT_CLOSED (8/10 cells both arms valid). Outputs: run-ledger.yaml, comparison.md, findings.yaml, review-agreement.md, follow-ups.md. No product/check/knowledge change; no commit."}

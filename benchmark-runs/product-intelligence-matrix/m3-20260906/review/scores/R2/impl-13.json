@@ -1,0 +1,77 @@
+{
+  "reviewer": "R2",
+  "package_id": "impl-13",
+  "session_id": "d4f09f1a-613d-44e3-8ead-8027e8c7743c",
+  "wall_clock_seconds": 250,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-13",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Brief demands manage × high-hierarchy, high-density entity set with zero-collateral batch ops. Initial screen (both 1280x860.png and 1440x900.png) is a catalog console: hierarchical sidebar (域/类别/子类别, index.html:20), dense 214-row selectable table with 状态 badge and 归属路径 columns (index.html:61-68), status chips with counts, batch action bar + per-item preview modal (index.html:76-114) — canonical representation for the job; tagline restates it (index.html:12)."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "Both screenshots: the 214-entity table with per-row checkboxes dominates the work area (index.html:56 comment '支配工作面'); batch-select entry points are permanent toolbar controls ('选当前筛选结果 (214)' / '选子树全部 (214)', index.html:35-36) and 5 status-filter chips with global counts sit in the second toolbar row; op buttons appear contextually on selection (app.js:319-327), keeping the batch task one visible step away."
+      },
+      "time_to_understand": {
+        "score": 4,
+        "evidence": "Title, tagline, scope crumb '范围：全部实体（含子层级）', live counts ('已选 0 · 可见 214 · 范围内 214') and footer '就绪 · 批量操作经逐项预览确认后生效 · 共 214 项' (both screenshots; index.html:28,41,88-93) make what/where legible in seconds. Docked one point: the sidebar shows a duplicated hierarchy level — '研发中心 54' nested under '研发中心 54' (likewise 生产运营, 数据平台, 基础设施) in both viewports — which momentarily contradicts the labeled 3-level model."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Single view, zero routing: all 214 entities visible at load (screenshots); any subtree is one tree click (app.js:636-643); full batch flow is select → in-page action bar → preview modal → confirm, ~3 steps with no page change (app.js:398-411, 549-604); '/' focuses search, Esc closes modal (app.js:801-808)."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "Filtering never mutates the selection set (app.js:29, 86-98) and a warning strip explicitly flags selected-but-hidden items with a '仅保留可见项' prune (app.js:242-262; index.html:46-54); batch execution occurs in a modal listing per-item before→after with skip reasons, computed by the same computeAffected used at confirm (app.js:132-157, 553); every op yields a receipt with undo plus an ops log (app.js:329-353, 556-629). No navigation away at any point."
+      },
+      "ui_surface_complexity": {
+        "score": 4,
+        "evidence": "Conditional surfaces are properly hidden until needed (actionbar/modal/warn, index.html:47,76,99; app.js:322) and each permanent control maps to a brief requirement. Docked one point: permanent redundant tree rows — every domain renders a same-named duplicate child node with the identical count (e.g. '生产运营 42' → '生产运营 42' in both screenshots) because domain nodes are pushed into categories with parentId null (data.js:103-109) and DOMAIN_CATS then re-renders them (app.js:21-23, 202-209); also at initial scope the two batch-select buttons coincide as '(214)'/'(214)' (screenshots)."
+      },
+      "accessibility": {
+        "score": 5,
+        "evidence": "Receipt checks a11y.contrast, a11y.focus_order, a11y.target_size and type.min_projected_size all pass (measurement-summary.json:13-16). Visible affordances in source: :focus-visible outline (styles.css:36), roving tabindex in tree and table with documented arrow/space/Enter contract (index.html:21,58; app.js:645-671, 710-742), aria-sort on headers (app.js:312-316), aria-pressed chips (app.js:237), role=dialog/aria-modal and role=alert error (index.html:100,108), '/' kbd hint (index.html:31), AA-targeted contrast tokens (styles.css:10-18)."
+      },
+      "frontend_rework": {
+        "score": 4,
+        "evidence": "7/7 checks pass, 0 warnings, target_invalid false (measurement-summary.json:3-18); both viewports render clean — no overflow, no truncation/collision, footer intact (screenshots). Docked one point for a visible structural defect on the initial screen: the duplicated same-named domain/category tree level (4 visual levels vs the app's own 3-level model stated in the sidebar header '层级目录（域 / 类别 / 子类别）' and the 3-segment 归属路径 values in the table, both screenshots), which would require rework to collapse."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed '批量选择与操作零误伤，状态归属显式' is addressed end to end. Selection: row checkboxes, tri-state header checkbox with indeterminate, shift-range, scope-select buttons with live counts (app.js:303-308, 380-387, 743-773; screenshots). Zero-collateral: preview splits 将生效 vs 跳过（无变更） per id via computeAffected shared by preview and execution (app.js:132-157, 482-511, 553), hidden-selected warning strip (app.js:242-262), delete gated by explicit count checkbox (app.js:443-446, 545), undo with full-field snapshots (app.js:556-629). Status ownership: 状态 badge + full 归属路径 on every row, direct·cumulative tree counts and status micro-bars, global-count chips, detail card 归属/状态 (app.js:171-187, 230-239, 285-298; screenshots); tagline restates the seed verbatim (index.html:12)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "Sidebar tree renders a phantom fourth hierarchy level: every domain (研发中心, 生产运营, 数据平台, 基础设施) is duplicated as a same-named child node with the same count in both 1280x860.png and 1440x900.png; mechanism visible in source (data.js:103-109 registers domains as parentId-null categories; app.js:21-23,202-209 re-renders them as DOMAIN_CATS children), contradicting the 3-level model shown by the sidebar header label and the 3-segment 归属路径 column; the duplicate pair also shares one expanded-state key, so the two rows expand/collapse as one.",
+      "At initial scope the two permanent batch-select buttons read identically as '选当前筛选结果 (214)' and '选子树全部 (214)' (both screenshots), overlapping until a filter or narrower scope distinguishes them."
+    ],
+    "missing_evidence": [],
+    "overall_note": "This package is a strong, on-target realization of the manage × entity-hierarchy brief: a dense 214-entity table with per-row status badges and full ownership paths, a scoping tree, status chips with global counts, and a batch pipeline (scope/shift/checkbox selection → action bar → per-item preview separating 将生效 from 跳过 with before→after detail → receipt + undo + ops log) that directly operationalizes the acceptance seed's zero-collateral and explicit-status-ownership requirements; the preview and execution paths share one computeAffected function (app.js:132-157,553), and all seven receipt checks pass with the target valid (measurement-summary.json). The only observable blemish is a phantom duplicated hierarchy level in the sidebar — each domain repeated as a same-named child node in both viewports — caused by domains being double-registered as root categories in the seed (data.js:103-109), which costs surface cleanliness and a beat of comprehension but no functional steps, since the duplicate resolves to the same node id; no layout, truncation, contrast, focus-order, or target-size failures are visible or reported. Model-judged proxy only: these scores reflect screenshots, source, and receipt checks, not human preference or measured task time, which are not observable in this blind pilot."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 82531,
+      "outputTokens": 12783,
+      "cacheReadInputTokens": 129216,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.7968379999999999,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-09-08T21:52:10.980Z"
+}

@@ -1,0 +1,106 @@
+session_id: ds_20260908180630_9c7f4b24
+version: "0.2"
+information_shape:
+  cardinality: many
+  relationality: high
+  hierarchy: medium
+  temporality: low
+  density: medium
+  dimensionality: medium
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: graph
+    reason: "Relationships ARE the content: a node-link map renders every dependency as directional, typed content and lets the user follow chains spatially while the whole stays in view — the only representation where multi-hop follow cannot lose global context"
+  supporting:
+    - type: architecture
+      reason: tiered left→right layout doubles as an architecture diagram, giving the medium hierarchy a stable, conventional backbone
+    - type: search_results
+      reason: search box locates a service among many and selects it on the map without navigating away
+  rejected:
+    - option: table/list of edges
+      reason: "high relationality: pairwise rows destroy the web structure; following multi-hop chains requires re-query per hop with no global anchor"
+    - option: tree
+      reason: medium hierarchy is a facet, not the content; a tree forces single-parent structure onto a graph with fan-out and fan-in
+primary_structure:
+  pattern: PAT-WORKSPACE
+  rationale:
+    - "Router-returned PAT-WORKSPACE (inspected L2 + L1): keep the primary object space persistent — the whole web (system_map) is the workspace and never unmounts during a follow"
+    - "Composed with router-returned PAT-LIST-DETAIL-INSPECTOR (inspected L2 + L1): bind a subordinate inspector to explicit selection for detail without replacing the workspace"
+    - "PAT-LIST-DETAIL rejected by its own knowledge contract: does_not_apply_when spatial relationships dominate — here relationships dominate, and list-first structure would strip the global web away on every hop"
+    - "H-21 Orientation Invariants: stable tiered layout, selection and view position persist across inspection steps"
+    - "H-22 Overview-Filter-Detail: overview (whole map) is the default; search locates; detail is on-demand in the inspector"
+  confidence: high
+information_hierarchy:
+  primary:
+    - The whole web — every service and every dependency edge always visible (global-context anchor)
+    - Current selection + follow trail — the highlighted chain through the web, with position-in-whole readable at all times
+    - Contextual inspector — selected node or edge detail with one-click follow actions (depends-on / used-by)
+  secondary:
+    - Blast-radius metrics (transitive dependency / dependent counts)
+    - Edge-type filter (sync call vs data dependency)
+density:
+  intent: regular
+  strategy:
+    - whole-web map is the dominant region; inspector stays subordinate at fixed width
+    - "dim-to-focus instead of removal: context preserved without clutter"
+    - tier columns + team color carry grouping so node labels stay short
+    - inspector lists are flat, ordered, and clickable — no nested trees
+  avoid:
+    - modal overlays covering the map
+    - collapsing the web into per-node drill-down pages
+    - physics/animation that moves anchors between follow steps
+major_choices:
+  - id: layout
+    choice: "Fixed tiered layout (left→right dependency flow: edge clients → gateway/API → domain services → data & infra), curated deterministic positions, no force physics"
+    rationale: Deterministic anchors satisfy Orientation Invariants (H-21); arrows read as dependency direction; system_map positions never shift between follow steps
+    confidence: high
+    references:
+      - system_map
+      - service_node
+      - dependency_edge
+  - id: focus_model
+    choice: "Dim-to-focus: following a chain dims the rest of the web but never removes it; trail drawn in accent color on the map"
+    rationale: Directly implements the acceptance seed 关系跟随不丢失全局上下文 — position-in-whole of service_node and dependency_edge stays readable during every follow hop
+    confidence: high
+    references:
+      - system_map
+      - dependency_edge
+      - follow_trail
+  - id: traversal
+    choice: "Follow trail: each hop from the inspector's depends-on/used-by lists (or adjacent-node click) appends a step; breadcrumb + step-back controls; clear returns to full web"
+    rationale: Makes multi-hop follow one continuous interaction on the persistent workspace; order and direction of each dependency_edge hop stay legible; overview→detail layering without page transitions
+    confidence: high
+    references:
+      - follow_trail
+      - dependency_edge
+      - service_node
+  - id: dataset
+    choice: "Inlined demo dataset: one fictional 24-service system, 4 teams, ~40 typed+weighted edges (sync call / data dependency, critical/standard)"
+    rationale: many cardinality + high relationality + medium density; inlined in the page so the first screen is usable at load with no loading state (delivery constraint)
+    confidence: high
+    references:
+      - service_node
+      - dependency_edge
+rejected:
+  - option: List-detail as primary structure
+    reason: "Knowledge contract: does_not_apply_when spatial relationships dominate; every follow step would navigate away from the web and lose global context (violates acceptance seed)"
+  - option: Force-directed layout
+    reason: Non-deterministic node positions break H-21 Orientation Invariants; anchors must stay put while the user walks the graph
+  - option: Drill-down navigation (click = enter node view)
+    reason: Drill-down removes the whole web from view — directly violates 关系跟随不丢失全局上下文
+unresolved: []
+complexity_budget:
+  permanent_panels: 3
+  permanent_primary_actions: 3
+  modes: 1
+  state_owners: 3
+  navigation_levels: 1
+  persistent_filters: 1
+  new_semantic_concepts: 2
+  keyboard_contracts: 1
+  mobile_conflicts: 0
+  permanent_surfaces: 1

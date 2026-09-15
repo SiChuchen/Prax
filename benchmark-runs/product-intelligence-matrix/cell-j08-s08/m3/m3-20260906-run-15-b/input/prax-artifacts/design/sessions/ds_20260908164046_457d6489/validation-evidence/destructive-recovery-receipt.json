@@ -1,0 +1,14 @@
+{
+  "check_id": "destructive_recovery",
+  "receipt_version": 1,
+  "measured_at": "2026-09-08T17:26:00Z",
+  "result": "pass",
+  "method": "CDP interaction: clicked delete on a section with children; asserted alertdialog content and buttons; cancelled; asserted node intact; exercised Ctrl+z undo restoring prior state",
+  "assertions": [
+    {"action": "click 删 on row 2 新功能", "observed": "alertdialog visible, title=删除「新功能」, body=该节包含 2 个子节。请选择处理方式（两种方式都不会产生无归属的孤儿节）：, actions=[子节上移一级（保留 2 个子节）| 连同子节删除（共 3 节）| 取消]"},
+    {"action": "click 取消", "observed": "modalHidden=true, node s2 still exists"},
+    {"action": "Ctrl+z after demote/title-clear/reset-style ops", "observed": "prior state fully restored in all panes (E_afterUndo=2.2, G badge back to 结构检查 · 完整)"},
+    {"invariant": "no operation path can orphan a section or skip a hierarchy level; illegal ops disabled with stated reasons"}
+  ],
+  "artifacts": ["evidence/06-delete-confirm-modal.png", "evidence/04-undo-revert.png", "evidence/evidence-driver-report.json"]
+}

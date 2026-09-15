@@ -1,0 +1,34 @@
+version: "0.1"
+session_id: ds_20260907173830_d0e52165
+task_ref: 扫视指标墙，在异常出现的第一时间发现它（无需交互，靠耐久的状态色与置顶排序）
+selected:
+  - ref: product_relationships
+    reason:
+      - rel_metric_change:metric->change_event
+      - rel_metric_history:metric->metric_history
+  - ref: region_relationships
+    reason: []
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-LIST-DETAIL-INSPECTOR
+  - ref: unresolved
+    reason: []
+  - ref: corrections
+    reason: []
+  - ref: validation-plan@1
+    reason:
+      - semantic_conformance
+      - state_completeness
+      - product_model_alignment
+      - keyboard
+      - hierarchy_review
+      - representation_decided
+      - state_ownership_declared
+      - acceptance_contract_present
+      - complexity_budget_declared
+      - requirement_alignment
+excluded:
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata

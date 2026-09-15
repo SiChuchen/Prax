@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DepAtlas · 服务依赖图谱</title>
+<link rel="stylesheet" href="../styles.css">
+</head>
+<!-- 数据内联于 data.js，脚本同步渲染：页面加载完成即处于 state-ready，加载态按设计不可达 -->
+<body class="state-ready">
+  <noscript><p class="noscript">DepAtlas 需要 JavaScript 才能渲染依赖图谱。</p></noscript>
+
+  <div id="app">
+    <header id="topbar">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">◈</span>
+        <div class="brand-text">
+          <h1>DepAtlas <em>服务依赖图谱</em></h1>
+          <p class="tagline">跟随依赖与影响 · 全局上下文始终可见</p>
+        </div>
+      </div>
+      <div class="search-wrap">
+        <input id="search" type="search" placeholder="搜索服务…（按 / 聚焦）" autocomplete="off"
+               aria-label="搜索服务" role="combobox" aria-expanded="false" aria-controls="search-results">
+        <ul id="search-results" role="listbox" aria-label="搜索结果" hidden></ul>
+      </div>
+      <label class="filter" title="弱化显示数据类依赖">
+        <input type="checkbox" id="edge-filter" checked> 数据依赖
+      </label>
+      <button id="reset" class="btn" title="清除选择、跟随路径与高亮（Esc）">重置视图</button>
+    </header>
+
+    <div id="trailbar">
+      <div id="global-context" class="ctx" aria-live="polite"></div>
+      <ol id="trail" aria-label="跟随路径"></ol>
+      <button id="clear-trail" class="btn ghost" hidden>清除跟随</button>
+    </div>
+
+    <main id="main">
+      <section id="map-panel" aria-label="全局依赖地图">
+        <svg id="map" viewBox="0 0 1340 860" preserveAspectRatio="xMidYMid meet" role="group"
+             aria-label="服务依赖全景地图：四层 24 个服务、40 条依赖关系，全部常驻可见">
+          <defs>
+            <marker id="arr" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+              <path d="M0 0L10 5L0 10z" fill="#5d78a6"></path>
+            </marker>
+            <marker id="arr-crit" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+              <path d="M0 0L10 5L0 10z" fill="#d29a45"></path>
+            </marker>
+            <marker id="arr-trail" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0L10 5L0 10z" fill="#38e1ff"></path>
+            </marker>
+          </defs>
+          <g id="layer-bands"></g>
+          <g id="layer-edges"></g>
+          <g id="layer-nodes"></g>
+        </svg>
+        <div class="map-footnote">
+          <div class="legend">
+            <span><i class="sw call"></i>调用依赖</span>
+            <span><i class="sw data"></i>数据依赖</span>
+            <span><i class="sw crit"></i>关键链路</span>
+            <span><i class="sw trail"></i>当前跟随</span>
+          </div>
+          <p class="axis-note">箭头 A → B 表示「A 依赖 B」：B 变更时，影响沿箭头反方向向左传播到其依赖方。</p>
+        </div>
+      </section>
+
+      <aside id="inspector" aria-label="详情面板">
+        <div id="inspector-empty" class="empty-state">
+          <h3>未选中任何对象</h3>
+          <p>点击地图上的<b>服务节点</b>或<b>依赖连线</b>查看详情。</p>
+          <p class="hint">试试从 <b>order-service</b> 出发，沿「依赖」或「被依赖」逐跳跟随 —— 全图会一直留在原处，路径以青色标出。</p>
+        </div>
+        <div id="inspector-node" hidden></div>
+        <div id="inspector-edge" hidden></div>
+      </aside>
+    </main>
+  </div>
+
+  <div id="error-panel" hidden>
+    <h2>数据错误</h2>
+    <p id="error-message"></p>
+  </div>
+  <div id="tooltip" role="tooltip" hidden></div>
+
+  <script>window.DEPATLAS_DATA = { nodes: [], edges: [] };</script>
+  <script src="../app.js"></script>
+</body>
+</html>
+

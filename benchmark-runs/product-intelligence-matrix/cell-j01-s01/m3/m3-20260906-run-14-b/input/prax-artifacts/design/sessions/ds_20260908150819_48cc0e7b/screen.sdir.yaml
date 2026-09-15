@@ -1,0 +1,269 @@
+version: "0.2"
+screen:
+  id: screen-entity-console
+  intent:
+    primary_task: 在层级范围内显式多选实体并批量变更状态/归属，零误伤完成
+    secondary_tasks:
+      - 筛选定位实体
+      - 核对节点状态分布
+      - 撤销最近一次批量操作
+  archetype:
+    pattern_ref: PAT-DATA-EXPLORER
+  density_intent: compact
+  primary_object:
+    type: entity
+    label: 实体
+  user_job:
+    verb: manage
+    target: 大量有层级归属的结构化实体集合
+    success: 批量操作无误完成：受影响集合与确认集合逐 id 一致，状态归属显式
+  information_shape:
+    cardinality: many
+    relationality: medium
+    hierarchy: high
+    temporality: low
+    density: high
+    dimensionality: medium
+    spatiality: none
+    volatility: medium
+    uncertainty: low
+    comparison_need: none
+  regions:
+    - id: region-tree
+      role: experimental:层级导航与范围划定
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:caret展开收起
+        - experimental:节点直接累计计数
+        - experimental:状态分布微条
+        - experimental:点击节点切换表格范围
+    - id: region-table
+      role: collection
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - comparison_group
+        - filter_then_inspect
+        - experimental:行复选与三态表头全选
+        - experimental:范围全选带计数标注
+        - experimental:已选被隐藏警示
+    - id: region-actionbar
+      role: experimental:批量操作条与选择摘要
+      importance: primary
+      visibility:
+        condition: selection_driven
+      behavior_intent:
+        - experimental:已选计数与隐藏警示
+        - experimental:批量操作入口全部先开预览模态
+        - experimental:撤销最近操作
+        - experimental:清空选择
+    - id: region-preview-modal
+      role: experimental:批量操作逐项预览与确认
+      importance: primary
+      visibility:
+        condition: task_driven
+      behavior_intent:
+        - experimental:受影响实体逐项列出
+        - experimental:no-op实体单独列出并跳过
+        - experimental:删除勾选确认
+        - experimental:确认取消
+    - id: region-statusbar
+      role: experimental:操作回执与全局计数
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:操作回执与撤销按钮
+        - experimental:操作记录面板
+        - experimental:总数与内存态说明
+  relationships:
+    - id: rel_tree_scopes_table
+      source: region-tree
+      target: region-table
+      type: experimental:划定的范围决定表格可见行
+    - id: rel_selection_drives_actionbar
+      source: region-table
+      target: region-actionbar
+      type: experimental:选择集出现并驱动批量操作条
+    - id: rel_actionbar_opens_preview
+      source: region-actionbar
+      target: region-preview-modal
+      type: experimental:操作入口打开逐项预览模态
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+    - experimental:locate-关键字搜索+状态筛选+节点范围联合过滤
+    - experimental:select-行复选+范围全选+shift范围选
+    - experimental:navigate-树节点切换表格范围
+    - experimental:preview-批量操作逐项预览模态确认后执行
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: dp-cascade
+      question: 状态/删除操作是否级联作用于其他实体？
+      adapter_may_choose:
+        - 默认包含级联并显式标注
+        - 默认不级联，无静默级联（本实现取此项）
+    - id: dp-noop-conflict
+      question: 目标状态与当前状态相同的实体如何处理？
+      adapter_may_choose:
+        - 跳过并列出（本实现选择此项）
+        - 统一重设
+    - id: dp-empty-actionbar
+      question: 无选择时批量操作条如何呈现？
+      adapter_may_choose:
+        - 隐藏（选择集在状态栏仍可见）
+        - 置灰禁用
+  state_ownership:
+    - state: selection
+      owner: session
+    - state: preview
+      owner: region-preview-modal
+    - state: query
+      owner: region-table
+    - state: viewport
+      owner: region-tree
+  representation:
+    primary:
+      type: table
+      reason: 高密度、同构字段、多选与批量对齐操作的最优表示
+    supporting:
+      - type: tree
+        reason: 层级导航与范围划定
+      - type: form
+        reason: 预览确认模态的结构化表单
+      - type: list
+        reason: 模态内受影响实体紧凑逐项清单
+  priority:
+    primary:
+      - region-table
+      - region-tree
+      - region-actionbar
+      - region-preview-modal
+    contextual:
+      - region-statusbar
+  complexity_budget:
+    permanent_panels: 3
+    permanent_primary_actions: 4
+    modes: 1
+    state_owners: 2
+    navigation_levels: 2
+    persistent_filters: 3
+    new_semantic_concepts: 3
+    keyboard_contracts: 2
+    mobile_conflicts: 0
+    permanent_surfaces: 1
+  acceptance:
+    - 批量操作实际生效集合与预览确认集合逐 id 完全一致（零误伤）
+    - 每个实体的状态与归属在表格行、树节点计数、操作预览三处即时一致可见
+    - 筛选/导航变化不改变选择集；已选实体被筛选隐藏时有显式警示
+    - 批量删除/状态变更必须经逐项预览模态确认；no-op 实体单独列出并跳过
+    - 删除需显式勾选确认；最近一次批量操作可一步撤销并有回执记录
+    - 页面加载完成即数据就绪可用：首屏即为 ready，loading 不得成为可测状态
+  unresolved:
+    - id: oq-cascade-default
+      question: 实体仅归属叶类别，无静默级联路径
+      impact: medium
+      affects:
+        - dp-cascade
+    - id: oq-domain-flavor
+      question: 业务领域口吻未指定，采用中性实体目录
+      impact: low
+      affects:
+        - data_seed
+  rejected_alternatives:
+    - option: 常驻右侧 Inspector
+      reason: 挤压高密度清单且服务低频任务
+    - option: 卡片栅格
+      reason: 高密度批量对比反模式
+    - option: 看板拖拽
+      reason: 拖拽隐喻与零误伤冲突
+state_ownership:
+  - state: selection
+    owner: session（前端选择集 store：仅行复选/范围全选/清空/仅保留可见四种显式动作可变；筛选与导航不触碰）
+  - state: preview
+    owner: region-preview-modal（批量操作逐项预览：暂存待执行操作、目标值与确认勾选）
+  - state: query
+    owner: region-table（节点范围+状态+关键字+排序，只决定可见行，不触碰选择集）
+  - state: viewport
+    owner: region-tree（各节点独立展开/收起状态）
+information_shape:
+  cardinality: many
+  relationality: medium
+  hierarchy: high
+  temporality: low
+  density: high
+  dimensionality: medium
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: table
+    reason: 高密度、同构字段、多选与批量对齐操作的最优表示；many×high density 场景下可扫读、可逐项核对
+  supporting:
+    - type: tree
+      reason: 层级导航与范围划定
+    - type: form
+      reason: 预览确认模态的结构化表单
+    - type: list
+      reason: 模态内受影响实体紧凑逐项清单
+priority:
+  primary:
+    - region-table
+    - region-tree
+    - region-actionbar
+    - region-preview-modal
+  contextual:
+    - region-statusbar
+complexity_budget:
+  permanent_panels: 3
+  permanent_primary_actions: 4
+  modes: 1
+  state_owners: 2
+  navigation_levels: 2
+  persistent_filters: 3
+  new_semantic_concepts: 3
+  keyboard_contracts: 2
+  mobile_conflicts: 0
+  permanent_surfaces: 1
+acceptance:
+  - 批量操作实际生效集合与预览确认集合逐 id 完全一致（零误伤）
+  - 每个实体的状态与归属在表格行、树节点计数、操作预览三处即时一致可见
+  - 筛选/导航变化不改变选择集；已选实体被筛选隐藏时有显式警示
+  - 批量删除/状态变更必须经逐项预览模态确认；no-op 实体单独列出并跳过
+  - 删除需显式勾选确认；最近一次批量操作可一步撤销并有回执记录
+  - 页面加载完成即数据就绪可用：首屏即为 ready，loading 不得成为可测状态
+user_job:
+  verb: manage
+  target: 大量有层级归属的结构化实体集合
+  success: 批量操作无误完成：受影响集合与确认集合逐 id 一致，状态归属显式
+primary_object:
+  type: entity
+  label: 实体
+unresolved:
+  - id: oq-cascade-default
+    question: 实体仅归属叶类别，无静默级联路径
+    impact: medium
+    affects:
+      - dp-cascade
+  - id: oq-domain-flavor
+    question: 业务领域口吻未指定，采用中性实体目录
+    impact: low
+    affects:
+      - data_seed
+rejected_alternatives:
+  - option: 常驻右侧 Inspector
+    reason: 挤压高密度清单且服务低频任务；选择反馈已由操作条+预览模态覆盖
+  - option: 卡片栅格
+    reason: 高密度批量对比反模式
+  - option: 看板拖拽
+    reason: 拖拽隐喻与零误伤冲突

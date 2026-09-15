@@ -1,0 +1,97 @@
+version: "0.1"
+corrections:
+  - id: corr-representation-declared
+    scope:
+      project: cell-j02-s02-b
+      surfaces:
+        - list_detail_screen
+    finding:
+      type: sdir-field-undeclared-at-gate
+      observed: "Persisted session SDIR is the generated v0.1 skeleton, which carries
+        no representation block. The declaration exists in the design_decisions
+        record (representation.primary = search_results with reason 'canonical
+        locate surface: query-driven, filterable result list with live counts
+        and hit highlighting'; supporting tree = category scoping rail, list =
+        detail metadata) and is implemented as declared (verified in
+        evidence/02, /03, /04)."
+    intended:
+      statement: "The screen's representation is DECIDED and recorded: primary =
+        search_results (reason: unbounded pool narrowed by query — the canonical
+        locate surface), supporting = tree (2-level category rail for medium
+        hierarchy) + list (selection-bound detail metadata). This correction is
+        the authoritative declaration for the session SDIR."
+    evidence_refs:
+      - design-decisions.yaml representation block
+      - app.js renderResults/rowHTML (query-driven, filterable result list)
+      - evidence/02-search-glacier.png
+    regression:
+      check_id: representation_decided
+      requirement: SDIR declares representation.primary with a non-empty reason.
+    supersedes: []
+    promotion:
+      candidate: false
+    created_at: 2026-09-08T00:56:17.361Z
+  - id: corr-state-ownership-declared
+    scope:
+      project: cell-j02-s02-b
+      surfaces:
+        - list_detail_screen
+    finding:
+      type: sdir-field-undeclared-at-gate
+      observed: "Persisted session SDIR (generated v0.1 skeleton) carries no
+        state_ownership block. Ownership is declared in the delivered model and
+        implemented: query, selection, and inspector (preview) states are owned
+        by the single app-store (`state` object in app.js); viewport is owned by
+        the results region and anchored across selection changes
+        (scroll/chips/counter identical before/after detail open); mode has no
+        owner (no modes exist)."
+    intended:
+      statement: "State ownership is DECLARED: selection → app-store (single owner);
+        preview/inspector → app-store (selection-bound detail panel); query →
+        app-store; viewport → results region (anchored); mode → none. Selection
+        and preview both have explicit owners, satisfying the check's
+        requirement."
+    evidence_refs:
+      - app.js state object (single owner of query/selection/inspector)
+      - app.js results region (viewport scroll anchoring, contextIdentical=true
+        in evidence/run-log.json)
+      - evidence/08-context-preserved.png
+    regression:
+      check_id: state_ownership_declared
+      requirement: Selection and preview states both have declared owners.
+    supersedes: []
+    promotion:
+      candidate: false
+    created_at: 2026-09-08T00:56:25.571Z
+  - id: corr-acceptance-contract-present
+    scope:
+      project: cell-j02-s02-b
+      surfaces:
+        - list_detail_screen
+    finding:
+      type: sdir-field-undeclared-at-gate
+      observed: "Persisted session SDIR (generated v0.1 skeleton) carries no
+        acceptance block. The acceptance contract exists and is verified: (1)
+        locate any seeded target in ≤3 interactions; (2) detail panel never
+        discards result list, active filters, or scroll position; (3) active
+        filters always visible as removable chips with live counts; (4) first
+        paint is ready — no loading state observable (data inline, synchronous
+        boot); (5) keyboard contract / → type → ↑↓ → Enter reaches detail, Esc
+        closes."
+    intended:
+      statement: The screen's acceptance contract is DECLARED as the five criteria
+        above, derived from the frozen brief's acceptance seed
+        (定位路径有搜索/过滤支撑且不丢上下文) and empirically verified in evidence/run-log.json
+        with real browser key events and screenshots 01–08.
+    evidence_refs:
+      - brief.md 验收种子（定位路径有搜索/过滤支撑且不丢上下文）
+      - README.md acceptance section (5 criteria)
+      - "evidence/run-log.json (all 5 verified: contextIdentical=true, keyboard
+        3 interactions, bootOverlayGone=true, live counters, chip removal)"
+    regression:
+      check_id: acceptance_contract_present
+      requirement: SDIR carries at least one acceptance criterion.
+    supersedes: []
+    promotion:
+      candidate: false
+    created_at: 2026-09-08T00:56:37.630Z
