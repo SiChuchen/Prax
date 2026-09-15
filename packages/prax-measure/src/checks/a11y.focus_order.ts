@@ -26,39 +26,47 @@ export async function run(page: Page, ctx: CheckContext): Promise<CheckOutcome> 
 
   const stops: Array<{ selector: string; rect: { x: number; y: number; width: number; height: number } }> = [];
   const missingIndicators: string[] = [];
-
-  for (let index = 0; index < MAX_STOPS; index += 1) {
-    await page.keyboard.press("Tab");
-    const stop = await page.evaluate(() => {
-      const element = document.activeElement;
-      if (element === null || element === document.body) return null;
-      const describe = (): string => {
-        const tag = element!.tagName.toLowerCase();
-        return element!.id !== "" ? `${tag}#${element!.id}` : tag;
-      };
-      const style = window.getComputedStyle(element);
-      const outlineVisible =
-        style.outlineStyle !== "none" &&
-        Number.parseFloat(style.outlineWidth || "0") > 0 &&
-        style.outlineColor !== "transparent";
-      const shadowVisible = style.boxShadow !== "none";
-      const domRect = element.getBoundingClientRect();
-      return {
-        selector: describe(),
-        indicator: outlineVisible || shadowVisible,
-        rect: { x: domRect.x, y: domRect.y, width: domRect.width, height: domRect.height },
-      };
-    });
-    if (stop === null) {
-      // focus fell back to the body: the tab sequence wrapped (or the page
-      // has no tabbables at all) — either way the walk is complete
-      break;
+  let incomplete: string | undefined = `incomplete focus traversal: reached ${MAX_STOPS} stops`;
+  const visited = await page.evaluateHandle(() => new WeakSet<Element>());
+  try {
+    for (let index = 0; index < MAX_STOPS; index += 1) {
+      await page.keyboard.press("Tab");
+      const stop = await page.evaluate((seen) => {
+        const element = document.activeElement;
+        if (element === null || element === document.body) return null;
+        const repeated = seen.has(element);
+        seen.add(element);
+        const tag = element.tagName.toLowerCase();
+        const style = window.getComputedStyle(element);
+        const outlineVisible =
+          style.outlineStyle !== "none" &&
+          Number.parseFloat(style.outlineWidth || "0") > 0 &&
+          style.outlineColor !== "transparent";
+        const shadowVisible = style.boxShadow !== "none";
+        const domRect = element.getBoundingClientRect();
+        return {
+          repeated,
+          selector: element.id !== "" ? `${tag}#${element.id}` : tag,
+          indicator: outlineVisible || shadowVisible,
+          rect: { x: domRect.x, y: domRect.y, width: domRect.width, height: domRect.height },
+        };
+      }, visited);
+      if (stop === null) {
+        // BODY also occurs when a key handler traps focus inside the document.
+        incomplete = await page.evaluate(() => document.hasFocus())
+          ? "incomplete focus traversal: focus remains on the document body"
+          : undefined;
+        break;
+      }
+      if (stop.repeated) {
+        incomplete = `incomplete focus traversal: repeated element ${stop.selector} before leaving the document`;
+        break;
+      }
+      stops.push({ selector: stop.selector, rect: stop.rect });
+      if (!stop.indicator) missingIndicators.push(stop.selector);
     }
-    if (stops.length > 0 && stops[stops.length - 1]!.selector === stop.selector) {
-      break;
-    }
-    stops.push({ selector: stop.selector, rect: stop.rect });
-    if (!stop.indicator) missingIndicators.push(stop.selector);
+  } finally {
+    await visited.dispose();
   }
 
   // visual reading order within a row band (tolerance: half the row height)
@@ -87,7 +95,8 @@ export async function run(page: Page, ctx: CheckContext): Promise<CheckOutcome> 
   if (missingIndicators.length === 0 && inversions.length === 0) {
     return {
       id: "a11y.focus_order",
-      status: "pass",
+      status: incomplete === undefined ? "pass" : "skipped",
+      ...(incomplete === undefined ? {} : { subject: "document focus traversal", reason: incomplete }),
       severity: ARTIFACT_CHECK_DEFAULT_SEVERITY["a11y.focus_order"],
       measured,
       threshold,

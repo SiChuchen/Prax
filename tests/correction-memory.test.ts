@@ -1,9 +1,9 @@
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { stringify } from "yaml";
 import { afterEach, describe, expect, it } from "vitest";
-import { FileSessionStore, activeCorrections, relevantCorrections, type Correction } from "prax-runtime";
+import { FileSessionStore, activeCorrections, loadCorrections, relevantCorrections, type Correction } from "prax-runtime";
 import { PraxService } from "prax-mcp";
 import {
   architectureUnderstanding,
@@ -85,6 +85,26 @@ async function startModifySession(stateRoot: string, projectRoot: string, sessio
 }
 
 describe("correction memory units", () => {
+  it("only treats a missing corrections file as empty memory", async () => {
+    const root = await mkdtemp(join(tmpdir(), "prax-corr-read-"));
+    cleanup.push(root);
+    expect(await loadCorrections(root)).toEqual([]);
+    await mkdir(join(root, "corrections.yaml"));
+    await expect(loadCorrections(root)).rejects.toMatchObject({ code: "CORRECTIONS_READ_FAILED" });
+  });
+
+  it.each(["corrections: [", "version: '0.2'\ncorrections: []\n", "", "version: '0.1'\ncorrections: [{}]\n"])(
+    "diagnoses corrupt correction memory without changing its bytes: %j",
+    async (raw) => {
+      const root = await mkdtemp(join(tmpdir(), "prax-corr-read-"));
+      cleanup.push(root);
+      const file = join(root, "corrections.yaml");
+      await writeFile(file, raw, "utf8");
+      await expect(loadCorrections(root)).rejects.toMatchObject({ code: "CORRECTIONS_READ_FAILED" });
+      expect(await readFile(file, "utf8")).toBe(raw);
+    },
+  );
+
   it("excludes superseded corrections and defaults promotion off", () => {
     const base = settingsCorrection();
     const superseding: Correction = {

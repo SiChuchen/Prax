@@ -76,6 +76,7 @@ export interface ReviewReadiness {
   deterministic_passed: boolean;
   measurement: {
     receipt_ref: string | null;
+    binding?: Record<string, MeasurementBindingStatus>;
     error_failures_open: number;
     warning_dispositions: Array<{ check_id: string; disposition: "accepted" | "deferred"; reason: string }>;
   };
@@ -159,7 +160,7 @@ export const MeasurementReceiptCheckSchema = z.object({
 });
 export type MeasurementReceiptCheck = z.infer<typeof MeasurementReceiptCheckSchema>;
 
-export const MeasurementReceiptSchema = z.object({
+export const LegacyMeasurementReceiptSchema = z.object({
   receipt_version: z.literal("0.1"),
   tool: z.object({ name: z.literal("prax-measure"), version: NonEmpty }), // version deliberately NonEmpty, not semver-constrained
   target: z.object({ app_root: NonEmpty, base_url: NonEmpty, build_ref: NonEmpty.nullable() }),
@@ -168,4 +169,33 @@ export const MeasurementReceiptSchema = z.object({
   checks: z.array(MeasurementReceiptCheckSchema).min(1),
   summary: z.object({ pass: z.number().int().nonnegative(), fail: z.number().int().nonnegative(), skipped: z.number().int().nonnegative(), warnings: z.number().int().nonnegative() }),
 });
+const Sha256 = z.string().regex(/^[0-9a-f]{64}$/);
+export const MeasurementTargetSchema = z.object({
+  app_root: NonEmpty.describe("Implementation directory relative to the session project root."),
+  entry: NonEmpty.refine((entry) => entry.startsWith("/") && !entry.startsWith("//") && !/[\\\s]/.test(entry), "entry must be a root-relative URL path"),
+  scenario: NonEmpty.describe("Declared scenario label; not proof of an executed user journey."),
+});
+export const BoundMeasurementReceiptSchema = LegacyMeasurementReceiptSchema.extend({
+  receipt_version: z.literal("0.2"),
+  binding: z.object({
+    run_id: NonEmpty,
+    entry: NonEmpty.refine((entry) => entry.startsWith("/") && !entry.startsWith("//") && !/[\\\s]/.test(entry)),
+    scenario: NonEmpty,
+    implementation: z.object({ root: NonEmpty, digest: Sha256, kind: z.enum(["static_tree", "local_source_association"]) }),
+    session_id: NonEmpty.nullable(),
+    contract_digests: z.object({
+      "screen.sdir.yaml": Sha256.nullable(),
+      "sdir-delta.yaml": Sha256.nullable(),
+      "implementation-brief.yaml": Sha256.nullable(),
+    }),
+  }),
+  target_validation: z.object({
+    status: z.enum(["valid", "invalid"]),
+    issues: z.array(NonEmpty),
+    readiness: z.enum(["document", "selector"]),
+    ready_selector: NonEmpty.nullable(),
+  }),
+});
+export const MeasurementReceiptSchema = z.discriminatedUnion("receipt_version", [LegacyMeasurementReceiptSchema, BoundMeasurementReceiptSchema]);
 export type MeasurementReceipt = z.infer<typeof MeasurementReceiptSchema>;
+export type MeasurementBindingStatus = "legacy_unbound" | "unverified_target" | "implementation_current" | "association_current" | "invalid";

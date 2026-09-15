@@ -1,10 +1,11 @@
 import { copyFile, mkdir, mkdtemp, readFile, rm, utimes, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
 import { FileSessionStore, type FileSessionStore as Store } from "prax-runtime";
 import { PraxService, type PraxOutput } from "prax-mcp";
+import { runMeasurement } from "../packages/prax-measure/src/runner.js";
 import { architectureUnderstanding, requirementConfirmation, sdirDelta } from "./fixtures.js";
 
 const RECEIPTS_DIR = fileURLToPath(new URL("./fixtures/measure/receipts/", import.meta.url));
@@ -20,7 +21,7 @@ afterEach(async () => {
   await Promise.all(cleanup.splice(0).map((path) => rm(path, { recursive: true, force: true })));
 });
 
-async function startSession(sessionId: string): Promise<{ service: PraxService; store: Store; sessionDir: string }> {
+async function startSession(sessionId: string, measurementTarget?: { app_root: string; entry: string; scenario: string }): Promise<{ service: PraxService; store: Store; sessionDir: string; projectRoot: string }> {
   const root = await mkdtemp(join(tmpdir(), "prax-valmeas-e2e-"));
   cleanup.push(root);
   const projectRoot = join(root, "project");
@@ -59,9 +60,9 @@ async function startSession(sessionId: string): Promise<{ service: PraxService; 
     },
   });
   await service.designSdir({ design_session_id: sessionId, mode: "apply_delta", sdir_delta: sdirDelta() });
-  await service.designPrepareImplementation({ design_session_id: sessionId, platform: "web_desktop", framework: "react" });
+  await service.designPrepareImplementation({ design_session_id: sessionId, platform: "web_desktop", framework: "react", ...(measurementTarget === undefined ? {} : { measurement_target: measurementTarget }) });
   const sessionDir = await store.artifactDirectory(sessionId);
-  return { service, store, sessionDir };
+  return { service, store, sessionDir, projectRoot };
 }
 
 async function installFrozenReceipt(sessionDir: string, receipt: unknown = FROZEN_RECEIPT) {
@@ -107,6 +108,25 @@ function doctoredReceipt(flip: { id: string; status: "fail" }) {
 }
 
 describe("measured-validation e2e (Task C1, Gate 1 criteria 2–5)", () => {
+  it.each([false, true])("uses a prepared target to bind a real measurement (implementation changed: %s)", async (changed) => {
+    const sessionId = changed ? "ds_bound_changed" : "ds_bound_current";
+    const target = { app_root: ".", entry: "/", scenario: "entry" };
+    const { service, store, sessionDir, projectRoot } = await startSession(sessionId, target);
+    const brief = await store.readArtifact(await store.getSession(sessionId), "implementationBrief") as Record<string, unknown>;
+    expect(brief.measurement_target).toEqual(target);
+    await writeFile(join(projectRoot, "index.html"), "<main>Ready application</main>");
+    const receipt = await runMeasurement({ appDir: projectRoot, outDir: sessionDir, sessionId, viewports: [{ width: 1280, height: 860 }] });
+    if (changed) await writeFile(join(projectRoot, "index.html"), "<main>Changed after measurement</main>");
+    const plan = await service.designValidate({ design_session_id: sessionId, mode: "plan" });
+    const ref = relative(sessionDir, receipt).replaceAll("\\", "/");
+    const result = await service.designValidate({ design_session_id: sessionId, mode: "evaluate", evidence: evidenceForPlan(plan, ref) });
+    expect(result.status, JSON.stringify(result)).toBe(changed ? "BLOCK" : "PASS");
+    const readiness = result.readiness as { evidence_current: boolean; measurement: { binding: Record<string, string> } };
+    expect(readiness.evidence_current).toBe(!changed);
+    expect(readiness.measurement.binding[ref]).toBe(changed ? "invalid" : "implementation_current");
+    expect(result.phase).toBe(changed ? "VALIDATION" : "COMPLETE");
+  }, 20000);
+
   it("consumes the frozen real receipt: measured provenance, readiness block, COMPLETE", async () => {
     const { service, sessionDir } = await startSession("ds_e2e_measured");
     await installFrozenReceipt(sessionDir);

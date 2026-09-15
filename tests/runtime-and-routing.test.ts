@@ -1,4 +1,4 @@
-import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, rm, unlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -116,7 +116,7 @@ describe("product-first runtime", () => {
     await expect(store.readArtifact(advanced, "productFrame")).rejects.toMatchObject({ code: "ARTIFACT_SCHEMA_INVALID" });
   });
 
-  it("rejects cross-process session writes while the state lock is held", async () => {
+  it("rejects a held state lock and retries successfully on the same store after release", async () => {
     const root = await mkdtemp(join(tmpdir(), "prax-runtime-"));
     cleanup.push(root);
     const projectRoot = join(root, "project");
@@ -128,6 +128,9 @@ describe("product-first runtime", () => {
     await expect(
       store.commit({ ...session, updated_at: new Date().toISOString(), revision: session.revision + 1 }),
     ).rejects.toMatchObject({ code: "SESSION_LOCK_HELD" });
+    await unlink(join(stateRoot, "write.lock"));
+    const committed = await store.commit({ ...session, revision: session.revision + 1 });
+    expect(committed.revision).toBe(session.revision + 1);
   });
 
   it("steals a stale state lock and completes the write", async () => {
@@ -682,4 +685,3 @@ describe("SDIR boundary", () => {
     expect(result.semantic_errors.join(" ")).toMatch(/render-level/);
   });
 });
-

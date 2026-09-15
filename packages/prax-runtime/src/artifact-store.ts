@@ -377,11 +377,14 @@ export class FileSessionStore {
       release = resolveQueue;
     });
     await prior;
-    const unlock = await this.acquireStateLock();
     try {
-      return await operation();
+      const unlock = await this.acquireStateLock();
+      try {
+        return await operation();
+      } finally {
+        await unlock();
+      }
     } finally {
-      await unlock();
       release();
     }
   }

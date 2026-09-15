@@ -60,6 +60,10 @@ npm test
 npm run dev:mcp
 ```
 
+The test suite includes real Chromium integrations and defaults to three
+workers to avoid browser oversubscription. Override with
+`npm test -- --maxWorkers=<count>` when the host has capacity.
+
 The production stdio entry is:
 
 ```bash
@@ -141,6 +145,70 @@ Tool order is enforced by the per-session gate policy. Calls after
 resume without replaying a chat transcript. Sessions created before lifecycle
 policies keep the original full-chain behavior.
 
+## Measurement evidence (receipt 0.2)
+
+For sessions with a prepare gate, add a target to the existing
+`design_prepare_implementation` payload **before** measuring:
+
+```json
+{
+  "measurement_target": {
+    "app_root": "apps/demo",
+    "entry": "/",
+    "scenario": "entry"
+  }
+}
+```
+
+`app_root` must already exist, be project-relative, and resolve inside the
+project. Keep the other mode-specific prepare fields. Then measure that same
+directory, entry, scenario, and session (replace the example paths and id):
+
+```bash
+node packages/prax-measure/bin/prax-measure.mjs --app /project/apps/demo --out /project/.prax/design/sessions/ds_example --entry / --session-id ds_example --scenario entry --ready-selector "[data-app-ready]"
+```
+
+The optional readiness selector must become visible; `--ready-timeout-ms`
+defaults to 10000 (maximum 60000). Without it, only basic document readiness
+is checked. HTTP errors, blank pages, runtime errors, failed script/style
+loads, unexpected dialogs, and unexpected redirects invalidate the target.
+The scenario is a label, not an executed user journey.
+
+Each run writes uniquely named receipts and screenshots under
+`validation-evidence/<run-id>/viewport-<index>/<check-id>/`; later runs do not
+overwrite earlier evidence. Receipt 0.2 binds implementation content and the
+SDIR/delta/implementation brief, not just timestamps. Validation compares
+these against the prepared target; changed content requires remeasurement.
+Plain static serving reports `implementation_current`; `--serve` and Vite
+preview report only `association_current` (local source association, not
+proof of deployed bytes). See [Architecture](docs/architecture.md) for limits.
+
+CLI exit codes: **0** for completed checks without error-severity failures
+(warning failures are allowed), **1** for error-severity failures, **2** for
+incomplete checks, invalid targets, or invocation failures. Invalid browser
+targets produce diagnostic skipped receipts; failures before capture can
+exit without a receipt. Incomplete error-tier 0.2 measurements require REVIEW.
+
+Legacy 0.1 receipts remain replayable as `legacy_unbound` for sessions without
+a declared target, but cannot satisfy a prepared binding requirement. A 0.2
+receipt without an independently prepared target requires REVIEW and does not
+read the receipt's self-declared filesystem root. Existing sessions already
+past prepare and light `visual_polish`/`defect_fix` lifecycles have no target
+declaration/migration path yet; do not manually rewrite their gated artifacts
+to bypass this boundary.
+
+## Correction memory recovery
+
+Correction ingestion serializes project-wide updates with
+`.prax/corrections.lock` and replaces YAML using a unique temporary file.
+Only a missing corrections file means empty memory: malformed or unreadable
+files return `CORRECTIONS_READ_FAILED` and are not overwritten.
+`CORRECTIONS_LOCK_HELD` means the lock could not be acquired. Locks are never
+stolen based on age. After a crashed writer, stop all project writers and
+confirm the recorded owner has exited before manually removing its orphaned
+lock/temp file; preserve and repair existing memory rather than deleting it.
+This is not a multi-file session transaction or a power-loss durability guarantee.
+
 ## v0 boundaries
 
 Prax v0 deliberately has no database, vector store, knowledge enumeration
@@ -153,4 +221,3 @@ the [Architecture Canvas Golden Case](golden/architecture-canvas/README.md),
 and the [Golden Case Suite](golden/README.md) — PRAX-LANDING-001 (figma_first),
 PRAX-DASHBOARD-001 (direct_code), and the queued pricing/wizard cases, each
 with a live-run record in `docs/phase-report-2026-08-29.md`.
-

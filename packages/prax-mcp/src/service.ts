@@ -1,6 +1,5 @@
 import { isAbsolute, join } from "node:path";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { stringify } from "yaml";
+import { readFile } from "node:fs/promises";
 import {
   KnowledgeStore,
   loadBuiltInKnowledgeStore,
@@ -14,7 +13,7 @@ import {
   checkOperationAllowed,
   contentDigest,
   CORRECTIONS_FILE,
-  CorrectionSchema,
+  insertCorrection,
   currentGate,
   deriveContextManifest,
   lifecyclePolicyFor,
@@ -44,7 +43,6 @@ import {
   type CapabilityMap,
   type ContextManifest,
   type Correction,
-  type CorrectionsFile,
   type DesignContext,
   type DesignDecisions,
   type DesignOperation,
@@ -67,6 +65,9 @@ import {
   PraxValidator,
   adjudicateScreenshots,
   PersistedValidationPlanSchema,
+  MeasurementTargetSchema,
+  resolveMeasurementTarget,
+  type ExpectedMeasurementTarget,
   type PersistedValidationPlan,
   type ValidationEvidence,
   type ValidationFinding,
@@ -1074,6 +1075,13 @@ export class PraxService {
     const session = await this.sessions.getSession(input.design_session_id);
     const blocked = operationBlock(session, "design_prepare_implementation");
     if (blocked !== undefined) return blocked;
+    if (input.measurement_target !== undefined) {
+      try {
+        await resolveMeasurementTarget(session.project_root, MeasurementTargetSchema.parse(input.measurement_target), session.id);
+      } catch (error) {
+        return { status: "RETRY", code: "MEASUREMENT_TARGET_INVALID", issues: [error instanceof Error ? error.message : String(error)], next: nextTool("design_prepare_implementation") };
+      }
+    }
     const policy = sessionPolicy(session);
     const decisions = await this.requireArtifact<DesignDecisions>(session, "designDecisions");
     const sdirArtifact = (await this.sessions.readArtifact<Sdir>(session, "sdir")) ?? undefined;
@@ -1192,6 +1200,7 @@ export class PraxService {
       version: "0.1",
       platform_profile: "WEB-DESKTOP",
       framework: input.framework,
+      ...(input.measurement_target === undefined ? {} : { measurement_target: MeasurementTargetSchema.parse(input.measurement_target) }),
       sdir_ref: sdirArtifact !== undefined ? "screen.sdir.yaml" : "sdir-delta.yaml",
       decision_ref: "design-decisions.yaml",
       approved_patterns: [decisions.primary_structure.pattern],
@@ -1429,9 +1438,19 @@ export class PraxService {
     const representationReviewForEvaluation =
       (await this.sessions.readArtifact<RepresentationReview>(session, "representationReview")) ?? undefined;
     const evaluationSessionDirectory = await this.sessions.artifactDirectory(session.id);
+    const preparedBrief = await this.sessions.readArtifact<{ measurement_target?: unknown }>(session, "implementationBrief");
+    let expectedTarget: ExpectedMeasurementTarget | undefined;
+    if (preparedBrief?.measurement_target !== undefined) {
+      try {
+        expectedTarget = await resolveMeasurementTarget(session.project_root, MeasurementTargetSchema.parse(preparedBrief.measurement_target), session.id);
+      } catch (error) {
+        return { status: "BLOCK", code: "MEASUREMENT_TARGET_INVALID", issues: [error instanceof Error ? error.message : String(error)], phase: session.phase };
+      }
+    }
     const evaluation = await this.validator.evaluate({
       plan,
       sessionDirectory: evaluationSessionDirectory,
+      ...(expectedTarget === undefined ? {} : { expectedTarget }),
       ...(sdirArtifact === undefined ? {} : { sdir: sdirArtifact }),
       ...(sdirDeltaArtifact === undefined ? {} : { sdirDelta: sdirDeltaArtifact }),
       ...(decisionsArtifact === undefined ? {} : { decisions: decisionsArtifact }),
@@ -1697,40 +1716,23 @@ export class PraxService {
   public async designCorrect(input: DesignCorrectInput): Promise<PraxOutput> {
     const session = await this.sessions.getSession(input.design_session_id);
     const correctionsRoot = join(session.project_root, ".prax");
-    const existing = await loadCorrections(correctionsRoot);
-    const issues: string[] = [];
-    if (existing.some((correction) => correction.id === input.correction.id)) {
-      issues.push(
-        `correction id '${input.correction.id}' already exists in ${CORRECTIONS_FILE}; record a new id and list the old one under supersedes.`,
-      );
-    }
-    const knownIds = new Set(existing.map((correction) => correction.id));
-    const unknownSupersedes = input.correction.supersedes.filter((id) => !knownIds.has(id));
-    if (unknownSupersedes.length > 0) {
-      issues.push(
-        `supersedes targets do not exist in ${CORRECTIONS_FILE}: ${unknownSupersedes.join(", ")} (supersede chains corrections only).`,
-      );
-    }
-    if (issues.length > 0) {
+    const result = await insertCorrection(correctionsRoot, {
+      ...input.correction,
+      created_at: this.sessions.nowIso(),
+    });
+    if ("issues" in result) {
       return {
         status: "RETRY",
         code: "CORRECTION_INGESTION_INVALID",
-        issues,
+        issues: result.issues,
         next: nextTool("design_correct"),
       };
     }
-    const parsedCorrection = CorrectionSchema.parse({
-      ...input.correction,
-      created_at: this.sessions.nowIso(),
-    }) as Correction;
-    const file: CorrectionsFile = { version: "0.1", corrections: [...existing, parsedCorrection] };
-    await mkdir(correctionsRoot, { recursive: true });
-    await writeFile(join(correctionsRoot, CORRECTIONS_FILE), stringify(file), "utf8");
     return {
       status: "PASS",
-      correction: parsedCorrection,
+      correction: result.correction,
       file: join(".prax", CORRECTIONS_FILE),
-      active_corrections: activeCorrections(file.corrections).length,
+      active_corrections: activeCorrections(result.corrections).length,
     };
   }
 

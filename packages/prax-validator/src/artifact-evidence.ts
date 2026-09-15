@@ -1,18 +1,22 @@
 import { readFile, stat } from "node:fs/promises";
 import { join } from "node:path";
 import { verifyEvidenceFile } from "prax-runtime";
+import { captureContracts, captureImplementation, CONTRACT_FILES, type ExpectedMeasurementTarget } from "./measurement-binding.js";
 import {
   ARTIFACT_CHECK_IDS,
+  ARTIFACT_CHECK_DEFAULT_SEVERITY,
   CHECK_MEASUREMENT_MAP,
   MeasurementReceiptSchema,
   type ArtifactCheckId,
   type MeasurementReceipt,
+  type MeasurementBindingStatus,
   type ValidationEvidence,
 } from "./contracts.js";
 
 export interface ArtifactEvidenceInput {
   sessionDirectory: string;
   evidence: ValidationEvidence;
+  expectedTarget?: ExpectedMeasurementTarget;
 }
 
 export interface ArtifactEvidenceResult {
@@ -32,6 +36,7 @@ export interface ArtifactEvidenceResult {
   skippedArtifactIds: string[];
   /** false when any receipt went stale (spec §5.7 R3) */
   evidenceCurrent: boolean;
+  bindingByReceipt: Record<string, MeasurementBindingStatus>;
 }
 
 const RECEIPT_PREFIX = "validation-evidence/";
@@ -79,6 +84,8 @@ export async function verifyArtifactEvidence(input: ArtifactEvidenceInput): Prom
   const warnings: string[] = [];
   const missingEvidence: string[] = [];
   const provenanceByCheck = new Map<string, "measured" | "attested">();
+  const bindingByReceipt: Record<string, MeasurementBindingStatus> = {};
+  let evidenceCurrent = true;
 
   const addIssue = (code: string, issue: string) => {
     if (!codes.includes(code)) codes.push(code);
@@ -103,6 +110,8 @@ export async function verifyArtifactEvidence(input: ArtifactEvidenceInput): Prom
     if (!verified.ok) {
       addIssue("EVIDENCE_FILE_INVALID", verified.error);
       loaded.set(ref, { ref, receipt: undefined, covering: false });
+      bindingByReceipt[ref] = "invalid";
+      evidenceCurrent = false;
       continue;
     }
     let parsed: MeasurementReceipt | undefined;
@@ -111,29 +120,72 @@ export async function verifyArtifactEvidence(input: ArtifactEvidenceInput): Prom
     } catch (error) {
       addIssue("MEASUREMENT_RECEIPT_INVALID", `${ref} does not parse as a measurement receipt: ${error instanceof Error ? error.message : String(error)}`);
       loaded.set(ref, { ref, receipt: undefined, covering: false });
+      bindingByReceipt[ref] = "invalid";
+      evidenceCurrent = false;
       continue;
     }
 
+    let covering = true;
+    bindingByReceipt[ref] = parsed.receipt_version === "0.1" ? "legacy_unbound" : "unverified_target";
+    if (parsed.receipt_version === "0.1" && input.expectedTarget !== undefined) {
+      addIssue("MEASUREMENT_BINDING_REQUIRED", `receipt ${ref} predates implementation binding but this session has a prepared measurement target`);
+      covering = false;
+    }
     // digest binding: recompute every declared evidence hash from disk
     for (const check of parsed.checks) {
       for (const evidenceRef of check.evidence_refs) {
         const evidenceVerified = await verifyEvidenceFile(input.sessionDirectory, evidenceRef.ref, RECEIPT_PREFIX);
         if (!evidenceVerified.ok) {
           addIssue("EVIDENCE_FILE_INVALID", `receipt ${ref} declares unreadable evidence: ${evidenceVerified.error}`);
+          covering = false;
           continue;
         }
         if (evidenceVerified.sha256 !== evidenceRef.sha256) {
           addIssue("EVIDENCE_DIGEST_MISMATCH", `receipt ${ref} declares sha256 ${evidenceRef.sha256.slice(0, 12)}… for ${evidenceRef.ref} but the file hashes to ${evidenceVerified.sha256.slice(0, 12)}…`);
+          covering = false;
         }
       }
     }
 
     // staleness (§5.7 R3): a receipt older than the newest gated artifact
     // does not count as coverage — human edits invalidate prior measurement
-    let covering = true;
-    if (newestArtifact !== undefined && new Date(parsed.run_at) < newestArtifact) {
+    if (parsed.receipt_version === "0.1" && newestArtifact !== undefined && new Date(parsed.run_at) < newestArtifact) {
       addIssue("MEASUREMENT_RECEIPT_STALE", `receipt ${ref} ran at ${parsed.run_at}, before the newest gated artifact change (${newestArtifact.toISOString()}) — measurement is stale and does not cover`);
       covering = false;
+    }
+    if (parsed.receipt_version === "0.2") {
+      if (parsed.checks.some((check) => check.status === "skipped" && ARTIFACT_CHECK_DEFAULT_SEVERITY[check.id] === "error")) {
+        addIssue("MEASUREMENT_INCOMPLETE", `receipt ${ref} did not complete every error-tier measurement; self-attestation cannot close the missing measurement`);
+      }
+      if (parsed.target_validation.status === "invalid") {
+        addIssue("MEASUREMENT_TARGET_INVALID", `receipt ${ref} has an invalid target: ${parsed.target_validation.issues.join("; ")}`);
+        covering = false;
+      }
+      if (input.expectedTarget === undefined) {
+        addIssue("MEASUREMENT_TARGET_UNVERIFIED", `receipt ${ref} has no independently prepared target; its declared root is not read or verified`);
+        evidenceCurrent = false;
+      } else {
+        try {
+          const expected = input.expectedTarget;
+          const implementation = await captureImplementation(expected.appRoot);
+          const binding = parsed.binding;
+          if (binding.implementation.root !== implementation.root || parsed.target.app_root !== implementation.root
+            || binding.entry !== expected.entry || binding.scenario !== expected.scenario || binding.session_id !== expected.sessionId) {
+            throw new Error("receipt root, entry, scenario or session does not match the prepared target");
+          }
+          if (binding.implementation.digest !== implementation.digest) throw new Error("implementation content changed since measurement");
+          const contracts = await captureContracts(input.sessionDirectory);
+          if (CONTRACT_FILES.some((name) => binding.contract_digests[name] !== contracts[name])) throw new Error("design contract content changed since measurement");
+          bindingByReceipt[ref] = binding.implementation.kind === "static_tree" ? "implementation_current" : "association_current";
+        } catch (error) {
+          addIssue("MEASUREMENT_BINDING_INVALID", `receipt ${ref}: ${error instanceof Error ? error.message : String(error)}`);
+          covering = false;
+        }
+      }
+    }
+    if (!covering) {
+      bindingByReceipt[ref] = "invalid";
+      evidenceCurrent = false;
     }
 
     // skipped spread: >50% of the catalog skipped demands human environment confirmation
@@ -196,9 +248,12 @@ export async function verifyArtifactEvidence(input: ArtifactEvidenceInput): Prom
   }
 
   const block = codes.includes("MEASUREMENT_RECEIPT_INVALID")
+    || codes.includes("MEASUREMENT_BINDING_REQUIRED")
+    || codes.includes("MEASUREMENT_TARGET_INVALID")
+    || codes.includes("MEASUREMENT_BINDING_INVALID")
     || codes.includes("EVIDENCE_DIGEST_MISMATCH")
     || codes.includes("VALIDATION_MEASUREMENT_CONTRADICTION");
-  const review = warnings.some((warning) => warning.includes("measurement environment suspect"));
+  const review = codes.includes("MEASUREMENT_TARGET_UNVERIFIED") || codes.includes("MEASUREMENT_INCOMPLETE") || warnings.some((warning) => warning.includes("measurement environment suspect"));
   const status: ArtifactEvidenceResult["status"] = block
     ? "BLOCK"
     : review
@@ -222,6 +277,7 @@ export async function verifyArtifactEvidence(input: ArtifactEvidenceInput): Prom
       0,
     ),
     skippedArtifactIds: [...new Set(validReceipts.flatMap((entry) => entry.receipt!.checks.filter((check) => check.status === "skipped").map((check) => check.id)))],
-    evidenceCurrent: !codes.includes("MEASUREMENT_RECEIPT_STALE"),
+    evidenceCurrent,
+    bindingByReceipt,
   };
 }

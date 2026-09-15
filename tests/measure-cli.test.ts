@@ -13,6 +13,16 @@ afterEach(async () => {
 });
 
 describe("prax-measure CLI --entry (gap #2, F4 pilot)", () => {
+  it("exits nonzero with an honest receipt when the requested entry returns 404", async () => {
+    const outDir = await mkdtemp(join(tmpdir(), "prax-measure-cli-"));
+    cleanup.push(outDir);
+    await expect(exec(process.execPath, [
+      join(process.cwd(), "packages/prax-measure/bin/prax-measure.mjs"),
+      "--app", join(process.cwd(), "tests/fixtures/measure"),
+      "--out", outDir, "--entry", "/not-a-real-page.html",
+    ])).rejects.toMatchObject({ code: 2, stdout: expect.stringContaining("skipped=7") });
+  });
+
   it("measures a non-root entry page via --entry", async () => {
     const outDir = await mkdtemp(join(tmpdir(), "prax-measure-cli-"));
     cleanup.push(outDir);

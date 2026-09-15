@@ -10,7 +10,7 @@ import type { MeasurementReceipt } from "prax-validator";
 export async function writeReceiptAtomically(outDir: string, receipt: MeasurementReceipt): Promise<string> {
   const evidenceDir = join(outDir, "validation-evidence");
   await mkdir(evidenceDir, { recursive: true });
-  const fileName = `receipt-${receipt.run_at.replace(/[:.]/g, "-")}.json`;
+  const fileName = `receipt-${receipt.run_at.replace(/[:.]/g, "-")}-${randomUUID()}.json`;
   const filePath = join(evidenceDir, fileName);
   const temporaryPath = join(dirname(filePath), `.${basename(filePath)}.${randomUUID()}.tmp`);
   try {

@@ -1,10 +1,10 @@
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { createServer } from "node:http";
-import { readFile, stat } from "node:fs/promises";
-import { extname, isAbsolute, join, resolve } from "node:path";
+import { readFile, stat, realpath } from "node:fs/promises";
+import { extname, isAbsolute, join, resolve, relative } from "node:path";
 import { spawn, type ChildProcess } from "node:child_process";
 import { chromium } from "playwright";
-import { ARTIFACT_CHECK_DEFAULT_SEVERITY, ARTIFACT_CHECK_IDS, type ArtifactCheckId, type MeasurementReceipt } from "prax-validator";
+import { ARTIFACT_CHECK_DEFAULT_SEVERITY, ARTIFACT_CHECK_IDS, MeasurementReceiptSchema, captureImplementation, captureContracts, isMeasurementExcluded, type ArtifactCheckId } from "prax-validator";
 import type { CheckOutcome } from "./checks/layout.overflow.js";
 import { run as layoutOverflow } from "./checks/layout.overflow.js";
 import { run as layoutResponsiveCollision } from "./checks/layout.responsive_collision.js";
@@ -14,6 +14,7 @@ import { run as a11yFocusOrder } from "./checks/a11y.focus_order.js";
 import { run as a11yTargetSize } from "./checks/a11y.target_size.js";
 import { run as typeMinProjectedSize } from "./checks/type.min_projected_size.js";
 import { writeReceiptAtomically } from "./receipt.js";
+import { assertTargetUrl, navigateTarget, observeTargetFailures } from "./target-readiness.js";
 
 export interface RunnerViewport {
   width: number;
@@ -28,6 +29,10 @@ export interface RunMeasurementOptions {
   entry?: string | undefined; // URL path of the measured page; default "/"
   serve?: string | undefined; // reuse an already-running base URL instead of spawning a server
   buildRef?: string | null | undefined;
+  readySelector?: string | undefined;
+  readyTimeoutMs?: number | undefined;
+  sessionId?: string | undefined;
+  scenario?: string | undefined;
 }
 
 type CheckModule = { id: ArtifactCheckId; run: (page: import("playwright").Page, ctx: { viewport: RunnerViewport; screenshotDir: string }) => Promise<CheckOutcome> };
@@ -42,7 +47,7 @@ const CHECKS: CheckModule[] = [
   { id: "type.min_projected_size", run: typeMinProjectedSize },
 ];
 
-const TOOL_VERSION = "0.1.0";
+const TOOL_VERSION = "0.2.0";
 
 const MIME_TYPES: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
@@ -73,14 +78,23 @@ async function startStaticServer(root: string): Promise<RunningServer> {
       let pathName = decodeURIComponent(url.pathname);
       if (pathName.endsWith("/")) pathName = `${pathName}index.html`;
       const target = resolve(root, `.${pathName}`);
-      if (!target.startsWith(resolve(root))) {
+      const contained = (path: string) => {
+        const child = relative(root, path);
+        return child !== ".." && !child.startsWith("../") && !child.startsWith("..\\") && !isAbsolute(child);
+      };
+      if (!contained(target) || isMeasurementExcluded(relative(root, target))) {
         response.writeHead(403).end("forbidden");
         return;
       }
       const stats = await stat(target);
-      const filePath = stats.isDirectory() ? join(target, "index.html") : target;
+      const filePath = await realpath(stats.isDirectory() ? join(target, "index.html") : target);
+      if (!contained(filePath) || isMeasurementExcluded(relative(root, filePath))) {
+        response.writeHead(403).end("forbidden");
+        return;
+      }
+      const content = await readFile(filePath);
       response.writeHead(200, { "content-type": MIME_TYPES[extname(filePath)] ?? "application/octet-stream" });
-      response.end(await readFile(filePath));
+      response.end(content);
     } catch {
       response.writeHead(404).end("not found");
     }
@@ -128,7 +142,7 @@ async function startVitePreview(appDir: string): Promise<RunningServer> {
 
 function mergeOutcomes(id: ArtifactCheckId, outcomes: CheckOutcome[]): CheckOutcome {
   const failing = outcomes.find((outcome) => outcome.status === "fail");
-  const base = failing ?? outcomes[0]!;
+  const base = failing ?? outcomes.find((outcome) => outcome.status === "skipped") ?? outcomes[0]!;
   if (outcomes.length === 1) return base;
   const perViewport = outcomes.map((outcome) => ({
     viewport: (outcome.measured as Record<string, unknown>).viewport ?? null,
@@ -166,19 +180,28 @@ function skippedOutcome(id: ArtifactCheckId, reason: string): CheckOutcome {
  * degrade honestly to skipped-with-reason, never guessed fixes.
  */
 export async function runMeasurement(options: RunMeasurementOptions): Promise<string> {
-  const screenshotDir = join(options.outDir, "validation-evidence");
-  const appRoot = isAbsolute(options.appDir)
-    ? options.appDir.replace(/\\/g, "/")
-    : options.appDir.replace(/\\/g, "/");
+  if (options.readyTimeoutMs !== undefined && (!Number.isInteger(options.readyTimeoutMs) || options.readyTimeoutMs <= 0 || options.readyTimeoutMs > 60_000)) {
+    throw new Error("readyTimeoutMs must be an integer from 1 to 60000");
+  }
+  const runId = randomUUID();
+  const runDirectory = join(options.outDir, "validation-evidence", runId);
+  const implementation = await captureImplementation(options.appDir);
+  const contracts = await captureContracts(options.outDir);
+  const appRoot = implementation.root;
   const hasBuild = await stat(join(options.appDir, "dist")).then((stats) => stats.isDirectory()).catch(() => false);
   const entry = options.entry ?? "/";
+  if (!entry.startsWith("/") || entry.startsWith("//") || /[\\\s]/.test(entry)) throw new Error("entry must be a root-relative URL path");
+  if (options.viewports.length === 0 || options.viewports.some((v) => !Number.isInteger(v.width) || !Number.isInteger(v.height) || v.width <= 0 || v.height <= 0)) {
+    throw new Error("at least one positive integer viewport is required");
+  }
+  const invalidTarget = new Set<string>();
 
   let server: RunningServer | undefined;
   let baseUrl: string;
   if (options.serve !== undefined) {
     baseUrl = options.serve;
   } else {
-    server = hasBuild ? await startVitePreview(options.appDir) : await startStaticServer(options.appDir);
+    server = hasBuild ? await startVitePreview(appRoot) : await startStaticServer(appRoot);
     baseUrl = server.baseUrl;
   }
 
@@ -187,12 +210,28 @@ export async function runMeasurement(options: RunMeasurementOptions): Promise<st
   try {
     const browser = await chromium.launch();
     try {
-      for (const viewport of options.viewports) {
+      for (const [viewportIndex, viewport] of options.viewports.entries()) {
         for (const check of CHECKS) {
+          const screenshotDir = join(runDirectory, `viewport-${viewportIndex}`, check.id);
           const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height } });
+          const targetIssues = observeTargetFailures(page);
+          const targetUrl = new URL(entry, baseUrl).href;
           try {
-            await page.goto(new URL(entry, baseUrl).href, { waitUntil: "load" });
+            try {
+              await navigateTarget(page, targetUrl, options);
+            } catch (error) {
+              targetIssues.push(error instanceof Error ? error.message : String(error));
+            }
+            if (targetIssues.length > 0) throw new Error(`invalid_target: ${targetIssues.join("; ")}`);
             const outcome = await check.run(page, { viewport, screenshotDir });
+            if (targetIssues.length > 0) throw new Error(`invalid_target: ${targetIssues.join("; ")}`);
+            for (const ref of outcome.evidence_refs) {
+              const fileName = ref.ref.slice("validation-evidence/".length);
+              if (!ref.ref.startsWith("validation-evidence/") || fileName.includes("/") || fileName.includes("\\") || fileName === "..") {
+                throw new Error(`unexpected check evidence reference: ${ref.ref}`);
+              }
+              ref.ref = `${relative(options.outDir, screenshotDir).replaceAll("\\", "/")}/${fileName}`;
+            }
             const bucket = outcomesByCheck.get(check.id) ?? [];
             bucket.push(outcome);
             outcomesByCheck.set(check.id, bucket);
@@ -203,6 +242,12 @@ export async function runMeasurement(options: RunMeasurementOptions): Promise<st
             );
             outcomesByCheck.set(check.id, bucket);
           } finally {
+            try {
+              assertTargetUrl(page, targetUrl);
+            } catch (error) {
+              targetIssues.push(error instanceof Error ? error.message : String(error));
+            }
+            for (const issue of targetIssues) invalidTarget.add(issue);
             await page.close();
           }
         }
@@ -212,6 +257,7 @@ export async function runMeasurement(options: RunMeasurementOptions): Promise<st
     }
   } catch (error) {
     environmentFailure = `browser environment unavailable: ${error instanceof Error ? error.message : String(error)}`;
+    invalidTarget.add(environmentFailure);
     for (const id of ARTIFACT_CHECK_IDS) {
       outcomesByCheck.set(id, [skippedOutcome(id, environmentFailure)]);
     }
@@ -219,7 +265,15 @@ export async function runMeasurement(options: RunMeasurementOptions): Promise<st
     await server?.close();
   }
 
+  try {
+    if ((await captureImplementation(appRoot)).digest !== implementation.digest) invalidTarget.add("implementation changed during measurement");
+    if (JSON.stringify(await captureContracts(options.outDir)) !== JSON.stringify(contracts)) invalidTarget.add("design contracts changed during measurement");
+  } catch (error) {
+    invalidTarget.add(`content binding unavailable: ${error instanceof Error ? error.message : String(error)}`);
+  }
+
   const checks = ARTIFACT_CHECK_IDS.map((id) => {
+    if (invalidTarget.size > 0) return skippedOutcome(id, `invalid_target: ${[...invalidTarget].join("; ")}`);
     const outcomes = outcomesByCheck.get(id) ?? [skippedOutcome(id, "check did not run")];
     return mergeOutcomes(id, outcomes);
   });
@@ -236,10 +290,24 @@ export async function runMeasurement(options: RunMeasurementOptions): Promise<st
     }
   }
 
-  const receipt: MeasurementReceipt = {
-    receipt_version: "0.1",
+  const receipt = MeasurementReceiptSchema.parse({
+    receipt_version: "0.2",
     tool: { name: "prax-measure", version: TOOL_VERSION },
     target: { app_root: appRoot, base_url: baseUrl, build_ref: options.buildRef ?? null },
+    binding: {
+      run_id: runId,
+      entry,
+      scenario: options.scenario ?? "entry",
+      implementation: { ...implementation, kind: options.serve !== undefined || hasBuild ? "local_source_association" : "static_tree" },
+      session_id: options.sessionId ?? null,
+      contract_digests: contracts,
+    },
+    target_validation: {
+      status: invalidTarget.size === 0 ? "valid" : "invalid",
+      issues: [...invalidTarget],
+      readiness: options.readySelector === undefined ? "document" : "selector",
+      ready_selector: options.readySelector ?? null,
+    },
     run_at: new Date().toISOString(),
     viewport_matrix: options.viewports.map((viewport) => ({
       width: viewport.width,
@@ -253,7 +321,7 @@ export async function runMeasurement(options: RunMeasurementOptions): Promise<st
       skipped: checks.filter((check) => check.status === "skipped").length,
       warnings: checks.filter((check) => check.severity === "warning" && check.status === "fail").length,
     },
-  };
+  });
 
   return writeReceiptAtomically(options.outDir, receipt);
 }

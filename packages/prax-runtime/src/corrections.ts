@@ -1,7 +1,9 @@
-import { readFile } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
+import { mkdir, open, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { parse } from "yaml";
+import { parse, stringify } from "yaml";
 import { z } from "zod";
+import { PraxRuntimeError } from "./errors.js";
 
 const NonEmpty = z.string().trim().min(1);
 
@@ -40,12 +42,89 @@ export type CorrectionsFile = z.infer<typeof CorrectionsFileSchema>;
 export const CORRECTIONS_FILE = "corrections.yaml";
 
 export async function loadCorrections(stateRoot: string): Promise<Correction[]> {
+  const path = join(stateRoot, CORRECTIONS_FILE);
   try {
-    const raw = await readFile(join(stateRoot, CORRECTIONS_FILE), "utf8");
-    const parsed = CorrectionsFileSchema.safeParse(raw.trim().length === 0 ? {} : parse(raw));
-    return parsed.success ? parsed.data.corrections : [];
-  } catch {
-    return [];
+    const raw = await readFile(path, "utf8");
+    return CorrectionsFileSchema.parse(parse(raw)).corrections;
+  } catch (error) {
+    if (hasCode(error, "ENOENT")) return [];
+    throw new PraxRuntimeError(
+      "CORRECTIONS_READ_FAILED",
+      `Unable to read correction memory at ${path}: ${error instanceof Error ? error.message : String(error)}. Existing bytes were not changed.`,
+    );
+  }
+}
+
+function hasCode(error: unknown, code: string): boolean {
+  return error !== null && typeof error === "object" && "code" in error && error.code === code;
+}
+
+async function acquireCorrectionLock(root: string): Promise<() => Promise<void>> {
+  await mkdir(root, { recursive: true });
+  const path = join(root, "corrections.lock");
+  for (let attempt = 0; ; attempt += 1) {
+    let handle;
+    try {
+      handle = await open(path, "wx");
+    } catch (error) {
+      if (!hasCode(error, "EEXIST")) throw error;
+      if (attempt >= 40) {
+        throw new PraxRuntimeError(
+          "CORRECTIONS_LOCK_HELD",
+          `Correction memory lock is held at ${path}. No write was applied. Stop all project correction writers and confirm no owner remains before manually removing this lock; its age alone does not establish abandonment.`,
+        );
+      }
+      await new Promise((resolve) => setTimeout(resolve, 25));
+      continue;
+    }
+    try {
+      await handle.writeFile(`${process.pid} ${Date.now()} ${randomUUID()}`, "utf8");
+    } catch (error) {
+      await handle.close().catch(() => undefined);
+      await unlink(path).catch(() => undefined);
+      throw error;
+    }
+    await handle.close();
+    // Never steal an aged lock: its owner may still be writing.
+    return () => unlink(path);
+  }
+}
+
+export type CorrectionInsertResult =
+  | { issues: string[] }
+  | { correction: Correction; corrections: Correction[] };
+
+export async function insertCorrection(root: string, input: Correction): Promise<CorrectionInsertResult> {
+  const unlock = await acquireCorrectionLock(root);
+  try {
+    const correction = CorrectionSchema.parse(input);
+    const existing = await loadCorrections(root);
+    const issues: string[] = [];
+    const knownIds = new Set(existing.map((entry) => entry.id));
+    if (knownIds.has(correction.id)) {
+      issues.push(
+        `correction id '${correction.id}' already exists in ${CORRECTIONS_FILE}; record a new id and list the old one under supersedes.`,
+      );
+    }
+    const unknownSupersedes = correction.supersedes.filter((id) => !knownIds.has(id));
+    if (unknownSupersedes.length > 0) {
+      issues.push(
+        `supersedes targets do not exist in ${CORRECTIONS_FILE}: ${unknownSupersedes.join(", ")} (supersede chains corrections only).`,
+      );
+    }
+    if (issues.length > 0) return { issues };
+    const file = CorrectionsFileSchema.parse({ version: "0.1", corrections: [...existing, correction] });
+    const temporaryPath = join(root, `.${CORRECTIONS_FILE}.${randomUUID()}.tmp`);
+    try {
+      await writeFile(temporaryPath, stringify(file), { encoding: "utf8", flag: "wx" });
+      await rename(temporaryPath, join(root, CORRECTIONS_FILE));
+    } catch (error) {
+      await unlink(temporaryPath).catch(() => undefined);
+      throw error;
+    }
+    return { correction, corrections: file.corrections };
+  } finally {
+    await unlock();
   }
 }
 

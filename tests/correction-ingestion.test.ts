@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, readdir, rm, unlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { parse } from "yaml";
@@ -151,6 +151,55 @@ it("rejects duplicate ids and unknown supersedes targets without writing", async
   expect(JSON.stringify(unknownSupersedes.issues)).toContain("corr_does_not_exist");
 
   expect(await loadCorrections(join(projectRoot, ".prax"))).toHaveLength(1);
+});
+
+it("preserves corrupt project memory when ingestion fails", async () => {
+  const { service, projectRoot } = await makeService("ds_corr_corrupt");
+  await startAnchorSession(service, projectRoot, "ds_corr_corrupt");
+  const file = join(projectRoot, ".prax", "corrections.yaml");
+  const raw = "version: '0.1'\ncorrections: [broken";
+  await writeFile(file, raw, "utf8");
+  await expect(service.designCorrect({
+    design_session_id: "ds_corr_corrupt", correction: settingsCorrectionInput(),
+  })).rejects.toMatchObject({ code: "CORRECTIONS_READ_FAILED" });
+  expect(await readFile(file, "utf8")).toBe(raw);
+});
+
+it("does not steal an old project correction lock and can retry after operator recovery", async () => {
+  const { service, projectRoot } = await makeService("ds_corr_lock");
+  await startAnchorSession(service, projectRoot, "ds_corr_lock");
+  const root = join(projectRoot, ".prax");
+  const lock = join(root, "corrections.lock");
+  const holder = `999999 ${Date.now() - 120_000}`;
+  await writeFile(lock, holder, "utf8");
+  const input = { design_session_id: "ds_corr_lock", correction: settingsCorrectionInput() };
+  await expect(service.designCorrect(input)).rejects.toMatchObject({ code: "CORRECTIONS_LOCK_HELD" });
+  expect(await readFile(lock, "utf8")).toBe(holder);
+  expect(await loadCorrections(root)).toEqual([]);
+  await unlink(lock);
+  expect((await service.designCorrect(input)).status).toBe("PASS");
+  expect((await readdir(root)).filter((file) => file.endsWith(".tmp") || file.endsWith(".lock"))).toEqual([]);
+});
+
+it.each([false, true])("serializes project inserts across independent state roots (duplicate: %s)", async (duplicate) => {
+  const { service, projectRoot, stateRoot } = await makeService("ds_corr_race_0");
+  await startAnchorSession(service, projectRoot, "ds_corr_race_0");
+  const services = [service];
+  for (let index = 1; index < 4; index += 1) {
+    const peer = await serviceFor(`${stateRoot}-${index}`, `ds_corr_race_${index}`);
+    await startAnchorSession(peer, projectRoot, `ds_corr_race_${index}`);
+    services.push(peer);
+  }
+  const results = await Promise.all(services.map((peer, index) => peer.designCorrect({
+    design_session_id: `ds_corr_race_${index}`,
+    correction: { ...settingsCorrectionInput(), id: duplicate ? "corr_race" : `corr_race_${index}` },
+  })));
+  expect(results.filter((result) => result.status === "PASS")).toHaveLength(duplicate ? 1 : 4);
+  for (const rejected of results.filter((result) => result.status !== "PASS")) {
+    expect(rejected).toMatchObject({ status: "RETRY", code: "CORRECTION_INGESTION_INVALID" });
+    expect(JSON.stringify(rejected.issues)).toContain("already exists");
+  }
+  expect(await loadCorrections(join(projectRoot, ".prax"))).toHaveLength(duplicate ? 1 : 4);
 });
 
 it("a superseding correction replaces the earlier obligation for later sessions", async () => {

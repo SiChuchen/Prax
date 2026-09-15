@@ -14,6 +14,42 @@ afterEach(async () => {
 });
 
 describe("a11y.focus_order check (Task A2.5)", () => {
+  it("checks distinct consecutive id-less buttons rather than stopping on their shared description", async () => {
+    const screenshotDir = await mkdtemp(join(tmpdir(), "prax-measure-focus-"));
+    cleanup.push(screenshotDir);
+    const browser = await chromium.launch();
+    try {
+      const page = await browser.newPage();
+      await page.setContent('<button style="outline:2px solid black">First</button><button style="outline:none;box-shadow:none">Second</button>');
+      const outcome = await run(page, { viewport: { width: 1280, height: 860 }, screenshotDir });
+      expect(outcome.status).toBe("fail");
+      expect(outcome.measured.stops).toBe(2);
+      expect(outcome.measured.missing_indicators).toEqual(["button"]);
+    } finally {
+      await browser.close();
+    }
+  });
+
+  it.each(["focus trap", "body focus trap", "traversal limit"])("does not pass an incomplete walk: %s", async (kind) => {
+    const screenshotDir = await mkdtemp(join(tmpdir(), "prax-measure-focus-"));
+    cleanup.push(screenshotDir);
+    const browser = await chromium.launch();
+    try {
+      const page = await browser.newPage();
+      await page.setContent(kind === "focus trap"
+        ? '<button onkeydown="if(event.key===\'Tab\') event.preventDefault()">Trapped</button>'
+        : kind === "body focus trap"
+        ? '<button>Unreachable</button><script>document.addEventListener("keydown",event=>{if(event.key==="Tab")event.preventDefault()})</script>'
+        : Array.from({ length: 65 }, (_, i) => `<button id="b${i}">${i}</button>`).join(""));
+      const outcome = await run(page, { viewport: { width: 1280, height: 860 }, screenshotDir });
+      expect(outcome.status).toBe("skipped");
+      expect(outcome.reason).toMatch(/incomplete/i);
+      expect(() => MeasurementReceiptCheckSchema.parse(outcome)).not.toThrow();
+    } finally {
+      await browser.close();
+    }
+  });
+
   it("fails on missing focus indicators and tab-order/visual-order inversions", async () => {
     const screenshotDir = await mkdtemp(join(tmpdir(), "prax-measure-focus-"));
     cleanup.push(screenshotDir);

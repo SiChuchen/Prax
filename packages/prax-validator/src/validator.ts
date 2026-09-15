@@ -237,6 +237,7 @@ export class PraxValidator {
     representationReview?: RepresentationReview | undefined;
     sdirDigest?: string | undefined;
     sessionDirectory?: string | undefined;
+    expectedTarget?: import("./measurement-binding.js").ExpectedMeasurementTarget;
   }): Promise<ValidationEvaluation> {
     const provided = new Map(input.evidence?.items.map((item) => [item.check_id, item]) ?? []);
     const findings: ValidationFinding[] = [];
@@ -436,6 +437,7 @@ export class PraxValidator {
       const artifact = await verifyArtifactEvidence({
         sessionDirectory: input.sessionDirectory,
         evidence: input.evidence,
+        ...(input.expectedTarget === undefined ? {} : { expectedTarget: input.expectedTarget }),
       });
       for (const finding of findings) {
         const provenance = artifact.provenanceByCheck.get(finding.check_id);
@@ -450,6 +452,7 @@ export class PraxValidator {
         deterministic_passed: !findings.some((finding) => finding.kind === "deterministic" && finding.outcome === "fail"),
         measurement: {
           receipt_ref: artifact.receiptRefs[0] ?? null,
+          binding: artifact.bindingByReceipt,
           error_failures_open: artifact.errorFailuresOpen,
           warning_dispositions: [],
         },

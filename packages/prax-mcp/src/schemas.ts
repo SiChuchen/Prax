@@ -15,7 +15,7 @@ import {
   RequirementConfirmationSchema,
 } from "prax-runtime";
 import { SdirDeltaSchema, SdirClientSchema as SdirSchema } from "prax-sdir";
-import { ValidationEvidenceSchema } from "prax-validator";
+import { ValidationEvidenceSchema, MeasurementTargetSchema } from "prax-validator";
 
 const SessionId = z.string().trim().min(1).describe("Explicit persisted Prax design_session_id");
 
@@ -139,6 +139,7 @@ export const DesignPrepareImplementationInputSchema = z.object({
   design_session_id: SessionId,
   platform: z.literal("web_desktop"),
   framework: z.literal("react"),
+  measurement_target: MeasurementTargetSchema.optional(),
 });
 
 export const DesignValidateInputSchema = z.object({
@@ -225,4 +226,3 @@ export type DesignPrepareImplementationInput = z.infer<typeof DesignPrepareImple
 export type DesignValidateInput = z.infer<typeof DesignValidateInputSchema>;
 export type DesignCorrectInput = z.infer<typeof DesignCorrectInputSchema>;
 export type DesignRealizeInput = z.infer<typeof DesignRealizeInputSchema>;
-

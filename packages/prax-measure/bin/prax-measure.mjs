@@ -3,8 +3,10 @@
  * prax-measure CLI (spec §5.1):
  *   node bin/prax-measure.mjs --app <appDir> --out <sessionDir>
  *       [--serve <url>] [--viewports 1280x860,1440x900] [--entry /path]
+ *       [--session-id <id>] [--scenario <label>]
+ *       [--ready-selector <selector>] [--ready-timeout-ms <ms>]
  * Exit codes: 0 = no error-severity fail; 1 = error-severity fail;
- *             2 = environment failure (receipt still written, all checks skipped).
+ *             2 = incomplete measurement, invalid target or invocation failure.
  */
 import { readFile } from "node:fs/promises";
 import { runMeasurement } from "../dist/runner.js";
@@ -33,10 +35,14 @@ const app = argumentValue("--app");
 const out = argumentValue("--out");
 const serve = argumentValue("--serve");
 const entry = argumentValue("--entry");
+const readySelector = argumentValue("--ready-selector");
+const readyTimeout = argumentValue("--ready-timeout-ms");
+const sessionId = argumentValue("--session-id");
+const scenario = argumentValue("--scenario");
 const viewportsRaw = argumentValue("--viewports") ?? "1280x860";
 
 if (app === undefined || out === undefined) {
-  console.error("usage: prax-measure --app <appDir> --out <sessionDir> [--serve <url>] [--viewports 1280x860,1440x900]");
+  console.error("usage: prax-measure --app <appDir> --out <sessionDir> [--entry /path] [--serve <url>] [--viewports 1280x860,1440x900] [--session-id <id>] [--scenario <label>] [--ready-selector <selector>] [--ready-timeout-ms <ms>]");
   process.exit(2);
 }
 
@@ -47,9 +53,13 @@ try {
     serve,
     viewports: parseViewports(viewportsRaw),
     ...(entry === undefined ? {} : { entry }),
+    ...(readySelector === undefined ? {} : { readySelector }),
+    ...(readyTimeout === undefined ? {} : { readyTimeoutMs: Number(readyTimeout) }),
+    ...(sessionId === undefined ? {} : { sessionId }),
+    ...(scenario === undefined ? {} : { scenario }),
   });
   const receipt = JSON.parse(await readFile(receiptPath, "utf8"));
-  const environmentFailure = receipt.checks.every((check) => check.status === "skipped");
+  const incomplete = receipt.checks.some((check) => check.status === "skipped");
   const errorFailures = receipt.checks.filter((check) => check.status === "fail" && check.severity === "error");
   console.log(`receipt: ${receiptPath}`);
   console.log(
@@ -58,7 +68,7 @@ try {
   for (const check of receipt.checks.filter((entry) => entry.status !== "pass")) {
     console.log(`  ${check.status} ${check.id}${check.reason !== undefined ? ` (${check.reason})` : ""}`);
   }
-  process.exit(environmentFailure ? 2 : errorFailures.length > 0 ? 1 : 0);
+  process.exit(errorFailures.length > 0 ? 1 : incomplete ? 2 : 0);
 } catch (error) {
   console.error(`prax-measure failed: ${error instanceof Error ? error.message : String(error)}`);
   process.exit(2);
