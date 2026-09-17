@@ -1,0 +1,81 @@
+{
+  "reviewer": "R2",
+  "package_id": "impl-18",
+  "session_id": "ad1a1fb7-e076-436e-9196-c467cc471a27",
+  "wall_clock_seconds": 382,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-18",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Representation is a sequential runbook workflow (data.js:2-351): one high-consequence flow (core DB master-slave failover), 4 phases / 13 steps in a left rail (index.html:38-48; visible in both screenshots), one current step in the work region (low density, high hierarchy), decision gates (s5, s13 data.js:102-133, 315-347) handling uncertainty, and no spatial/comparison surfaces (matches shape 'none'). Direct match to brief's workflow object and consequential-flow shape."
+      },
+      "primary_task_salience": {
+        "score": 3,
+        "evidence": "Structurally the primary task dominates: the initial screen centers step 1 '成立应急响应' with its checks, evidence form, and gate hint '门禁未通过 · 还差：检查项 0/3; 证据：告警编号、切换指挥' (1280x860.png bottom; app.js:238-255). But at capture both viewports are veiled by a full-screen scrim with a stray red bar at viewport center, and an empty audit drawer covers the right ~28-31%, clipping the 切换指挥 evidence field (1280x860.png; 1440x900.png) — the task surface is dominant in structure but visually degraded/occluded on the initial screen."
+      },
+      "time_to_understand": {
+        "score": 3,
+        "evidence": "Textual wayfinding is excellent — title '哨兵 Runbook · 核心数据库主从切换' + incident code (1280x860.png header), phase/kind tags '阶段一 · 预检与冻结 / 常规步骤' (app.js:261-265), progress '0 / 0 步' (index.html:30), step rail with legend 当前/已放行/锁定/不可逆 (index.html:41-46). However the initial screen also shows an unexplained 620px red horizontal bar at exact viewport center (x≈330-950 @1280, ≈410-1030 @1440, y≈430/449 — geometry of styles.css:478-487 .modal max-width:620px border-top:5px var(--danger) centered by styles.css:469-477 .modal-overlay display:grid place-items:center, rendered despite hidden at index.html:56) plus a dimmed page and an empty drawer — a viewer must extra time to parse these anomalies before understanding the task."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Primary object (current step) is on screen at load with zero navigation: app.js:657-660 initializes and renders state.currentIdx=0; rail buttons for done steps are 1-click readonly review (app.js:574-577), future steps disabled by the sequential gate (app.js:119,126-127) which is the brief's intended ordering, not a cost. Single page, no routing (index.html:37-53)."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "All primary actions preserve context: step advance re-renders the work card in place while rail/header persist (app.js:450-478, 560-565); confirmation is a modal over the page with focus restore and Escape (app.js:372-424, 647-649); audit is an overlay drawer, not a page change (app.js:364-369); readonly review keeps a '返回当前步骤' return path (app.js:269-275)."
+      },
+      "ui_surface_complexity": {
+        "score": 3,
+        "evidence": "The intended surface set is lean and job-matched (header badge/progress/2 actions index.html:25-33; rail map; one work card; one action bar app.js:254). But the load state permanently shows two spurious surfaces: the empty audit drawer (styles.css:523-536 .audit-drawer display:flex overrides the hidden attribute at index.html:61) and the empty modal + scrim (styles.css:469-477 display:grid overrides hidden at index.html:56) — extra permanent surfaces with no need, visible in both screenshots."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Receipt fails all three a11y checks: a11y.contrast=fail, a11y.focus_order=fail, a11y.target_size=fail (measurement-summary.json checks). Consistent with the always-rendered overlay: rgba(13,18,27,.55) scrim (styles.css:472) over all text, and a fixed inset:0 z-index:50 layer that intercepts pointer hits over every control at load. Source shows real a11y intent (:focus-visible outline styles.css:37-41; role=dialog/aria-modal index.html:57; aria-expanded/aria-controls index.html:31; focus moved into modal app.js:415-417 and restored app.js:419-424), so not 1 — but measured outcome on the initial page is poor and pointer interaction is blocked."
+      },
+      "frontend_rework": {
+        "score": 2,
+        "evidence": "Severe visible defects implying rework: (1) full-viewport scrim at load, (2) empty red-topped modal sliver at center of both viewports, (3) empty audit drawer stuck open covering the evidence form (both screenshots) — all from author `display` (styles.css:469-477, 523-536) defeating the `hidden` attribute (index.html:56, 61); plus receipt 5/7 fail (layout.overflow, layout.responsive_collision, a11y.contrast, a11y.focus_order, a11y.target_size — measurement-summary.json). Rework is localized (two CSS rules) but pervasive on screen and slipped past the package's own browser script (source/scripts/validate.mjs:167 tests the hidden property rather than rendered visibility, and drives synthetic JS clicks that bypass hit-testing). Underlying layout (rail, card, form) renders correctly, so not 1."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed '不可逆步骤有恢复/确认路径' fully addressed in source and UI: s7/s8/s9 each define consequence + confirmWord + recovery{trigger, impact, steps} (data.js:172-187, 204-215, 236-247); recovery panel is rendered pre-execution '执行前必读' (app.js:285-289, 139-172); confirmation ritual requires ack checkbox + typed confirm word with mismatch blocking (app.js:387-393, 425-440); post-execution recovery uses a two-step arm/fire confirm and records a deviation (app.js:155-168, 481-493). Screenshots show steps 7/8/9 flagged with red 不可逆 dots and legend (1280x860.png rail)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "#modal-overlay renders at load despite hidden (index.html:56 vs styles.css:469-477 display:grid): a rgba(13,18,27,.55) scrim dims the entire app in both screenshots (1280x860.png, 1440x900.png).",
+      "Empty .modal renders as a ~620px-wide red-topped sliver at exact viewport center (styles.css:478-487; measured span x≈330-950 @1280 y≈430, x≈410-1030 @1440 y≈449) — a stray foreign element on the initial screen.",
+      "The fixed inset:0 z-index:50 overlay (styles.css:469-476) sits above all controls at load and intercepts pointer events; mouse users cannot click any control on the initial screen (keyboard focus still works).",
+      "#audit-drawer renders open and empty at load despite hidden (index.html:61 vs styles.css:523-536 display:flex), covering the right ~28-31% of both viewports and clipping the 切换指挥 evidence field at 1280 (layout collision).",
+      "Receipt: 5 of 7 checks fail — layout.overflow, layout.responsive_collision, a11y.contrast, a11y.focus_order, a11y.target_size (measurement-summary.json checks; target_invalid=false).",
+      "Package's own validation cannot detect the above: source/scripts/validate.mjs:167 asserts modal state via the hidden property (not rendered visibility) and all interactions are synthetic JS clicks that bypass hit-testing."
+    ],
+    "missing_evidence": [],
+    "overall_note": "Conceptually this is the strongest possible match to the brief: a single high-consequence workflow rendered as a phased runbook with hard sequential gates, typed-confirmation rituals and always-visible recovery paths for the three irreversible steps (data.js s7-s9), decision gates with a designed safe-abort exit, and a full audit trail — the acceptance seed is covered end-to-end in source and rail iconography. That strength is undercut on the rendered initial page by one defect class: author display values on .modal-overlay and .audit-drawer (styles.css:469-477, 523-536) override the hidden attribute (index.html:56, 61), so both elements render at load — producing the full-screen scrim, the centered 620px red-topped empty-modal sliver visible in both screenshots, an empty audit drawer occluding the evidence form, and a pointer-blocking layer that leaves the initial screen mouse-unusable. This single root cause plausibly accounts for the receipt's 5/7 failures (both layout checks and all three a11y checks; text.truncation and type.min_projected_size pass). Screen-level scores therefore sit well below the source's structural quality; the fix is localized, but as delivered the first screen fails its own availability bar. Model judgment here is not human preference, and task time, retrieval accuracy, and preference remain unobserved in this blind pilot."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 94178,
+      "outputTokens": 13258,
+      "cacheReadInputTokens": 147200,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.8759399999999999,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-09-17T15:23:33.198Z"
+}

@@ -1,0 +1,238 @@
+plan_revision: 1
+evidence:
+  submitted_by: 执行臂（Claude）
+  collected_at: 2026-09-15T16:45:00Z
+  items:
+    - check_id: product_model_alignment
+      outcome: pass
+      source: Chrome headless 实测截图 + DOM 断言
+      notes: 用户语言与 frame 对象一致：候选选址（obj-candidate-site）=列、区位图（obj-site-map）=左区、比较面板（obj-comparison-panel）=右主工作面、决定（obj-decision）=顶栏决定栏；三关系（located_at/compared_in/selects）在交互中可见：选中联动、并排比较、敲定回显于地图与列头。
+      artifact_refs:
+        - .evidence/shots/01-load-ready.png
+    - check_id: keyboard
+      outcome: pass
+      source: Chrome headless (puppeteer-core) 焦点序走查 + 键盘驱动实测
+      notes: 实测回执 a11y.focus_order：Tab 焦点序 pin A→B→C→D → 列控（sel/commit/exclude × A..D 从左到右）→ 14 权重滑杆自上而下，循环长度=可聚焦控件数 30，无焦点陷阱、全部可达；另有 ←/→ 移动选中且焦点跟随（results.json 两条 PASS）。
+      artifact_refs:
+        - .evidence/shots/04-keyboard.png
+        - .evidence/shots/results.json
+      measurement_receipt: validation-evidence/measure-focus.receipt.json
+    - check_id: hierarchy_review
+      outcome: pass
+      source: Chrome headless 实测截图
+      notes: 视觉显著度随 SDIR importance：比较矩阵 dominant（最大版面、优胜色带+角标）、区位图 primary（左区整幅）、决定栏 primary（顶栏深色驻留）、权重 supporting（行头内嵌滑杆）、页头 contextual；无装饰性 chrome（P-22），紧凑行高承载高密度（H-13）。
+      artifact_refs:
+        - .evidence/shots/01-load-ready.png
+    - check_id: filter_state
+      outcome: pass
+      source: Chrome headless (puppeteer-core) 实测
+      notes: 排除=显式筛选状态：被排除列置灰+恢复按钮、退出优胜与总分计算（领先者由 C·绿洲广场 65.1 转移为 A·创客大厦，断言 PASS）；全部排除后决定栏显式空态；状态驻留决定栏与列头，无隐藏筛选。
+      artifact_refs:
+        - .evidence/shots/06-exclude.png
+        - .evidence/shots/08-empty-state.png
+        - .evidence/shots/results.json
+    - check_id: comparison_scan
+      outcome: pass
+      source: Chrome headless 实测截图
+      notes: 14 项标准 × 4 候选在 1680×960 单屏全部可见（01 截图无滚动），每行优胜格色带+「优」角标、并列双标；不需要打开任何条目即可横向扫读比较；悬停预览高亮整列强化扫读。
+      artifact_refs:
+        - .evidence/shots/01-load-ready.png
+        - .evidence/shots/results.json
+    - check_id: requirement_alignment
+      outcome: pass
+      source: Chrome headless (puppeteer-core) 实测 + 断言输出
+      notes: 对照确认的 restatement：①单页 index.html 根路径静态打开（file:// 直开，零依赖零构建）；②加载即 ready（load 事件后立即断言 ready 且矩阵/地图/领先者全在屏，无加载态）；③地理语境与决策项同屏（区位图与比较矩阵恒常共驻，交互全程无跳转）；④比较状态驻留（选中/权重/优胜/排除/敲定全在同屏区域内回显，07 显示已决定驻留顶栏+地图标旗+列头徽记）；⑤无外部服务（区位图为内联 SVG，console 无任何网络错误）；⑥未部署到任何外部服务。
+      artifact_refs:
+        - .evidence/shots/01-load-ready.png
+        - .evidence/shots/07-committed.png
+        - .evidence/shots/results.json
+evaluation:
+  status: PASS
+  checks:
+    - id: semantic_conformance
+      label: Semantic conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR is valid, semantic, and aligned to the approved pattern.
+      evidence_required: false
+    - id: state_completeness
+      label: State completeness
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Required loading, empty, ready, and error states exist.
+      evidence_required: false
+    - id: product_model_alignment
+      label: Product model alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: User-facing structure and language preserve the Product Frame.
+      evidence_required: true
+    - id: keyboard
+      label: Keyboard operability
+      kind: empirical
+      profile: keyboard_accessibility
+      facet: behavioral
+      requirement: Primary work and selection are operable with keyboard and visible focus.
+      evidence_required: true
+    - id: hierarchy_review
+      label: Hierarchy review
+      kind: assistive
+      profile: semantic_integrity
+      facet: visual_hierarchy
+      requirement: Visual prominence follows SDIR importance rather than implementation convenience.
+      evidence_required: true
+    - id: representation_decided
+      label: Representation decided
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares representation.primary with a non-empty reason.
+      evidence_required: false
+    - id: state_ownership_declared
+      label: State ownership declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: Selection and preview states both have declared owners.
+      evidence_required: false
+    - id: acceptance_contract_present
+      label: Acceptance contract present
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 carries at least one acceptance criterion.
+      evidence_required: false
+    - id: complexity_budget_declared
+      label: Complexity budget declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      evidence_required: false
+    - id: filter_state
+      label: Filter state
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Active filters and result state are represented explicitly.
+      evidence_required: true
+    - id: comparison_scan
+      label: Comparison scan
+      kind: empirical
+      profile: state_coverage
+      facet: behavioral
+      requirement: Comparable values can be scanned without opening every item.
+      evidence_required: true
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+  findings:
+    - check_id: semantic_conformance
+      kind: deterministic
+      outcome: pass
+      message: SDIR is valid, semantic, and aligned to the approved pattern.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_completeness
+      kind: deterministic
+      outcome: pass
+      message: Required loading, empty, ready, and error states exist.
+      source: prax-validator
+      provenance: measured
+    - check_id: representation_decided
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares representation.primary with a non-empty reason.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_ownership_declared
+      kind: deterministic
+      outcome: pass
+      message: Selection and preview states both have declared owners.
+      source: prax-validator
+      provenance: measured
+    - check_id: acceptance_contract_present
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 carries at least one acceptance criterion.
+      source: prax-validator
+      provenance: measured
+    - check_id: complexity_budget_declared
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      source: prax-validator
+      provenance: measured
+    - check_id: product_model_alignment
+      kind: assistive
+      outcome: pass
+      message: 用户语言与 frame 对象一致：候选选址（obj-candidate-site）=列、区位图（obj-site-map）=左区、比较面板（obj-comparison-panel）=右主工作面、决定（obj-decision）=顶栏决定栏；三关系（located_at/compared_in/selects）在交互中可见：选中联动、并排比较、敲定回显于地图与列头。
+      source: Chrome headless 实测截图 + DOM 断言
+      provenance: attested
+    - check_id: keyboard
+      kind: empirical
+      outcome: pass
+      message: 实测回执 a11y.focus_order：Tab 焦点序 pin A→B→C→D → 列控（sel/commit/exclude × A..D 从左到右）→ 14 权重滑杆自上而下，循环长度=可聚焦控件数 30，无焦点陷阱、全部可达；另有 ←/→ 移动选中且焦点跟随（results.json 两条 PASS）。
+      source: Chrome headless (puppeteer-core) 焦点序走查 + 键盘驱动实测
+      provenance: measured
+    - check_id: hierarchy_review
+      kind: assistive
+      outcome: pass
+      message: 视觉显著度随 SDIR importance：比较矩阵 dominant（最大版面、优胜色带+角标）、区位图 primary（左区整幅）、决定栏 primary（顶栏深色驻留）、权重 supporting（行头内嵌滑杆）、页头 contextual；无装饰性 chrome（P-22），紧凑行高承载高密度（H-13）。
+      source: Chrome headless 实测截图
+      provenance: attested
+    - check_id: filter_state
+      kind: deterministic
+      outcome: pass
+      message: 排除=显式筛选状态：被排除列置灰+恢复按钮、退出优胜与总分计算（领先者由 C·绿洲广场 65.1 转移为 A·创客大厦，断言 PASS）；全部排除后决定栏显式空态；状态驻留决定栏与列头，无隐藏筛选。
+      source: Chrome headless (puppeteer-core) 实测
+      provenance: attested
+    - check_id: comparison_scan
+      kind: empirical
+      outcome: pass
+      message: 14 项标准 × 4 候选在 1680×960 单屏全部可见（01 截图无滚动），每行优胜格色带+「优」角标、并列双标；不需要打开任何条目即可横向扫读比较；悬停预览高亮整列强化扫读。
+      source: Chrome headless 实测截图
+      provenance: attested
+    - check_id: requirement_alignment
+      kind: assistive
+      outcome: pass
+      message: 对照确认的 restatement：①单页 index.html 根路径静态打开（file:// 直开，零依赖零构建）；②加载即 ready（load 事件后立即断言 ready 且矩阵/地图/领先者全在屏，无加载态）；③地理语境与决策项同屏（区位图与比较矩阵恒常共驻，交互全程无跳转）；④比较状态驻留（选中/权重/优胜/排除/敲定全在同屏区域内回显，07 显示已决定驻留顶栏+地图标旗+列头徽记）；⑤无外部服务（区位图为内联 SVG，console 无任何网络错误）；⑥未部署到任何外部服务。
+      source: Chrome headless (puppeteer-core) 实测 + 断言输出
+      provenance: attested
+  missing_evidence: []
+  warnings: []
+  readiness:
+    deterministic_passed: true
+    measurement:
+      receipt_ref: validation-evidence/measure-focus.receipt.json
+      binding:
+        validation-evidence/measure-focus.receipt.json: implementation_current
+      error_failures_open: 0
+      warning_dispositions: []
+    convergence:
+      stalled: false
+      unresolved: []
+    evidence_current: true
+    claims:
+      measured:
+        - semantic_conformance
+        - state_completeness
+        - representation_decided
+        - state_ownership_declared
+        - acceptance_contract_present
+        - complexity_budget_declared
+        - keyboard
+      attested:
+        - product_model_alignment
+        - hierarchy_review
+        - filter_state
+        - comparison_scan
+        - requirement_alignment
+      skipped: []

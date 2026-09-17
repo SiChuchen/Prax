@@ -1,0 +1,260 @@
+plan_revision: 2
+evidence:
+  submitted_by: Claude (implementer, cell-j10-s09 execution arm)
+  collected_at: 2026-09-16T02:30:00Z
+  items:
+    - check_id: semantic_conformance
+      outcome: pass
+      source: prax sdir lint PASS
+      notes: SDIR 0.2 通过 schema 与语义 lint 并已存储。
+      artifact_refs: []
+    - check_id: state_completeness
+      outcome: pass
+      source: browser (CDP headless Chrome)
+      notes: ready/empty/selected/error 均实证。
+      artifact_refs:
+        - evidence/01-ready-first-screen.png
+        - evidence/02-evidence-error-state.png
+        - evidence/07-recovery-armed.png
+      measurement_receipt: validation-evidence/state-completeness.txt
+    - check_id: product_model_alignment
+      outcome: pass
+      source: browser + code review
+      notes: Frame 对象语言一一对应。
+      artifact_refs:
+        - evidence/01-ready-first-screen.png
+      measurement_receipt: validation-evidence/product-model-alignment.txt
+    - check_id: keyboard
+      outcome: pass
+      source: browser (CDP Input.dispatchKeyEvent Tab×3)
+      notes: Tab×3 后 activeElement=BUTTON，:focus-visible 焦点环可见（本 receipt 即焦点态真实截图）。
+      artifact_refs:
+        - evidence/11-keyboard-focus.png
+      measurement_receipt: validation-evidence/keyboard.png
+    - check_id: hierarchy_review
+      outcome: pass
+      source: browser screenshots
+      notes: 视觉重要性遵循 SDIR importance。
+      artifact_refs:
+        - evidence/01-ready-first-screen.png
+      measurement_receipt: validation-evidence/hierarchy-review.txt
+    - check_id: representation_decided
+      outcome: pass
+      source: screen.sdir.yaml 0.2
+      notes: SDIR 0.2 representation.primary=wizard 非空 reason。
+      artifact_refs: []
+    - check_id: state_ownership_declared
+      outcome: pass
+      source: screen.sdir.yaml 0.2
+      notes: selection→step-rail、preview→work-region。
+      artifact_refs: []
+    - check_id: acceptance_contract_present
+      outcome: pass
+      source: screen.sdir.yaml 0.2
+      notes: acceptance 含 6 条。
+      artifact_refs: []
+    - check_id: complexity_budget_declared
+      outcome: pass
+      source: screen.sdir.yaml 0.2
+      notes: complexity_budget 完整十项。
+      artifact_refs: []
+    - check_id: destructive_recovery
+      outcome: pass
+      source: browser (真实交互驱动)
+      notes: 确认仪式+恢复路径+偏差记录。
+      artifact_refs:
+        - evidence/06-confirm-modal-wrong-word.png
+        - evidence/08-recovery-deviation.png
+      measurement_receipt: validation-evidence/destructive-recovery.txt
+    - check_id: requirement_alignment
+      outcome: pass
+      source: browser 全旅程
+      notes: 零失误走完全程真实浏览器走通。
+      artifact_refs:
+        - evidence/12-completion-zero-deviation.png
+      measurement_receipt: validation-evidence/requirement-alignment.txt
+evaluation:
+  status: BLOCK
+  checks:
+    - id: semantic_conformance
+      label: Semantic conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR is valid, semantic, and aligned to the approved pattern.
+      evidence_required: false
+    - id: state_completeness
+      label: State completeness
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Required loading, empty, ready, and error states exist.
+      evidence_required: false
+    - id: product_model_alignment
+      label: Product model alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: User-facing structure and language preserve the Product Frame.
+      evidence_required: true
+    - id: keyboard
+      label: Keyboard operability
+      kind: empirical
+      profile: keyboard_accessibility
+      facet: behavioral
+      requirement: Primary work and selection are operable with keyboard and visible focus.
+      evidence_required: true
+    - id: hierarchy_review
+      label: Hierarchy review
+      kind: assistive
+      profile: semantic_integrity
+      facet: visual_hierarchy
+      requirement: Visual prominence follows SDIR importance rather than implementation convenience.
+      evidence_required: true
+    - id: representation_decided
+      label: Representation decided
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares representation.primary with a non-empty reason.
+      evidence_required: false
+    - id: state_ownership_declared
+      label: State ownership declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: Selection and preview states both have declared owners.
+      evidence_required: false
+    - id: acceptance_contract_present
+      label: Acceptance contract present
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 carries at least one acceptance criterion.
+      evidence_required: false
+    - id: complexity_budget_declared
+      label: Complexity budget declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      evidence_required: false
+    - id: destructive_recovery
+      label: Destructive recovery
+      kind: deterministic
+      profile: runtime_degradation
+      facet: behavioral
+      requirement: Destructive actions match error cost with prevention or recovery.
+      evidence_required: true
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+  findings:
+    - check_id: semantic_conformance
+      kind: deterministic
+      outcome: pass
+      message: SDIR is valid, semantic, and aligned to the approved pattern.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_completeness
+      kind: deterministic
+      outcome: pass
+      message: Required loading, empty, ready, and error states exist.
+      source: prax-validator
+      provenance: measured
+    - check_id: representation_decided
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares representation.primary with a non-empty reason.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_ownership_declared
+      kind: deterministic
+      outcome: pass
+      message: Selection and preview states both have declared owners.
+      source: prax-validator
+      provenance: measured
+    - check_id: acceptance_contract_present
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 carries at least one acceptance criterion.
+      source: prax-validator
+      provenance: measured
+    - check_id: complexity_budget_declared
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      source: prax-validator
+      provenance: measured
+    - check_id: product_model_alignment
+      kind: assistive
+      outcome: pass
+      message: Frame 对象语言一一对应。
+      source: browser + code review
+      provenance: attested
+    - check_id: keyboard
+      kind: empirical
+      outcome: pass
+      message: Tab×3 后 activeElement=BUTTON，:focus-visible 焦点环可见（本 receipt 即焦点态真实截图）。
+      source: browser (CDP Input.dispatchKeyEvent Tab×3)
+      provenance: attested
+    - check_id: hierarchy_review
+      kind: assistive
+      outcome: pass
+      message: 视觉重要性遵循 SDIR importance。
+      source: browser screenshots
+      provenance: attested
+    - check_id: destructive_recovery
+      kind: deterministic
+      outcome: pass
+      message: 确认仪式+恢复路径+偏差记录。
+      source: browser (真实交互驱动)
+      provenance: attested
+    - check_id: requirement_alignment
+      kind: assistive
+      outcome: pass
+      message: 零失误走完全程真实浏览器走通。
+      source: browser 全旅程
+      provenance: attested
+  missing_evidence:
+    - keyboard
+  warnings: []
+  codes:
+    - MEASUREMENT_RECEIPT_INVALID
+    - MEASUREMENT_RECEIPT_MISSING
+  readiness:
+    deterministic_passed: true
+    measurement:
+      receipt_ref: null
+      binding:
+        validation-evidence/state-completeness.txt: invalid
+        validation-evidence/product-model-alignment.txt: invalid
+        validation-evidence/keyboard.png: invalid
+        validation-evidence/hierarchy-review.txt: invalid
+        validation-evidence/destructive-recovery.txt: invalid
+        validation-evidence/requirement-alignment.txt: invalid
+      error_failures_open: 0
+      warning_dispositions: []
+    convergence:
+      stalled: true
+      unresolved: []
+    evidence_current: false
+    claims:
+      measured:
+        - semantic_conformance
+        - state_completeness
+        - representation_decided
+        - state_ownership_declared
+        - acceptance_contract_present
+        - complexity_budget_declared
+      attested:
+        - product_model_alignment
+        - keyboard
+        - hierarchy_review
+        - destructive_recovery
+        - requirement_alignment
+      skipped: []

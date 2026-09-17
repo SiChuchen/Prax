@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>哨兵 Runbook · 核心数据库主从切换</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="app-header">
+  <div class="header-inner">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+          <path d="M12 2L4 5.5V11c0 5 3.4 8.6 8 11 4.6-2.4 8-6 8-11V5.5L12 2z" fill="#2456c6"/>
+          <path d="M8.5 12l2.4 2.4L16 9.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <div class="brand-text">
+        <strong id="runbook-title">哨兵 Runbook</strong>
+        <span class="brand-sub" id="runbook-code"></span>
+      </div>
+    </div>
+    <div class="header-status">
+      <span id="deviation-badge" class="badge badge-ok">零偏差</span>
+      <div class="progress" role="progressbar" aria-label="流程进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <span class="progress-text" id="progress-text">0 / 0 步</span>
+      <button type="button" class="btn btn-ghost" id="btn-audit" aria-expanded="false" aria-controls="audit-drawer">审计</button>
+      <button type="button" class="btn btn-danger-ghost" id="btn-abort">安全中止</button>
+    </div>
+  </div>
+</header>
+
+<main class="app-main">
+  <aside class="step-rail" aria-label="阶段与步骤地图">
+    <div id="rail-body"><!-- 由 app.js 渲染 --></div>
+    <div class="rail-foot">
+      <div class="legend">
+        <span><i class="dot dot-current"></i>当前</span>
+        <span><i class="dot dot-done"></i>已放行</span>
+        <span><i class="dot dot-locked"></i>锁定</span>
+        <span><i class="dot dot-irr"></i>不可逆</span>
+      </div>
+    </div>
+  </aside>
+
+  <section class="work-region" aria-label="当前步骤工作区" aria-live="polite">
+    <div id="work-body"><!-- 由 app.js 渲染 --></div>
+  </section>
+</main>
+
+<!-- 不可逆确认 / 中止确认 模态 -->
+<div class="modal-overlay" id="modal-overlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" id="modal"></div>
+</div>
+
+<!-- 审计抽屉 -->
+<div class="audit-drawer" id="audit-drawer" hidden aria-label="偏差与证据审计">
+  <div class="drawer-head">
+    <h2>偏差与证据审计</h2>
+    <button type="button" class="btn btn-ghost" id="btn-drawer-close">关闭</button>
+  </div>
+  <div id="drawer-body" class="drawer-body"></div>
+</div>
+
+<noscript>
+  <div style="padding:24px;color:#c0392b;font-family:sans-serif">本应用需要启用 JavaScript 才能执行高后果流程门禁。</div>
+</noscript>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

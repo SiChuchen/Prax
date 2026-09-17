@@ -1,0 +1,74 @@
+needs:
+  - id: cap-dim-switch
+    product_action: Switch the dimension on any encoding slot (X, Y, color, size)
+    required_experience:
+      - Any encoding slot can be re-assigned to any dimension at any time
+      - Selection, filters, table order/scroll, and inspector binding survive the switch unchanged
+      - New axis domain computed without visual discontinuity for unchanged elements
+    capabilities:
+      - state per record-id Set in app root
+      - render pass reads selection, not pixel hit
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: "Pure client-side state: projection = {x,y,color,size} dimension keys; rendering is a pure function of (dataset, projection, filters, selection). No backend."
+  - id: cap-owned-filters
+    product_action: Own and individually revert every filter
+    required_experience:
+      - Each active filter renders a chip naming owner dimension + predicate
+      - Removing a chip removes exactly that filter
+      - Clear-all removes all filters in one action
+    capabilities:
+      - filter model [{dimId, predicate, id}]
+      - chip list rendered from filter array
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Filters are a plain array of {ownerDim, predicate, id}; chips map 1:1 over it.
+  - id: cap-owned-projection
+    product_action: Own and revert projection changes (per-step undo, reset-to-default)
+    required_experience:
+      - Header exposes Undo (last projection change) and Reset (default slots)
+      - Undo never touches filters or selection
+    capabilities:
+      - projection history stack
+      - undo/reset handlers in header
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Projection history stack owned by header controls; undo pops one state.
+  - id: cap-first-paint
+    product_action: First paint fully usable with inlined data (no loading state)
+    required_experience:
+      - Initial ~1200 records ship inside the bundle
+      - No fetch/skeleton at startup; UI interactive at DOMContentLoaded
+    capabilities:
+      - single inlined dataset module
+      - synchronous init
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Data generated deterministically at build time and inlined; static open via file:// works with zero network.
+  - id: cap-full-profile-inspector
+    product_action: Inspect the selected record's full dimensional profile
+    required_experience:
+      - Inspector lists all 10 dimensions of the selected record regardless of projection
+      - Empty state when nothing selected
+    capabilities:
+      - detail region reads full record object
+      - selection_driven visibility
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Record object carries all dimension values; inspector renders the whole object.
+  - id: cap-hover-preview
+    product_action: Hover preview of record values on the chart
+    required_experience:
+      - Tooltip shows record name + current slot values near the pointer
+    capabilities:
+      - client-side only
+      - no storage
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Canvas hit-test on pointermove.

@@ -1,0 +1,1 @@
+Receipt: design_prepare_implementation response compiled_context.state_ownership = [{selection: region-editor}, {preview: region-preview}, {viewport: session}, {mode: region-topbar}] — selection and preview both have declared owners.

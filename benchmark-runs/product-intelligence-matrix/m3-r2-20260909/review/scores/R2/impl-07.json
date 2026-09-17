@@ -1,0 +1,83 @@
+{
+  "reviewer": "R2",
+  "package_id": "impl-07",
+  "session_id": "61a5d3c3-7e5d-472f-90b2-f8a53cada254",
+  "wall_clock_seconds": 194,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-07",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Brief demands a single-document edit app whose success criterion is structure-preserving editing. The implementation is exactly that shape: doc = {title, blocks[]} with typed blocks (h/p/li/quote/code/hr) in source/doc-model.js:1-14; three-pane single screen (outline | structured block editor | live preview) in both screenshots/1280x860.png and screenshots/1440x900.png; one document only, low density (styles.css:85 grid, generous whitespace); medium temporality served by snapshot history + undo/redo (app.js:66-89); medium hierarchy served by heading levels/outline (app.js:273-292)."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "Editing dominates the initial screen: the editor column is the central pane with one input per block and per-block structure controls, plus the hint 'Enter 新建下块 · 空块 Backspace 删除' (screenshots/1280x860.png center column; source/index.html:38); the document title is directly editable in the topbar (source/index.html:15, app.js:658-663). The primary object (the document) is present and editable at load with zero setup."
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "Model-proxy: the initial screen self-identifies ('文枢 STRUCTDOC · 单文档结构化编辑器', screenshots/1440x900.png top-left), column headers label the three panes (大纲 / 编辑器·结构化块 / 预览), and the green banner states the invariant being enforced ('结构检查通过：标题层级连续、一级标题唯一、无空标题', 1440x900.png). Stats line (17 块 · 358 字) and sync badge give immediate state; no loading state (app.js:654 comment '首屏即可用')."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Single screen, no modes or routes: the primary object is on screen at load (0 steps). Outline items are buttons that scroll+focus the target block in 1 click (app.js:282-288); move/indent/delete are 1 click on the block rail (app.js:170-195); convert/insert are 2 clicks via overlay menu (app.js:456-478). Verified structurally in source and visually in both viewports."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "All primary actions happen in place; text edits only re-render derived views and never rebuild the editor, so typing is not interrupted (app.js:91-101). After structural ops the editor is rebuilt but focus and caret are restored to the affected block with scroll-into-view + flash (app.js:258-270). Convert/insert menus are non-navigating overlays dismissed on selection (app.js:400-430); history preserves prior states (app.js:66-71)."
+      },
+      "ui_surface_complexity": {
+        "score": 4,
+        "evidence": "Permanent surfaces are four (topbar, outline, editor, preview) with no dead panels, matching the low-density brief. Deduction: the block rail renders up to 7 controls above every block, always visible (rail opacity .9, styles.css:139-140; construction at app.js:168-196) — 17 blocks × ~7 icon buttons in screenshots/1280x860.png is a permanent control cost, though disabled states are dimmed (styles.css:142) and each control maps to a real structure operation required by the edit job."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Receipt checks fail on all measured a11y dimensions: a11y.contrast=fail, a11y.focus_order=fail, a11y.target_size=fail, type.min_projected_size=fail (measurement-summary.json checks). Consistent with source: rail buttons are 2px 5px padded icon-only targets (styles.css:140), faint text token #98a2b0 on white (styles.css:10, used for col-hint/brand-sub), modal opens without focus management or trap (app.js:549-568). Counter-evidence limited: aria-label on generated buttons and block inputs, role=menu/dialog, aria-hidden icons (app.js:53-62, 209; index.html:52-55)."
+      },
+      "frontend_rework": {
+        "score": 3,
+        "evidence": "No visible layout defects: layout.overflow=pass, layout.responsive_collision=pass, text.truncation=pass (measurement-summary.json), and both viewports render cleanly with no overlap/clipping (1280x860.png, 1440x900.png). However summary shows 3 pass / 4 fail / 1 warning — the four a11y/type failures are receipt errors implying remediation rework before the surface would pass acceptance."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed '结构化编辑与预览一致' is directly evidenced: source/screenshots/02-edit-sync.png shows an edited heading '主要新功能（已编辑 · 与预览实时同步）' mirrored in the preview pane with word count updated to 370 in both topbar and preview header; preview and export derive from the same block model (app.js:326-371; doc-model.js:84-118; export modal in source/screenshots/05-export.png). Structure preservation is actively checked: converting two H2s to H1 raises '一级标题不止一个' with one-click structured fix, and source/screenshots/04-after-fix.png shows the duplicate demoted and the strip green again (lint at doc-model.js:199-223; round-trip test tests/model.test.mjs:53-57)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "a11y.contrast, a11y.focus_order, a11y.target_size and type.min_projected_size all fail in the sanitized receipt (measurement-summary.json: 3 pass / 4 fail / 1 warning)",
+      "Per-block rail icon buttons are very small targets (2px 5px padding, styles.css:140), consistent with the target_size failure",
+      "Low-contrast faint text used for persistent UI hints (--faint #98a2b0 on white, styles.css:10; .col-hint 11px, styles.css:97)",
+      "Modal (import/export) and overlay menus have no focus trap or initial-focus handling (app.js:549-568, 400-430), consistent with the focus_order failure",
+      "Editor pane always renders ~7 rail controls per block (17 blocks visible), a permanent visual-noise cost (styles.css:139-140, app.js:168-196)"
+    ],
+    "missing_evidence": [
+      "The sanitized receipt gives only check ids and pass/fail — the specific failing elements and measured contrast ratios / target sizes are not identified, so the accessibility failures cannot be attributed to particular controls",
+      "Keyboard-only completion of the full edit flow (beyond the focus_order check) is not verifiable from the package artifacts"
+    ],
+    "overall_note": "The package is a tightly-scoped single-document structured editor that matches the brief's shape and job almost exactly: a typed block model (doc-model.js:1-14) with structure changes routed through model operations, a three-pane single screen in which the document is present and editable at load in both viewports, and derived outline/preview/export all sourced from the same model — so the acceptance seed (structured editing consistent with preview) is not just implemented but demonstrated in-package (02-edit-sync, 03-lint-warn, 04-after-fix, 05-export) and covered by a lint/fix layer that repairs heading-level violations via structured ops. Navigation cost is effectively zero and context is preserved via in-place overlay menus and focus restoration (app.js:258-270). The clear weakness is accessibility: all four measured a11y/type checks fail (small rail targets, faint contrast tokens, no modal focus management), which is also the main rework signal, since layout, responsiveness and text checks all pass and no visual defects appear at either viewport. Per the rubric, task completion time, retrieval accuracy, and human preference are not observable here, and no user study exists to support any preference claim."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 95298,
+      "outputTokens": 7654,
+      "cacheReadInputTokens": 389376,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.862528,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-09-16T23:22:08.983Z"
+}

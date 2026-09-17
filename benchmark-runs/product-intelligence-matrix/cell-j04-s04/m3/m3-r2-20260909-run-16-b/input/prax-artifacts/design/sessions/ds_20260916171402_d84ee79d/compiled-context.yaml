@@ -1,0 +1,59 @@
+version: "0.1"
+session_id: ds_20260916171402_d84ee79d
+task:
+  surfaces: []
+  primary: 扫视指标墙，即时发现进入警告/严重状态的异常指标
+product_relationships:
+  - id: metric_emits_event
+    source: metric
+    target: event
+    type: emits
+    direction: forward
+    meaning: 指标每次显著变化生成一条事件；事件是指标历史的证据链
+    importance: primary
+region_relationships: []
+decisions:
+  primary_structure: PAT-LIST-DETAIL-INSPECTOR
+  density_intent: compact
+  major_choice_ids:
+    - fixed-grid-no-reflow
+    - anomaly-strip
+    - in-place-update
+    - trace-inspector
+    - inline-seed-stream
+    - demo-controls
+must_preserve: []
+regression_points: []
+unresolved:
+  - stream_parameters
+  - threshold_semantics
+corrections: []
+state_ownership:
+  - state: selection
+    owner: session
+  - state: mode
+    owner: session
+  - state: query
+    owner: region-event-feed
+  - state: viewport
+    owner: session
+acceptance:
+  - 页面加载完成即满数据呈现，无骨架屏/加载态可被测得
+  - 模拟流运行中，异常指标在异常条与网格瓦片两处均可在扫视内发现
+  - 任一指标可打开检查器查看带时间戳的取值/状态变化历史（可追溯）
+  - 持续 60s 更新后无布局跳动、无整屏重绘闪烁
+  - 所有交互（选中/事件/暂停）均不改变瓦片网格位置
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - requirement_alignment
+  regression_check_ids: []

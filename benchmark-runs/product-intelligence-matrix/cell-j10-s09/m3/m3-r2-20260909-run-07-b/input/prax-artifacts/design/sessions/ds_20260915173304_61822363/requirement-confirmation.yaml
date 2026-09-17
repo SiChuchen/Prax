@@ -1,0 +1,27 @@
+version: "0.1"
+user_quote:
+  - 动词：complete；对象：高后果流程；成功标准：零失误走完全程
+  - 判别：单一高后果流程，零失误走完全程、不可逆步骤有恢复/确认路径。
+  - 验收种子（acceptance seed）：不可逆步骤有恢复/确认路径
+restatement: 构建一个单页 Web 应用，引导用户零失误地走完一条单一高后果流程：流程分阶段、分步骤分层呈现；每步有验证条件与执行门禁；不可逆步骤在执行前提供明确的后果说明、显式确认路径与可操作的恢复/回退路径；全程记录偏差，最终以零偏差完成作为成功状态。
+boundaries:
+  in_scope:
+    - 单一高后果流程的定义与全程引导（workflow 对象）
+    - 阶段→步骤的层级导航与顺序门禁
+    - 每步完成条件：检查项确认与证据字段填写
+    - 不可逆步骤：后果说明、关键词确认、恢复/回退路径展示
+    - 偏差记录与零偏差完成状态
+    - 静态单页交付，首屏数据内联即用
+  out_of_scope:
+    - 后端服务、账号体系、持久化服务
+    - 多流程/多实例管理
+    - 真实生产系统操作集成
+    - 移动端适配
+  scope_complete: true
+open_questions: []
+confirmation:
+  status: requirement_is_sufficient
+  evidence:
+    - type: task_brief
+      ref: brief.md (product brief cell-j10-s09, frozen by M2 2026-09-03)
+  confirmed_at: 2026-09-16T00:00:00Z

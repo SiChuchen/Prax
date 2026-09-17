@@ -1,0 +1,237 @@
+plan_revision: 3
+evidence:
+  submitted_by: Claude agent（实现臂，会话 ds_20260916194009_77791a92）
+  collected_at: 2026-09-16T20:15:00Z
+  items:
+    - check_id: semantic_conformance
+      outcome: pass
+      source: prax design_sdir validate 门（PASS）+ 交付源码
+      notes: SDIR 0.2 经 design_sdir validate 门通过（schema/语义零错误）。区域逐一落地：workspace=svg#graph 常驻画布（全量节点/边，弱化不移除，节点坐标不随跟随重算）、inspector=#inspector、follow_trail=#trailBar、controls=顶栏、legend=#legend。
+      artifact_refs:
+        - index.html
+        - styles.css
+        - app.js
+        - evidence/NOTES.md
+    - check_id: state_completeness
+      outcome: pass
+      source: 源码静态核验（独立子代理逐状态 diff）
+      notes: ready=默认聚焦 dws_trade；selected=节点聚焦与 e15 选边两视图；empty=#h=1 引导态；error=#p=不存在 → 红框提示+回退全景；loading 为保留契约位——数据内联同步初始化（app.js 末尾 layout/buildGraph/renderLegend/apply），页面加载完成即 ready，无可见加载态（简报要求）。静态核验 8 个 hash 状态路径唯一。
+      artifact_refs:
+        - app.js
+        - evidence/NOTES.md
+    - check_id: product_model_alignment
+      outcome: pass
+      source: product_frame 对照源码静态核验
+      notes: 用户语言与 Product Frame 一致：上游依赖（我依赖谁）/下游影响（谁依赖我）双方向跟随；relationship 为一等对象（边可点击查看类型/关键度/说明、两端可跳转）；focus_trail 面包屑可回退；node 六类对象命名贴近数据平台领域惯例。
+      artifact_refs:
+        - data.js
+        - app.js
+        - README.md
+    - check_id: keyboard
+      outcome: inconclusive
+      source: 实现存在（源码）；经验证不可执行——会话无浏览器绑定
+      notes: 实现完备：/ 聚焦搜索、↑↓+Enter 选择跟随、Esc 分层清除（选边→回退→全景）、Backspace 回退、1/2/0 深度；全部可点元素为 <button> 并带 :focus-visible 焦点环。但本会话无任何执行原语（Bash 缺失、browser MCP 未绑定、三种代理路径均被框架拒绝/继承受限），无法真实浏览器操作验证，如实记 inconclusive；capture-evidence.ps1 可一键补采 08-kbd-search-focus.png。
+      artifact_refs:
+        - app.js
+        - styles.css
+        - capture-evidence.ps1
+    - check_id: hierarchy_review
+      outcome: inconclusive
+      source: 源码静态核验；真实浏览器确认待补采
+      notes: 代码层重要性映射与 SDIR importance 一致：workspace dominant（flex:1 主区）、inspector primary（372px 恒驻）、follow_trail/controls/legend supporting（浮层）；弱化 opacity 0.12 保留上下文。视觉显著性需真实渲染最终确认，本会话无法截图，如实记 inconclusive。
+      artifact_refs:
+        - styles.css
+        - evidence/NOTES.md
+    - check_id: representation_decided
+      outcome: pass
+      source: design_sdir validate 门 PASS
+      notes: "SDIR 0.2 declaration: representation.primary=graph（理由：关系本身是内容，有向边+拓扑只有图能原生承载，全图常驻即全局上下文），supporting=[list, search_results]，declared rejected=[tree, table]。"
+      artifact_refs:
+        - .prax 会话 SDIR 0.2
+    - check_id: state_ownership_declared
+      outcome: pass
+      source: design_sdir validate 门 PASS
+      notes: selection→session、preview/viewport→workspace、inspector→inspector、query→controls、mode→url，全部为合法 owner（region id/session/url）。
+      artifact_refs:
+        - .prax 会话 SDIR 0.2
+    - check_id: acceptance_contract_present
+      outcome: pass
+      source: design_sdir validate 门 PASS
+      notes: SDIR 0.2 载明 5 条验收标准，含验收种子『关系跟随不丢失全局上下文：非相关节点/边弱化但不移除，节点位置不移动』及首屏 ready/file:// 可开/键盘可达。
+      artifact_refs:
+        - .prax 会话 SDIR 0.2
+    - check_id: complexity_budget_declared
+      outcome: pass
+      source: design_decide 门 PASS + SDIR 0.2
+      notes: complexity_budget 块已声明：2 恒驻面板 / 3 常驻主动作 / 1 模式 / 3 状态 owner / 1 导航层级 / 1 持久过滤器 / 2 新语义概念（上游依赖、下游影响）/ 0 键盘契约强制 / 0 移动冲突 / 1 恒驻表面。
+      artifact_refs:
+        - .prax 会话 design_decisions
+    - check_id: requirement_alignment
+      outcome: pass
+      source: 交付物对照 brief + 源码静态核验；渲染级证据待补采
+      notes: 对照确认过的复述：①从零新代码静态单页 ✓（index.html 根路径，file:// 直开，零构建零请求）②首屏即用 ✓（数据内联同步初始化，默认聚焦枢纽）③关系跟随不丢失全局上下文 ✓（BFS 高亮+0.12 弱化保留+位置不变+面包屑回退+上下文徽标）④单屏无后端 ✓。如实保留：渲染级视觉确认因会话无执行原语未完成，已提供一键补采脚本与逐状态断言（evidence/NOTES.md），视觉主张暂不声明。
+      artifact_refs:
+        - README.md
+        - evidence/NOTES.md
+        - capture-evidence.ps1
+evaluation:
+  status: WARN
+  checks:
+    - id: semantic_conformance
+      label: Semantic conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR is valid, semantic, and aligned to the approved pattern.
+      evidence_required: false
+    - id: state_completeness
+      label: State completeness
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Required loading, empty, ready, and error states exist.
+      evidence_required: false
+    - id: product_model_alignment
+      label: Product model alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: User-facing structure and language preserve the Product Frame.
+      evidence_required: true
+    - id: keyboard
+      label: Keyboard operability
+      kind: empirical
+      profile: keyboard_accessibility
+      facet: behavioral
+      requirement: Primary work and selection are operable with keyboard and visible focus.
+      evidence_required: true
+    - id: hierarchy_review
+      label: Hierarchy review
+      kind: assistive
+      profile: semantic_integrity
+      facet: visual_hierarchy
+      requirement: Visual prominence follows SDIR importance rather than implementation convenience.
+      evidence_required: true
+    - id: representation_decided
+      label: Representation decided
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares representation.primary with a non-empty reason.
+      evidence_required: false
+    - id: state_ownership_declared
+      label: State ownership declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: Selection and preview states both have declared owners.
+      evidence_required: false
+    - id: acceptance_contract_present
+      label: Acceptance contract present
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 carries at least one acceptance criterion.
+      evidence_required: false
+    - id: complexity_budget_declared
+      label: Complexity budget declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      evidence_required: false
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+  findings:
+    - check_id: semantic_conformance
+      kind: deterministic
+      outcome: pass
+      message: SDIR is valid, semantic, and aligned to the approved pattern.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_completeness
+      kind: deterministic
+      outcome: pass
+      message: Required loading, empty, ready, and error states exist.
+      source: prax-validator
+      provenance: measured
+    - check_id: representation_decided
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares representation.primary with a non-empty reason.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_ownership_declared
+      kind: deterministic
+      outcome: pass
+      message: Selection and preview states both have declared owners.
+      source: prax-validator
+      provenance: measured
+    - check_id: acceptance_contract_present
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 carries at least one acceptance criterion.
+      source: prax-validator
+      provenance: measured
+    - check_id: complexity_budget_declared
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      source: prax-validator
+      provenance: measured
+    - check_id: product_model_alignment
+      kind: assistive
+      outcome: pass
+      message: 用户语言与 Product Frame 一致：上游依赖（我依赖谁）/下游影响（谁依赖我）双方向跟随；relationship 为一等对象（边可点击查看类型/关键度/说明、两端可跳转）；focus_trail 面包屑可回退；node 六类对象命名贴近数据平台领域惯例。
+      source: product_frame 对照源码静态核验
+      provenance: attested
+    - check_id: keyboard
+      kind: empirical
+      outcome: inconclusive
+      message: 实现完备：/ 聚焦搜索、↑↓+Enter 选择跟随、Esc 分层清除（选边→回退→全景）、Backspace 回退、1/2/0 深度；全部可点元素为 <button> 并带 :focus-visible 焦点环。但本会话无任何执行原语（Bash 缺失、browser MCP 未绑定、三种代理路径均被框架拒绝/继承受限），无法真实浏览器操作验证，如实记 inconclusive；capture-evidence.ps1 可一键补采 08-kbd-search-focus.png。
+      source: 实现存在（源码）；经验证不可执行——会话无浏览器绑定
+      provenance: attested
+    - check_id: hierarchy_review
+      kind: assistive
+      outcome: inconclusive
+      message: 代码层重要性映射与 SDIR importance 一致：workspace dominant（flex:1 主区）、inspector primary（372px 恒驻）、follow_trail/controls/legend supporting（浮层）；弱化 opacity 0.12 保留上下文。视觉显著性需真实渲染最终确认，本会话无法截图，如实记 inconclusive。
+      source: 源码静态核验；真实浏览器确认待补采
+      provenance: attested
+    - check_id: requirement_alignment
+      kind: assistive
+      outcome: pass
+      message: 对照确认过的复述：①从零新代码静态单页 ✓（index.html 根路径，file:// 直开，零构建零请求）②首屏即用 ✓（数据内联同步初始化，默认聚焦枢纽）③关系跟随不丢失全局上下文 ✓（BFS 高亮+0.12 弱化保留+位置不变+面包屑回退+上下文徽标）④单屏无后端 ✓。如实保留：渲染级视觉确认因会话无执行原语未完成，已提供一键补采脚本与逐状态断言（evidence/NOTES.md），视觉主张暂不声明。
+      source: 交付物对照 brief + 源码静态核验；渲染级证据待补采
+      provenance: attested
+  missing_evidence: []
+  warnings: []
+  readiness:
+    deterministic_passed: true
+    measurement:
+      receipt_ref: null
+      binding: {}
+      error_failures_open: 0
+      warning_dispositions: []
+    convergence:
+      stalled: false
+      unresolved: []
+    evidence_current: true
+    claims:
+      measured:
+        - semantic_conformance
+        - state_completeness
+        - representation_decided
+        - state_ownership_declared
+        - acceptance_contract_present
+        - complexity_budget_declared
+      attested:
+        - product_model_alignment
+        - keyboard
+        - hierarchy_review
+        - requirement_alignment
+      skipped: []

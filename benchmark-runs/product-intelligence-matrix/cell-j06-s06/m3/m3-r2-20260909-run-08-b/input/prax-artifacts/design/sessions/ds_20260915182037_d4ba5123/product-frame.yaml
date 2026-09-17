@@ -1,0 +1,77 @@
+version: "0.2"
+jtbd:
+  verb: understand
+  target: 随时间演化的系统状态（以 change_set 序列呈现）
+  success: 用户能回答三个问题：某时刻系统处于什么状态？该状态由哪个变更产生？该变更又因何而起、引发了什么？
+primary_object:
+  type: change_set
+  label: 变更集 Change Set
+task_model:
+  frequency: medium
+  reversibility: reversible
+  consequence: low
+  expertise: expert
+user:
+  primary_role: 平台工程师 / 技术负责人（读变更史、做事后理解与复盘）
+  expertise: expert
+  familiarity: high
+goal:
+  primary: 让用户读懂一个平台在一个季度内随时间演化的状态：每个变更因何而起、改了什么、又引发了什么；时间轴上的顺序与因果链完全一致。
+tasks:
+  primary: 沿时间轴浏览变更集序列，选中某个变更后读出其前后因果与前后状态差异
+  secondary:
+    - 拖动时间游标查看任意时刻的状态切片
+    - 沿因果链跳转到诱因或后果变更
+    - 按组件过滤，看单个组件的演化
+product_objects:
+  - id: change_set
+    user_name: 变更集（Change Set）
+    purpose: 一次可归属的变更（发布/配置/迁移/事件/回滚），带时间戳、执行人、实体操作与因果关联；是用户阅读的基本单元
+  - id: phase
+    user_name: 阶段（Phase）
+    purpose: 将相邻的变更集聚成可命名的阶段（如“大促备战”），提供中层层级，降低 many 的阅读负担
+  - id: entity
+    user_name: 组件（Entity）
+    purpose: 被变更作用的系统组件/服务，携带可随时间变化的字段状态；在泳道与状态切片中呈现
+  - id: causal_link
+    user_name: 因果链（Cause → Effect）
+    purpose: 两个变更集之间的“引发”关系实例（cause_id → effect_id，方向严格沿时间向前）；作为一等对象呈现在详情与连线中
+  - id: state_snapshot
+    user_name: 状态切片（State at time t）
+    purpose: 按选定时刻折叠全部先前变更得到的各组件状态，回答“那时是什么状态”
+relationships:
+  - id: rel_modify
+    source: change_set
+    target: entity
+    type: modifies
+    direction: none
+    meaning: 变更集对该组件的某些字段做了增加/修改/删除/回滚操作
+    importance: primary
+  - id: rel_group
+    source: phase
+    target: change_set
+    type: groups
+    direction: forward
+    meaning: 阶段把时间上相邻的变更集组织成组
+    importance: supporting
+  - id: rel_link
+    source: causal_link
+    target: change_set
+    type: connects
+    direction: forward
+    meaning: 因果链实例从诱因变更集指向后果变更集；时间上诱因严格早于后果
+    importance: primary
+mental_model_hypothesis:
+  summary: 用户以“变更日志 + 时间线”的心智模型读演化史：变更按时间排序（最新向右/向下），因果链沿时间向前读（诱因在前、后果在后），任意时刻的系统状态等于此前全部变更的折叠结果。与 commit log / 事件时间线 / post-mortem 时间轴的领域惯例一致。
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: 变更因果可读：任选一个变更集，能沿时间轴向前看到它引发了哪些后续变更、向后看到它的诱因；且界面呈现的“某时刻状态切片”与该时刻之前所有变更的语义折叠结果一致（时间结构与变更语义一致）。
+open_questions: []
+existing_product:
+  stable_user_concepts: []
+  stable_patterns: []
+  current_user_pain_points: []
+  current_constraints: []
+  legacy_debt: []

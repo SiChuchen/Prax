@@ -1,0 +1,104 @@
+needs:
+  - id: inline-first-paint
+    product_action: Page load presents the full collection ready for locating, with no loading state
+    required_experience:
+      - data inlined with the document
+      - ready state on first paint
+    capabilities:
+      - in-memory item array inlined in page bundle
+      - normalized lowercase search index built once at startup
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Static single-page app; the entire collection ships inside a JS file next to index.html, parsed synchronously before first interaction.
+  - id: instant-search
+    product_action: Search-as-you-type narrows the candidate set instantly
+    required_experience:
+      - per-keystroke re-evaluation over the whole inlined collection
+      - no perceptible latency at 2k-scale
+    capabilities:
+      - case-insensitive substring match over name/id/tags
+      - input event handling
+      - match highlighting data (offsets computed, not styled here)
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: Precomputed lowercase haystack per item; O(n) scan per keystroke is well within budget at the shipped scale and linearly degrades, matching the unbounded shape.
+  - id: facet-live-counts
+    product_action: Facet options show live counts within the current candidate set
+    required_experience:
+      - counts recomputed per narrowing step
+      - counts never stale while detail is open
+    capabilities:
+      - single-pass count aggregation per facet option
+      - derived state recomputation on constraint change
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: Counts derived from the same filtered pipeline that produces the result set; single source of truth avoids staleness.
+  - id: composable-constraints
+    product_action: Query and facets compose multiplicatively; each constraint removable without clearing the others
+    required_experience:
+      - query × facets intersection
+      - per-chip removal
+      - clear-all as deliberate separate action
+    capabilities:
+      - AND over facet groups
+      - AND of query with facet result
+      - chip-level constraint removal
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: Constraint state is one small object; the pipeline applies facets then query; removal mutates one key.
+  - id: context-preserving-inspection
+    product_action: Inspecting an item never discards query, filters, counts, or list view; closing restores the prior view
+    required_experience:
+      - detail opens adjacent, list remains rendered
+      - scroll position and focus restore on close
+    capabilities:
+      - detail region sibling to list region
+      - selection state independent of list scroll
+      - focus return target recorded on open
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: Detail is a same-page region bound to selection state; the list is never unmounted or scrolled by open/close; on close, focus returns to the originating row and view position is intact because nothing moved it.
+  - id: incremental-render
+    product_action: Large result sets render without freezing or hiding the remaining space
+    required_experience:
+      - initial window per section
+      - expand-on-demand per section
+      - full counts independent of rendered window
+    capabilities:
+      - per-section pagination state
+      - stable DOM for already-rendered rows
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: Each section renders a fixed initial window with an in-place expander; counts always reflect the full filtered set, so visibility of remaining space is never traded for performance.
+  - id: zero-result-recovery
+    product_action: Zero-result states guide in-place recovery
+    required_experience:
+      - names the constraint most likely to blame
+      - offers per-constraint relax actions
+    capabilities:
+      - conditional region content
+      - constraint attribution (which constraint types are active)
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: Empty state enumerates active constraints with individual relax buttons, rendered inside the results region.
+  - id: keyboard-access
+    product_action: Search, rows, chips and detail are fully keyboard-operable
+    required_experience:
+      - global shortcut focuses search
+      - tab reaches rows/chips/detail controls
+      - escape clears or closes appropriately
+    capabilities:
+      - document-level key handling
+      - standard tab order
+      - buttons-as-native-elements
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Native focusable elements in DOM order; one global key contract (/) plus Escape semantics on search and detail.

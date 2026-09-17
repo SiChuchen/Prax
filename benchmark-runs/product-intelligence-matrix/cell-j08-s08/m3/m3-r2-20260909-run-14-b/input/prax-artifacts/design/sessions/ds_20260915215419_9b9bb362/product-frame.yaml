@@ -1,0 +1,69 @@
+version: "0.2"
+jtbd:
+  verb: edit
+  target: 文档
+  success: 编辑不破坏结构
+primary_object:
+  type: document
+  label: 文档
+task_model:
+  frequency: medium
+  reversibility: reversible
+  consequence: low
+  expertise: mixed
+user:
+  primary_role: 内容作者 / 文档维护者
+  expertise: intermediate
+  familiarity: medium
+goal:
+  primary: 对一份文档进行结构化编辑，随时看到编辑结果的真实呈现，且不破坏文档结构
+tasks:
+  primary: 以块级结构编辑文档内容（改标题层级、增删/重排/改写块），结构化编辑器与预览始终保持一致
+  secondary:
+    - 通过大纲在分区间跳转
+    - 发现并修复结构问题（层级跳跃、空标题等）
+    - 撤销/重做编辑操作
+    - 导出文档（Markdown/HTML）
+product_objects:
+  - id: document
+    user_name: 文档
+    purpose: 用户编辑的唯一对象：一份有序内容块的集合，含标题元数据
+  - id: block
+    user_name: 内容块
+    purpose: 文档的最小编辑单元（标题/段落/列表/引用等），承载实际内容与层级
+  - id: outline
+    user_name: 大纲/分区
+    purpose: 由标题块派生的分区导航结构，反映文档层级
+  - id: diagnostic
+    user_name: 结构检查
+    purpose: 编辑可能破坏结构时的警示与修复入口
+relationships:
+  - id: rel-doc-block
+    source: document
+    target: block
+    type: contains_ordered
+    direction: forward
+    meaning: 文档由有序块序列构成
+    importance: primary
+  - id: rel-outline-block
+    source: outline
+    target: block
+    type: derived_from
+    direction: forward
+    meaning: 大纲由标题块派生，非独立存储
+    importance: supporting
+  - id: rel-diag-block
+    source: diagnostic
+    target: block
+    type: flags
+    direction: forward
+    meaning: 结构问题定位到具体块并可一键修复
+    importance: supporting
+mental_model_hypothesis:
+  summary: 文档 = 一个有序的块序列；标题块划分分区形成层级；编辑即对该序列的局部操作；预览是同一数据的忠实渲染视图——两视图共享单一数据源，天然一致
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: 结构化编辑器的每次修改即时、忠实地反映在预览中，且文档结构（标题层级连续、分区完整）始终保持有效——编辑不破坏结构
+open_questions: []

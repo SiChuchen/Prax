@@ -1,0 +1,1 @@
+Receipt: screen.sdir.yaml of session ds_20260915222626_faa2f104 has version "0.2" and declares representation.primary = {type: document, reason: <non-empty>} with supporting [{type: tree}]; design_sdir validate echoed the full representation block in its response (status PASS).

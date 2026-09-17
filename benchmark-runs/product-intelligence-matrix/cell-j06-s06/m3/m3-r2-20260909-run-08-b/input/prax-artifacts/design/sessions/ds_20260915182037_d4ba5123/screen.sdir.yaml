@@ -1,0 +1,138 @@
+version: "0.2"
+screen:
+  id: workspace_screen
+  intent:
+    primary_task: 沿时间轴浏览变更集序列，选中某个变更后读出其前后因果与前后状态差异
+    secondary_tasks:
+      - 拖动时间游标查看任意时刻的状态切片
+      - 沿因果链跳转到诱因或后果变更
+      - 按组件过滤，看单个组件的演化
+  archetype:
+    pattern_ref: PAT-WORKSPACE
+  density_intent: regular
+  regions:
+    - id: 时间轴：阶段带内按时间排布的变更集节点（many 的阅读主线）
+      role: experimental:时间轴：阶段带内按时间排布的变更集节点（many 的阅读主线）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 因果连线：严格从左到右的 cause→effect 弧线，方向与时间同向
+      role: experimental:因果连线：严格从左到右的 cause→effect 弧线，方向与时间同向
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 选中变更集的详情：诱因 / 字段级 before→after / 引发后果
+      role: experimental:选中变更集的详情：诱因 / 字段级 before→after / 引发后果
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 选定时刻的状态切片（折叠结果）
+      role: experimental:选定时刻的状态切片（折叠结果）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 按组件过滤 / 组件泳道标记
+      role: experimental:按组件过滤 / 组件泳道标记
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: workspace
+      role: dominant_workspace
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - preserve_context
+  relationships: []
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved: []
+  rejected_alternatives:
+    - option: PAT-LIST-DETAIL
+      reason: L1 does_not_apply_when：条目间关系是主要对象；本产品因果关关系主要对象，纯列表无法呈现因果链的时间走向
+    - option: PAT-APPLICATION-SHELL
+      reason: L1 does_not_apply_when：单一任务主导整个产品；本应用单屏单任务，shell 只留一个轻头部即可
+    - option: graph/network 力导向图
+      reason: 无时间轴，因果方向与时间顺序脱钩，直接违背验收种子
+    - option: calendar
+      reason: 适合日粒度调度视图；本场景季度跨度、需要事件节点与因果弧，calendar 无此表达
+  user_job:
+    verb: understand
+    target: 随时间演化的系统状态（以 change_set 序列呈现）
+    success: 用户能回答三个问题：某时刻系统处于什么状态？该状态由哪个变更产生？该变更又因何而起、引发了什么？
+  primary_object:
+    type: change_set
+    label: 变更集 Change Set
+  information_shape:
+    cardinality: many
+    relationality: medium
+    hierarchy: medium
+    temporality: high
+    density: medium
+    dimensionality: medium
+    spatiality: none
+    volatility: medium
+    uncertainty: low
+    comparison_need: none
+  representation:
+    primary:
+      type: timeline
+      reason: 时间性=high 是束内最强 facet：阅读主线必须是按时间排布的变更集序列；因果连线叠加在同一时间轴上，使“何时”与“因何”共用一个坐标
+    supporting:
+      - type: diagram
+        reason: 因果弧线是时间轴上的一等视觉层，点击可高亮整条因果链并跳转（关系性 medium 的承载）
+      - type: table
+        reason: 状态切片用紧凑表格式呈现各组件当前字段值，读出“此刻状态从哪来”
+      - type: list
+        reason: 变更详情内的字段级操作按时间顺序纵向列出（+新增 / ~修改 / −删除 / ↩回滚）
+  priority:
+    primary:
+      - 时间轴：阶段带内按时间排布的变更集节点（many 的阅读主线）
+      - 因果连线：严格从左到右的 cause→effect 弧线，方向与时间同向
+      - 选中变更集的详情：诱因 / 字段级 before→after / 引发后果
+      - workspace
+    contextual:
+      - 选定时刻的状态切片（折叠结果）
+      - 按组件过滤 / 组件泳道标记
+  interaction:
+    preview: none
+    inspect: select
+    navigate: none
+    locate: none
+  state_ownership:
+    - state: selection
+      owner: 时间轴：阶段带内按时间排布的变更集节点（many 的阅读主线）
+    - state: preview
+      owner: session
+  complexity_budget:
+    permanent_panels: 4
+    permanent_primary_actions: 3
+    modes: 0
+    state_owners: 2
+    navigation_levels: 1
+    persistent_filters: 1
+    new_semantic_concepts: 3
+    keyboard_contracts: 1
+    mobile_conflicts: 0
+    permanent_surfaces: 1
+  acceptance:
+    - 变更因果可读：任选一个变更集，能沿时间轴向前看到它引发了哪些后续变更、向后看到它的诱因；且界面呈现的“某时刻状态切片”与该时刻之前所有变更的语义折叠结果一致（时间结构与变更语义一致）。

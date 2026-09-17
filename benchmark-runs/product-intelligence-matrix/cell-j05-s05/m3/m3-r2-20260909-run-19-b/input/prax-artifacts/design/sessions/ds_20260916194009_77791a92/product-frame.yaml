@@ -1,0 +1,45 @@
+version: "0.2"
+jtbd:
+  verb: understand
+  target: 关系结构（依赖与影响网络）
+  success: 依赖与影响可跟随，且跟随过程中全局上下文（全图）始终可见
+primary_object:
+  type: relationship
+  label: 依赖关系（边）
+task_model:
+  frequency: medium
+  reversibility: reversible
+  consequence: low
+  expertise: expert
+user:
+  primary_role: 数据平台工程师/数据分析师（内部数据平台用户）
+  expertise: expert
+  familiarity: high
+goal:
+  primary: 理解数据平台各对象间的依赖与影响结构，并能沿关系连续跟随而不丢失全局上下文
+tasks:
+  primary: 聚焦任一对象，跟随其上游依赖与下游影响（多跳），理解其在网络中的位置
+  secondary:
+    - 搜索定位对象
+    - 查看某条关系的类型/关键度/说明
+    - 评估某对象变更的影响范围
+    - 沿跟随路径回退到之前的对象
+product_objects:
+  - id: node
+    user_name: 对象（数据源/数据表/管道/服务/指标/看板）
+    purpose: 依赖网络中的实体，可聚焦、可搜索、可跟随
+  - id: relationship
+    user_name: 关系（依赖边）
+    purpose: 一等内容：有类型、关键度与说明，连接两个对象，决定跟随方向
+  - id: focus_trail
+    user_name: 跟随路径（面包屑）
+    purpose: 记录连续跟随的节点序列，支持回退，保证跟随时上下文可追溯
+relationships: []
+mental_model_hypothesis:
+  summary: 用户把平台想成一张有向依赖网：上游=『我依赖谁』，下游=『谁依赖我』；跟随=沿边移动；整张网必须同时留在视野内当地图，否则跟随会迷失
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: 用户从任一对象出发，可连续跟随上游依赖/下游影响（≥2 跳），全程全图保持可见（非相关部分弱化但不消失），路径可回退；验收种子：关系跟随不丢失全局上下文
+open_questions: []

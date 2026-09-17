@@ -1,0 +1,80 @@
+{
+  "reviewer": "R2",
+  "package_id": "impl-15",
+  "session_id": "c6543cc6-0c83-4414-b102-2a3ed122359b",
+  "wall_clock_seconds": 172,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-15",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Brief is edit × single-document with success criterion '编辑不破坏结构'. Package is a block-based structured document editor: source/data.js defines exactly one document (18 blocks); source/app.js:267-306 implements structure diagnostics (level-skip, empty heading/list/paragraph detection with one-click fixes app.js:307-334); hierarchy facet covered via H2-H4 levels + outline (app.js:247-264), edit verb covered by insert/move/dup/delete/level/list-item ops (app.js:415-479). Screenshots 1280x860 and 1440x900 show editor+preview+outline matching the shape exactly."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "Default view is split (source/index.html:10 body data-view=\"split\"; screenshots show 分屏 segment active), with the structured editing pane dominant in the center and every visible block directly editable (contenteditable, app.js:132-134); editing hints 'Enter 新建块 · Tab 调层级 · Alt+↑↓ 移动' sit in the pane header (index.html:63). No competing primary surface."
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "Model-judged proxy: initial screen self-describes in one glance — topbar document title (index.html:22), three labeled pane headers 大纲/结构化编辑/实时预览 (index.html:51,62,70), health pill '结构完好' (index.html:24), and the first paragraph of the sample doc explains the left-edit/right-preview contract (source/data.js:5, visible in both screenshots). Status bar states scale: 共 18 块 · 5 个分区 · 445 字."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "The primary object (the document) is on screen and editable at load — zero steps; view modes are one click in a 3-button segmented control (index.html:26-30, styles.css:497-499 pure CSS toggles, no routes); outline items jump editor+preview in one click with scroll sync (app.js:733-736); block insertion is one click on the per-block ＋ with a type menu (app.js:484-501). No drill-down hierarchy exists at all."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "Editing never navigates away: typing updates the model and re-renders only preview/outline/diagnostics/stats while deliberately not re-rendering the editor to preserve the caret (app.js:617-639); structural ops re-render but restore focus/scroll to the affected block (app.js:410-414, 457); undo/redo keeps a 100-snapshot history (app.js:99-106); deletes/moves show an undo toast (app.js:438, 333); view switching is display-only (styles.css:497-499) and localStorage persistence degrades silently on file:// (app.js:124-129)."
+      },
+      "ui_surface_complexity": {
+        "score": 5,
+        "evidence": "Permanent chrome is lean: topbar ~9 controls + statusbar (index.html:13-44, 79-83); block op buttons (↑↓⧉✕＋, H−/H+) are hidden until hover/focus-within/selected (styles.css:274-285) and per-item list delete likewise (styles.css:336-343); the 10-type insert menu is on demand (app.js:484-501). Every permanent surface (outline, diagnostics, preview, sync chip) maps to a brief need — hierarchy facet and the editor↔preview consistency seed."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Receipt fails all three a11y checks (a11y.contrast=fail, a11y.focus_order=fail, a11y.target_size=fail) plus type.min_projected_size=fail. Source corroborates: tertiary text #9b9485 on light chrome (styles.css:14, used for pane heads/hints styles.css:167-179); op buttons 24x22px (styles.css:286-295) and 10-11px chips/labels (styles.css:263-271, 167-179); list-item delete is opacity:0 until hover with no :focus-visible reveal (styles.css:336-343). Counter-evidence keeping it above 1: aria-labels (index.html:22,33-36), :focus-visible outline (styles.css:43), role=list/listitem (index.html:65, app.js:172), prefers-reduced-motion (styles.css:504-506)."
+      },
+      "frontend_rework": {
+        "score": 3,
+        "evidence": "No visible layout defects: layout.overflow=pass, layout.responsive_collision=pass, text.truncation=pass, and both screenshots (1280x860, 1440x900) show clean identical layouts. But 4 of 7 receipt checks fail (a11y.contrast, a11y.focus_order, a11y.target_size, type.min_projected_size), implying rework on contrast ratios, focus management (full editor innerHTML rebuild on each structural op, app.js:198/410-414), hit-target sizes, and small type — non-trivial defect load even though the visual surface is polished."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed '结构化编辑与预览一致': editor and preview render from the single same document model (app.js:1-12 header comment; renderAll app.js:375-381; input handler updates model then re-renders preview in the same event app.js:618-639); sync chip '与编辑实时同步' pulses on every render (app.js:232-235, index.html:71); preview is bidirectionally clickable back to the editor (app.js:727-730); screenshots show editor and preview content matching verbatim at both viewports; exports advertise consistency with the preview (app.js:784,789). Supporting success criterion '编辑不破坏结构': live structure check with actionable fixes (app.js:267-364) surfaced in sidebar and health pill."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "a11y.contrast=fail (measurement-summary.json) — low-contrast tertiary ink #9b9485 on light chrome for pane heads, hints, marks (styles.css:14,167-179,335)",
+      "a11y.focus_order=fail — structural ops rebuild the entire editor DOM via innerHTML (app.js:198), only partially restoring focus afterwards (app.js:410-414)",
+      "a11y.target_size=fail — block op buttons 24x22px (styles.css:286-295), per-item delete ~11px glyph (styles.css:336-343)",
+      "type.min_projected_size=fail — 10-11.5px permanent text: type chips 10px (styles.css:263-271), pane headers 11px (styles.css:167-179), statusbar 11.5px (styles.css:451)",
+      "hover-only affordances: list-item delete buttons are opacity:0 until hover with no focus-visible reveal path (styles.css:336-343)"
+    ],
+    "missing_evidence": [],
+    "overall_note": "The package presents as a block-structured single-document editor whose representation matches the brief's edit × single-document cell almost point for point: one document in source/data.js, direct on-load editability with no navigation to the primary object, H2-H4 hierarchy with a derived outline, and — central to the acceptance seed — editor and preview rendered from one shared document model with same-event preview sync, bidirectional selection, and a live structure checker with one-click fixes that operationalizes 'editing does not break structure'. Both screenshots are visually clean at 1280x860 and 1440x900 (layout.overflow, responsive_collision, and text.truncation all pass), the permanent UI is lean via hover-revealed block operations, and initial comprehension is fast thanks to labeled panes, a health pill, and a self-explanatory sample document. The clear weakness is accessibility: the receipt fails all three a11y checks plus a minimum projected type-size check, consistent with source-level evidence of low-contrast tertiary text, sub-24px hit targets, 10-11px labels, DOM-rebuilding structural operations, and hover-only controls invisible to keyboard users. These imply rework concentrated in a11y/typography rather than layout, and the three human-facing dimensions (task completion time, retrieval accuracy, human preference) remain not observable in this blind pilot; model-judged scores here are not human preference."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 61457,
+      "outputTokens": 5895,
+      "cacheReadInputTokens": 237120,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.57322,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-09-17T15:11:30.056Z"
+}

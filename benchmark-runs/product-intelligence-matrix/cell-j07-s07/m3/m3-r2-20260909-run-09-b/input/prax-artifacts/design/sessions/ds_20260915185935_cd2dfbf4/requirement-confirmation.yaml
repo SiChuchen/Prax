@@ -1,0 +1,37 @@
+version: "0.1"
+user_quote:
+  - 动词：create；对象：空间对象；成功标准：落位即意图
+  - 判别：物理空间排布即意图，空间操作必须有键盘等价物。
+  - 验收种子：空间操作有键盘等价物
+  - 交付物必须能直接静态打开（根路径 index.html，或构建产物 dist/）
+  - 应用在页面加载完成时即处于可用状态（初始数据随首屏就绪，不得以加载态作为可测状态）
+restatement: Build from scratch a single-page static web app whose primary job is CREATE of spatial objects on a physical 2-D canvas workspace. Placement itself must carry meaning (where an object lands determines what it is/means), and every spatial operation (create/position/move/arrange/z-order/duplicate/delete/zone assignment/viewport) must have a keyboard equivalent. Many canvas objects, medium relation/density/dimensionality/volatility, low hierarchy/temporality/uncertainty, no comparison. Ships as root index.html usable instantly with inlined initial data; no backend, no accounts, no persistence service, no deployment.
+boundaries:
+  in_scope:
+    - 单页静态 Web 应用（根路径 index.html 直接打开可用）
+    - 物理 2-D 画布工作区，主对象 canvas_object，创建即核心动词
+    - 落位即意图：放置位置（区域归属/邻近聚集/网格对齐）决定对象含义
+    - 所有空间操作的键盘等价物（创建、移动、微调、区域分配、复制、删除、层级、视图）
+    - 首屏内联初始数据，无加载态
+    - 键盘等价物的可见文档（快捷键帮助层与工具栏提示）
+  out_of_scope:
+    - 后端服务、账号体系、持久化服务
+    - 部署到外部服务
+    - 多屏/多页面导航
+    - 移动端适配
+    - 多人协作
+  scope_complete: true
+open_questions:
+  - id: oq-1-zone-semantics
+    impact: low
+    affects:
+      - decide
+      - sdir
+confirmation:
+  status: requirement_is_sufficient
+  evidence:
+    - type: task_brief
+      ref: brief.md — cell-j07-s07 product brief (M2-frozen, 2026-09-03)
+    - type: task_brief
+      ref: brief.md §交付约束 / §预算上限 / §冻结纪律
+  confirmed_at: 2026-09-16T00:00:00Z

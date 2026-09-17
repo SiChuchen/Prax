@@ -1,0 +1,18 @@
+version: "0.1"
+realization_mode: direct_code
+conditions:
+  - id: defect_fix_fit
+    holds: false
+    basis: 本会话为 greenfield 从零构建，非缺陷修复
+  - id: visual_polish_fit
+    holds: true
+    basis: 单一主屏、标准文档编辑器版式、视觉不确定性低，可直接以代码+自定义设计令牌达成
+  - id: small_modification
+    holds: false
+    basis: greenfield 全量新建而非既有代码小改
+  - id: mature_design_system
+    holds: false
+    basis: 无既有设计系统，将随实现建立轻量令牌
+proposed_at: 2026-09-15T21:59:30.763Z
+overridden: true
+override_reason: direct_code 固定条件集预设的是「既有产品修改」语境，四项在本 greenfield 会话中大多不适用；本环境无任何设计工具提供方（figma/penpot/pen 均不可达），人工评审不可用；单一主屏 + 低视觉不确定性使 direct_code 为唯一可执行且充分的实现路径。

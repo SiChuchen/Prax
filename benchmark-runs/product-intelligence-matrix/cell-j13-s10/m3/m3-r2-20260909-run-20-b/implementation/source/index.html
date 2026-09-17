@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AURORA Exoplanet Catalog — Dimensional Explorer</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Prax SDIR region map (screen: data_explorer_screen) -->
+  <header id="region-header" role="banner" aria-label="Orientation strip">
+    <div class="brand">
+      <span class="brand-mark">◍</span>
+      <div>
+        <h1 id="dataset-name">AURORA Exoplanet Catalog</h1>
+        <span class="sub">Dimensional Explorer</span>
+      </div>
+    </div>
+    <div id="scope-summary" class="scope" role="status" aria-live="polite"></div>
+    <div class="global-actions" aria-label="Global revert controls">
+      <button id="btn-undo" class="btn" title="Undo last projection change">↶ Undo projection</button>
+      <button id="btn-reset-proj" class="btn" title="Reset projection to default slots">Reset projection</button>
+      <button id="btn-clear-filters" class="btn" title="Remove all filters">Clear filters</button>
+      <button id="btn-clear-selection" class="btn" title="Deselect all records">Clear selection</button>
+    </div>
+  </header>
+
+  <div id="layout">
+    <aside id="region-projection" aria-label="Encoding slots and dimension library">
+      <section class="rail-block" aria-label="Encoding slots">
+        <h2>Encoding slots</h2>
+        <div class="slot" data-slot="x"><label for="slot-x">X axis</label><select id="slot-x" class="slot-select"></select><button class="scale-t" data-axis="x" title="Toggle X scale linear/logarithmic" aria-pressed="false">lin</button></div>
+        <div class="slot" data-slot="y"><label for="slot-y">Y axis</label><select id="slot-y" class="slot-select"></select><button class="scale-t" data-axis="y" title="Toggle Y scale linear/logarithmic" aria-pressed="true">log</button></div>
+        <div class="slot" data-slot="color"><label for="slot-color">Color</label><select id="slot-color" class="slot-select"></select><span class="scale-t-spacer"></span></div>
+        <div class="slot" data-slot="size"><label for="slot-size">Size</label><select id="slot-size" class="slot-select"></select><span class="scale-t-spacer"></span></div>
+      </section>
+      <section id="dimension-library" class="rail-block" aria-label="Dimensions and filters"></section>
+    </aside>
+
+    <main id="region-data-wrap">
+      <div id="region-filters" aria-label="Active filters">
+        <span class="filters-title">Filters</span>
+        <div id="filter-chips" role="list"></div>
+      </div>
+      <div id="region-data" aria-label="Projected record field">
+        <canvas id="chart" aria-describedby="chart-desc"></canvas>
+        <p id="chart-desc" class="visually-hidden">Scatter plot of in-scope records. X and Y axes are the dimensions assigned in the encoding slots; color and size follow the color and size slots. Click a point to select; control-click to add to selection.</p>
+        <div id="legend"></div>
+        <div id="tooltip" role="tooltip" hidden></div>
+        <div id="chart-empty" class="state-note" hidden>No records match the active filters. Remove a filter chip to restore scope.</div>
+        <div id="chart-error" class="state-note error" hidden>Canvas is unavailable in this browser; record table and inspector remain usable.</div>
+      </div>
+    </main>
+
+    <aside id="right-column">
+      <section id="region-collection" aria-label="Record table">
+        <div class="col-head"><h2>Records</h2><span id="table-hint">Enter selects · ↑↓ move</span></div>
+        <div id="table-scroll"><table id="record-table" aria-label="In-scope records"></table></div>
+      </section>
+      <section id="region-inspector" aria-label="Inspector">
+        <div class="col-head"><h2>Inspector</h2><span id="inspector-anchor"></span></div>
+        <div id="region-detail">
+          <div id="inspector-empty" class="state-note">Select a record — in the field or the table — to inspect its full profile. The profile follows the record, not the current projection.</div>
+          <div id="inspector-body" hidden></div>
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <div id="test-report" hidden></div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

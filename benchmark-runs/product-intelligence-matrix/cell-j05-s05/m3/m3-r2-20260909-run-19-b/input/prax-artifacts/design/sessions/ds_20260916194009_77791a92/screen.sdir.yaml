@@ -1,0 +1,213 @@
+# SDIR 0.2 — persisted from design_sdir mode=validate (PASS, schema+semantic clean)
+# 同一文档曾两次通过 design_sdir validate 门；因 validate 模式不落盘，此处手工持久化
+# 以便 evaluate 门读取。loading 为保留契约位：数据内联同步初始化，实际不存在可见 loading
+# （简报禁止加载态作为可测状态）；empty=未聚焦引导态，selected=聚焦/选边态，
+# ready=初始默认聚焦态，error=hash 指向不存在对象。
+version: "0.2"
+representation:
+  primary:
+    type: graph
+    reason: "关系本身是内容：有向边+网络拓扑只有图能原生承载；全图常驻即全局上下文"
+  supporting:
+    - type: list
+      reason: "检查器中上游/下游邻居与关系明细列表，支持连续跟随"
+    - type: search_results
+      reason: "顶栏搜索即时定位节点"
+state_ownership:
+  - state: selection
+    owner: session
+  - state: preview
+    owner: workspace
+  - state: inspector
+    owner: inspector
+  - state: viewport
+    owner: workspace
+  - state: query
+    owner: controls
+  - state: mode
+    owner: url
+complexity_budget:
+  permanent_panels: 2
+  permanent_primary_actions: 3
+  modes: 1
+  state_owners: 3
+  navigation_levels: 1
+  persistent_filters: 1
+  new_semantic_concepts: 2
+  keyboard_contracts: 0
+  mobile_conflicts: 0
+  permanent_surfaces: 1
+acceptance:
+  - "从任一对象连续跟随上游依赖/下游影响 ≥2 跳，全程全图可见：非相关节点/边弱化但不移除，节点位置不移动"
+  - "跟随路径面包屑可回退任意一步；URL 刷新/分享后路径可复现"
+  - "页面加载完成即 ready：初始数据内联同步初始化，无加载态作为可测状态"
+  - "file:// 直开可用；本地无外部服务"
+  - "键盘可完成：搜索(/)→聚焦(Enter)→跟随(点击/列表)→回退(Backspace/Esc)"
+screen:
+  id: list_detail_inspector_screen
+  intent:
+    primary_task: "聚焦任一对象，跟随其上游依赖与下游影响（多跳），理解其在网络中的位置"
+    secondary_tasks:
+      - "搜索定位对象"
+      - "查看某条关系的类型/关键度/说明"
+      - "评估某对象变更的影响范围"
+      - "沿跟随路径回退到之前的对象"
+  archetype:
+    pattern_ref: PAT-LIST-DETAIL-INSPECTOR
+  density_intent: regular
+  representation:
+    primary:
+      type: graph
+      reason: "关系本身是内容：有向边+网络拓扑只有图能原生承载；全图常驻即全局上下文"
+    supporting:
+      - type: list
+        reason: "检查器中上游/下游邻居与关系明细列表，支持连续跟随"
+      - type: search_results
+        reason: "顶栏搜索即时定位节点"
+  user_job:
+    verb: understand
+    target: "关系结构（依赖与影响网络）"
+    success: "依赖与影响可跟随，且跟随过程中全局上下文（全图）始终可见"
+  primary_object:
+    type: relationship
+    label: "依赖关系（边）"
+  information_shape:
+    cardinality: many
+    relationality: high
+    hierarchy: medium
+    temporality: low
+    density: medium
+    dimensionality: medium
+    spatiality: none
+    volatility: medium
+    uncertainty: low
+    comparison_need: none
+  regions:
+    - id: workspace
+      role: "experimental:持久主对象空间（全图与高亮共存于同一画布）"
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - "experimental:全量节点+关系常驻渲染"
+        - "experimental:非选中内容弱化不移除"
+        - "experimental:节点位置不随跟随变化（orientation invariants）"
+        - "experimental:滚轮缩放/空白拖拽平移/双击复位"
+    - id: inspector
+      role: "experimental:选区绑定上下文检查器（节点/关系详情+可跟随邻居）"
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - "experimental:对象详情：类型/状态/负责人/描述"
+        - "experimental:影响半径统计（上游/下游 × 1跳/2跳/全链路）"
+        - "experimental:上游依赖列表与下游影响列表，项可点击跟随"
+        - "experimental:关系明细列表（边为一等对象）"
+        - "experimental:边选中时切换为关系详情视图"
+        - "experimental:空态引导与错误态提示"
+    - id: follow_trail
+      role: "experimental:跟随路径面包屑与全局上下文指示"
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent:
+        - "experimental:跟随序列 chip 化，点击回退"
+        - "experimental:回退/清除快捷操作"
+        - "experimental:上下文计数徽标：全图 N 对象均可见·高亮 X·弱化 Y"
+    - id: controls
+      role: "experimental:搜索定位 + 深度切换 + 关系类型过滤"
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent:
+        - "experimental:搜索下拉键盘可达（↑↓/Enter/Esc）"
+        - "experimental:深度分段选择（1/2/0 快捷键）"
+        - "experimental:类型 chip 关闭对应边并参与跟随遍历"
+    - id: legend
+      role: "experimental:图例与方向语义说明"
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent:
+        - "experimental:对象类型色样"
+        - "experimental:边类型样式"
+        - "experimental:方向语义说明：A→B = A 依赖 B"
+        - "experimental:弱化=保留在上下文中的提示"
+  relationships: []
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+    - "experimental:inspect_on_select"
+    - "experimental:follow_on_click"
+    - "experimental:locate_by_search"
+    - "experimental:hover_preview"
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: "平台适配器如何在保持层级的前提下实现语义区域？"
+      adapter_may_choose:
+        - "原生 SVG vs 图形库"
+        - "贝塞尔 vs 直线连线"
+        - "拖拽/缩放实现方式"
+    - id: follow_defaults
+      question: "跟随的默认参数如何取值？"
+      adapter_may_choose:
+        - "默认聚焦节点选择"
+        - "1跳/2跳/全链路的默认档位"
+        - "弱化不透明度数值"
+  unresolved: []
+  rejected_alternatives:
+    - option: "弹窗式详情"
+      reason: "打断跟随，丢失全图上下文"
+    - option: "双画布（全图+局部放大）"
+      reason: "同一信息两处呈现易失同步，regular 密度下单画布足够"
+    - option: "表格主表示"
+      reason: "关系无空间承载体，多跳跟随上下文易丢"
+  interaction:
+    preview: hover
+    inspect: select
+    navigate: drill
+    locate: search
+  priority:
+    primary:
+      - workspace
+      - inspector
+    contextual:
+      - follow_trail
+      - controls
+      - legend
+  state_ownership:
+    - state: selection
+      owner: session
+    - state: preview
+      owner: workspace
+    - state: inspector
+      owner: inspector
+    - state: viewport
+      owner: workspace
+    - state: query
+      owner: controls
+    - state: mode
+      owner: url
+  complexity_budget:
+    permanent_panels: 2
+    permanent_primary_actions: 3
+    modes: 1
+    state_owners: 3
+    navigation_levels: 1
+    persistent_filters: 1
+    new_semantic_concepts: 2
+    keyboard_contracts: 0
+    mobile_conflicts: 0
+    permanent_surfaces: 1
+  acceptance:
+    - "从任一对象连续跟随上游依赖/下游影响 ≥2 跳，全程全图可见：非相关节点/边弱化但不移除，节点位置不移动"
+    - "跟随路径面包屑可回退任意一步；URL 刷新/分享后路径可复现"
+    - "页面加载完成即 ready：初始数据内联同步初始化，无加载态作为可测状态"
+    - "file:// 直开可用；本地无外部服务"
+    - "键盘可完成：搜索(/)→聚焦(Enter)→跟随(点击/列表)→回退(Backspace/Esc)"

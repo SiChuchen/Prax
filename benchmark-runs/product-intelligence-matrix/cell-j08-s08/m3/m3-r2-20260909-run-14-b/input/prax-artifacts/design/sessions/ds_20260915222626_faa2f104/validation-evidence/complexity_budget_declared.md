@@ -1,0 +1,1 @@
+Receipt: design_sdir validate response sdir.screen.complexity_budget = {permanent_panels:4, permanent_primary_actions:6, modes:1, state_owners:3, navigation_levels:1, persistent_filters:0, new_semantic_concepts:2, keyboard_contracts:4, mobile_conflicts:0, permanent_surfaces:4}.

@@ -1,0 +1,31 @@
+receipt: MEAS-KB-001
+check_id: keyboard
+outcome: pass
+kind: empirical
+method: in-page selftest — runSelfTest() dispatches KeyboardEvent("keydown") on document and asserts resulting application state
+environment: Microsoft Edge headless (--headless=new, Chromium), page opened statically via file:// (no server)
+collected_at: 2026-09-16T00:40:00Z
+command: >-
+  msedge --headless=new --allow-file-access-from-files --disable-gpu --hide-scrollbars
+  --no-first-run --user-data-dir=%TEMP%\edge-hl-j06c --window-size=1680,1050
+  --screenshot=evidence\01-initial.png --virtual-time-budget=5000
+  "file:///E:/codex-prj/ab-worktrees/pi-matrix-r2/cell-j06-s06-b/index.html?probe=1&selftest=1"
+steps:
+  - ArrowRight dispatched -> selectedId advanced c16 -> c17 (chronologically next change set)
+  - ArrowLeft dispatched -> selectedId returned to c16
+  - Escape dispatched -> selectedId = null, detail panel rendered empty state
+observed_output: >-
+  SELFTEST PASS 13 checks :: PASS forward_only_links | PASS state@incident_gateway_status |
+  PASS state@before_incident_gateway_status | PASS state@c18_gateway_replicas |
+  PASS state@end_gateway_breaker(add_op) | PASS state@end_one_click_buy |
+  PASS state@q2_start_dedup | PASS state@after_c02_dedup |
+  PASS detail_before_same_fold_source | PASS nodes_rendered | PASS edges_rendered |
+  PASS keyboard_right_then_left | PASS keyboard_escape_empty_state
+keyboard_checks:
+  - id: keyboard_right_then_left
+    result: pass
+  - id: keyboard_escape_empty_state
+    result: pass
+artifacts:
+  - evidence/01-initial.png
+  - evidence/selftest-run.md

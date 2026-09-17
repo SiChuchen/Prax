@@ -1,0 +1,117 @@
+session_id: ds_20260916185454_ef8edb3d
+version: "0.2"
+information_shape:
+  cardinality: unbounded
+  relationality: low
+  hierarchy: medium
+  temporality: low
+  density: medium
+  dimensionality: medium
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: list
+    reason: Locate over an unbounded weakly-related collection is a narrowing task; a count-labeled, grouped searchable list is the fastest scannable surface
+  supporting:
+    - type: form
+      reason: Filter rail is a small bounded form region composing with search
+    - type: cards
+      reason: Item detail panel is a compact card document for the selected item
+  rejected:
+    - option: graph
+      reason: relationality is low — no relationship structure to render
+    - option: tree
+      reason: hierarchy is medium (sections only); a tree would add a navigation level to the locate path
+    - option: table
+      reason: comparison_need is none; a table wastes width needed for the adjacent detail panel
+    - option: grid (cards)
+      reason: optimizes visual browsing, not 3-interaction target lookup
+  justification_vs_shape: Unbounded cardinality + low relationality → the UI must be a narrowing funnel over a flat-but-sectioned list, not a structure visualization. Search primary; list rows carry medium density; adjacent detail bound to selection keeps context per P-19.
+primary_structure:
+  pattern: PAT-LIST-DETAIL
+  rationale:
+    - "Router returned PAT-LIST-DETAIL (List Detail) as a high-confidence candidate; inspected at L2 (pattern contract: keep selection list and current detail visible together)"
+    - Collection browsing dominates, so PAT-LIST-DETAIL is chosen over its listed alternative PAT-LIST-DETAIL-INSPECTOR; the inspector idea is folded in as a selection-bound side panel composing on top (H-19, P-19 Preserve Context, H-21 Orientation Invariants)
+    - "Single workspace: PAT-APPLICATION-SHELL explicitly does not apply (does_not_apply_when: the product is a single workspace)"
+    - "H-22 Overview-Filter-Detail layers the locate path: search entry → facet narrowing → detail on demand"
+    - "P-26 Visibility of System Status: live result counts make the remaining search space explicit at every interaction"
+    - "Anti-patterns avoided: detail-without-visible-selection, inspector-as-unrelated-sidebar"
+  confidence: high
+information_hierarchy:
+  primary:
+    - Search entry (task-first, top of work region)
+    - Active-filter context bar (chips + live counts)
+    - Grouped, count-labeled results list (dominant)
+    - Adjacent item detail panel (selection-bound)
+  secondary:
+    - Collection totals in the header
+    - Keyboard affordance hint (/ focuses search)
+    - Empty and zero-result states with clear-next-step guidance
+density:
+  intent: regular
+  strategy:
+    - "Scannable list rows: name, id chip, one-line metadata, section grouping headers"
+    - Single-line filter rail with visible counts per option
+    - Detail panel as a quiet side region, visually secondary to the results
+    - Generous but not airy spacing; no decorative chrome
+  avoid:
+    - modal dialogs for item detail (hides the results context)
+    - separate detail routes (breaks orientation invariants)
+    - persistent global nav chrome (single workspace)
+    - pagination that discards scroll and filter context
+major_choices:
+  - id: domain-instantiation
+    choice: "Concrete instantiation: an open natural-history collection portal (~2,000 specimens) — unbounded, weakly related, medium hierarchy via discipline sections"
+    rationale: Faithful to the open-collection shape bundle; realistic locate workload at meaningful scale
+    confidence: high
+    references:
+      - item
+      - result_set
+  - id: side-panel-detail
+    choice: Detail opens in an adjacent side panel bound to explicit selection (Contextual Inspector composition on top of List Detail), never a route change or modal
+    rationale: "Directly implements the acceptance seed: inspecting an item never discards query, filters, counts or scroll position"
+    confidence: high
+    references:
+      - item
+      - facet
+      - result_set
+      - query
+  - id: composable-search-filter
+    choice: Search composes with facet filters; facet options show live counts; active filters persist as removable chips
+    rationale: "The 3-interaction budget is met by: type query (1), optionally click one facet (2), click target row (3) — each step visibly shrinking a count-labeled space"
+    confidence: high
+    references:
+      - query
+      - facet
+      - result_set
+  - id: incremental-render
+    choice: "Rendering scales to the unbounded shape: grouped list with incremental 'show more' expansion per section, full-set counts always visible"
+    rationale: Keeps DOM light on unbounded collections without hiding the size of the remaining search space
+    confidence: medium
+    references:
+      - result_set
+      - item
+rejected:
+  - option: PAT-APPLICATION-SHELL (persistent global nav)
+    reason: Single-workspace product; pattern contract says it does not apply — persistent chrome would waste locate-path space
+  - option: Tree navigation (expand/collapse hierarchy)
+    reason: Hierarchy is only medium (section grouping); a tree adds a navigation level and hurts the 3-interaction budget
+  - option: Card grid
+    reason: Medium density with a locate verb favors scannable rows; grid optimizes visual browsing over target lookup
+  - option: Modal detail overlay
+    reason: "Obscures the results list — violates context preservation (P-19 anti-pattern: detail-without-visible-selection)"
+unresolved: []
+complexity_budget:
+  permanent_panels: 3
+  permanent_primary_actions: 1
+  modes: 0
+  state_owners: 1
+  navigation_levels: 1
+  persistent_filters: 3
+  new_semantic_concepts: 2
+  keyboard_contracts: 1
+  mobile_conflicts: 0
+  permanent_surfaces: 1

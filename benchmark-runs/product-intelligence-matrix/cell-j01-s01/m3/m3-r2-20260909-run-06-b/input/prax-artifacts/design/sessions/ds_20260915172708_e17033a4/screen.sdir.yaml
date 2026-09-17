@@ -1,0 +1,184 @@
+version: "0.2"
+screen:
+  id: entity_registry_console
+  intent:
+    primary_task: 在层级分组树中显式批量选择实体并执行批量操作（状态变更/移动归属/删除），零误伤
+    secondary_tasks:
+      - 搜索定位实体
+      - 展开/折叠核对归属
+      - 核对影响预览与回执
+      - 撤销上一次批量操作
+  archetype:
+    pattern_ref: PAT-LIST-DETAIL-INSPECTOR
+  density_intent: compact
+  regions:
+    - id: toolbar
+      role: experimental:persistent_command_bar
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:scope_indicator_visible
+        - experimental:selection_count_visible
+        - experimental:actions_enabled_only_with_selection
+    - id: tree_table
+      role: dominant_workspace
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:hierarchy_as_structure
+        - experimental:group_rows_collapsible
+        - experimental:row_checkbox_explicit
+        - experimental:group_checkbox_visible_scope_only
+        - experimental:status_badge_and_path_per_row
+    - id: selection_inspector
+      role: experimental:contextual_inspector
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:reflects_current_selection
+        - experimental:ledger_grouped_by_path
+        - experimental:per_item_remove
+        - experimental:selection_stats
+    - id: batch_preview_modal
+      role: experimental:confirmation_modal
+      importance: supporting
+      visibility:
+        condition: task_driven
+      behavior_intent:
+        - experimental:grouped_by_path
+        - experimental:affected_count_per_group
+        - experimental:explicit_confirm
+        - experimental:cancel_preserves_selection
+    - id: receipt
+      role: experimental:execution_receipt
+      importance: supporting
+      visibility:
+        condition: task_driven
+      behavior_intent:
+        - experimental:affected_count
+        - experimental:changed_items_listed
+        - experimental:one_click_undo
+    - id: status_bar
+      role: experimental:orientation_footer
+      importance: contextual
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:totals_visible
+        - experimental:last_operation_visible
+        - experimental:undo_entry
+  relationships: []
+  interaction_intents:
+    - experimental:explicit_selection_only
+    - experimental:visible_scope_selection
+    - experimental:batch_preview_before_execute
+    - experimental:receipt_with_undo
+    - experimental:preserve_context
+    - experimental:keyboard_range_select
+  required_states:
+    - ready
+    - empty
+    - selected
+    - error
+    - loading
+  decision_points:
+    - id: dp_tree_realization
+      question: 树表用何种可访问组件实现（treegrid 语义 vs 缩进列表）？
+      adapter_may_choose:
+        - ARIA treegrid
+        - nested list + grid rows
+        - table with indentation column
+    - id: dp_preview_layout
+      question: 影响预览模态的分组清单布局与默认展开层级？
+      adapter_may_choose:
+        - sheet with grouped list
+        - two-pane confirm
+        - summary + expandable detail
+    - id: dp_receipt_presentation
+      question: 执行回执的呈现位置与撤销入口形式？
+      adapter_may_choose:
+        - toast + footer log
+        - dedicated receipt bar
+        - inline banner
+  unresolved: []
+  rejected_alternatives:
+    - option: 级联勾选全部后代
+      reason: 误伤来源：折叠实体不可见却被操作
+    - option: 画布/图表示
+      reason: 信息天然表格化，空间性 none
+    - option: 无预览直接执行
+      reason: 误选无法在执行前被发现
+  user_job:
+    verb: manage
+    target: 层级分组下的大规模结构化实体集合
+    success: 批量操作无误完成：影响范围与选择集完全一致，状态归属始终显式
+  primary_object:
+    type: entity
+    label: 实体（结构化记录）
+  information_shape:
+    cardinality: many
+    relationality: medium
+    hierarchy: high
+    temporality: low
+    density: high
+    dimensionality: medium
+    spatiality: none
+    volatility: medium
+    uncertainty: low
+    comparison_need: none
+  representation:
+    primary:
+      type: tree
+      reason: 层级性 high：分组树结构与实体密集行合一，归属即结构；支持分组折叠与逐行显式勾选
+    supporting:
+      - type: table
+        reason: 实体行为密集记录行：状态徽标、编码、归属路径等列属性对齐扫描
+      - type: list
+        reason: 检查器中按归属路径分组的选择集清单，核对批量操作作用域
+  priority:
+    primary:
+      - tree_table
+      - selection_inspector
+      - toolbar
+      - receipt
+    contextual:
+      - status_bar
+  interaction:
+    preview: none
+    inspect: select
+    navigate: drill
+    locate: filter
+  state_ownership:
+    - state: selection
+      owner: session
+    - state: query
+      owner: toolbar
+    - state: viewport
+      owner: tree_table
+    - state: inspector
+      owner: selection_inspector
+    - state: preview
+      owner: batch_preview_modal
+  complexity_budget:
+    permanent_panels: 3
+    permanent_primary_actions: 4
+    modes: 0
+    state_owners: 4
+    navigation_levels: 1
+    persistent_filters: 2
+    new_semantic_concepts: 2
+    keyboard_contracts: 2
+    mobile_conflicts: 0
+    permanent_surfaces: 1
+  acceptance:
+    - A1 批量操作仅作用于显式选择集：执行后受影响实体集合与选择集完全一致
+    - A2 折叠子分组内的实体不因勾选父分组或“全选”而进入选择集（可见即作用域）
+    - A3 被筛选/搜索隐藏的实体不会被全选纳入，作用域计数明示「可见 N / 总计 M」
+    - A4 每个实体行常驻显示状态徽标与完整归属路径，状态归属显式
+    - A5 批量操作执行前展示按归属路径分组的影响预览，需显式确认
+    - A6 执行后回执显示「已影响 N 项」，支持一键撤销恢复原状态
+    - A7 首屏即用：初始数据内联，页面加载完成即为 ready，无加载态作为可测状态
+    - A8 搜索与状态筛选持久可见，工具栏常驻显示当前作用域与选择计数

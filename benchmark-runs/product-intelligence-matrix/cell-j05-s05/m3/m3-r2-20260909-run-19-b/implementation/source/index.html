@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>星链 · 依赖全景 — 关系跟随不丢失全局上下文</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header id="topbar">
+    <div class="brand">
+      <span class="brand-mark">◈</span>
+      <span class="brand-name">星链 · 依赖全景</span>
+      <span id="globalStats" class="brand-stats"></span>
+    </div>
+    <div class="search" id="searchBox">
+      <input id="searchInput" type="text" placeholder="搜索对象（按 / 聚焦）" autocomplete="off"
+             aria-label="搜索对象" role="combobox" aria-expanded="false" aria-controls="searchDrop">
+      <div id="searchDrop" class="search-drop" role="listbox"></div>
+    </div>
+    <div class="seg" role="group" aria-label="跟随深度">
+      <button class="seg-btn" data-depth="1">1 跳</button>
+      <button class="seg-btn" data-depth="2">2 跳</button>
+      <button class="seg-btn" data-depth="a">全链路</button>
+    </div>
+    <div class="chips" id="typeChips" role="group" aria-label="关系类型过滤"></div>
+  </header>
+
+  <main>
+    <section id="canvasWrap" aria-label="全图关系网络（常驻）">
+      <svg id="graph" viewBox="0 0 1200 840" preserveAspectRatio="xMidYMid meet" role="img"
+           aria-label="数据平台依赖关系网络图：全部对象与关系常驻可见，聚焦时非相关内容弱化保留">
+        <defs>
+          <marker id="arr-base" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#4a567e"/></marker>
+          <marker id="arr-crit" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7c8bbd"/></marker>
+          <marker id="arr-dim"  viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#232b45"/></marker>
+          <marker id="arr-up"   viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7"   markerHeight="7"   orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fd2ff"/></marker>
+          <marker id="arr-down" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7"   markerHeight="7"   orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#ffb054"/></marker>
+          <marker id="arr-sel"  viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8"   markerHeight="8"   orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#ffd166"/></marker>
+        </defs>
+        <g id="view">
+          <g id="edges"></g>
+          <g id="nodes"></g>
+          <g id="elabels"></g>
+        </g>
+      </svg>
+
+      <div id="trailBar">
+        <div id="trailChips" class="trail-chips" aria-label="跟随路径面包屑"></div>
+        <div id="ctxBadge" class="ctx-badge" title="非相关对象以弱化方式保留在全图中——跟随不丢失全局上下文"></div>
+      </div>
+
+      <div id="legend" aria-label="图例">
+        <div class="legend-title">图例 · <b>A → B 表示 A 依赖 B</b></div>
+        <div id="legendNodes" class="legend-row"></div>
+        <div id="legendEdges" class="legend-row"></div>
+        <div class="legend-note">跟随高亮：<span class="lg-up">上游依赖</span> / <span class="lg-down">下游影响</span> · 弱化 = 保留在上下文中</div>
+      </div>
+    </section>
+
+    <aside id="inspector" aria-label="检查器（当前选中对象/关系）"></aside>
+  </main>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

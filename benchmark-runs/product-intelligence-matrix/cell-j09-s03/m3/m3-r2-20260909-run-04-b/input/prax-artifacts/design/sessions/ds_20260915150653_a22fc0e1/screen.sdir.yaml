@@ -1,0 +1,143 @@
+version: "0.2"
+screen:
+  id: data_explorer_screen
+  intent:
+    primary_task: 在区位图与比较面板同屏的情况下，逐条标准比较 4 个候选选址，识别各标准优胜者并敲定最终选择
+    secondary_tasks:
+      - 按自己的侧重调整标准权重，观察领先者变化
+      - 排除明确不合格的候选，聚焦剩余候选
+  archetype:
+    pattern_ref: PAT-DATA-EXPLORER
+  density_intent: compact
+  regions:
+    - id: data table（比较矩阵，obj-comparison-panel 主工作面）：一行一标准、一列一候选的并排对齐，优胜格即时高亮；候选 collection 以列集合呈现，decide 的工作即在此面完成
+      role: experimental:data table（比较矩阵，obj-comparison-panel 主工作面）：一行一标准、一列一候选的并排对齐，优胜格即时高亮；候选 collection 以列集合呈现，decide 的工作即在此面完成
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 区位图 obj-site-map：候选点+参照物的地理语境，与矩阵同屏驻留（P-19 Preserve Context）
+      role: experimental:区位图 obj-site-map：候选点+参照物的地理语境，与矩阵同屏驻留（P-19 Preserve Context）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 每条标准的权重滑杆与加权总分
+      role: experimental:每条标准的权重滑杆与加权总分
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 决定栏 obj-decision：领先者与最终选择的明确回显
+      role: experimental:决定栏 obj-decision：领先者与最终选择的明确回显
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: data
+      role: collection
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - comparison_group
+        - filter_then_inspect
+    - id: detail
+      role: contextual_inspector
+      importance: contextual
+      visibility:
+        condition: selection_driven
+      behavior_intent:
+        - selection_driven
+  relationships:
+    - id: region_rel_data_detail
+      source: data
+      target: detail
+      type: selection_drives_contextual_detail
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved: []
+  rejected_alternatives:
+    - option: PAT-CANVAS-WORKSPACE 以地图为主画布
+      reason: spatiality=none，比较而非空间关系是任务主体；地图降级为共驻语境区
+    - option: PAT-LIST-DETAIL 单候选详情
+      reason: 任务是横跨 few 个候选的并排比较，单详情视图会打断比较状态
+    - option: 卡片网格逐候选排列
+      reason: "PAT-DATA-EXPLORER 明示 anti_patterns: card-grid-for-dense-comparison；属性无法按行对齐"
+    - option: 外部地图瓦片服务（Leaflet/OSM）
+      reason: 交付约束：本地静态运行、无外部服务
+    - option: 弹层/抽屉放决定输入
+      reason: 成功标准『决策输入同屏可得』被弹层直接破坏
+  user_job:
+    verb: decide
+    target: 位置敏感的选项（候选选址）
+    success: 决策输入同屏可得：地理语境与决策项（比较面板）同屏，比较状态驻留不丢失，用户能当场指认每个候选在哪、强在哪、弱在哪、最终选了哪个。
+  primary_object:
+    type: location
+    label: 候选选址（location）
+  information_shape:
+    cardinality: few
+    relationality: medium
+    hierarchy: low
+    temporality: low
+    density: high
+    dimensionality: medium
+    spatiality: none
+    volatility: medium
+    uncertainty: low
+    comparison_need: required
+  representation:
+    primary:
+      type: table
+      reason: 一行一标准、一列一候选的表格对齐是 comparison required 的最优承载（PAT-DATA-EXPLORER）
+    supporting:
+      - type: map
+        reason: 内联 SVG 区位图承载地理语境（验收种子：地理语境与决策项同屏）
+      - type: chart
+        reason: 表头区加权总分条形微图，让权重调整的后果即时可见
+  priority:
+    primary:
+      - data table（比较矩阵，obj-comparison-panel 主工作面）：一行一标准、一列一候选的并排对齐，优胜格即时高亮；候选 collection 以列集合呈现，decide 的工作即在此面完成
+      - 区位图 obj-site-map：候选点+参照物的地理语境，与矩阵同屏驻留（P-19 Preserve Context）
+      - data
+    contextual:
+      - 每条标准的权重滑杆与加权总分
+      - 决定栏 obj-decision：领先者与最终选择的明确回显
+      - detail
+  interaction:
+    preview: none
+    inspect: select
+    navigate: none
+    locate: none
+  state_ownership:
+    - state: selection
+      owner: data table（比较矩阵，obj-comparison-panel 主工作面）：一行一标准、一列一候选的并排对齐，优胜格即时高亮；候选 collection 以列集合呈现，decide 的工作即在此面完成
+    - state: preview
+      owner: session
+  complexity_budget:
+    permanent_panels: 2
+    permanent_primary_actions: 3
+    modes: 0
+    state_owners: 3
+    navigation_levels: 1
+    persistent_filters: 0
+    new_semantic_concepts: 2
+    keyboard_contracts: 1
+    mobile_conflicts: 0
+    permanent_surfaces: 3
+  acceptance:
+    - 页面加载即同屏呈现区位图与 4 个候选选址的高密度并排比较面板；用户无需翻页或切屏即可完成比较并宣布决定；地图与表格选中状态互认，且每条决策输入（指标、权重、优胜标注、最终选择）在比较推进全程保持同屏。

@@ -1,0 +1,75 @@
+needs:
+  - id: N1
+    product_action: 顺序门禁放行：仅当前步可放行，未来步锁定，已到达步只读回看
+    required_experience:
+      - 检查项与证据驱动的按钮门禁
+      - 步骤锁定与只读回看
+    capabilities:
+      - check/evidence 校验
+      - "状态机: locked/ready/done/deviation"
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端状态机：数组顺序即流程顺序，门禁由检查项勾选+证据填写派生，无需后端
+  - id: N2
+    product_action: 不可逆步骤确认仪式：后果明示+承诺复选+确认词输入
+    required_experience:
+      - 模态内强制逐项校验
+      - 确认词精确匹配
+    capabilities:
+      - 模态三要素校验：后果复选+确认词精确匹配
+      - 恢复路径同屏展示
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 静态数据中内联每步的 consequence/confirm_keyword/recovery_path，模态为纯 DOM 实现
+  - id: N3
+    product_action: 恢复路径呈现与触发：不可逆步骤的恢复路径先于执行可见，触发即记录偏差并回退
+    required_experience:
+      - 常驻可见的恢复面板
+      - 触发恢复记入偏差并回退状态
+    capabilities:
+      - 恢复面板
+      - 偏差事件流
+      - 回退状态迁移
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 不可逆步骤工作区常驻恢复面板；触发后回退到检查点步骤并写入 deviation_log（内存）
+  - id: N4
+    product_action: 决策门与安全中止：条件分支选择或以中止安全结束流程
+    required_experience:
+      - 分支显式选择并落盘决策依据
+      - 中止需确认并生成中止报告
+    capabilities:
+      - 分支选择
+      - 中止确认
+      - 决策落盘
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 决策步以单选+理由字段实现，分支只影响提示文案不改流程骨架（基数 one）
+  - id: N5
+    product_action: 偏差与证据审计：全程事件时间线与零偏差判定
+    required_experience:
+      - 事件时间线（放行/确认/恢复/中止）
+      - 完成态零偏差判定报告
+    capabilities:
+      - 事件时间线
+      - 完成报告渲染
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 内存事件数组渲染时间线；完成报告由状态派生，无需持久化
+  - id: N6
+    product_action: 首屏即用：页面加载完成即处于就绪态
+    required_experience:
+      - Runbook 定义随首屏内联
+      - 无 loading 可测状态
+    capabilities:
+      - 数据内联
+      - 同步渲染
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 全内联 data.js 同步渲染，无网络请求、无骨架屏

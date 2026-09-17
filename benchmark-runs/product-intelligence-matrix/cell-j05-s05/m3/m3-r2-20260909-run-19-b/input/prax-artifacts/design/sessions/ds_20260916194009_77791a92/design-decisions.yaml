@@ -1,0 +1,118 @@
+session_id: ds_20260916194009_77791a92
+information_shape:
+  cardinality: many
+  relationality: high
+  hierarchy: medium
+  temporality: low
+  density: medium
+  dimensionality: medium
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: graph
+    reason: 关系本身是内容：有向边+网络拓扑只有图能原生承载；全图常驻即全局上下文
+  supporting:
+    - type: list
+      reason: 检查器中上游/下游邻居与关系明细列表，支持连续跟随与对比
+    - type: search_results
+      reason: 顶栏搜索即时定位节点
+  rejected:
+    - option: tree（层级树）
+      reason: 层级仅中等且多父依赖会被树割裂，双向跟随变差
+    - option: table
+      reason: 关系无空间承载体，多跳跟随上下文易丢
+  justification_vs_shape: many×high relationality 的形状束下，graph 是唯一让关系成为一等内容且跟随时不丢全局上下文的表示；层级（中）由节点分组图例与布局纵向倾向承载，密度（中）由弱化非相关元素控制
+primary_structure:
+  pattern: PAT-LIST-DETAIL-INSPECTOR
+  rationale:
+    - 路由返回的三模式中最贴合：选区绑定检查器（Contextual Inspector）保上下文
+    - 与 PAT-WORKSPACE 组合：画布是持久主对象空间，跟随只在图上重高亮，不换屏
+    - Orientation Invariants：节点位置/视野固定，只有高亮与检查器随选择变化
+    - Overview-Filter-Detail：全图=概览，深度/类型过滤=narrow，检查器=detail
+    - Task-first Entry：默认聚焦影响面最大的核心节点，首屏即展示跟随任务
+  confidence: high
+information_hierarchy:
+  primary:
+    - 全图关系网络（地图层，常驻可见）
+    - 当前聚焦对象及其上游/下游邻居（高亮层）
+    - 检查器：当前选中对象或关系的详情与可跟随邻居
+  secondary:
+    - 跟随路径面包屑
+    - 搜索与关系类型过滤控件
+    - 图例与全局统计
+density:
+  intent: regular
+  strategy:
+    - 图区占主导，非相关内容弱化不隐藏
+    - 检查器单列分区：概览/上游依赖/下游影响/关系明细
+    - 控件收纳在顶栏一行
+    - 图例与全局统计常驻角落
+  avoid:
+    - 多面板并排
+    - 弹窗打断跟随
+    - 加载态/骨架屏
+major_choices:
+  - id: choice-dataset
+    choice: 自选题材：电商数据平台血缘（~24 节点/~40 关系），源/表/管道/服务/指标/看板六类对象
+    rationale: 贴近 data_exploration 域惯例（上游=数据来源，下游=消费方），让 node 与 relationship 两类产品对象都有真实内容
+    confidence: medium
+    references:
+      - node
+      - relationship
+  - id: choice-follow-semantics
+    choice: 边方向=依赖方向（依赖方→被依赖方）：上游=我依赖谁，下游=谁依赖我；支持 1跳/2跳/全链路高亮
+    rationale: 统一方向语义使『依赖』与『影响』成为同一网络的两个跟随方向；跟随路径面包屑记录连续跟随序列
+    confidence: medium
+    references:
+      - relationship
+      - focus_trail
+  - id: choice-context
+    choice: 跟随时全图保留：非相关节点/边降低不透明度但不移除；节点位置在跟随过程中保持不动
+    rationale: 直接落实验收种子『关系跟随不丢失全局上下文』：节点位置是稳定锚点，弱化保留结构上下文
+    confidence: medium
+    references:
+      - node
+      - focus_trail
+  - id: choice-relationship-first
+    choice: 关系（边）为一等对象：可点击查看类型/关键度/说明，两端可跳转继续跟随
+    rationale: brief 判别『关系本身是内容』，检查器需能检查 relationship 而不只是 node
+    confidence: medium
+    references:
+      - relationship
+      - node
+  - id: choice-tech
+    choice: 纯静态原生 JS + SVG，无构建，数据内联 data.js，file:// 直开
+    rationale: 满足静态交付/首屏即用约束；~24 node 规模无需图库，regular 密度由结构化布局承载
+    confidence: medium
+    references:
+      - node
+  - id: choice-hash-state
+    choice: URL hash 承载聚焦与跟随路径，面包屑可回退
+    rationale: 跟随路径可复现/可分享（也便于验收证据截图），focus_trail 面包屑与浏览器返回一致
+    confidence: medium
+    references:
+      - focus_trail
+rejected:
+  - option: table（表格+行展开）
+    reason: 关系没有空间承载体，多跳跟随需反复滚动，全局上下文易丢失
+  - option: timeline
+    reason: 时间性低，不匹配
+  - option: tree（层级树）
+    reason: 层级仅中等且节点有多父依赖，树会割裂影响/依赖的双向跟随
+  - option: 弹窗式详情（modal）
+    reason: 打断跟随，丢失全图上下文
+unresolved: []
+complexity_budget:
+  permanent_panels: 2
+  permanent_primary_actions: 3
+  modes: 1
+  state_owners: 3
+  navigation_levels: 1
+  persistent_filters: 1
+  new_semantic_concepts: 2
+  keyboard_contracts: 0
+  mobile_conflicts: 0
+  permanent_surfaces: 1

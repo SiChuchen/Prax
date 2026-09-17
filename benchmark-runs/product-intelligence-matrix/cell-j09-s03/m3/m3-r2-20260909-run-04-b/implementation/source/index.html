@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>选址决定台 · 江州办公选址比较</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%2334495e'/%3E%3Ccircle cx='6' cy='6' r='2.4' fill='%23e8b93e'/%3E%3Ccircle cx='11' cy='10' r='2.4' fill='%23589bd1'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#f4f6f8; --panel:#ffffff; --ink:#22303e; --ink-2:#5b6b7b; --ink-3:#8a99a8;
+    --line:#e2e7ec; --line-2:#eef1f4; --accent:#34495e; --focus:#2b6cb8;
+    --leader-bg:#fdf6e3; --leader-ink:#8a6d1a;
+    --row-h:31px;
+    --cA:#3568b8; --cB:#c26b1f; --cC:#2f7d54; --cD:#7c4fa8;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    font-family:"Segoe UI","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+    font-size:13px; color:var(--ink); background:var(--bg);
+    display:flex; flex-direction:column; overflow:hidden;
+  }
+  button{font:inherit; cursor:pointer; border:1px solid var(--line); background:#fff; color:var(--ink-2);
+    border-radius:4px; padding:2px 8px; line-height:1.5;}
+  button:hover{border-color:#b9c4cf; color:var(--ink);}
+  button:focus-visible, input:focus-visible, [tabindex]:focus-visible{
+    outline:2px solid var(--focus); outline-offset:1px;}
+  input[type=range]{accent-color:#5a7186; height:14px;}
+
+  /* ---------- 顶栏：任务 + 决定栏（驻留） ---------- */
+  .topbar{
+    flex:0 0 auto; display:flex; align-items:center; gap:16px;
+    background:var(--accent); color:#fff; padding:7px 14px;
+  }
+  .brand{display:flex; align-items:baseline; gap:10px; white-space:nowrap;}
+  .brand h1{font-size:16px; font-weight:600; letter-spacing:.5px;}
+  .brand .sub{font-size:12px; color:#b9c6d2;}
+  .taskline{font-size:12px; color:#cdd8e2; flex:1 1 auto; min-width:0; overflow:hidden;
+    text-overflow:ellipsis; white-space:nowrap;}
+  .decisionbar{
+    flex:0 0 auto; display:flex; align-items:center; gap:10px;
+    background:#2b3d4f; border:1px solid #46596c; border-radius:6px; padding:4px 10px;
+    font-size:12px; white-space:nowrap;
+  }
+  .decisionbar .lead-label{color:#9fb1c1;}
+  .decisionbar .lead-name{font-weight:600; color:#ffd97a;}
+  .decisionbar .lead-score{color:#e8eef3; font-variant-numeric:tabular-nums;}
+  .decisionbar .decided-name{font-weight:700; color:#7be0a2;}
+  .decisionbar .empty-note{color:#ffb3a6;}
+  .decisionbar button{background:#3d5266; border-color:#5a7086; color:#e8eef3; font-size:12px;}
+  .decisionbar button:hover{background:#4a6178;}
+  .decisionbar .time{color:#9fb1c1; font-variant-numeric:tabular-nums;}
+  .error-banner{
+    display:none; background:#fdecea; color:#a1362a; border:1px solid #f2b8b5;
+    padding:6px 14px; font-size:12px;
+  }
+  .error-banner.show{display:block;}
+  body[data-app-state="error"] .workbench{display:none;}
+
+  /* ---------- 主工作区：区位图 + 比较矩阵 同屏 ---------- */
+  .workbench{
+    flex:1 1 auto; min-height:0;
+    display:grid; grid-template-columns:minmax(380px,34%) 1fr;
+  }
+  .panel-head{
+    flex:0 0 auto; display:flex; align-items:center; gap:8px;
+    padding:6px 12px; font-size:12px; color:var(--ink-2);
+    background:#fafbfc; border-bottom:1px solid var(--line);
+  }
+  .panel-head b{color:var(--ink); font-size:13px;}
+  .panel-head .hint{margin-left:auto; color:var(--ink-3);}
+
+  /* 区位图面板 */
+  .map-panel{display:flex; flex-direction:column; min-width:0; background:var(--panel); border-right:1px solid var(--line);}
+  .map-wrap{flex:1 1 auto; min-height:0; padding:4px 6px 0;}
+  .map-wrap svg{width:100%; height:100%; display:block;}
+  .map-foot{
+    flex:0 0 auto; display:flex; flex-wrap:wrap; gap:6px 12px; align-items:center;
+    padding:5px 12px; font-size:11px; color:var(--ink-3); border-top:1px solid var(--line-2);
+  }
+  .map-foot .lg{display:inline-flex; align-items:center; gap:4px;}
+  .map-foot .sw{width:10px; height:10px; border-radius:2px; display:inline-block;}
+
+  /* SVG 地图内部 */
+  .pin{cursor:pointer;}
+  #mapWrap .pin:focus{outline:none;} /* 键盘聚焦态由 :focus-visible 的虚线光环承担 */
+  #mapWrap .pin:focus-visible .pin-halo{opacity:1; stroke:#2b6cb8;}
+  .pin .pin-dot{transition:r .12s;}
+  .pin.preview .pin-halo,.pin.selected .pin-halo{opacity:1;}
+  .pin-halo{opacity:0; transition:opacity .12s;}
+  .pin.committed .commit-mark{opacity:1;}
+  .commit-mark{opacity:0; transition:opacity .12s;}
+  .pin.dim .pin-g{opacity:.35; filter:grayscale(.9);}
+
+  /* 比较矩阵面板 */
+  .matrix-panel{display:flex; flex-direction:column; min-width:0; background:var(--panel);}
+  .matrix-scroll{flex:1 1 auto; overflow:auto; min-height:0;}
+  table.matrix{border-collapse:separate; border-spacing:0; width:100%; table-layout:fixed;}
+  .matrix col.c-crit{width:196px;}
+  .matrix thead th{
+    position:sticky; top:0; z-index:3; background:#f2f5f8;
+    border-bottom:1px solid var(--line);
+  }
+  .matrix th, .matrix td{
+    border-bottom:1px solid var(--line-2); border-right:1px solid var(--line-2);
+    padding:4px 8px; text-align:center; height:var(--row-h);
+    font-variant-numeric:tabular-nums;
+  }
+  .matrix td{font-size:13px; color:var(--ink); background:#fff; position:relative;}
+  .matrix thead .c-crit{z-index:4;}
+  .crit-head{ text-align:left !important; font-weight:600; font-size:12px; color:var(--ink-2);}
+  .crit-head .n{color:var(--ink-3); font-weight:400;}
+
+  /* 候选列头 */
+  .site-head{padding:6px 8px 5px; vertical-align:top; min-width:118px;}
+  .site-head .row1{display:flex; align-items:center; gap:6px; justify-content:center;}
+  .site-head .dot{width:9px; height:9px; border-radius:50%; background:var(--c); flex:0 0 auto;}
+  .site-head .sel-btn{
+    border:none; background:none; padding:0; font-size:13px; font-weight:700; color:var(--ink);
+    text-decoration:none; border-bottom:1px dashed transparent;
+  }
+  .site-head .sel-btn:hover{border-bottom-color:var(--c); color:var(--c);}
+  .site-head .addr{font-size:10.5px; color:var(--ink-3); margin-top:1px; font-weight:400;}
+  .site-head .total-row{display:flex; align-items:center; gap:6px; margin-top:4px; justify-content:center;}
+  .site-head .total-num{font-size:12px; font-weight:700; color:var(--ink); min-width:34px; text-align:right;}
+  .scorebar{flex:1 1 auto; height:6px; background:#e8edf2; border-radius:3px; overflow:hidden; max-width:96px;}
+  .scorebar i{display:block; height:100%; background:var(--c); border-radius:3px;}
+  .lead-chip{font-size:10px; background:var(--leader-bg); color:var(--leader-ink);
+    border:1px solid #eadfb2; border-radius:8px; padding:0 5px; line-height:14px;}
+  .site-head .act-row{display:flex; gap:4px; margin-top:5px; justify-content:center;}
+  .site-head .act-row button{font-size:11px; padding:1px 7px;}
+  .site-head .act-row .commit{color:#1e6b41; border-color:#bcd9c8;}
+  .site-head .act-row .commit:hover{background:#eef7f1;}
+  .site-head .act-row .commit[disabled]{color:#9fb3a8; border-color:#d5e2da; cursor:default; background:#f4f8f6;}
+  .site-head .decided-badge{display:none; font-size:11px; color:#1e6b41; font-weight:700; margin-top:5px;}
+  .site-head.is-decided .decided-badge{display:block;}
+  .site-head.is-decided .act-row .commit{display:none;}
+
+  /* 分组行 / 标准行头（含权重滑杆） */
+  tr.group th{
+    text-align:left; background:#e9eef3; color:var(--ink-2); font-size:11.5px; font-weight:600;
+    letter-spacing:1px; padding:2px 8px; height:22px; border-bottom:1px solid var(--line);
+  }
+  th.crit{
+    text-align:left !important; background:#fbfcfd; font-weight:500; font-size:12px; color:var(--ink);
+  }
+  th.crit .crit-name{display:flex; align-items:baseline; gap:4px; white-space:nowrap;}
+  th.crit .unit{color:var(--ink-3); font-size:10.5px; font-weight:400;}
+  th.crit .dir{color:var(--ink-3); font-size:10px; border:1px solid var(--line); border-radius:6px; padding:0 4px; line-height:13px;}
+  th.crit .wrow{display:flex; align-items:center; gap:5px; margin-top:2px;}
+  th.crit .wrow input{width:88px;}
+  th.crit .wval{font-size:10.5px; color:var(--ink-2); min-width:38px; font-variant-numeric:tabular-nums;}
+
+  /* 优胜 / 选中 / 预览 / 排除 单元格状态 */
+  .matrix td.win{
+    background:color-mix(in srgb, var(--c) 9%, #ffffff);
+    box-shadow:inset 3px 0 0 var(--c);
+    font-weight:700;
+  }
+  .matrix td.win::after{
+    content:"优"; position:absolute; top:1px; right:2px; font-size:9px; line-height:1;
+    color:#fff; background:var(--c); border-radius:2px; padding:1.5px 2.5px; font-weight:400;
+  }
+  .matrix td.preview{background:#f2f7fc;}
+  .matrix th.preview{background:#eaf2fa;}
+  .matrix .site-head.selected{box-shadow:inset 0 0 0 2px var(--c);}
+  .matrix td.selected{background:color-mix(in srgb, var(--c) 5%, #ffffff);}
+  .matrix td.off, .matrix th.off .crit-inner, .site-head.off .row1, .site-head.off .total-row{
+    opacity:.38; filter:grayscale(.85);
+  }
+  .site-head.off{background:#f5f5f6;}
+  .site-head .act-row .restore{display:none; color:#8a5a00;}
+  .site-head.off .act-row .restore{display:inline-block;}
+  .site-head.off .act-row .exclude{display:none;}
+  .matrix td .detail{display:block; font-size:9.5px; color:var(--ink-3); font-weight:400; line-height:1.2;}
+
+  /* 底部状态条 */
+  .statusbar{
+    flex:0 0 auto; display:flex; align-items:center; gap:14px;
+    border-top:1px solid var(--line); background:#fafbfc;
+    padding:3px 14px; font-size:11.5px; color:var(--ink-3); white-space:nowrap; overflow:hidden;
+  }
+  .statusbar .msg{color:var(--ink-2); font-weight:500;}
+  .statusbar .spacer{flex:1;}
+</style>
+</head>
+<body data-app-state="ready">
+
+  <div class="error-banner" id="errorBanner" role="alert"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <h1>选址决定台</h1>
+      <span class="sub">江州市 · 40 人团队办公选址 · 4 个候选</span>
+    </div>
+    <div class="taskline">任务：对照区位图与比较矩阵逐标准权衡，敲定最终选址 —— 全部决策输入保持同屏</div>
+    <div class="decisionbar" id="decisionBar" aria-live="polite">
+      <!-- 由脚本渲染：领先者 / 敲定回显 / 空态 -->
+    </div>
+  </header>
+
+  <main class="workbench">
+    <!-- 区位图：地理语境（验收种子：地理语境与决策项同屏） -->
+    <section class="map-panel" aria-label="区位图：候选选址的地理语境">
+      <div class="panel-head"><b>区位图</b><span>地理语境 · 示意拓扑，非等比尺</span>
+        <span class="hint">悬停 / 点击候选点，与右侧矩阵联动</span></div>
+      <div class="map-wrap" id="mapWrap"></div>
+      <div class="map-foot" id="mapFoot"></div>
+    </section>
+
+    <!-- 比较矩阵：主工作面（一行一标准 · 一列一候选） -->
+    <section class="matrix-panel" aria-label="比较矩阵：一行一标准，一列一候选">
+      <div class="panel-head"><b>比较矩阵</b><span>14 项标准 · 权重可调，优胜即时标注</span>
+        <span class="hint">点击候选名锁定选中 · ←/→ 切换</span></div>
+      <div class="matrix-scroll">
+        <table class="matrix" id="matrix">
+          <colgroup><col class="c-crit"><span></span></colgroup>
+          <thead id="matrixHead"></thead>
+          <tbody id="matrixBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="statusbar">
+    <span class="msg" id="statusMsg">就绪：4 个候选参与比较，权重为预设侧重。</span>
+    <span class="spacer"></span>
+    <span>数据为内联示例（虚构城市），刷新后回到未决态</span>
+    <span>悬停/点击 地图 ↔ 矩阵 联动 · ←/→ 切换选中</span>
+  </footer>
+
+<script>
+"use strict";
+/* ============================================================
+   数据：内联于首屏，页面解析完成即为 ready，无任何加载态
+   ============================================================ */
+const CANDIDATES = [
+  { id:"A", name:"创客大厦", addr:"锦业路 88 号", color:"var(--cA)", x:600, y:480,
+    metro:"锦业站", metroM:850 },
+  { id:"B", name:"云顶中心", addr:"高新大道 12 号", color:"var(--cB)", x:470, y:400,
+    metro:"高新站", metroM:120 },
+  { id:"C", name:"绿洲广场", addr:"软件新城 3 期 7 号楼", color:"var(--cC)", x:300, y:760,
+    metro:"软件园站", metroM:400 },
+  { id:"D", name:"恒裕大厦", addr:"老城 · 漕河沿 45 号", color:"var(--cD)", x:200, y:860,
+    metro:"老城站", metroM:600 },
+];
+
+const ORD9  = {1:"一般", 2:"良", 3:"优"};
+const ORD11 = {3:"优 · 可签 5 年", 2:"良 · 可签 3 年", 1:"一般 · 业主拟出售"};
+const ORD12 = {3:"优 · 园区安静", 2:"良 · 写字楼园区", 1:"一般 · 临街/夜市"};
+
+const GROUPS = [
+  { id:"cost",   name:"成本" },
+  { id:"commute",name:"通勤" },
+  { id:"space",  name:"场地" },
+  { id:"risk",   name:"风险" },
+];
+
+const CRITERIA = [
+  // group, id, 名称, 单位, dir(-1 越低越好 / +1 越高越好), 默认权重, 值, 展示映射
+  { g:"cost", id:"rent",   name:"月租金", unit:"元/㎡·天", dir:-1, w:4,   v:{A:2.6, B:4.8, C:3.6, D:2.9} },
+  { g:"cost", id:"mgmt",   name:"物业费", unit:"元/㎡·月", dir:-1, w:2,   v:{A:18,  B:32,  C:24,  D:15} },
+  { g:"cost", id:"subsidy",name:"免租期与装补（折算）", unit:"万元", dir:1, w:1.5, v:{A:12, B:2, C:6, D:9} },
+  { g:"commute", id:"metro", name:"最近地铁口", unit:"m",   dir:-1, w:3,   v:{A:850, B:120, C:400, D:600} },
+  { g:"commute", id:"team",  name:"团队重心通勤中位", unit:"min", dir:-1, w:4, v:{A:38, B:22, C:18, D:31} },
+  { g:"commute", id:"client",name:"客户总部车程", unit:"min",   dir:-1, w:3,   v:{A:25, B:12, C:28, D:40} },
+  { g:"space", id:"area",  name:"建筑面积", unit:"㎡",   dir:1,  w:2.5, v:{A:780, B:520, C:650, D:900} },
+  { g:"space", id:"eff",   name:"得房率", unit:"%",     dir:1,  w:1.5, v:{A:62,  B:55,  C:70,  D:58} },
+  { g:"space", id:"light", name:"采光与楼层", unit:"评级", dir:1, w:1.5, v:{A:2, B:2, C:3, D:1}, fmt:ORD9 },
+  { g:"space", id:"expand",name:"可扩容工位", unit:"席", dir:1,  w:1.5, v:{A:40,  B:0,   C:25,  D:60} },
+  { g:"risk",  id:"lease", name:"租期稳定性", unit:"评级", dir:1,  w:2.5, v:{A:3, B:2, C:3, D:1}, fmt:ORD11 },
+  { g:"risk",  id:"noise", name:"噪声与环境", unit:"评级", dir:1,  w:2,   v:{A:1, B:2, C:3, D:1}, fmt:ORD12 },
+  { g:"risk",  id:"rival", name:"同楼竞品公司", unit:"家", dir:-1, w:1,   v:{A:2, B:0, C:1, D:3} },
+  { g:"risk",  id:"lunch", name:"午餐便利", unit:"评分 1–5", dir:1, w:1.5, v:{A:3, B:4, C:3, D:5} },
+];
+
+/* ============================================================
+   状态（单源）：selection / preview / 权重 / 排除 / 决定
+   ============================================================ */
+const DEFAULT_W = Object.fromEntries(CRITERIA.map(c => [c.id, c.w]));
+const state = {
+  selected: null,      // 锁定选中（地图 ↔ 矩阵互认）
+  preview:  null,      // 悬停预览
+  excluded: new Set(), // 排除的候选
+  committed: null,     // 已敲定的候选
+  committedAt: null,
+  weights: { ...DEFAULT_W },
+};
+
+const activeIds = () => CANDIDATES.map(c => c.id).filter(id => !state.excluded.has(id));
+const candById  = id => CANDIDATES.find(c => c.id === id);
+
+/* ---------- 计算：行内优胜 + 加权总分（考虑权重方向） ---------- */
+function normalize(crit, id, actives){
+  const vals = actives.map(a => crit.v[a]);
+  const best  = crit.dir === 1 ? Math.max(...vals) : Math.min(...vals);
+  const worst = crit.dir === 1 ? Math.min(...vals) : Math.max(...vals);
+  if (best === worst) return 100;
+  return ((crit.v[id] - worst) / (best - worst)) * 100;
+}
+function rowWinners(crit, actives){
+  const norms = actives.map(a => ({ id:a, n: normalize(crit, a, actives) }));
+  const max = Math.max(...norms.map(x => x.n));
+  return norms.filter(x => x.n >= max - 1e-9).map(x => x.id);
+}
+function totals(){
+  const actives = activeIds();
+  const out = {};
+  for (const id of CANDIDATES.map(c => c.id)){
+    if (!actives.includes(id)) { out[id] = null; continue; }
+    let sum = 0, wsum = 0;
+    for (const crit of CRITERIA){
+      const w = state.weights[crit.id] || 0;
+      if (w <= 0) continue;
+      sum  += w * normalize(crit, id, actives);
+      wsum += w;
+    }
+    out[id] = wsum > 0 ? sum / wsum : 0;
+  }
+  return out;
+}
+function leader(){
+  const t = totals(), actives = activeIds();
+  if (!actives.length) return null;
+  return actives.reduce((b, a) => (t[a] > t[b] ? a : b), actives[0]);
+}
+
+/* ---------- 状态完整性自检（防御性 error 态；正常路径不触发） ---------- */
+function bootValidate(){
+  const errs = [];
+  if (CANDIDATES.length !== 4) errs.push("候选数量应为 4");
+  const ids = CANDIDATES.map(c => c.id);
+  if (new Set(ids).size !== ids.length) errs.push("候选 id 重复");
+  for (const c of CRITERIA){
+    for (const id of ids) if (typeof c.v[id] !== "number") errs.push(`标准 ${c.id} 缺少候选 ${id} 的数值`);
+    if (![1,-1].includes(c.dir)) errs.push(`标准 ${c.id} 方向非法`);
+  }
+  return errs;
+}
+
+/* ============================================================
+   渲染：区位图（内联 SVG，无外部瓦片服务）
+   ============================================================ */
+function renderMap(){
+  // 每个候选到最近地铁站的虚线锚点坐标
+  const stations = { "锦业站":[645,378], "高新站":[426,444], "软件园站":[416,707], "老城站":[89,649] };
+  for (const c of CANDIDATES){ const s = stations[c.metro]; c.mx = s[0]; c.my = s[1]; }
+  const pins = CANDIDATES.map(c => `
+    <g class="pin" data-id="${c.id}" tabindex="0" role="button"
+       aria-label="候选 ${c.id} ${c.name}，${c.addr}，距 ${c.metro} ${c.metroM} 米">
+      <line class="metro-link" x1="${c.x}" y1="${c.y}" x2="${c.mx}" y2="${c.my}"
+            stroke="${c.color}" stroke-width="1.2" stroke-dasharray="2 3" opacity=".55"/>
+      <text class="metro-m" x="${(c.x+c.mx)/2}" y="${(c.y+c.my)/2 - 4}" font-size="11"
+            fill="#6b7a89" text-anchor="middle">${c.metroM}m</text>
+      <circle class="pin-halo" cx="${c.x}" cy="${c.y}" r="21" fill="none"
+              stroke="${c.color}" stroke-width="1.6" stroke-dasharray="3 3"/>
+      <circle class="pin-dot" cx="${c.x}" cy="${c.y}" r="14" fill="${c.color}"
+              stroke="#fff" stroke-width="2.5"/>
+      <text x="${c.x}" y="${c.y + 5.5}" font-size="15" font-weight="700" fill="#fff"
+            text-anchor="middle" style="pointer-events:none">${c.id}</text>
+      <text x="${c.x}" y="${c.y + 34}" font-size="13.5" font-weight="600" fill="#3a4a59"
+            text-anchor="middle" style="pointer-events:none">${c.name}</text>
+      <g class="commit-mark" style="pointer-events:none">
+        <path d="M ${c.x+13} ${c.y-30} h 30 v 13 h -30 l -8 -6.5 z" fill="#1e6b41"/>
+        <text x="${c.x+27}" y="${c.y-20}" font-size="10.5" fill="#fff" text-anchor="middle">已选定</text>
+      </g>
+    </g>`).join("");
+
+  document.getElementById("mapWrap").innerHTML = `
+  <svg viewBox="0 0 800 1250" role="img" aria-label="江州市示意区位图：漕河、地铁 1/3 号线、团队重心、客户总部、高铁站与 A–D 四个候选点">
+    <rect x="0" y="0" width="800" height="1250" fill="#f7f9fa"/>
+    <!-- 街区底纹 -->
+    <g fill="#edf0f3">
+      <rect x="470" y="170" width="170" height="90" rx="6"/>
+      <rect x="540" y="470" width="170" height="120" rx="6"/>
+      <rect x="80"  y="740" width="150" height="100" rx="6"/>
+      <rect x="70"  y="870" width="150" height="80" rx="6"/>
+      <rect x="240" y="960" width="180" height="90" rx="6"/>
+      <rect x="620" y="620" width="120" height="80" rx="6"/>
+    </g>
+    <g font-size="11.5" fill="#9aa8b5">
+      <text x="500" y="222">会展片区</text>
+      <text x="590" y="536">高新园区</text>
+      <text x="108" y="796">老城</text>
+      <text x="268" y="1012">软件新城</text>
+      <text x="650" y="664">锦业路</text>
+    </g>
+    <!-- 漕河 -->
+    <path d="M -20 240 C 240 300 330 520 365 760 C 390 980 540 1160 830 1130"
+          fill="none" stroke="#d3e2ee" stroke-width="36" stroke-linecap="round"/>
+    <text x="345" y="610" font-size="14" fill="#7d9cb5" transform="rotate(80 345 610)">漕 河</text>
+    <!-- 通勤圈（直线示意） -->
+    <g fill="none" stroke="#b9c4cf" stroke-dasharray="5 5">
+      <circle cx="300" cy="560" r="130"/>
+      <circle cx="300" cy="560" r="260"/>
+    </g>
+    <text x="300" y="422" font-size="11" fill="#93a1af" text-anchor="middle">≈15min 通勤圈</text>
+    <text x="300" y="292" font-size="11" fill="#93a1af" text-anchor="middle">≈30min 通勤圈</text>
+    <!-- 地铁 M1 / M3 -->
+    <path d="M -10 640 C 120 680 260 600 380 480 C 430 428 560 380 810 355"
+          fill="none" stroke="#c94f42" stroke-width="5" stroke-linecap="round"/>
+    <path d="M 470 40 C 448 120 436 300 428 444 C 420 590 412 800 405 1040"
+          fill="none" stroke="#3a76c4" stroke-width="5" stroke-linecap="round"/>
+    <g font-size="11" font-weight="700">
+      <rect x="14" y="606" width="34" height="16" rx="3" fill="#c94f42"/><text x="31" y="618" fill="#fff" text-anchor="middle">M1</text>
+      <rect x="476" y="44" width="34" height="16" rx="3" fill="#3a76c4"/><text x="493" y="56" fill="#fff" text-anchor="middle">M3</text>
+    </g>
+    <!-- 地铁站 -->
+    <g>
+      <rect x="84" y="644" width="9" height="9" fill="#fff" stroke="#8a6a66" transform="rotate(45 88.5 648.5)"/>
+      <text x="76" y="638" font-size="11.5" fill="#5b6b7b">老城站</text>
+      <circle cx="426" cy="444" r="7" fill="#fff" stroke="#555f6b" stroke-width="2.5"/>
+      <text x="414" y="432" font-size="11.5" font-weight="700" fill="#3a4a59" text-anchor="end">高新站 M1/M3</text>
+      <rect x="640" y="373" width="9" height="9" fill="#fff" stroke="#8a6a66" transform="rotate(45 644.5 377.5)"/>
+      <text x="638" y="367" font-size="11.5" fill="#5b6b7b" text-anchor="end">锦业站</text>
+      <rect x="443" y="170" width="9" height="9" fill="#fff" stroke="#4a668c" transform="rotate(45 447.5 174.5)"/>
+      <text x="460" y="166" font-size="11.5" fill="#5b6b7b">会展中心站</text>
+      <rect x="411" y="702" width="9" height="9" fill="#fff" stroke="#4a668c" transform="rotate(45 415.5 706.5)"/>
+      <text x="430" y="712" font-size="11.5" fill="#5b6b7b">软件园站</text>
+    </g>
+    <!-- 参照物 -->
+    <g>
+      <rect x="77" y="138" width="46" height="26" rx="3" fill="#5b6b7b"/>
+      <rect x="85" y="130" width="30" height="8" fill="#5b6b7b"/>
+      <text x="100" y="156" font-size="11" fill="#fff" text-anchor="middle">高铁</text>
+      <text x="100" y="186" font-size="12" font-weight="600" fill="#3a4a59" text-anchor="middle">江州高铁站</text>
+
+      <circle cx="300" cy="560" r="9" fill="#34495e" stroke="#fff" stroke-width="2.5"/>
+      <circle cx="300" cy="560" r="3" fill="#ffd97a"/>
+      <text x="300" y="592" font-size="12.5" font-weight="700" fill="#2b3d4f" text-anchor="middle">现办公室 · 团队重心</text>
+
+      <path d="M 622 156 l 0 -16 l 28 4 l -28 4 Z" fill="#8a6d1a"/>
+      <rect x="620" y="156" width="3.5" height="20" fill="#8a6d1a"/>
+      <text x="634" y="196" font-size="12.5" font-weight="600" fill="#3a4a59" text-anchor="middle">最大客户 · 总部</text>
+    </g>
+    ${pins}
+  </svg>`;
+
+  document.getElementById("mapFoot").innerHTML = `
+    <span class="lg"><span class="sw" style="background:#c94f42"></span>地铁 M1</span>
+    <span class="lg"><span class="sw" style="background:#3a76c4"></span>地铁 M3</span>
+    <span class="lg"><span class="sw" style="background:#34495e"></span>团队重心（通勤圈为直线示意）</span>
+    <span class="lg"><span class="sw" style="background:#8a6d1a"></span>最大客户总部</span>
+    <span class="lg">虚线 = 候选到最近地铁口的步行距离</span>`;
+}
+
+/* ============================================================
+   渲染：比较矩阵（thead 候选列头 + 分组标准行）
+   ============================================================ */
+function renderMatrixHead(){
+  const t = totals(), ld = leader();
+  const head = CANDIDATES.map(c => {
+    const off = state.excluded.has(c.id);
+    const total = t[c.id];
+    const isLead = ld === c.id && !state.committed;
+    const isDecided = state.committed === c.id;
+    return `
+    <th class="site-head ${off ? "off" : ""} ${state.selected === c.id ? "selected" : ""} ${isDecided ? "is-decided" : ""}"
+        data-id="${c.id}" style="--c:${c.color}" scope="col">
+      <div class="row1">
+        <span class="dot"></span>
+        <button class="sel-btn" data-id="${c.id}" title="选中候选 ${c.id}（地图联动）">${c.id} · ${c.name}</button>
+      </div>
+      <div class="addr">${c.addr}</div>
+      <div class="total-row">
+        <span class="scorebar"><i style="width:${total == null ? 0 : Math.max(4, total)}%"></i></span>
+        <span class="total-num">${total == null ? "—" : total.toFixed(1)}</span>
+        ${isLead ? '<span class="lead-chip">领先</span>' : ""}
+      </div>
+      <div class="act-row">
+        <button class="commit" data-id="${c.id}" ${off ? "disabled" : ""}>敲定此处</button>
+        <button class="exclude" data-id="${c.id}">排除</button>
+        <button class="restore" data-id="${c.id}">恢复</button>
+      </div>
+      <div class="decided-badge">✓ 已选定（决定）</div>
+    </th>`;
+  }).join("");
+
+  document.getElementById("matrixHead").innerHTML = `
+    <tr>
+      <th class="crit-head" scope="col">比较标准<span class="n">（14 项 · 权重 0–5）</span></th>
+      ${head}
+    </tr>`;
+}
+
+function cellHTML(crit, c){
+  const fmt = crit.fmt;
+  if (fmt) {
+    const label = fmt[crit.v[c.id]] || crit.v[c.id];
+    return `${label}<span class="detail">档位 ${crit.v[c.id]}/3</span>`;
+  }
+  const v = crit.v[c.id];
+  const s = Number.isInteger(v) ? String(v) : v.toFixed(1);
+  return s;
+}
+
+function renderMatrixBody(){
+  const rows = [];
+  for (const g of GROUPS){
+    const crits = CRITERIA.filter(c => c.g === g.id);
+    rows.push(`<tr class="group"><th colspan="5" scope="colgroup">${g.name} · ${crits.length} 项</th></tr>`);
+    for (const crit of crits){
+      const actives = activeIds();
+      const winners = actives.length ? rowWinners(crit, actives) : [];
+      const w = state.weights[crit.id];
+      const cells = CANDIDATES.map(c => {
+        const cls = [
+          "cell",
+          state.excluded.has(c.id) ? "off" : "",
+          winners.includes(c.id) ? "win" : "",
+          state.preview === c.id ? "preview" : "",
+          state.selected === c.id ? "selected" : "",
+        ].filter(Boolean).join(" ");
+        return `<td class="${cls}" data-id="${c.id}" data-crit="${crit.id}" style="--c:${c.color}"
+                     headers="${c.id}">${cellHTML(crit, c)}</td>`;
+      }).join("");
+      rows.push(`
+        <tr>
+          <th class="crit" scope="row">
+            <div class="crit-inner">
+              <div class="crit-name">${crit.name}<span class="unit">${crit.unit}</span>
+                <span class="dir">${crit.dir === 1 ? "↑ 越高越好" : "↓ 越低越好"}</span></div>
+              <div class="wrow">
+                <input type="range" min="0" max="5" step="0.5" value="${w}" data-crit="${crit.id}"
+                       aria-label="标准「${crit.name}」的权重，当前 ${w}">
+                <span class="wval">权重 ${w}</span>
+              </div>
+            </div>
+          </th>
+          ${cells}
+        </tr>`);
+    }
+  }
+  document.getElementById("matrixBody").innerHTML = rows.join("");
+}
+
+/* ---------- 决定栏（顶部驻留） ---------- */
+function renderDecisionBar(){
+  const bar = document.getElementById("decisionBar");
+  const actives = activeIds();
+  if (!actives.length){
+    bar.innerHTML = `<span class="empty-note">未决：参与比较的候选为 0（已全部排除），请至少恢复一个候选</span>`;
+    return;
+  }
+  if (state.committed){
+    const c = candById(state.committed);
+    bar.innerHTML = `
+      <span class="lead-label">已决定</span>
+      <span class="decided-name">${c.id} · ${c.name}</span>
+      <span class="time">${state.committedAt}</span>
+      <button id="resetBtn">重新比较</button>`;
+    return;
+  }
+  const ld = leader(), t = totals();
+  if (!ld){ bar.innerHTML = `<span class="lead-label">未决</span>`; return; }
+  const lc = candById(ld);
+  bar.innerHTML = `
+    <span class="lead-label">当前领先</span>
+    <span class="lead-name">${lc.id} · ${lc.name}</span>
+    <span class="lead-score">${t[ld].toFixed(1)} 分</span>
+    <span class="lead-label">· 尚未敲定，可在列头“敲定此处”落定</span>`;
+}
+
+/* ---------- 全量刷新（保持状态驻留，不产生任何加载态） ---------- */
+function renderAll(){
+  renderMatrixHead();
+  renderMatrixBody();
+  renderDecisionBar();
+  // 地图状态类
+  document.querySelectorAll("#mapWrap .pin").forEach(p => {
+    const id = p.dataset.id;
+    p.classList.toggle("selected", state.selected === id);
+    p.classList.toggle("preview",  state.preview === id && state.selected !== id);
+    p.classList.toggle("committed", state.committed === id);
+    p.classList.toggle("dim",      state.excluded.has(id));
+  });
+}
+
+function setStatus(msg){ document.getElementById("statusMsg").textContent = msg; }
+
+/* ============================================================
+   事件：选中联动 / 权重 / 排除 / 敲定 / 键盘
+   ============================================================ */
+function setSelected(id, via){
+  state.selected = id;
+  renderAll();
+  if (id){ const c = candById(id); setStatus(`已选中候选 ${id} · ${c.name}（${via === "map" ? "区位图" : "矩阵"}联动）`); }
+  else setStatus("已取消选中");
+}
+
+function wireEvents(){
+  const mapWrap = document.getElementById("mapWrap");
+  // 地图：悬停预览 / 点击锁定 / 键盘
+  mapWrap.addEventListener("pointerover", e => {
+    const p = e.target.closest(".pin"); if (!p) return;
+    state.preview = p.dataset.id;
+    document.querySelectorAll("#matrixBody td, #matrixHead th").forEach(el =>
+      el.classList.toggle("preview", el.dataset.id === state.preview));
+  });
+  mapWrap.addEventListener("pointerout", e => {
+    if (!e.target.closest(".pin")) return;
+    state.preview = null;
+    document.querySelectorAll(".preview").forEach(el => el.classList.remove("preview"));
+  });
+  mapWrap.addEventListener("click", e => {
+    const p = e.target.closest(".pin"); if (!p) return;
+    setSelected(state.selected === p.dataset.id ? null : p.dataset.id, "map");
+  });
+  mapWrap.addEventListener("keydown", e => {
+    const p = e.target.closest(".pin"); if (!p) return;
+    if (e.key === "Enter" || e.key === " "){ e.preventDefault(); setSelected(p.dataset.id, "map"); }
+  });
+
+  // 矩阵：列头选中 / 行悬停预览 / 排除 / 敲定 / 权重
+  const matrix = document.getElementById("matrix");
+  matrix.addEventListener("click", e => {
+    const btn = e.target.closest("button");
+    if (btn){
+      const id = btn.dataset.id;
+      if (btn.classList.contains("sel-btn")){ setSelected(state.selected === id ? null : id, "matrix"); return; }
+      if (btn.classList.contains("exclude")){
+        state.excluded.add(id);
+        if (state.selected === id) state.selected = null;
+        if (state.committed === id) state.committed = null;
+        renderAll();
+        setStatus(`已排除候选 ${id} · ${candById(id).name}，退出优胜与总分计算`);
+        return;
+      }
+      if (btn.classList.contains("restore")){
+        state.excluded.delete(id); renderAll();
+        setStatus(`已恢复候选 ${id} · ${candById(id).name} 参与比较`);
+        return;
+      }
+      if (btn.classList.contains("commit")){
+        if (btn.disabled) return;
+        state.committed = id;
+        state.committedAt = new Date().toLocaleTimeString("zh-CN", { hour12:false, hour:"2-digit", minute:"2-digit" });
+        state.selected = id;
+        renderAll();
+        setStatus(`已敲定：候选 ${id} · ${candById(id).name} —— 决定驻留顶部决定栏`);
+        return;
+      }
+    }
+    const th = e.target.closest("th.site-head");
+    if (th && !e.target.closest("button")){ setSelected(th.dataset.id, "matrix"); return; }
+    const td = e.target.closest("td[data-id]");
+    if (td){ setSelected(state.selected === td.dataset.id ? null : td.dataset.id, "matrix"); }
+  });
+  matrix.addEventListener("pointerover", e => {
+    const td = e.target.closest("td[data-id]"); if (!td) return;
+    state.preview = td.dataset.id;
+    document.querySelectorAll("#matrixBody td").forEach(el =>
+      el.classList.toggle("preview", el.dataset.id === state.preview && el !== td));
+    const pin = document.querySelector(`#mapWrap .pin[data-id="${state.preview}"]`);
+    if (pin) pin.classList.add("preview");
+  });
+  matrix.addEventListener("pointerout", e => {
+    if (!e.target.closest("td[data-id]")) return;
+    state.preview = null;
+    document.querySelectorAll("#matrixBody td.preview").forEach(el => el.classList.remove("preview"));
+    document.querySelectorAll("#mapWrap .pin.preview").forEach(el => el.classList.remove("preview"));
+  });
+  matrix.addEventListener("input", e => {
+    const r = e.target.closest("input[type=range]"); if (!r) return;
+    const w = parseFloat(r.value);
+    state.weights[r.dataset.crit] = w;
+    const crit = CRITERIA.find(c => c.id === r.dataset.crit);
+    r.closest(".wrow").querySelector(".wval").textContent = `权重 ${w}`;
+    r.setAttribute("aria-label", `标准「${crit.name}」的权重，当前 ${w}`);
+    renderMatrixHead(); renderDecisionBar();
+    document.querySelectorAll("#mapWrap .pin").forEach(p =>
+      p.classList.toggle("committed", state.committed === p.dataset.id));
+    const ld = leader();
+    if (ld) setStatus(`权重已调整（${crit.name} = ${w}），当前领先：${candById(ld).id} · ${candById(ld).name}`);
+  });
+
+  // 列头键盘：←/→ 在候选间移动选中
+  matrix.addEventListener("keydown", e => {
+    if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+    const btn = e.target.closest(".sel-btn"); if (!btn) return;
+    e.preventDefault();
+    const actives = activeIds();
+    if (!actives.length) return;
+    let idx = actives.indexOf(state.selected);
+    idx = idx === -1 ? 0 : (idx + (e.key === "ArrowRight" ? 1 : -1) + actives.length) % actives.length;
+    setSelected(actives[idx], "keyboard");
+    const nb = matrix.querySelector(`.sel-btn[data-id="${actives[idx]}"]`);
+    if (nb) nb.focus();
+  });
+
+  // 决定栏：重新比较（重置决定/排除/选中；权重恢复预设）
+  document.getElementById("decisionBar").addEventListener("click", e => {
+    if (e.target.closest("#resetBtn")){
+      state.committed = null; state.committedAt = null;
+      state.excluded.clear(); state.selected = null;
+      state.weights = { ...DEFAULT_W };
+      renderAll();
+      document.querySelectorAll("input[type=range]").forEach(r => {
+        r.value = state.weights[r.dataset.crit];
+        r.closest(".wrow").querySelector(".wval").textContent = `权重 ${state.weights[r.dataset.crit]}`;
+      });
+      setStatus("已重置：回到未决态，全部候选参与比较，权重恢复预设");
+    }
+  });
+}
+
+/* ============================================================
+   启动：同步渲染，DOMContentLoaded 即 ready（无可测加载态）
+   ============================================================ */
+(function boot(){
+  const errs = bootValidate();
+  if (errs.length){
+    document.body.dataset.appState = "error";
+    const b = document.getElementById("errorBanner");
+    b.textContent = "内联数据完整性校验失败：" + errs.join("；") + "。请修复数据后刷新。";
+    b.classList.add("show");
+    return;
+  }
+  document.body.dataset.appState = "ready";
+  renderMap();
+  renderMatrixHead();
+  renderMatrixBody();
+  renderDecisionBar();
+  wireEvents();
+})();
+</script>
+</body>
+</html>

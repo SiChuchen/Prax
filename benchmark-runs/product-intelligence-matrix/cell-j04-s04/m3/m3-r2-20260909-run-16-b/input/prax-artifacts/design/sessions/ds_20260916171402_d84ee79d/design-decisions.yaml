@@ -1,0 +1,137 @@
+session_id: ds_20260916171402_d84ee79d
+information_shape:
+  cardinality: many
+  relationality: low
+  hierarchy: medium
+  temporality: high
+  density: high
+  dimensionality: medium
+  spatiality: none
+  volatility: high
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: grid
+    reason: many × high density × 无比较 → 固定瓦片网格是扫视型监控的最小眼动成本表示；色彩状态编码让异常无需读取文字即被察觉
+  supporting:
+    - type: chart
+      reason: 每瓦片内嵌 90 采样点 sparkline 表达高时间性；检查器内扩展为带阈值带的大图
+    - type: feed
+      reason: 事件流（时间倒序）承载变化追溯的跨指标视图
+    - type: list
+      reason: 检查器中的结构化取值/状态变化日志（时间戳证据链）
+  rejected:
+    - option: table
+      reason: 行式扫描逐行读取，扫视成本高于网格色块；且表格适合比较（本格无）
+    - option: feed（单流）
+      reason: 时间性满足但基数 many 的当前值总览消失，扫视无法覆盖全部指标
+    - option: graph
+      reason: 关系性 low，连线无语义
+  justification_vs_shape: 高时间性高密度易变流：网格给空间并置（扫视），sparkline 给时间窗口（走势），feed 给事件时间线（追溯），色彩给状态（信号）；无空间性故无 canvas/map；无比较需求故无 table/排序。
+primary_structure:
+  pattern: PAT-LIST-DETAIL-INSPECTOR
+  rationale:
+    - 骨架=Contextual Inspector：集合区为固定瓦片网格（many×高密度一屏铺满，扫视即覆盖全部指标），详情区为选中指标检查器（时间序列+事件链，可追溯）
+    - 易变性高 + 无闪烁 → 网格位置恒定不重排，数值原位更新，杜绝重绘跳动
+    - 异常扫视内发现 → 色彩状态编码为主信号 + 顶部异常条聚拢严重/警告指标，第一落点即异常
+    - 层级 medium → 网格按业务域分组（节标题），组内瓦片等价无内部层级
+    - 关系性低/比较 none → 拒绝 table/explorer（其为比较而生），也不做指标间连线；inspector 只绑定选择不做详情页跳转
+  confidence: high
+information_hierarchy:
+  primary:
+    - 异常状态：色彩编码（正常/警告/严重/恢复）+ 顶部异常条聚拢，扫视零扫描成本
+    - 当前值与变化量（大数字 + 短时高亮）
+    - 迷你走势 sparkline（90s 窗口）
+  secondary:
+    - 指标分组（层级 medium：按域分节）
+    - 事件流（异常优先，可点击→选中指标）
+    - 心跳/时钟/暂停指示
+  override:
+    basis: 验收种子把可追溯性与无闪烁并列为同级成功条件；事件流设为 secondary 但常驻可见（supporting 顶部），以满足追溯不需要翻页
+    evidence_refs:
+      - brief.md#验收种子
+    risks:
+      - 事件流占宽可能挤压网格
+      - 若事件洪峰可能淹没异常——用异常优先与节流缓解
+    accepted_by: agent
+density:
+  intent: compact
+  strategy:
+    - 固定瓦片网格一屏承载 ~24 指标，无滚动或近无滚动
+    - chrome 最小化：单行头部承载时钟/心跳/控制
+    - 色彩作为主要信息墨水（状态四色），文字仅承载精确值
+    - sparkline 极简化（无轴、单色状态色）
+  avoid:
+    - 装饰性渐变/插画
+    - 大留白卡片
+    - 每格多行说明文字
+major_choices:
+  - id: fixed-grid-no-reflow
+    choice: 网格瓦片位置固定（数组序），异常只改变视觉权重（边框/角标/异常条聚拢），绝不重排
+    rationale: 重排是最大闪烁噪声源；位置恒定保证扫视记忆与静止布局，直接服务『无闪烁噪声』验收
+    confidence: high
+    references:
+      - metric
+      - ambient-watch
+  - id: anomaly-strip
+    choice: 常驻『异常』横条（severity 排序的异常指标聚合），异常发生时横条项弹入并缓慢脉冲
+    rationale: 扫视内发现 = 眼睛落点少：横条是第一落点，无需逐格扫描网格
+    confidence: high
+    references:
+      - metric
+      - scan-for-anomaly
+  - id: in-place-update
+    choice: 数值原位更新（仅文本节点替换）+ 500ms 短高亮淡出；状态跃迁才变色；渲染节流至 1fps 更新
+    rationale: 区分信号与噪声：变化以短脉冲标记，完成后完全静止，整屏永不重绘
+    confidence: high
+    references:
+      - metric
+      - stream
+      - ambient-watch
+  - id: trace-inspector
+    choice: 点击瓦片/事件→右侧 inspector 显示带时间戳的取值历史与状态跃迁链；Esc 关闭；选择期间流继续但选择保持（orientation invariant）
+    rationale: 变化可追溯：per-metric 证据链（H-19/H-21），网格保持可见保留上下文
+    confidence: high
+    references:
+      - event
+      - metric
+      - drill-in-trace
+  - id: inline-seed-stream
+    choice: 初始数据为内联 24 个指标 × 90 采样点 + 既有事件，页面加载即满屏可用；随后本地模拟流以 1Hz 推进
+    rationale: 首屏可用约束 + 时间性：立即有历史可追溯，无加载态
+    confidence: high
+    references:
+      - stream
+      - metric
+      - event
+  - id: demo-controls
+    choice: 头部提供 暂停/恢复、注入异常 两个演示控制（控制件安静：图标+文字小按钮）
+    rationale: 无后端时演示易变流的异常检测需要可控触发；数量克制（≤3）
+    confidence: medium
+    references:
+      - stream
+      - pause-inspect
+rejected:
+  - option: PAT-DATA-EXPLORER（表格 + 过滤器）
+    reason: 为系统比较而生；本格 comparison_need=none，行扫描速度低于色彩扫视，且表格对易变流的重绘噪声更大
+  - option: PAT-LIST-DETAIL（列表 + 详情）
+    reason: 列表基数展示密度低于网格，且列表顺序无意义（无比较无排序需求）；many 指标需要空间并置而非串行列表
+  - option: 异常指标置顶重排
+    reason: 重排导致位置跳动与闪烁噪声，违反验收种子；改为色彩+异常条聚拢
+unresolved:
+  - id: stream_parameters
+    impact: low
+    affects:
+      - simulate
+complexity_budget:
+  permanent_panels: 4
+  permanent_primary_actions: 3
+  modes: 0
+  state_owners: 2
+  navigation_levels: 1
+  persistent_filters: 1
+  new_semantic_concepts: 2
+  keyboard_contracts: 2
+  mobile_conflicts: 0
+  permanent_surfaces: 1

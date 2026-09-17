@@ -1,0 +1,79 @@
+{
+  "reviewer": "R2",
+  "package_id": "impl-17",
+  "session_id": "3398b4cb-a376-423f-96bb-7805634bfcf2",
+  "wall_clock_seconds": 134,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-17",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Brief shape is open-collection locate (unbounded, weak relations, medium hierarchy; '定位路径而非结构呈现'). Both viewports show a flat searchable result list of 901 dataset items over a two-tier collections tree (8 domains → 40 collections) with format/license facet counts — structure presentation kept minimal, locate path foregrounded. source/index.html:7 meta ('Locate any dataset in a large open collection'), source/app.js:1-6 ('locate layer'), app.js:95-128 (search scoring + facet counts), screenshots 1280x860 & 1440x900."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "Dominant initial-screen control is the search input (max-width 640px, centered, '/' kbd hint) with placeholder 'Search datasets — name, publisher, tag…' (index.html:19-24, styles.css:60-83); search is auto-focused on load (app.js:551); the browsable '901 datasets' list fills the main pane in both screenshots."
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "Model-judged proxy per rubric. Screen self-identifies in one glance: brand 'DataAtlas — Open Dataset Registry', topstats '901 datasets · 40 collections · 8 domains' (app.js:541-542), context bar 'All collections / 901 datasets / Sort' visible in both screenshots; no loading state — catalog built synchronously (data.js:207, data.js:7-8 comment), satisfying the brief's ready-on-load constraint."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Locate within ≤3 interactions by two redundant paths: (1) search → click row opens detail drawer = 2 interactions, asserted in source/test.js:147-160; (2) domain → subcat tree → item = 3 clicks (app.js:36, 260-284). '/' global shortcut focuses search (app.js:438-448); hash deep-links restore q/domain/subcat/item (app.js:132-163)."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "Breadcrumb is re-rendered on every state change and never removed (app.js:286-293 renderAll→renderCrumb, 218-229); facet counts stay live under 'query + other facets' (app.js:115-128); active-filter chips with individual remove + Reset all (app.js:231-245); underlying count unchanged behind the drawer (test.js:155-156); 'Show in full catalog' flashes the item among neighbors and 'Browse this collection' closes the loop back (app.js:373-393); state serialized to the hash (app.js:160-163)."
+      },
+      "ui_surface_complexity": {
+        "score": 5,
+        "evidence": "Permanent surfaces = topbar, sidebar facets, context bar, result list — all load-bearing for a 901-item locate task; chips, drawer, and empty state are conditional ([hidden] until needed, index.html:45,49,57-58; styles.css:23). One screen, one mode, no chrome beyond need (styles.css:331-337 collapses sidebar under 940px)."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Receipt fails 2 of 3 a11y checks plus the type check: a11y.contrast=fail, a11y.focus_order=fail, type.min_projected_size=fail (measurement-summary.json checks); only a11y.target_size passes. Consistent with source: faint gray #8a93a3 (--faint, styles.css:10) used for meta text, facet counts, kbd on white ≈3:1 (<4.5:1); multiple sub-12px sizes (styles.css:220 fmt 0.7rem, styles.css:247 tag 0.77rem, styles.css:81 kbd 0.75rem, styles.css:107 facet-title 0.75rem). Mitigations present but insufficient: :focus-visible outlines (styles.css:37,147), aria-labels/roles/aria-expanded (index.html:21,28,32,47; app.js:189,266), dialog focus restore + Escape (app.js:334-370,446-448), prefers-reduced-motion (styles.css:339-341)."
+      },
+      "frontend_rework": {
+        "score": 4,
+        "evidence": "Layout receipts clean: layout.overflow=pass, layout.responsive_collision=pass, text.truncation=pass (measurement-summary.json); no visible layout defects in either viewport — descriptions clamp with ellipsis at 1280 and fit fully at 1440 (styles.css:236-241). Reserved from 5 because the contrast/focus-order/min-type-size failures are visible-quality defects a follow-up pass would need to fix; no error-failure implies structural rework."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed '定位路径有搜索/过滤支撑且不丢上下文' is directly addressed: instant search on input (app.js:428), live-counted format/license/collection filters (app.js:116-128, 260-284), persistent breadcrumb asserted by test 'breadcrumb lost during search' (test.js:120-129), removable chips, deep-linkable state (app.js:132-163), and self-check test 8 validates locate-in-2-interactions (test.js:147-160)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "a11y.contrast=fail in receipt — faint grays (#8a93a3 on white for meta/counts/kbd, styles.css:10,85,125) fall short of 4.5:1",
+      "a11y.focus_order=fail in receipt (measurement-summary.json checks)",
+      "type.min_projected_size=fail in receipt — sub-12px type: .fmt 0.7rem (styles.css:220), .tag 0.77rem (styles.css:247), kbd/facet-title 0.75rem (styles.css:81,107)",
+      "1 warning recorded in measurement summary (summary.warnings=1) without per-check attribution"
+    ],
+    "missing_evidence": [],
+    "overall_note": "A well-matched representation for the cell's locate×open-collection job: a search-first registry over 901 synthetic items organized as an 8-domain/40-collection tree, with live facet counts, sort, removable filter chips, a persistent breadcrumb, a context-preserving detail drawer, and hash deep-links — the acceptance seed (search/filter-supported locate without context loss) is implemented and self-asserted in source/test.js:120-173, and the layout/responsive/truncation browser checks all pass at both reviewed viewports with no visible defects. The one clear weakness is accessibility quality: the receipt fails contrast, focus order, and minimum projected type size, and the source corroborates sub-4.5:1 faint-gray text and sub-12px labels, which caps the a11y and rework-adjacent scores despite strong structural affordances (focus-visible outlines, ARIA roles, focus restore, reduced-motion). Task completion time, retrieval accuracy, and human preference are not observable in blind review; the in-page self-check is a developer artifact, not a user study, so model judgment here is a proxy and not human preference."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 54928,
+      "outputTokens": 4656,
+      "cacheReadInputTokens": 240320,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.5112,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-09-17T15:17:11.129Z"
+}

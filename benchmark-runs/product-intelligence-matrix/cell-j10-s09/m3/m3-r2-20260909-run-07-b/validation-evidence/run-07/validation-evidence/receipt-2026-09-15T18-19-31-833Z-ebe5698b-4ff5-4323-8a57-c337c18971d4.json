@@ -1,0 +1,831 @@
+{
+  "receipt_version": "0.2",
+  "tool": {
+    "name": "prax-measure",
+    "version": "0.2.0"
+  },
+  "target": {
+    "app_root": "E:\\codex-prj\\Prax\\Prax\\benchmark-runs\\product-intelligence-matrix\\cell-j10-s09\\m3\\m3-r2-20260909-run-07-b\\measurement-root",
+    "base_url": "http://127.0.0.1:6271/",
+    "build_ref": null
+  },
+  "run_at": "2026-09-15T18:19:31.833Z",
+  "viewport_matrix": [
+    {
+      "width": 1280,
+      "height": 860
+    },
+    {
+      "width": 1440,
+      "height": 900
+    }
+  ],
+  "checks": [
+    {
+      "id": "layout.overflow",
+      "status": "fail",
+      "severity": "error",
+      "subject": "document.documentElement",
+      "measured": {
+        "scroll_width": 1280,
+        "inner_width": 1280,
+        "overflow_px": 0,
+        "element_overflows": 1,
+        "flagged_elements": [
+          "span"
+        ],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "max_overflow_px": 0,
+        "element_overflow_tolerance_px": 1
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/44b7d18c-0d05-47ba-bb5a-92cf155b6890/viewport-0/layout.overflow/overflow-1280x860.png",
+          "sha256": "a60f56a4ce69b5702dcd7b96b2eee053a6b6cc1c12a78f86cd5e20037f862dcb"
+        },
+        {
+          "ref": "validation-evidence/44b7d18c-0d05-47ba-bb5a-92cf155b6890/viewport-1/layout.overflow/overflow-1440x900.png",
+          "sha256": "ad78bbbe05f22b70cf67f2aa81c250f9ac88868fa35459fc31dd102cbdea279a"
+        }
+      ],
+      "supported_fixes": [
+        "find the widest row via the flagged elements and remove the fixed-width cause"
+      ]
+    },
+    {
+      "id": "layout.responsive_collision",
+      "status": "fail",
+      "severity": "error",
+      "subject": "button#btn-abort ∩ button#btn-drawer-close",
+      "measured": {
+        "collisions": 1,
+        "pairs": [
+          {
+            "a": "button#btn-abort",
+            "b": "button#btn-drawer-close",
+            "a_rect": {
+              "x": 1166,
+              "y": 12,
+              "width": 90,
+              "height": 37
+            },
+            "b_rect": {
+              "x": 1198,
+              "y": 16,
+              "width": 62,
+              "height": 37
+            }
+          }
+        ],
+        "interactive_elements": 22,
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "pass"
+          }
+        ]
+      },
+      "threshold": {
+        "max_collisions": 0
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/44b7d18c-0d05-47ba-bb5a-92cf155b6890/viewport-0/layout.responsive_collision/responsive-collision-1280x860.png",
+          "sha256": "a60f56a4ce69b5702dcd7b96b2eee053a6b6cc1c12a78f86cd5e20037f862dcb"
+        }
+      ],
+      "supported_fixes": [
+        "separate the colliding interactive elements or restructure the layout so their hit areas do not intersect at this viewport"
+      ]
+    },
+    {
+      "id": "text.truncation",
+      "status": "pass",
+      "severity": "error",
+      "measured": {
+        "truncated": 0,
+        "elements": [],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "pass"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "pass"
+          }
+        ]
+      },
+      "threshold": {
+        "max_truncated": 0
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "a11y.contrast",
+      "status": "fail",
+      "severity": "error",
+      "subject": "span#runbook-code; div; span; span; span; span; span; span; span; div; span; span; span; span; span; span; div; span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; div; span; span; span; span; span; span; span; span; span; span; span; span; span; span; h2; h2; span; span; h2; span; button",
+      "measured": {
+        "failing": 54,
+        "pairs": [
+          {
+            "selector": "span#runbook-code",
+            "ratio": 3.12,
+            "required": 4.5,
+            "font_px": 12,
+            "bold": false,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "div",
+            "ratio": 3.12,
+            "required": 4.5,
+            "font_px": 12,
+            "bold": true,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 2.7,
+            "required": 4.5,
+            "font_px": 12,
+            "bold": true,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(233,239,252)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.92,
+            "required": 4.5,
+            "font_px": 12,
+            "bold": false,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.92,
+            "required": 4.5,
+            "font_px": 14,
+            "bold": false,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.27,
+            "required": 4.5,
+            "font_px": 14,
+            "bold": false,
+            "foreground": "rgb(203, 213, 228)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.92,
+            "required": 4.5,
+            "font_px": 12,
+            "bold": false,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.92,
+            "required": 4.5,
+            "font_px": 14,
+            "bold": false,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.27,
+            "required": 4.5,
+            "font_px": 14,
+            "bold": false,
+            "foreground": "rgb(203, 213, 228)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "div",
+            "ratio": 3.12,
+            "required": 4.5,
+            "font_px": 12,
+            "bold": true,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.92,
+            "required": 4.5,
+            "font_px": 12,
+            "bold": false,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.92,
+            "required": 4.5,
+            "font_px": 14,
+            "bold": false,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.27,
+            "required": 4.5,
+            "font_px": 14,
+            "bold": false,
+            "foreground": "rgb(203, 213, 228)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.92,
+            "required": 4.5,
+            "font_px": 12,
+            "bold": false,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.92,
+            "required": 4.5,
+            "font_px": 14,
+            "bold": false,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.27,
+            "required": 4.5,
+            "font_px": 14,
+            "bold": false,
+            "foreground": "rgb(203, 213, 228)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "div",
+            "ratio": 3.12,
+            "required": 4.5,
+            "font_px": 12,
+            "bold": true,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.92,
+            "required": 4.5,
+            "font_px": 12,
+            "bold": false,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.92,
+            "required": 4.5,
+            "font_px": 14,
+            "bold": false,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.27,
+            "required": 4.5,
+            "font_px": 14,
+            "bold": false,
+            "foreground": "rgb(203, 213, 228)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.92,
+            "required": 4.5,
+            "font_px": 12,
+            "bold": false,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.92,
+            "required": 4.5,
+            "font_px": 14,
+            "bold": false,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.27,
+            "required": 4.5,
+            "font_px": 14,
+            "bold": false,
+            "foreground": "rgb(203, 213, 228)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.92,
+            "required": 4.5,
+            "font_px": 12,
+            "bold": false,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.92,
+            "required": 4.5,
+            "font_px": 14,
+            "bold": false,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.27,
+            "required": 4.5,
+            "font_px": 14,
+            "bold": false,
+            "foreground": "rgb(203, 213, 228)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.92,
+            "required": 4.5,
+            "font_px": 12,
+            "bold": false,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.92,
+            "required": 4.5,
+            "font_px": 14,
+            "bold": false,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.27,
+            "required": 4.5,
+            "font_px": 14,
+            "bold": false,
+            "foreground": "rgb(203, 213, 228)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.92,
+            "required": 4.5,
+            "font_px": 12,
+            "bold": false,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.92,
+            "required": 4.5,
+            "font_px": 14,
+            "bold": false,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.27,
+            "required": 4.5,
+            "font_px": 14,
+            "bold": false,
+            "foreground": "rgb(203, 213, 228)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "div",
+            "ratio": 3.12,
+            "required": 4.5,
+            "font_px": 12,
+            "bold": true,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.92,
+            "required": 4.5,
+            "font_px": 12,
+            "bold": false,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.92,
+            "required": 4.5,
+            "font_px": 14,
+            "bold": false,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.27,
+            "required": 4.5,
+            "font_px": 14,
+            "bold": false,
+            "foreground": "rgb(203, 213, 228)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.92,
+            "required": 4.5,
+            "font_px": 12,
+            "bold": false,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.92,
+            "required": 4.5,
+            "font_px": 14,
+            "bold": false,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.27,
+            "required": 4.5,
+            "font_px": 14,
+            "bold": false,
+            "foreground": "rgb(203, 213, 228)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.92,
+            "required": 4.5,
+            "font_px": 12,
+            "bold": false,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.92,
+            "required": 4.5,
+            "font_px": 14,
+            "bold": false,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.27,
+            "required": 4.5,
+            "font_px": 14,
+            "bold": false,
+            "foreground": "rgb(203, 213, 228)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.12,
+            "required": 4.5,
+            "font_px": 12,
+            "bold": false,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.12,
+            "required": 4.5,
+            "font_px": 12,
+            "bold": false,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.12,
+            "required": 4.5,
+            "font_px": 12,
+            "bold": false,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.12,
+            "required": 4.5,
+            "font_px": 12,
+            "bold": false,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 2.98,
+            "required": 4.5,
+            "font_px": 12,
+            "bold": true,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(248,250,252)"
+          },
+          {
+            "selector": "h2",
+            "ratio": 3.12,
+            "required": 4.5,
+            "font_px": 13,
+            "bold": true,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "h2",
+            "ratio": 3.12,
+            "required": 4.5,
+            "font_px": 13,
+            "bold": true,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.12,
+            "required": 4.5,
+            "font_px": 13,
+            "bold": false,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.12,
+            "required": 4.5,
+            "font_px": 13,
+            "bold": false,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "h2",
+            "ratio": 3.12,
+            "required": 4.5,
+            "font_px": 13,
+            "bold": true,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.12,
+            "required": 4.5,
+            "font_px": 13,
+            "bold": false,
+            "foreground": "rgb(133, 147, 168)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "button",
+            "ratio": 2.57,
+            "required": 4.5,
+            "font_px": 15,
+            "bold": true,
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(36,86,198)"
+          }
+        ],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "normal_min_ratio": 4.5,
+        "large_min_ratio": 3
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/44b7d18c-0d05-47ba-bb5a-92cf155b6890/viewport-0/a11y.contrast/contrast-1280x860.png",
+          "sha256": "7a61127138fd0339395b332e5dad8b8d158add17f21cc96411bee2c13664e471"
+        },
+        {
+          "ref": "validation-evidence/44b7d18c-0d05-47ba-bb5a-92cf155b6890/viewport-1/a11y.contrast/contrast-1440x900.png",
+          "sha256": "ad78bbbe05f22b70cf67f2aa81c250f9ac88868fa35459fc31dd102cbdea279a"
+        }
+      ],
+      "supported_fixes": [
+        "darken the failing text color (or lighten it against a dark background) until the measured ratio meets the required minimum"
+      ]
+    },
+    {
+      "id": "a11y.focus_order",
+      "status": "fail",
+      "severity": "error",
+      "subject": "tab order contradicts visual order: input → button#btn-drawer-close",
+      "measured": {
+        "stops": 9,
+        "sequence": [
+          "button#btn-audit",
+          "button#btn-abort",
+          "button",
+          "input",
+          "input",
+          "input",
+          "input",
+          "input",
+          "button#btn-drawer-close"
+        ],
+        "missing_indicators": [],
+        "inversions": [
+          {
+            "from": "input",
+            "to": "button#btn-drawer-close"
+          }
+        ],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "max_missing_focus_indicators": 0,
+        "max_order_inversions": 0
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/44b7d18c-0d05-47ba-bb5a-92cf155b6890/viewport-0/a11y.focus_order/focus-order-1280x860.png",
+          "sha256": "935cc9778f496b4e3eaf160db9e74cb7f2976558cf95d12ea710e73945a7cc55"
+        },
+        {
+          "ref": "validation-evidence/44b7d18c-0d05-47ba-bb5a-92cf155b6890/viewport-1/a11y.focus_order/focus-order-1440x900.png",
+          "sha256": "37e2a5a38eae2dcfb3464e255bd0acbde6d07edc13a393710fc2760f64001191"
+        }
+      ],
+      "supported_fixes": [
+        "restore a visible focus indicator (outline or box-shadow) on the listed elements and order the tab sequence to follow the visual reading order (positive tabindex or DOM reordering)"
+      ]
+    },
+    {
+      "id": "a11y.target_size",
+      "status": "fail",
+      "severity": "error",
+      "subject": "input; input; input",
+      "measured": {
+        "undersized": 3,
+        "elements": [
+          {
+            "selector": "input",
+            "width": 17,
+            "height": 17
+          },
+          {
+            "selector": "input",
+            "width": 17,
+            "height": 17
+          },
+          {
+            "selector": "input",
+            "width": 17,
+            "height": 17
+          }
+        ],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "min_target_px": 24
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/44b7d18c-0d05-47ba-bb5a-92cf155b6890/viewport-0/a11y.target_size/target-size-1280x860.png",
+          "sha256": "7a61127138fd0339395b332e5dad8b8d158add17f21cc96411bee2c13664e471"
+        },
+        {
+          "ref": "validation-evidence/44b7d18c-0d05-47ba-bb5a-92cf155b6890/viewport-1/a11y.target_size/target-size-1440x900.png",
+          "sha256": "ad78bbbe05f22b70cf67f2aa81c250f9ac88868fa35459fc31dd102cbdea279a"
+        }
+      ],
+      "supported_fixes": [
+        "raise the listed targets to at least 24×24 CSS px, or declare an equivalent alternative control via data-target-alternative"
+      ]
+    },
+    {
+      "id": "type.min_projected_size",
+      "status": "pass",
+      "severity": "warning",
+      "measured": {
+        "min_font_px": 12,
+        "undersized": 0,
+        "elements": [],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "pass"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "pass"
+          }
+        ]
+      },
+      "threshold": {
+        "min_projected_px": 12
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    }
+  ],
+  "summary": {
+    "pass": 2,
+    "fail": 5,
+    "skipped": 0,
+    "warnings": 0
+  },
+  "binding": {
+    "run_id": "44b7d18c-0d05-47ba-bb5a-92cf155b6890",
+    "entry": "/",
+    "scenario": "entry",
+    "implementation": {
+      "root": "E:\\codex-prj\\Prax\\Prax\\benchmark-runs\\product-intelligence-matrix\\cell-j10-s09\\m3\\m3-r2-20260909-run-07-b\\measurement-root",
+      "digest": "a9ea9b45e44a648682555a6fff8d367a12eb2fc1b0377ecb6703ee9dcb1f793e",
+      "kind": "static_tree"
+    },
+    "session_id": null,
+    "contract_digests": {
+      "screen.sdir.yaml": null,
+      "sdir-delta.yaml": null,
+      "implementation-brief.yaml": null
+    }
+  },
+  "target_validation": {
+    "status": "valid",
+    "issues": [],
+    "readiness": "document",
+    "ready_selector": null
+  }
+}

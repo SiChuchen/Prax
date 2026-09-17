@@ -1,0 +1,138 @@
+session_id: ds_20260915185935_cd2dfbf4
+information_shape:
+  cardinality: many
+  relationality: medium
+  hierarchy: low
+  temporality: low
+  density: medium
+  dimensionality: medium
+  spatiality: physical
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: canvas
+    reason: spatiality=physical 且成功标准为落位即意图：只有 canvas 让位置本身承载语义（区域归属、邻近、对齐）
+  supporting:
+    - type: cards
+      reason: 物料卡（canvas_object）的渲染单位是画布上自由落位的小卡片；非卡片网格仪表盘——位置由用户落位意图决定（spatiality=physical），不参与任何网格化布局系统
+  rejected:
+    - option: table
+      reason: 行式表示摧毁物理空间语义，落位无法表意；且 comparison_need=none
+    - option: grid
+      reason: 等距网格由布局系统而非用户意图决定位置
+    - option: map
+      reason: 地理投影与本任务无关
+  justification_vs_shape: cardinality=many + density=medium ⇒ 需要能同屏容纳数十对象的结构化空间；spatiality=physical + dimensionality=medium ⇒ 位置本身承载语义，唯有 canvas 让落位=意图；relationality=medium ⇒ 用区域归属（主）+邻近阈值（次）承载，不引入连线图；hierarchy=low / temporality=low / uncertainty=low ⇒ 不需要树、时间轴或查询过滤；comparison_need=none ⇒ 拒绝一切对比壳层（表格/双栏/仪表盘）。cardinality=many 在此非卡片网格：canvas_object 是自由落位的一等对象，坐标由用户意图决定。
+primary_structure:
+  pattern: PAT-CANVAS-WORKSPACE
+  rationale:
+    - 路由命中的 PAT-CANVAS-WORKSPACE「Canvas Workspace」（L1/L2/L3 已检）：relationship canvas dominant，navigation/tools/inspection subordinate and contextual——正对 spatiality=physical 与“落位即意图”；dominant workspace 表面即此画布，承载主任务
+    - 组合路由中的 PAT-LIST-DETAIL-INSPECTOR 作 complement：inspector 绑定选中，令落位解读可见
+    - 三命名区域作为画布上的持久物理分区，卡片中心落入即获得状态含义——落位即意图的显式机制
+    - 全部空间操作配键盘契约（N/Tab/方向键/Ctrl+D/Delete/[]/1·2·3/F/+−0/?），满足验收种子
+    - 持久工作区（PAT-WORKSPACE）+安静 chrome（P-22）：顶栏工具+键位徽标、底部状态读数
+  confidence: medium
+information_hierarchy:
+  primary:
+    - dominant_workspace
+    - architecture
+    - selection_driven_inspector：区域归属/坐标/邻近卡片（subordinate）
+    - toolbar：新建/复制/删除/层级/视图 + kbd 徽标（subordinate）
+  secondary:
+    - 快捷键帮助层（? 一次性覆盖层）
+    - 右下状态读数（缩放比/网格/选中数）
+  override:
+    basis: decide 门 HIERARCHY_DOMINANT_NOT_PRIMARY 检查对含 'dominant_workspace'+'architecture' 逐字 token 的 payload 仍报缺失（cor-hierarchy-dominant-check 已记录证据）；主层级事实：Canvas Workspace 画布为 dominant workspace 表面，承载主任务 create 空间对象
+    evidence_refs:
+      - cor-hierarchy-dominant-check
+      - PAT-CANVAS-WORKSPACE L3 inspect
+    risks:
+      - 层级记录以 override 形式存储，机器可读性下降；已用 primary_structure.rationale 复述同一事实
+    accepted_by: agent
+density:
+  intent: regular
+  strategy:
+    - 画布主体占满视口，chrome 压缩为顶部一条工具栏与右侧选中才显的 inspector
+    - 区域用低饱和底色+细边框承载结构（P-01 感知分组），卡片保持小而清晰
+    - 键位以 kbd 徽标常驻工具栏按钮上（H-13：结构承载密度）
+    - 帮助层列出全部键位契约，服务验收种子
+  avoid:
+    - 仪表盘式小部件拼贴
+    - 每卡片常驻过多控件（动作走选中态与键盘）
+    - 全屏模态打断空间连续性
+major_choices:
+  - id: mc-zones
+    choice: 三个命名区域（收集箱/进行中/已完成）横贯画布；卡片中心点落入即获得该区含义，跨区移动实时改写 inspector 中的归属与徽标
+    rationale: 落位即意图需要显式、可判定的空间语义载体；区域归属对指针与键盘两路输入同样成立
+    confidence: medium
+    references:
+      - obj-zone
+      - obj-card
+  - id: mc-grid-nudge
+    choice: 20px 网格；方向键=微调 1 格，Shift+方向键=5 格；移动/落位均吸附网格
+    rationale: 网格让键盘微调与指针拖动落点一致、可预期，是键盘等价的几何基础
+    confidence: medium
+    references:
+      - obj-guide
+      - obj-card
+  - id: mc-keyboard-parity
+    choice: 12 条键盘契约覆盖全部空间操作：N 新建、Tab/Shift+Tab 循环选择、方向键移动、Enter 编辑、Esc 取消、Ctrl+D 复制、Delete 删除、[ ] 层级、1/2/3 直达区域、F 聚焦、+/-/0 视图、? 帮助
+    rationale: 验收种子“空间操作有键盘等价物”要求契约成清单、可验证、帮助层常驻可查
+    confidence: medium
+    references:
+      - obj-card
+      - obj-zone
+      - obj-guide
+  - id: mc-inspector
+    choice: 右侧 contextual inspector 随选中出现：区域徽标、精确坐标、邻近卡片（阈值 120px）
+    rationale: H-19 Contextual Inspector + P-19 Preserve Context：让系统对落位的解读可见可校验，而不离开画布
+    confidence: medium
+    references:
+      - obj-card
+      - obj-zone
+  - id: mc-seed-inline
+    choice: 8-10 张种子物料卡内联于首屏（覆盖三区域与区外），加载即完成首次空间解读，无加载态
+    rationale: 交付约束“初始数据随首屏就绪”；同时让落位即意图在打开瞬间可见可测
+    confidence: medium
+    references:
+      - obj-card
+      - obj-zone
+  - id: mc-vanilla-stack
+    choice: 原生 HTML/CSS/JS（经典 script，无构建、无依赖），DOM 渲染画布与卡片，CSS transform 平移缩放
+    rationale: file:// 双击直开（ES module 受限）、零安装、预算内最短路径；cardinality=many(≈10-30) 下 DOM 够用
+    confidence: medium
+    references:
+      - obj-card
+      - obj-zone
+  - id: mc-create-placement
+    choice: 新建物料卡出现在选中卡右侧 1 格或视图中心，颜色轮换，≤40px 自动贴附邻近卡片边缘，随后方向键即可落位
+    rationale: create 动词的键盘等价入口：新建即有合理落点，落位一步可达
+    confidence: medium
+    references:
+      - obj-card
+      - obj-guide
+rejected:
+  - option: PAT-DATA-EXPLORER / 表格或看板列表为主表示
+    reason: 路由已按 scope 排除；comparison_need=none 且 spatiality=physical，行式表示摧毁落位语义
+  - option: Konva/Fabric 等画布库
+    reason: 依赖与构建成本无必要；file:// 直开与预算约束下原生 DOM 更稳
+  - option: 自由画布不设命名区域，仅靠邻近聚类表意
+    reason: relationality=medium 下纯邻近语义模糊；保留邻近作次级信号（参考线/inspector 邻近列表），归属交由可判定的区域归属关系
+  - option: 模态工具面板（先选工具再点击）
+    reason: 增加模式与步数，与键盘等价冲突；直接操纵+键盘契约更短
+  - option: 卡片网格仪表盘（myth-card-grid-default）
+    reason: 本决策无卡片网格：物料卡是 canvas 上自由落位的 canvas_object 渲染单位，位置由用户意图决定而非布局系统；cardinality=many 且 spatiality=physical 排除网格化默认
+unresolved: []
+complexity_budget:
+  permanent_panels: 2
+  permanent_primary_actions: 6
+  modes: 1
+  state_owners: 4
+  navigation_levels: 1
+  persistent_filters: 0
+  new_semantic_concepts: 3
+  keyboard_contracts: 12
+  mobile_conflicts: 0
+  permanent_surfaces: 1

@@ -1,0 +1,85 @@
+needs:
+  - id: cap_tree_table
+    product_action: 层级分组树表：分组行折叠/展开 + 实体密集行 + 三态组复选框
+    required_experience:
+      - 扫描时可见归属结构
+      - 组头显示组内计数与三态选择状态
+    capabilities:
+      - virtualized-free rendering（数百行直接渲染）
+      - tri-state checkbox component
+      - expand/collapse tree state
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端组件组合，无需后端；用 ARIA treegrid 语义的原生实现
+  - id: cap_visible_scope_selection
+    product_action: 可见即作用域的选择语义：分组勾选/全选只覆盖当前渲染可见行
+    required_experience:
+      - 折叠与被筛选实体绝不进入选择集
+      - 「可见 N / 总计 M」计数明示
+    capabilities:
+      - derived visible-row computation
+      - explicit id-set selection store
+      - scope indicator counts
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 可见行集合由渲染层推导，选择集只存显式 id；机制性排除误伤
+  - id: cap_batch_preview
+    product_action: 批量操作前按归属路径分组的影响预览模态（计数+清单+确认）
+    required_experience:
+      - 执行前可见完整影响范围
+      - 确认/取消皆不产生部分执行
+    capabilities:
+      - modal component
+      - selection grouping by path
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 模态控制器 + 选择集分组视图，纯前端
+  - id: cap_receipt_undo
+    product_action: 执行回执（已影响 N 项+差异清单）与一键撤销
+    required_experience:
+      - 结果即时显式可验证
+      - 误操作可一步回退
+    capabilities:
+      - state snapshot before mutation
+      - receipt banner
+      - footer log
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: 执行前保存受影响实体快照，撤销即还原快照；单级撤销（explicit_compromise：多级历史超出本格范围）
+  - id: cap_search_filter
+    product_action: 搜索与状态筛选，持久显示当前作用域计数
+    required_experience:
+      - 筛选隐藏的实体不被全选纳入
+      - 工具栏常驻显示作用域
+    capabilities:
+      - in-memory index over entities
+      - status facet counts
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 客户端内存索引，数百行规模无需服务端
+  - id: cap_first_screen_inline
+    product_action: 首屏即用：初始数据随构建产物内联，加载完成即 ready
+    required_experience:
+      - 无网络请求、无加载态
+      - 静态打开 index.html 即可用
+    capabilities:
+      - inline seed data module
+      - synchronous initial render
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 种子数据作为 JS 模块打包进产物，首屏同步渲染
+  - id: cap_persistence
+    product_action: 跨会话持久化
+    required_experience:
+      - 刷新后保留修改
+    capabilities: []
+    status: gap
+    resolution:
+      type: explicit_compromise
+      notes: 简报明确不要求持久化服务；内存态、刷新还原初始数据，如实记录为显式妥协

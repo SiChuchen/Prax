@@ -1,0 +1,49 @@
+version: "0.1"
+platform_profile: WEB-DESKTOP
+framework: react
+measurement_target:
+  app_root: .
+  entry: /index.html
+  scenario: 值班墙 wallboard：加载即满屏 24 指标（内联种子），模拟流 1Hz 推进，异常条+色彩瓦片扫视发现异常，检查器+事件流追溯变化，全程无重排闪烁
+sdir_ref: screen.sdir.yaml
+decision_ref: design-decisions.yaml
+approved_patterns:
+  - PAT-LIST-DETAIL-INSPECTOR
+approved_component_contracts:
+  - WORKSPACE
+  - STATE-FEEDBACK
+states_required:
+  - ready
+  - selected
+  - empty
+  - error
+  - loading
+capability_gaps:
+  - id: cap-persistence
+    product_action: 跨会话历史数据持久化
+    required_experience:
+      - 重启后仍可追溯上一会话历史
+    capabilities:
+      - 会话内环形缓冲已覆盖追溯验收
+    status: gap
+    resolution:
+      type: explicit_compromise
+      notes: 简报明确不要求持久化服务；会话内环形缓冲已满足『变化可追溯』验收；超出范围即不做
+validation_plan_ref:
+  artifact: validation-plan.yaml
+  revision: 1
+validation_requirements:
+  - semantic_conformance
+  - state_completeness
+  - product_model_alignment
+  - keyboard
+  - hierarchy_review
+  - representation_decided
+  - state_ownership_declared
+  - acceptance_contract_present
+  - complexity_budget_declared
+  - requirement_alignment
+state_ownership_ref: compiled-context.yaml#state_ownership
+acceptance_ref: compiled-context.yaml#acceptance
+realization:
+  mode: direct_code

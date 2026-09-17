@@ -1,0 +1,83 @@
+{
+  "reviewer": "R2",
+  "package_id": "impl-10",
+  "session_id": "dbc3ff7f-e6a1-454a-a17a-775fc54b2c1a",
+  "wall_clock_seconds": 203,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-10",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Brief targets explore×dimensional-space over a dataset with 维度切换不重置认知. screenshots/1280x860.png shows a scatter-projection main stage (行星半径 × 平衡温度 · 显示 474 条) backed by a 16-dimension shelf (11 数值 + 5 类别, each with histogram and X/Y assign) over a 474-planet catalog (source/js/data.js:22-43, 57-123); hierarchy facet covered by 星座→天区 (data.js:45-52). Dimension switching is the app's central object, matching the shape bundle (高维度/高密度/中层级)."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "Plot occupies ~60% of both viewports with the projection title 行星半径 × 平衡温度 显示 474 条 (screenshots/1280x860.png, 1440x900.png); every shelf row offers one-click X/Y re-projection (source/js/shelf.js:44-45; X lit on 行星半径, Y on 平衡温度 in screenshots); axis, encoding, filter and history controls all live on the initial screen."
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "Model-judged proxy. Screen self-describes in one glance: subtitle 系外行星目录·多维探索台 and stat line 474 颗行星·300 个系统·11 数值维·5 类别维 (top bar, screenshots/1280x860.png; index.html:21, state.js:380-382); explicit gesture help 拖直方图设区间过滤·点 X/Y 换投影轴（选中与过滤不重置）(index.html:42, visible in screenshot); both axes labeled with units and 对数轴 flag (plot.js:86-89)."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Single-screen structure (source/index.html:34-83): dimensions, filters, encodings, anchors and the history drawer are all visible or one click from the initial screen; no routes/modes; the primary object (dataset projection) is already rendered in both viewports."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "Selection and pins are excluded from reversible history and survive axis switches and undo/redo (source/js/state.js:9-11, 127-139; drawer help 选中与固定是认知锚点，不随回退重置 index.html:92); selections hidden by later filters persist as dashed ghost points and are reported 被当前过滤遮蔽，但仍保留 (plot.js:98-101, state.js:205-219); right panel head 认知锚点·跨维度切换保持 with live counts (screenshots/1440x900.png right, state.js:210-214)."
+      },
+      "ui_surface_complexity": {
+        "score": 4,
+        "evidence": "Controls are numerous but each maps to the explore job: 16 shelf rows with X/Y buttons, 2 encoding selects, 撤销/重做/历史, 清空选择, 清除全部过滤 (screenshots/1280x860.png; index.html:27-31, 51-57, 82). Mild redundancy: the 选中 count appears three times (right anchor card, subhead 选中 0, bottom chip ◉ 选中 0 in screenshots; state.js:166, 211, 216)."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Receipt: a11y.contrast=fail, a11y.focus_order=fail, a11y.target_size=fail, type.min_projected_size=fail (measurement-summary.json checks). Visible correlates: X/Y buttons 20×18px with 10px font (source/css/style.css:60), chip source tags 9.5px (style.css:144), tick/extent text 10px (style.css:68, 89), and no :focus-visible styling anywhere in style.css. Mitigation: semantic button/select/input elements (index.html) and Ctrl+Z/Y shortcuts (state.js:410-413)."
+      },
+      "frontend_rework": {
+        "score": 2,
+        "evidence": "Three receipt fails in the defect class: layout.overflow=fail, text.truncation=fail, type.min_projected_size=fail (measurement-summary.json checks). Neither screenshot shows gross breakage and layout.responsive_collision=pass, so defects are measurable rather than blatant, but the volume implies correction cycles."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed 过滤/投影状态有归属且可回退 covered at three levels. Attribution: every filter stores src ('直方图框选' shelf.js:141, '类别勾选' shelf.js:96) and renders as a removable chip with a source tag (state.js:162-168, 183-189; bottom-bar chips 投影 X·行星半径 / 编码 颜色·恒星光谱型 × in screenshots; 视角 input titled 过滤与投影状态的归属容器 index.html:23). Revertibility: labeled snapshots with undo/redo/jump (state.js:59-78, 272-287). In-page selftest asserts the seed end-to-end including 遮蔽归属 (state.js:312-346)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "All three a11y receipt checks fail (a11y.contrast, a11y.focus_order, a11y.target_size) plus type.min_projected_size — consistent with 20×18px axis buttons (style.css:60), 9.5px chip tags (style.css:144), 10px tick/extent text (style.css:68, 89) and absent focus styling",
+      "layout.overflow=fail and text.truncation=fail (measurement-summary.json); defect locations not identifiable from screenshots",
+      "Only 1 of 7 browser checks passes (layout.responsive_collision); 1 warning unexplained",
+      "选中 count duplicated in three permanent surfaces (right card, subhead, bottom chip; state.js:166, 211, 216)"
+    ],
+    "missing_evidence": [
+      "Sanitized receipt is pass/fail only — the exact elements/regions behind the overflow and truncation failures cannot be located in either screenshot",
+      "No per-check contrast ratios or offending selectors, so the a11y fails cannot be independently reproduced from source alone",
+      "The single receipt warning is not attributed to any check id"
+    ],
+    "overall_note": "The package is a dimension-shelf plus scatter-projection explorer whose central design object is the dimension itself — 11 numeric and 5 categorical/hierarchical dims with histogram drag-filtering, one-click X/Y re-projection, color/size encoding over a 474-row synchronous dataset (data.js:57-123) — a direct fit for the brief's explore×dimensional-space job and dataset object. Cognitive continuity is engineered rather than incidental: selection/pins sit outside the reversible history (state.js:9-11, 127-139), occluded selections persist as ghost points with explicit counts (plot.js:98-101, state.js:205-219), and the right panel labels itself 认知锚点·跨维度切换保持. The acceptance seed (filter/projection state having attribution and revertibility) is covered in UI (source-tagged removable chips, 视角 container), source (f.src at shelf.js:96/141, labeled snapshot history state.js:59-78) and an in-page selftest asserting the seed (state.js:312-346). The measurable weakness is quality: six of seven receipt checks fail — all three a11y checks plus overflow, truncation and min-projected-size — consistent with very small controls and 9.5–10px type in style.css, even though both viewports render without gross visible defects and responsive collision passes. Time, retrieval accuracy and preference are not observable in blind review, and model judgment here is a proxy, not human preference."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 71707,
+      "outputTokens": 8995,
+      "cacheReadInputTokens": 171648,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.669234,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-09-16T23:31:24.905Z"
+}

@@ -1,0 +1,81 @@
+version: "0.1"
+session_id: ds_20260915182037_d4ba5123
+task:
+  surfaces: []
+  primary: 沿时间轴浏览变更集序列，选中某个变更后读出其前后因果与前后状态差异
+product_relationships:
+  - id: rel_modify
+    source: change_set
+    target: entity
+    type: modifies
+    direction: none
+    meaning: 变更集对该组件的某些字段做了增加/修改/删除/回滚操作
+    importance: primary
+  - id: rel_group
+    source: phase
+    target: change_set
+    type: groups
+    direction: forward
+    meaning: 阶段把时间上相邻的变更集组织成组
+    importance: supporting
+  - id: rel_link
+    source: causal_link
+    target: change_set
+    type: connects
+    direction: forward
+    meaning: 因果链实例从诱因变更集指向后果变更集；时间上诱因严格早于后果
+    importance: primary
+region_relationships: []
+decisions:
+  primary_structure: PAT-WORKSPACE
+  density_intent: regular
+  major_choice_ids:
+    - mc1_forward_only_edges
+    - mc2_snapshot_is_fold
+    - mc3_inline_dataset
+    - mc4_vanilla_no_build
+must_preserve: []
+regression_points: []
+unresolved:
+  - u1_data_scale
+  - u2_no_real_data_source
+corrections: []
+representation_portfolio:
+  primary:
+    type: timeline
+    reason: 时间性=high 是束内最强 facet：阅读主线必须是按时间排布的变更集序列；因果连线叠加在同一时间轴上，使“何时”与“因何”共用一个坐标
+  supporting:
+    - type: diagram
+      reason: 因果弧线是时间轴上的一等视觉层，点击可高亮整条因果链并跳转（关系性 medium 的承载）
+    - type: table
+      reason: 状态切片用紧凑表格式呈现各组件当前字段值，读出“此刻状态从哪来”
+    - type: list
+      reason: 变更详情内的字段级操作按时间顺序纵向列出（+新增 / ~修改 / −删除 / ↩回滚）
+  rejected:
+    - option: feed（纯倒序事件流）
+      reason: 只有纵向时序，因果连线无法叠加在时间坐标上，关系性 medium 无处承载
+    - option: graph/network 力导向图
+      reason: 无时间轴，因果方向与时间顺序脱钩，违背验收种子
+    - option: table（全表主导）
+      reason: 可排序但时间结构不显性；作为状态切片的辅助呈现保留
+state_ownership:
+  - state: selection
+    owner: 时间轴：阶段带内按时间排布的变更集节点（many 的阅读主线）
+  - state: preview
+    owner: session
+acceptance:
+  - 变更因果可读：任选一个变更集，能沿时间轴向前看到它引发了哪些后续变更、向后看到它的诱因；且界面呈现的“某时刻状态切片”与该时刻之前所有变更的语义折叠结果一致（时间结构与变更语义一致）。
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - requirement_alignment
+  regression_check_ids: []

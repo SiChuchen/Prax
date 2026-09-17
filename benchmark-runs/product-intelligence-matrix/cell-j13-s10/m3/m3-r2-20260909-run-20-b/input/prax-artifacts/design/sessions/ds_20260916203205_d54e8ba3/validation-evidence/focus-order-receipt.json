@@ -1,0 +1,72 @@
+{
+  "receipt_version": "0.2",
+  "tool": { "name": "prax-measure", "version": "1.62.1-chrome-headless" },
+  "target": {
+    "app_root": "E:\\codex-prj\\ab-worktrees\\pi-matrix-r2\\cell-j13-s10-b",
+    "base_url": "file:///E:/codex-prj/ab-worktrees/pi-matrix-r2/cell-j13-s10-b/index.html",
+    "build_ref": null
+  },
+  "run_at": "2026-09-16T21:53:43.639Z",
+  "viewport_matrix": [{ "width": 1440, "height": 900, "label": "desktop" }],
+  "checks": [
+    {
+      "id": "a11y.focus_order",
+      "status": "pass",
+      "severity": "error",
+      "subject": "AURORA Dimensional Explorer — sequential keyboard focus order and keyboard selection",
+      "measured": {
+        "driver": "playwright-1.62.1 chrome headless",
+        "focus_presses": 60,
+        "distinct_focus_targets": 60,
+        "stalls": 0,
+        "non_monotonic_moves": 0,
+        "order_observed": "header actions (btn-reset-proj first; btn-undo disabled until a projection change exists and correctly skipped) → encoding slot selects + lin/log toggles → dimension rail summaries/filter controls → filter chips when present → record table rows (…AUR-1040, AUR-1041, AUR-1042)",
+        "first_focus_visible": { "matches": true, "outlineStyle": "solid", "outlineWidth": "2px" },
+        "row_focus_reached": { "tag": "TR", "dataId": "AUR-1000" },
+        "enter_selects": true,
+        "enter_selection_size": 1,
+        "escape_clears": true,
+        "escape_selection_size": 0,
+        "console_messages": 0,
+        "page_errors": 0,
+        "note": "v2 measurement: 60 fixed Tab presses with focus identity taken from the index in the recomputed tabbable list — Tab order is monotonic in DOM order with no stalls and visible focus at every stop; keyboard selection operable without pointer. Supersedes the v1 run (9 steps), whose stop key aliased identical <summary> signatures and stopped early on a false repeat; no implementation change occurred between the two runs."
+      },
+      "threshold": {
+        "rule": "every interactive element reachable via sequential keyboard focus in DOM order; focus visibly indicated; selection operable without pointer"
+      },
+      "evidence_refs": [
+        { "ref": "validation-evidence/keyboard-focus-order.json", "sha256": "4a8ca14e3e2f17c4ee7a3e3f0b20f42f436f8ace4a4a65de3208575920884b16" },
+        { "ref": "validation-evidence/verify-result-3.json", "sha256": "d37041ed31164f704fb322c6e756be3cf7685cf32964ae4363b76046f9e278e8" },
+        { "ref": "validation-evidence/verify-result-5.json", "sha256": "e38368d0c068583a6c81df07de69ec0c42bd812a798ce7b9cc5b5c9e0037f0ac" }
+      ],
+      "supported_fixes": [
+        "styles.css: scoped .state-note overlay to #region-data so the inspector empty state could not intercept pointer/focus page-wide",
+        "app.js renderTable: restores keyboard focus to the same record's row (preventScroll) after re-render so ArrowDown navigation is continuous",
+        "measurement v2: focus identity by tabbable-list index (v1's tag|id|class key aliased identical <summary> elements and stopped early)"
+      ]
+    }
+  ],
+  "summary": { "pass": 1, "fail": 0, "skipped": 0, "warnings": 0 },
+  "binding": {
+    "run_id": "run-20260916T215343Z-focus-order-v2",
+    "entry": "/index.html",
+    "scenario": "explore-dimensional-data: user swaps dimensions across X/Y/color/size encoding slots; selection, filters, and inspector binding survive every switch; filter chips and projection undo/reset provide owned, reversible state; first paint renders ~1200 inlined records with no loading state",
+    "implementation": {
+      "root": "E:\\codex-prj\\ab-worktrees\\pi-matrix-r2\\cell-j13-s10-b",
+      "digest": "982e2f12b9c1fa7b88d11203af03ee2555813635d9f5fd98594773d969a9a705",
+      "kind": "static_tree"
+    },
+    "session_id": "ds_20260916203205_d54e8ba3",
+    "contract_digests": {
+      "screen.sdir.yaml": "d5fc6f6366419a2aae58287dee0b607da649737e5e8b0195be246bbf0deeea33",
+      "sdir-delta.yaml": null,
+      "implementation-brief.yaml": "57ec95e706a1f6ea51e32dda5b3dc589358e4358b668e025ca02aa0360a9de2c"
+    }
+  },
+  "target_validation": {
+    "status": "valid",
+    "issues": [],
+    "readiness": "selector",
+    "ready_selector": "#scope-summary"
+  }
+}

@@ -1,0 +1,120 @@
+session_id: ds_20260915173304_61822363
+information_shape:
+  cardinality: one
+  relationality: low
+  hierarchy: high
+  temporality: low
+  density: low
+  dimensionality: medium
+  spatiality: none
+  volatility: medium
+  uncertainty: medium
+  comparison_need: none
+representation:
+  primary:
+    type: wizard
+    reason: 单一高后果流程的步骤门禁流本质是有严格顺序的向导，但外壳常驻层级地图以保留定位与恢复可见性
+  supporting:
+    - type: list
+      reason: 左轨以列表承载阶段→步骤层级进度地图
+    - type: form
+      reason: 当前步工作区以表单承载检查项与证据字段
+    - type: document
+      reason: 恢复路径与操作说明以文档块呈现
+  rejected:
+    - option: dashboard 卡片概览壳
+      reason: 基数 one、比较需求 none，概览无对象可概览；稀释门禁注意力
+    - option: tabs 平行分区壳
+      reason: 步骤间是严格顺序关系而非平行分区，tabs 暗示可任意切换，破坏门禁语义
+    - option: cards 瀑布流
+      reason: low density 下制造虚假并列感，隐藏顺序依赖
+  justification_vs_shape: 对抗默认壳与 myth-more-disclosure-better 的论证：信息形状是 one/high-hierarchy/low-density/low-temporality 的单一流程，dashboard（多对象概览）、cards（并列比较）、tabs（平行分区）均与「一条有顺序的门禁链」相悖，故主表示取 wizard（步骤门禁流）而非常规壳。同时主动限制披露面：未到达步骤只显示标题与锁定态、审计面板默认折叠、确认模态聚焦单一决策——更多披露并不更安全，披露超出当前门禁只会扩大注意力面并增加误操作概率；这与被驳记录 myth-more-disclosure-better 的结论一致：安全来自门禁与恢复结构，而非一次展示更多信息。模态在此非默认装饰，而是承载「不可逆确认仪式+恢复绳索」的安全容器，是验收种子的直接实现。
+primary_structure:
+  pattern: PAT-APPLICATION-SHELL
+  rationale:
+    - 以路由返回并经 L2 检视的 PAT-APPLICATION-SHELL 为基型：稳定全局结构（顶栏+左轨）围绕可替换工作区（当前步）
+    - 本例特化：工作区为「步骤门禁流」——左轨是阶段/步骤层级进度地图，中部当前步工作区按 说明→检查项→证据→放行 组织，不可逆步骤经全屏确认模态（后果+承诺+确认词+恢复路径）放行，底部可展开偏差/证据审计
+    - P-01/H-01：层级地图让流程结构先于细节被感知，第一步即可见任务全貌
+    - P-26/H-07：门禁状态（锁定/就绪/已放行/偏差）全程可见，状态完备
+    - P-28：不可逆操作配确认仪式+常驻可见的恢复路径，恢复比完美注意力更可靠
+    - 整页向导被否决：丢失全局层级定位与恢复路径常驻可见性，高压下加剧隧道视野
+    - 平铺清单被否决：无顺序门禁，无法支撑零失误约束
+  confidence: high
+information_hierarchy:
+  primary:
+    - 当前步骤工作区：操作说明→验证检查项→证据字段→放行门禁
+    - 不可逆三件套：后果说明、确认仪式、恢复路径
+    - 阶段/步骤进度地图（左轨）
+    - 偏差与证据审计
+  secondary:
+    - 全局零偏差状态与进度
+    - 流程上下文（变更窗口、团队角色）
+density:
+  intent: spacious
+  strategy:
+    - 低密度、大间距：每屏聚焦一个当前步骤
+    - 左轨仅显示层级骨架（阶段→步骤+状态图标），不放详情
+    - 不可逆后果与恢复路径在确认模态内整块呈现，不与常规内容混排
+    - 偏差/证据审计收纳为可展开面板，避免常驻噪音
+  avoid:
+    - 时间轴/甘特等时间性呈现（时间性 low）
+    - 对比视图与并列多卡（比较需求 none）
+    - 高密度表格（密度 low）
+    - 空间画布（空间性 none）
+major_choices:
+  - id: MC-1
+    choice: 顺序硬门禁：任一步骤需全部验证检查项勾选+证据字段填写才可放行，未来步骤锁定不可点击
+    rationale: 零失误走完全程的核心机制是让跳序在物理上不可能，而非依赖注意力
+    confidence: high
+    references:
+      - step
+      - check
+      - evidence
+  - id: MC-2
+    choice: 不可逆步骤采用三要素确认仪式：后果明示+复选承诺+输入确认词，确认模态内同时展示完整恢复路径
+    rationale: 直接兑现验收种子「不可逆步骤有恢复/确认路径」；Recoverable Action 原则（路由 P-28）指出恢复比完美注意力更可靠，故恢复绳索必须先于执行可见
+    confidence: high
+    references:
+      - step
+      - recovery_path
+  - id: MC-3
+    choice: 决策点作为特殊步骤类型（decision gate），在 runbook 内给出条件分支与中止出路，允许以「中止切换」安全结束流程
+    rationale: 不确定性 medium 需要显式决策结构；高后果流程的安全出口本身就是零失误设计的一部分
+    confidence: high
+    references:
+      - runbook
+      - step
+  - id: MC-4
+    choice: 偏差记录全程审计恢复路径触发、回退与异常，完成态据此判定零偏差
+    rationale: 「零失误」必须可审计判定而非自我声明；对应 Visibility of System Status 原则（路由 P-26）
+    confidence: high
+    references:
+      - deviation_log
+      - runbook
+  - id: MC-5
+    choice: 不引入计时器/倒计时（时间性 low），evidence 只记录时间戳不施压
+    rationale: 信息形状时间性 low，倒计时只会增加失误概率
+    confidence: high
+    references:
+      - evidence
+rejected:
+  - option: 整页向导（一屏一步、无层级地图）
+    reason: 丢失全局进度定位与恢复路径常驻性，高压下加剧隧道视野
+  - option: 平铺 checklist（全部步骤勾选）
+    reason: 无顺序门禁与层级，跳步不可阻止，无法支撑零失误
+  - option: 空间画布/流程图编辑器
+    reason: 空间性 none、基数 one，空间编辑无任务收益且徒增复杂度
+  - option: 表格化多列布局
+    reason: 密度 low，表格徒增噪音
+unresolved: []
+complexity_budget:
+  permanent_panels: 2
+  permanent_primary_actions: 1
+  modes: 1
+  state_owners: 1
+  navigation_levels: 2
+  persistent_filters: 0
+  new_semantic_concepts: 4
+  keyboard_contracts: 0
+  mobile_conflicts: 0
+  permanent_surfaces: 1

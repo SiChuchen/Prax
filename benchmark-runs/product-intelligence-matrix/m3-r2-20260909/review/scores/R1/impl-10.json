@@ -1,0 +1,83 @@
+{
+  "reviewer": "R1",
+  "package_id": "impl-10",
+  "session_id": "724cade5-bae1-4147-a047-2ab73b4bb5c2",
+  "wall_clock_seconds": 206,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-10",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Brief shape is dimensional-space (dimensionality high, density high, unbounded) over a dataset object with explore job; implementation is a scatter-projection workbench over an 11-numeric/5-categorical exoplanet dataset (1280x860 viewport: 474/300/11维/5类 header; left dimension shelf with per-dim histograms and X/Y projection buttons; js/data.js:22-43 dimension registry; js/plot.js:23-37 axis scales with auto-log). Hierarchy facet covered via 星座→天区 (data.js:46-52), relational facet via same-system siblings (js/state.js:256-262)."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "Central scatter stage (行星半径 × 平衡温度 显示 474 条, 1280x860 viewport) dominates ~60% of screen with all 474 points plotted at load; dimension shelf with one-click X/Y projection is permanently visible left; index.html:37-75 puts shelf/stage/anchors in a single no-loading layout; data.js:1-2 generates data synchronously ('随首屏就绪')."
+      },
+      "time_to_understand": {
+        "score": 4,
+        "evidence": "What/where is conveyed fast: shelf help '拖直方图设区间过滤 · 点 X/Y 换投影轴（选中与过滤不重置）' (index.html:42), plot title + axis names, anchor panel labeled 认知锚点 跨维度切换保持 (1280x860 and 1440x900 viewports). Held at 4 by micro-type: 10px extent/tick text (css/style.css:68,89) and 9.5px chip source tags (style.css:144) — consistent with type.min_projected_size fail in measurement-summary.json."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Single screen, zero mode changes: any dimension reachable by one click of its inline X/Y button (1280x860 left rail, js/shelf.js:96-99); history drawer is one button (index.html:30); no routes, tabs, or drill-downs anywhere in source."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "Context preservation is the app's explicit thesis: setAxis only mutates x/y leaving filters/sel/pins untouched (js/state.js:118-121); sel/pins excluded from history snapshots (state.js:58-68); selected-but-filtered-out records render as dashed ghost points (js/plot.js:98-101, style.css:95) and are counted 'N 条被当前过滤遮蔽' in chips and anchor cards (state.js:154-156, 210-214); undo/redo/jump restore projection+filter only (state.js:76-78)."
+      },
+      "ui_surface_complexity": {
+        "score": 4,
+        "evidence": "Permanent surfaces: topbar, dimension shelf, plotbar (2 encoding selects + clear), anchor panel, state bar, hidden history drawer (index.html:13-94). Each maps to a brief facet (high dimensionality → shelf; seed ownership/revert → chips+history; cognition persistence → anchors), but at init the right ~22% is two zero-state '0' cards plus empty hints (1280x860 viewport), and #tooltip is wired to nothing (index.html:61, state.js:138; plot.js never positions it) — idle surface beyond need."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "All three a11y receipt checks fail: a11y.contrast, a11y.focus_order, a11y.target_size (measurement-summary.json checks). Source confirms: no :focus rule anywhere in style.css; projection buttons 20x18px (style.css:60), category chips 11px/2px padding (style.css:70), pin ✕ buttons padding 0 2px (style.css:118); histogram drag and brush selection are mousedown-only with no keyboard alternative (js/shelf.js:106-145, js/plot.js:171-206). Partial credit for semantic landmarks and native <button> elements (index.html:13-94)."
+      },
+      "frontend_rework": {
+        "score": 2,
+        "evidence": "Receipt defect checks: layout.overflow fail, text.truncation fail, type.min_projected_size fail (measurement-summary.json checks; only layout.responsive_collision passes). Visible in both viewports: shelf's last row clipped mid-histogram at panel bottom (轨道离心率 in 1280x860; 金属丰度 in 1440x900). Also a data-viz defect on the main screen: a vertical wall of points pinned at x=14.5 R⊕ (both screenshots) caused by radius clamping collapsing distinct values onto the max (js/data.js:83-84). Not 1 because the layout is otherwise coherent and no runtime errors surface (#errbox empty)."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed '过滤/投影状态有归属且可回退' is addressed end-to-end: every filter/projection change commits a labeled snapshot (state.js:69-75); filter chips carry source attribution ('直方图框选' state.js:86/shelf.js:141, '类别勾选' state.js:96) and click-to-remove (state.js:170-189); per-dim removable badges (shelf.js:36-37); 清除全部过滤 (index.html:82); named 视角 container titled '过滤与投影状态的归属容器' (index.html:23-26) echoed in the state bar (both viewports bottom bar); full undo/redo/jump history with timestamps (state.js:271-287, index.html:86-94); in-page selftest asserts attribution and revertibility (state.js:312-346)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "Receipt: 6/7 checks fail — layout.overflow, text.truncation, a11y.contrast, a11y.focus_order, a11y.target_size, type.min_projected_size (only layout.responsive_collision passes)",
+      "Shelf's bottom dimension row visually clipped mid-histogram in both viewports (轨道离心率 at 1280x860, 金属丰度 at 1440x900)",
+      "Vertical stack of points pinned at max radius 14.5 R⊕ on the right edge of the scatter in both viewports — clamp artifact at js/data.js:83-84 that collapses distinct radii onto one column in the primary view",
+      "No :focus-visible styles in css/style.css; histogram-brush and plot-brush interactions are mouse-only (js/shelf.js:112-145, js/plot.js:171-206)",
+      "Dead surface: #tooltip div and App.setHover/hoveredId exist but are never triggered or positioned (index.html:61, js/state.js:15,138; js/plot.js uses only native <title> tooltips)"
+    ],
+    "missing_evidence": [
+      "Sanitized summary gives pass/fail only, with no per-check detail (which elements overflowed/truncated, contrast ratios, offending targets), so the exact regions behind layout.overflow and text.truncation cannot be located from this package",
+      "No keyboard/screen-reader walkthrough data; a11y scoring relies on the three failed receipt checks plus source inspection"
+    ],
+    "overall_note": "This package is tightly engineered around the brief's core discriminator — dimension switching must not reset cognition: axis changes mutate only x/y (state.js:118-121), selection and pins sit outside history snapshots (state.js:58-68), filtered-out selections persist as dashed ghost points (plot.js:98-101), and the acceptance seed's 'ownership + revertibility' is realized through source-tagged, click-removable chips, a named 视角 container, and a labeled undo/redo/jump timeline, with an in-page selftest asserting all of it. Representation and salience are excellent: a dataset explorer whose central scatter, histogram shelf, and anchor panel map one-to-one onto the brief's high-dimensionality/high-density shape, with data ready at first paint. The costs are concentrated in finish quality, not concept: the measurement receipt fails 6 of 7 checks (layout.overflow, text.truncation, type.min_projected_size, and all three a11y checks), both screenshots show a clipped shelf row and a misleading wall of radius-clamped points at x=14.5 R⊕ (data.js:83-84), the stylesheet has no focus styles, and key interactions are mouse-only — hence accessibility 2 and frontend rework 2 against otherwise top-band structural scores. Model-judged proxy only: no human study exists, so time_to_understand reflects legibility of the initial screen, not measured comprehension, and human preference is explicitly not scored."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 73889,
+      "outputTokens": 8399,
+      "cacheReadInputTokens": 268352,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.713596,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-09-16T22:24:53.537Z"
+}

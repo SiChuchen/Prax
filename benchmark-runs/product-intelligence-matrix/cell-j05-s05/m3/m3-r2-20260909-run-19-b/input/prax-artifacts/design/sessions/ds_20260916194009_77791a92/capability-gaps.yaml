@@ -1,0 +1,76 @@
+needs:
+  - id: cap-graph-canvas
+    product_action: 全图关系网络常驻画布（node+relationship 全量可见），聚焦时非相关元素弱化不移除
+    required_experience:
+      - 全图始终可见
+      - 聚焦高亮 1/2/全链路
+      - 节点位置不随跟随变化
+    capabilities:
+      - svg-rendering
+      - force-free-deterministic-layout
+      - opacity-based-context-dimming
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 原生 SVG 渲染 ~24 节点/~40 边，加载时同步确定性布局，无需图库
+  - id: cap-follow-trail
+    product_action: 检查器邻居可点击连续跟随，focus_trail 面包屑回退，URL hash 承载路径
+    required_experience:
+      - 点击邻居即跟随
+      - 面包屑点击任意一步回退
+      - 刷新/分享后路径可复现
+    capabilities:
+      - adjacency-index
+      - url-hash-state
+      - breadcrumb-ui
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 邻接表 + hash 序列化 trail，popstate/hashchange 同步
+  - id: cap-relationship-inspect
+    product_action: relationship 作为一等对象：点击边查看类型/关键度/说明，两端可跳转
+    required_experience:
+      - 边可选中并有选中反馈
+      - 显示类型/关键度/说明/两端对象
+    capabilities:
+      - edge-hit-area
+      - inspector-edge-detail
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 边加宽透明命中区，检查器切换为关系详情视图
+  - id: cap-search-filter
+    product_action: 顶栏搜索即时定位 node；关系类型过滤（persistent filter）
+    required_experience:
+      - ≤3 次击键内可定位任一节点
+      - 过滤后图仍全量存在仅隐藏对应边
+    capabilities:
+      - input-filter
+      - type-toggle-chips
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 输入即匹配名称/ID 下拉，回车选中；类型 chip 切换边显隐
+  - id: cap-inline-first-paint
+    product_action: 初始数据内联（data.js 同步脚本），首屏 ready，无 loading 态
+    required_experience:
+      - 页面加载完成即可聚焦/跟随
+      - file:// 协议直开可用
+    capabilities:
+      - inline-script-data
+      - no-async-boot
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 无构建、无 fetch，脚本尾同步初始化，DOM ready 即可交互
+  - id: cap-persistence
+    product_action: 跨会话持久化用户状态
+    required_experience:
+      - 会话内状态不丢失
+    capabilities:
+      - localStorage
+      - server-api
+    status: gap
+    resolution:
+      type: explicit_compromise
+      notes: 简报明确『不要求持久化服务』；以 URL hash 承载可分享状态作为边界内的替代

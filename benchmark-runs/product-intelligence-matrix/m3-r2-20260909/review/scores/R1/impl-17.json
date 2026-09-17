@@ -1,0 +1,82 @@
+{
+  "reviewer": "R1",
+  "package_id": "impl-17",
+  "session_id": "c6624a4b-8669-4d93-a7dc-e3cf910adcc1",
+  "wall_clock_seconds": 162,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-17",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Brief shape is unbounded/low-relational open-collection with medium hierarchy, primary object 'item'; implementation is a search+facet registry over 901 items in 8 domains × 40 collections (1280x860 topstats '901 datasets · 40 collections · 8 domains'; app.js:12-28 builds items/two-tier taxonomy; data.js:39-40 '8 domains × 5 collections × 18–29 items'). Rows are independent item cards (app.js:188-201), no relational/graph surface — matches the shape bundle."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "Locate affordances dominate the initial screen: top-center search with locate-oriented placeholder (1280x860 'Search datasets — name, publisher, tag…'), search auto-focused on load (app.js:551), sidebar collection tree + format/license filters always visible (1280x860 left column), results rendered immediately with no loading state (data.js:7-9 synchronous build; app.js:537-552 init renders before first paint)."
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "Model-judged proxy. Both viewports (1280x860, 1440x900) read instantly as 'catalog of datasets, search or drill down': brand 'DataAtlas Open Dataset Registry' + 'All collections' header + count '901 datasets' (index.html:6-7, 16-17; app.js:541-542); standard search-left/facets-left/list-right pattern requires no exploration."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Success criterion is locate within three interactions. Search path: type query (1) → instant filtered+ranked+highlighted results (app.js:428 re-renders on input; scoreItem app.js:75-93) → click row (2). Browse path: domain (1) → subcollection (2) → item (3), exactly within budget. '/' focuses search from anywhere (app.js:439-445); deep-link hash restores q/domain/subcat/item (app.js:132-158, 544-550)."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "Primary actions preserve context: breadcrumb always present (index.html:31-32; app.js:218-229), removable filter chips + 'Reset all' (app.js:231-245), detail opens as overlay drawer over the list, not navigation (app.js:334-353), 'Show in full catalog' clears filters and flashes the item among neighbors (app.js:383-393), 'Browse this collection' jumps to the item's home node (app.js:373-379), state serialized to hash (app.js:160-163)."
+      },
+      "ui_surface_complexity": {
+        "score": 4,
+        "evidence": "All permanent surfaces serve the locate job (topbar search, collection tree, format/license facets, crumb+count+sort at index.html:13-55), and chips/drawer/empty are conditional. Minor surplus: every row permanently carries version, org, updated, size, downloads and ~5 tags (app.js:188-201) — more metadata than locate strictly needs — and the sidebar shows 17 always-on controls (1280x860 left column)."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Receipt fails two a11y checks plus type size: a11y.contrast=fail, a11y.focus_order=fail, type.min_projected_size=fail (measurement-summary.json checks; only a11y.target_size passes). Source shows real a11y effort (:focus-visible outline styles.css:37; checkbox focus ring styles.css:147; aria-labels index.html:21,28,32,47; aria-expanded app.js:266; focus moved into drawer and restored app.js:348-352,367; reduced-motion styles.css:339-341), but measured outcome fails. Candidate code-level causes visible: faint gray meta text --faint #8a93a3 on white (styles.css:10 used at 58,85,107,125) and 0.7rem–0.77rem text (styles.css:105,191,221,247)."
+      },
+      "frontend_rework": {
+        "score": 3,
+        "evidence": "No visible layout defects: layout.overflow=pass, layout.responsive_collision=pass, text.truncation=pass (measurement-summary.json), and both screenshots (1280x860, 1440x900) show clean rows, intact sidebar, one-line clamped descriptions with ellipsis (styles.css:236-241). However 3 of 7 receipt checks fail (a11y.contrast, a11y.focus_order, type.min_projected_size), which are defect classes requiring remediation work — hence mid score, not higher."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed: 'locate path has search/filter support and does not lose context'. Search: instant AND-token scoring with <mark> highlight (app.js:57-93, 173-177). Filters: two-tier collection tree plus format/license with live per-facet counts computed against query+other facets (app.js:115-128, 260-284). Context: persistent breadcrumb, removable chips, live result count (app.js:212-216), hash deep-links. Every clause of the seed is visibly addressed in source and UI."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "a11y.contrast = fail (measurement-summary.json); consistent with faint-gray text tokens on white, e.g. --faint #8a93a3 (styles.css:10) used for counts, facet titles, brand-sub, kbd (styles.css:58,81,85,107,125) and light meta rows visible at 1280x860",
+      "a11y.focus_order = fail (measurement-summary.json), despite programmatic focus handling in drawer open/close (app.js:348-352,367)",
+      "type.min_projected_size = fail (measurement-summary.json); several sub-12px text sizes in source: 0.7rem fmt badge (styles.css:221), 0.72rem chip close (styles.css:191), 0.75rem facet titles (styles.css:105), 0.77rem tags (styles.css:247)",
+      "No visible layout defects at either viewport; all three layout checks pass (measurement-summary.json)"
+    ],
+    "missing_evidence": [
+      "Sanitized summary gives check-level pass/fail only, not which elements failed contrast/focus-order/type-size, so root-cause attribution beyond code inspection is not possible",
+      "No interaction traces: three-interaction locate budget is assessed structurally from UI + source, not from a recorded session"
+    ],
+    "overall_note": "This package is a strong fit for the locate × open-collection brief: a dependency-free static registry of 901 synthetic datasets in a two-tier taxonomy (data.js:39-40, screenshots 1280x860/1440x900) whose initial screen leads with instant search, live-counted facet filters, and a persistent breadcrumb — directly satisfying the acceptance seed of search/filter-supported location without context loss (app.js:115-128, 218-245, 383-393). The locate budget of three interactions is met on both the search path (type → click, app.js:428) and the browse path (domain → subcollection → item). The clear weaknesses are measured accessibility outcomes — a11y.contrast, a11y.focus_order, and type.min_projected_size all fail in the receipt even though the source contains deliberate a11y work (focus-visible rings, aria labels/roles, focus restore, reduced-motion) — which cap accessibility at 2 and hold frontend_rework at 3 despite zero visible layout defects. All judgments here are from screenshots, sanitized checks, and source; task time, retrieval accuracy, and human preference are not observable in this blind pilot, and model judgment stands in for human preference on the understanding proxy."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 65526,
+      "outputTokens": 6157,
+      "cacheReadInputTokens": 115200,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.5391549999999999,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-09-16T22:47:17.748Z"
+}

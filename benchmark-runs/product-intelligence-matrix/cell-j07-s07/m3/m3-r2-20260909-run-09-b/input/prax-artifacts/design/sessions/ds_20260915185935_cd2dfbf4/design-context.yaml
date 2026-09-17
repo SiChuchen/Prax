@@ -1,0 +1,59 @@
+user:
+  expertise: intermediate
+  familiarity: high
+task:
+  primary: 在物理画布上创建空间对象（物料卡），通过落位表达意图；指针拖放与键盘操作完全等价
+  modes:
+    - create
+    - edit
+    - navigate
+  frequency: medium
+domain:
+  type: 空间工作台 / 视觉规划（physical 2-D canvas）
+  entities:
+    - 物料卡 canvas_object
+    - 命名区域 zone
+    - 网格 grid
+    - 对齐参考线 guide
+information:
+  volume: medium
+  relationship_complexity: medium
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: low
+  error_cost: low
+priorities:
+  - 落位即意图：区域归属/邻近/对齐直接决定对象含义
+  - 空间操作 100% 键盘等价（验收种子）
+  - 首屏即用：初始数据内联，无加载态
+  - 空间可读性：分区、网格、参考线、选中反馈清晰
+density_intent: regular
+confidence:
+  overall: high
+unknowns: []
+classification:
+  version: "1"
+  task_type: inspect_relationships
+  domain_id: unknown
+  interaction_mode: canvas_with_contextual_inspector
+  product_type: unknown
+  primary_object_type: obj-card
+  secondary_object_types:
+    - obj-zone
+    - obj-guide
+  confidence: medium
+  evidence:
+    - task_type=inspect_relationships ← token '画布' in context.task and frame.tasks
+    - interaction_mode=canvas_with_contextual_inspector ← token '画布' in context.task, frame.tasks, and context.priorities
+    - primary_object_type=obj-card ← most referenced product object in the Product Frame
+  open_questions:
+    - domain_id could not be classified from the provided context; refine the context fields or record a custom classification
+    - product_type could not be derived; record the intended audience and product kind

@@ -1,0 +1,61 @@
+user:
+  expertise: mixed
+  familiarity: medium
+task:
+  primary: 在地理语境同屏的条件下逐标准比较少量候选选址并落定决定
+  modes:
+    - 并排比较
+    - 区位定位
+    - 权重权衡
+    - 落定决定
+  frequency: low
+domain:
+  type: 办公选址决策（location-sensitive decision）
+  entities:
+    - 候选选址
+    - 标准/指标
+    - 权重
+    - 地理参照物（地铁线、团队重心、客户点）
+    - 决定
+information:
+  volume: medium
+  relationship_complexity: medium
+  change_rate: medium
+  comparison_need: high
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: none
+  error_cost: low
+priorities:
+  - 同屏比较优先：地理语境与比较面板同屏驻留，比较状态不因交互丢失
+  - 高密度可扫读：一列一候选、一行一标准，优胜格一眼可辨
+  - 决策可落定：权重可调、领先者即时可见、最终选择可被明确记录并回显
+density_intent: compact
+confidence:
+  overall: high
+unknowns: []
+classification:
+  version: "1"
+  task_type: compare_filter_records
+  domain_id: unknown
+  interaction_mode: collection_with_contextual_detail
+  product_type: unknown
+  primary_object_type: obj-candidate-site
+  secondary_object_types:
+    - obj-site-map
+    - obj-comparison-panel
+    - obj-decision
+  confidence: medium
+  evidence:
+    - task_type=compare_filter_records ← token '比较' in context.task and frame.tasks
+    - interaction_mode=collection_with_contextual_detail ← token '比较' in context.task, frame.tasks, and context.priorities
+    - primary_object_type=obj-candidate-site ← most referenced product object in the Product Frame
+  open_questions:
+    - domain_id could not be classified from the provided context; refine the context fields or record a custom classification
+    - product_type could not be derived; record the intended audience and product kind

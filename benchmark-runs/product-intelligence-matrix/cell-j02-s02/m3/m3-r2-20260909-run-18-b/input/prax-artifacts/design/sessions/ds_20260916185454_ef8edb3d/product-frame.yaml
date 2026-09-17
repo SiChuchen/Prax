@@ -1,0 +1,67 @@
+version: "0.2"
+jtbd:
+  verb: locate
+  target: a target item in a large open collection
+  success: Located and opened within three interactions, with search/filter support and no loss of context
+primary_object:
+  type: item
+  label: Collection item
+task_model:
+  frequency: high
+  reversibility: reversible
+  consequence: low
+  expertise: mixed
+user:
+  primary_role: Collection researcher / catalog user
+  expertise: mixed
+  familiarity: medium
+goal:
+  primary: Find and open a specific target item inside a large open collection (thousands of entries) quickly, without losing browsing context.
+tasks:
+  primary: Locate a target item in the collection and open its details within three interactions.
+  secondary:
+    - Narrow the collection with search and facet filters while retaining visible context (active filters, counts, sections)
+    - Return to the exact prior results context after inspecting an item
+    - Verify result set size at every step so the user always knows how much is left
+product_objects:
+  - id: item
+    user_name: Collection item
+    purpose: The individual entry the user is trying to locate and inspect; carries name, id, category, tags and summary metadata
+  - id: facet
+    user_name: Filter
+    purpose: An attribute-based narrowing control (category, group, tag) that shrinks the visible candidate set without hiding the path taken
+  - id: result_set
+    user_name: Results
+    purpose: The currently visible candidate set after query + filters; always count-labeled so the user knows remaining search space
+  - id: query
+    user_name: Search
+    purpose: Free-text narrowing over item names, ids and tags; composable with filters
+relationships:
+  - source: facet
+    target: result_set
+    type: narrows
+    direction: forward
+    meaning: Each active filter constrains the result set
+    importance: primary
+    id: rel_facet_result_set
+  - source: query
+    target: result_set
+    type: narrows
+    direction: forward
+    meaning: Search text constrains the result set on top of filters
+    importance: primary
+    id: rel_query_result_set
+  - source: item
+    target: result_set
+    type: member_of
+    direction: forward
+    meaning: Items appear grouped inside the result set by their section
+    importance: supporting
+    id: rel_item_result_set
+mental_model_hypothesis:
+  summary: "Users treat the collection as one large, loosely organized catalog: they locate targets by typing a name/id they partially remember, or by narrowing attributes step by step. They expect filters, counts and scroll position to stay visible and recoverable while they inspect a hit — navigation away from the results is the failure mode."
+  confidence: high
+  evidence:
+    - user_requirement
+primary_success_definition: A user can locate and open any target item within three interactions, via a path that always has search/filter support and never loses the results context.
+open_questions: []

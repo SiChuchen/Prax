@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DataAtlas · Self-check</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  #testbanner {
+    position: fixed; z-index: 100; top: 14px; right: 14px;
+    width: min(430px, 92vw); max-height: 74vh; overflow-y: auto;
+    background: #fff; border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: 0 14px 44px rgba(16, 22, 33, 0.22);
+    padding: 14px 16px; font-size: 0.88rem;
+  }
+  #testbanner h1 { margin: 0 0 2px; font-size: 1rem; }
+  #testbanner .sub { color: var(--muted); margin: 0 0 10px; font-size: 0.82rem; }
+  #testbanner .summary { font-weight: 700; margin: 10px 0 0; }
+  #testbanner ol { margin: 0; padding-left: 20px; }
+  #testbanner li { margin: 4px 0; }
+  #testbanner .pass { color: #2b8a3e; }
+  #testbanner .fail { color: #c92a2a; font-weight: 600; }
+  #testbanner .info { color: var(--faint); font-size: 0.8rem; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2" opacity=".5"/><rect x="3" y="13" width="8" height="8" rx="2" opacity=".5"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg>
+    <span class="brand-name">DataAtlas</span>
+    <span class="brand-sub">Self-check build</span>
+  </div>
+  <div class="searchwrap">
+    <input id="search" type="search" placeholder="Search datasets…" autocomplete="off" spellcheck="false" aria-label="Search datasets">
+  </div>
+  <div class="topstats" id="topstats"></div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar" aria-label="Collections and filters"></aside>
+  <main class="main" id="main">
+    <div class="contextbar">
+      <nav class="crumb" id="crumb" aria-label="Location in catalog"></nav>
+      <div class="context-right">
+        <span class="count" id="count" role="status"></span>
+        <label class="sortlab" for="sort">Sort</label>
+        <select id="sort">
+          <option value="relevance">Relevance</option>
+          <option value="downloads">Most accessed</option>
+          <option value="updated">Recently updated</option>
+          <option value="name">Name A–Z</option>
+        </select>
+      </div>
+    </div>
+    <div class="chips" id="chips" hidden></div>
+    <div class="grid" id="grid" role="list" aria-label="Datasets"></div>
+    <div class="empty" id="empty" hidden>
+      <p class="empty-title">No datasets match</p>
+      <p class="empty-hint">Try fewer or different words, or clear the active filters.</p>
+      <button class="btn" id="emptyReset">Clear search &amp; filters</button>
+    </div>
+  </main>
+</div>
+
+<div class="overlay" id="overlay" hidden></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle" hidden></aside>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+<script src="test.js"></script>
+</body>
+</html>

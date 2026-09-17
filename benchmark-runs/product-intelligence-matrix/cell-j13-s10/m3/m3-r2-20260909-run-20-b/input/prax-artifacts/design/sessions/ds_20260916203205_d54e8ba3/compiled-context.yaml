@@ -1,0 +1,84 @@
+version: "0.1"
+session_id: ds_20260916203205_d54e8ba3
+task:
+  surfaces: []
+  primary: Explore the dataset by switching which dimensions are projected onto the visual encodings, keeping selection and filters intact across switches
+product_relationships:
+  - id: rel-dim-record
+    source: dimension
+    target: record
+    type: projects
+    direction: forward
+    meaning: Each dimension provides one value for every record; projection re-maps, never mutates records.
+    importance: primary
+  - id: rel-filter-dataset
+    source: filter_state
+    target: dataset
+    type: restricts
+    direction: forward
+    meaning: Each filter narrows the visible subset of the dataset and is owned by a named control so it can be individually reverted.
+    importance: primary
+  - id: rel-sel-record
+    source: projection
+    target: record
+    type: selects
+    direction: bidirectional
+    meaning: Selection attaches to record identity, not to screen position, so it survives re-projection.
+    importance: primary
+region_relationships:
+  - id: region_rel_data_detail
+    source: data
+    target: detail
+    type: selection_drives_contextual_detail
+decisions:
+  primary_structure: PAT-DATA-EXPLORER
+  density_intent: compact
+  major_choice_ids:
+    - mc-selection-identity
+    - mc-inspector-all-dims
+    - mc-owned-reversible-state
+    - mc-exoplanet-dataset
+must_preserve: []
+regression_points: []
+unresolved:
+  - dataset_theme
+corrections: []
+representation_portfolio:
+  primary:
+    type: chart
+    reason: "Dimensional data with dimensionality=high: a scatter field with four swappable encoding slots (X, Y, color, size) makes dimension switching the primary interaction while records stay the invariant substrate (PAT-DATA-EXPLORER surface)"
+  supporting:
+    - type: table
+      reason: Dense per-record rows anchor reading position and give stable list-order context that survives projection switches (H-21)
+    - type: form
+      reason: Inspector panel for the focused record's full dimensional profile (PAT-LIST-DETAIL-INSPECTOR)
+  rejected:
+    - option: map
+      reason: spatiality=none — no spatial semantics in the data
+    - option: graph
+      reason: relationality=medium — relations are attribute-sharing, not network topology
+    - option: cards
+      reason: density=high and unbounded cardinality — cards cap information per pixel
+state_ownership:
+  - state: selection
+    owner: data
+  - state: preview
+    owner: session
+acceptance:
+  - "A user can swap any dimension in/out of the visual projection and: (1) their selected records remain selected, (2) their active filters remain applied and visible with clear ownership, (3) each projection/filter state can be individually reverted — with zero re-orientation cost."
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - filter_state
+    - comparison_scan
+    - requirement_alignment
+  regression_check_ids: []

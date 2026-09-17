@@ -1,0 +1,970 @@
+# M3 pilot run ledger — generated 2026-09-17T15:30:59.198Z (Task 5)
+# Eligibility rules fixed in tools/build-ledger.mjs before any blind score existed.
+batch: m3-r2-20260909
+planned_slots: 20
+denominators:
+  attempted: 20
+  agent_declared_completion: 20
+  wall_clock_exceeded_stopped: 0
+  receipt_present: 20
+  measurement_valid: 17
+  blind_review_eligible: 20
+  token_observable: 20
+freeze_verification:
+  briefs_unchanged: true
+  brief_drift: []
+  runtime_manifest_sha256_expected: "23e770b3a48bf75111c9a56e963467fb8a7d40061f10ca06261dc33b5a3a4bab"
+  runtime_manifest_sha256_now: "23e770b3a48bf75111c9a56e963467fb8a7d40061f10ca06261dc33b5a3a4bab"
+  runtime_manifest_unchanged: true
+  runtime_content_rehash_matches: true
+  mcp_entry_sha256_now: "1ca1783c34c1e1e0a625c6de4fd771dbd2effed7a8ed9ebace2f42d1aeaf8bb5"
+  mcp_entry_unchanged: true
+state_separation:
+  a_workspaces_with_prax: []
+  b_workspaces_missing_prax: []
+  b_state_roots:
+    cell-j09-s03-b: "E:/codex-prj/ab-worktrees/pi-matrix-r2/cell-j09-s03-b/.prax"
+    cell-j01-s01-b: "E:/codex-prj/ab-worktrees/pi-matrix-r2/cell-j01-s01-b/.prax"
+    cell-j10-s09-b: "E:/codex-prj/ab-worktrees/pi-matrix-r2/cell-j10-s09-b/.prax"
+    cell-j06-s06-b: "E:/codex-prj/ab-worktrees/pi-matrix-r2/cell-j06-s06-b/.prax"
+    cell-j07-s07-b: "E:/codex-prj/ab-worktrees/pi-matrix-r2/cell-j07-s07-b/.prax"
+    cell-j08-s08-b: "E:/codex-prj/ab-worktrees/pi-matrix-r2/cell-j08-s08-b/.prax"
+    cell-j04-s04-b: "E:/codex-prj/ab-worktrees/pi-matrix-r2/cell-j04-s04-b/.prax"
+    cell-j02-s02-b: "E:/codex-prj/ab-worktrees/pi-matrix-r2/cell-j02-s02-b/.prax"
+    cell-j05-s05-b: "E:/codex-prj/ab-worktrees/pi-matrix-r2/cell-j05-s05-b/.prax"
+    cell-j13-s10-b: "E:/codex-prj/ab-worktrees/pi-matrix-r2/cell-j13-s10-b/.prax"
+  b_state_roots_pairwise_unique: true
+m3_gate:
+  rule: "closed only when all 10 cells have both arms with valid measurement evidence (receipt present, target valid) and cost accounting or explicit observability limits"
+  cells_with_both_arms_valid: 7
+  cells_incomplete:
+    - cell: "cell-j09-s03"
+      a:
+        measurement_valid: false
+        eligible: true
+        stop: "agent_completed"
+      b:
+        measurement_valid: true
+        eligible: true
+        stop: "agent_completed"
+    - cell: "cell-j06-s06"
+      a:
+        measurement_valid: false
+        eligible: true
+        stop: "agent_completed"
+      b:
+        measurement_valid: true
+        eligible: true
+        stop: "agent_completed"
+    - cell: "cell-j05-s05"
+      a:
+        measurement_valid: false
+        eligible: true
+        stop: "agent_completed"
+      b:
+        measurement_valid: true
+        eligible: true
+        stop: "agent_completed"
+  cost_accounting: "20/20 runs token-observable; others explicitly not_observable (process stopped before result event)"
+  verdict: "NOT_CLOSED (7/10 cells with both arms valid; partial results retained, no substitution)"
+runs:
+  - run: "run-01"
+    cell: "cell-j09-s03"
+    arm: "a"
+    workspace: "cell-j09-s03-a"
+    package: "benchmark-runs/product-intelligence-matrix/cell-j09-s03/m3/m3-r2-20260909-run-01-a"
+    attempted: true
+    launch_failures_preserved: 0
+    session_id: "6054c934-458e-4530-95a4-ad603fa6514a"
+    stop_reason: "agent_completed"
+    wall_clock_seconds: 1772
+    wall_budget: "within_90min"
+    token_in_out: 455534
+    token_budget_status: "within_budget"
+    cost_usd: 4.379
+    agent_declared_completion: true
+    contamination_precheck: "passed_before_launch"
+    source_snapshot: true
+    source_file_count: 7
+    receipt_present: true
+    receipt_file: "receipt-2026-09-16T15-35-24-244Z-45c8ac5f-8a90-4bf2-ad20-be42b09272d6.json"
+    receipt_count_in_run_dir: 1
+    receipt_schema_parsed: true
+    receipt_summary:
+      pass: 0
+      fail: 0
+      skipped: 7
+      warnings: 0
+    invalid_target: true
+    invalid_target_reason: "invalid_target: unexpected navigation target: http://127.0.0.1:4042/#preset=balance"
+    checks:
+      layout.overflow: "skipped"
+      layout.responsive_collision: "skipped"
+      text.truncation: "skipped"
+      a11y.contrast: "skipped"
+      a11y.focus_order: "skipped"
+      a11y.target_size: "skipped"
+      type.min_projected_size: "skipped"
+    measurement_valid: false
+    operator_screenshots: 2
+    screenshot_sha256:
+      1280x860: "266f45c98f18e54a9448b7bd3aecefe6359d8bc350e0f8be98cab1d20767758f"
+      1440x900: "3cda40baea6ba42fba8efc47dee5cdaf8af28fff1ce0899dd246f2e825f46fc7"
+    blind_review_eligible: true
+    prax_artifacts_archived: "n/a"
+    status: "agent_completed"
+  - run: "run-02"
+    cell: "cell-j13-s10"
+    arm: "a"
+    workspace: "cell-j13-s10-a"
+    package: "benchmark-runs/product-intelligence-matrix/cell-j13-s10/m3/m3-r2-20260909-run-02-a"
+    attempted: true
+    launch_failures_preserved: 0
+    session_id: "5539d9cf-608f-401f-9686-26b43ce69d65"
+    stop_reason: "agent_completed"
+    wall_clock_seconds: 2595
+    wall_budget: "within_90min"
+    token_in_out: 204532
+    token_budget_status: "within_budget"
+    cost_usd: 2.983
+    agent_declared_completion: true
+    contamination_precheck: "passed_before_launch"
+    source_snapshot: true
+    source_file_count: 8
+    receipt_present: true
+    receipt_file: "receipt-2026-09-16T16-18-44-142Z-82f04857-c32d-4ed3-abe8-d71947dc5d51.json"
+    receipt_count_in_run_dir: 1
+    receipt_schema_parsed: true
+    receipt_summary:
+      pass: 1
+      fail: 6
+      skipped: 0
+      warnings: 1
+    invalid_target: false
+    invalid_target_reason: null
+    checks:
+      layout.overflow: "fail"
+      layout.responsive_collision: "pass"
+      text.truncation: "fail"
+      a11y.contrast: "fail"
+      a11y.focus_order: "fail"
+      a11y.target_size: "fail"
+      type.min_projected_size: "fail"
+    measurement_valid: true
+    operator_screenshots: 2
+    screenshot_sha256:
+      1280x860: "732db54e1b2b89a069468ece340506c30cf3361676447babb8c8b7ec5093ccdd"
+      1440x900: "d8d0f81b406a05c4889511b18d113950b4d4fd78654c407e89a24b0108f5a816"
+    blind_review_eligible: true
+    prax_artifacts_archived: "n/a"
+    status: "agent_completed"
+  - run: "run-03"
+    cell: "cell-j07-s07"
+    arm: "a"
+    workspace: "cell-j07-s07-a"
+    package: "benchmark-runs/product-intelligence-matrix/cell-j07-s07/m3/m3-r2-20260909-run-03-a"
+    attempted: true
+    launch_failures_preserved: 0
+    session_id: "f2eebd2d-1c23-407e-bb3e-cf8c3513750b"
+    stop_reason: "agent_completed"
+    wall_clock_seconds: 1319
+    wall_budget: "within_90min"
+    token_in_out: 191826
+    token_budget_status: "within_budget"
+    cost_usd: 2.349
+    agent_declared_completion: true
+    contamination_precheck: "passed_before_launch"
+    source_snapshot: true
+    source_file_count: 6
+    receipt_present: true
+    receipt_file: "receipt-2026-09-16T16-40-47-222Z-f61f462a-c4a3-42a8-a3b7-49d6c690de2d.json"
+    receipt_count_in_run_dir: 1
+    receipt_schema_parsed: true
+    receipt_summary:
+      pass: 3
+      fail: 3
+      skipped: 1
+      warnings: 1
+    invalid_target: false
+    invalid_target_reason: null
+    checks:
+      layout.overflow: "fail"
+      layout.responsive_collision: "pass"
+      text.truncation: "pass"
+      a11y.contrast: "fail"
+      a11y.focus_order: "skipped"
+      a11y.target_size: "pass"
+      type.min_projected_size: "fail"
+    measurement_valid: true
+    operator_screenshots: 2
+    screenshot_sha256:
+      1280x860: "10e4e17120ccfce836c56fe650428a2e2540ca180db4a85530e1033f645da708"
+      1440x900: "88b409b8d38960165eb47fb807436abecd17e6b0d1523ef49a93110e68e02f06"
+    blind_review_eligible: true
+    prax_artifacts_archived: "n/a"
+    status: "agent_completed"
+  - run: "run-04"
+    cell: "cell-j09-s03"
+    arm: "b"
+    workspace: "cell-j09-s03-b"
+    package: "benchmark-runs/product-intelligence-matrix/cell-j09-s03/m3/m3-r2-20260909-run-04-b"
+    attempted: true
+    launch_failures_preserved: 0
+    session_id: "6260729d-e5ae-419f-ab40-1c45046b4fc1"
+    stop_reason: "agent_completed"
+    wall_clock_seconds: 2500
+    wall_budget: "within_90min"
+    token_in_out: 397367
+    token_budget_status: "within_budget"
+    cost_usd: 8.249
+    agent_declared_completion: true
+    contamination_precheck: "passed_before_launch"
+    source_snapshot: true
+    source_file_count: 2257
+    receipt_present: true
+    receipt_file: "receipt-2026-09-15T15-47-35-584Z-8173b59e-0e67-4f74-8699-3d296d564799.json"
+    receipt_count_in_run_dir: 1
+    receipt_schema_parsed: true
+    receipt_summary:
+      pass: 1
+      fail: 6
+      skipped: 0
+      warnings: 1
+    invalid_target: false
+    invalid_target_reason: null
+    checks:
+      layout.overflow: "fail"
+      layout.responsive_collision: "pass"
+      text.truncation: "fail"
+      a11y.contrast: "fail"
+      a11y.focus_order: "fail"
+      a11y.target_size: "fail"
+      type.min_projected_size: "fail"
+    measurement_valid: true
+    operator_screenshots: 2
+    screenshot_sha256:
+      1280x860: "a2e5d83e27db0b32c20a0b3ec7f61dd5c6fac31810d0faaf6e4391de3148319a"
+      1440x900: "020170125e3a74b56a966f5153c3f0c76fbdec09b4da303df9786d9ca55ca2bb"
+    blind_review_eligible: true
+    prax_artifacts_archived: true
+    status: "agent_completed"
+  - run: "run-05"
+    cell: "cell-j10-s09"
+    arm: "a"
+    workspace: "cell-j10-s09-a"
+    package: "benchmark-runs/product-intelligence-matrix/cell-j10-s09/m3/m3-r2-20260909-run-05-a"
+    attempted: true
+    launch_failures_preserved: 0
+    session_id: "f9bc7f0e-f6a2-46ba-8c35-9150b03dd342"
+    stop_reason: "agent_completed"
+    wall_clock_seconds: 2784
+    wall_budget: "within_90min"
+    token_in_out: 220908
+    token_budget_status: "within_budget"
+    cost_usd: 4.097
+    agent_declared_completion: true
+    contamination_precheck: "passed_before_launch"
+    source_snapshot: true
+    source_file_count: 18
+    receipt_present: true
+    receipt_file: "receipt-2026-09-15T16-34-05-281Z-7ef1aa77-c805-44c4-aca8-a20d24cfdb26.json"
+    receipt_count_in_run_dir: 1
+    receipt_schema_parsed: true
+    receipt_summary:
+      pass: 3
+      fail: 4
+      skipped: 0
+      warnings: 1
+    invalid_target: false
+    invalid_target_reason: null
+    checks:
+      layout.overflow: "pass"
+      layout.responsive_collision: "pass"
+      text.truncation: "pass"
+      a11y.contrast: "fail"
+      a11y.focus_order: "fail"
+      a11y.target_size: "fail"
+      type.min_projected_size: "fail"
+    measurement_valid: true
+    operator_screenshots: 2
+    screenshot_sha256:
+      1280x860: "c1c9b3fec3d50ca804d8eec7aabaf851d9a4d292319d853c002bc3546c6b184d"
+      1440x900: "da3d416a448f14fb9881b1d664509786f6c84446371eb7b427f5ab30049193d9"
+    blind_review_eligible: true
+    prax_artifacts_archived: "n/a"
+    status: "agent_completed"
+  - run: "run-06"
+    cell: "cell-j01-s01"
+    arm: "b"
+    workspace: "cell-j01-s01-b"
+    package: "benchmark-runs/product-intelligence-matrix/cell-j01-s01/m3/m3-r2-20260909-run-06-b"
+    attempted: true
+    launch_failures_preserved: 0
+    session_id: "3a93bdf6-af12-41c3-a668-e512db5e2f13"
+    stop_reason: "agent_completed"
+    wall_clock_seconds: 3414
+    wall_budget: "within_90min"
+    token_in_out: 448571
+    token_budget_status: "within_budget"
+    cost_usd: 10.765
+    agent_declared_completion: true
+    contamination_precheck: "passed_before_launch"
+    source_snapshot: true
+    source_file_count: 7
+    receipt_present: true
+    receipt_file: "receipt-2026-09-15T17-31-04-395Z-a40c9989-a72d-4bc8-98e1-47972dce77eb.json"
+    receipt_count_in_run_dir: 1
+    receipt_schema_parsed: true
+    receipt_summary:
+      pass: 3
+      fail: 4
+      skipped: 0
+      warnings: 1
+    invalid_target: false
+    invalid_target_reason: null
+    checks:
+      layout.overflow: "pass"
+      layout.responsive_collision: "pass"
+      text.truncation: "pass"
+      a11y.contrast: "fail"
+      a11y.focus_order: "fail"
+      a11y.target_size: "fail"
+      type.min_projected_size: "fail"
+    measurement_valid: true
+    operator_screenshots: 2
+    screenshot_sha256:
+      1280x860: "363f94c85576ce808dcec278f35bc4c3e78d9025181c31ae431994070211a2b2"
+      1440x900: "8e57ba87df1ed7f09cf34f42c755accec29374aa9ac7afc139896ee8a2977e9c"
+    blind_review_eligible: true
+    prax_artifacts_archived: true
+    status: "agent_completed"
+  - run: "run-07"
+    cell: "cell-j10-s09"
+    arm: "b"
+    workspace: "cell-j10-s09-b"
+    package: "benchmark-runs/product-intelligence-matrix/cell-j10-s09/m3/m3-r2-20260909-run-07-b"
+    attempted: true
+    launch_failures_preserved: 0
+    session_id: "058309af-4091-4a6e-8272-f0fbb9b3d8a7"
+    stop_reason: "agent_completed"
+    wall_clock_seconds: 2903
+    wall_budget: "within_90min"
+    token_in_out: 307015
+    token_budget_status: "within_budget"
+    cost_usd: 7.908
+    agent_declared_completion: true
+    contamination_precheck: "passed_before_launch"
+    source_snapshot: true
+    source_file_count: 20
+    receipt_present: true
+    receipt_file: "receipt-2026-09-15T18-19-31-833Z-ebe5698b-4ff5-4323-8a57-c337c18971d4.json"
+    receipt_count_in_run_dir: 1
+    receipt_schema_parsed: true
+    receipt_summary:
+      pass: 2
+      fail: 5
+      skipped: 0
+      warnings: 0
+    invalid_target: false
+    invalid_target_reason: null
+    checks:
+      layout.overflow: "fail"
+      layout.responsive_collision: "fail"
+      text.truncation: "pass"
+      a11y.contrast: "fail"
+      a11y.focus_order: "fail"
+      a11y.target_size: "fail"
+      type.min_projected_size: "pass"
+    measurement_valid: true
+    operator_screenshots: 2
+    screenshot_sha256:
+      1280x860: "a60f56a4ce69b5702dcd7b96b2eee053a6b6cc1c12a78f86cd5e20037f862dcb"
+      1440x900: "ad78bbbe05f22b70cf67f2aa81c250f9ac88868fa35459fc31dd102cbdea279a"
+    blind_review_eligible: true
+    prax_artifacts_archived: true
+    status: "agent_completed"
+  - run: "run-08"
+    cell: "cell-j06-s06"
+    arm: "b"
+    workspace: "cell-j06-s06-b"
+    package: "benchmark-runs/product-intelligence-matrix/cell-j06-s06/m3/m3-r2-20260909-run-08-b"
+    attempted: true
+    launch_failures_preserved: 0
+    session_id: "66b0645b-05a4-4511-9ca3-7a7401e5f38b"
+    stop_reason: "agent_completed"
+    wall_clock_seconds: 2296
+    wall_budget: "within_90min"
+    token_in_out: 504278
+    token_budget_status: "within_budget"
+    cost_usd: 7.92
+    agent_declared_completion: true
+    contamination_precheck: "passed_before_launch"
+    source_snapshot: true
+    source_file_count: 12
+    receipt_present: true
+    receipt_file: "receipt-2026-09-15T18-57-52-901Z-b9a63c31-2885-40c4-88bc-604ac2fda8ab.json"
+    receipt_count_in_run_dir: 1
+    receipt_schema_parsed: true
+    receipt_summary:
+      pass: 2
+      fail: 5
+      skipped: 0
+      warnings: 1
+    invalid_target: false
+    invalid_target_reason: null
+    checks:
+      layout.overflow: "pass"
+      layout.responsive_collision: "fail"
+      text.truncation: "pass"
+      a11y.contrast: "fail"
+      a11y.focus_order: "fail"
+      a11y.target_size: "fail"
+      type.min_projected_size: "fail"
+    measurement_valid: true
+    operator_screenshots: 2
+    screenshot_sha256:
+      1280x860: "901ca5a83dbe8efd424256fd5e645effcc42af32986efb6be5dd11cf560d0c52"
+      1440x900: "3e2bc8cade502a36404a83d3b21bb92480ac098b544de12f138c4d7000a24d4d"
+    blind_review_eligible: true
+    prax_artifacts_archived: true
+    status: "agent_completed"
+  - run: "run-09"
+    cell: "cell-j07-s07"
+    arm: "b"
+    workspace: "cell-j07-s07-b"
+    package: "benchmark-runs/product-intelligence-matrix/cell-j07-s07/m3/m3-r2-20260909-run-09-b"
+    attempted: true
+    launch_failures_preserved: 0
+    session_id: "602cb3c4-f3d7-47d1-93b4-c7f2eae0ad6e"
+    stop_reason: "agent_completed"
+    wall_clock_seconds: 2143
+    wall_budget: "within_90min"
+    token_in_out: 302550
+    token_budget_status: "within_budget"
+    cost_usd: 5.944
+    agent_declared_completion: true
+    contamination_precheck: "passed_before_launch"
+    source_snapshot: true
+    source_file_count: 4
+    receipt_present: true
+    receipt_file: "receipt-2026-09-15T19-33-39-732Z-ee7e0c9a-cd4a-40fd-b544-a31780f326d1.json"
+    receipt_count_in_run_dir: 1
+    receipt_schema_parsed: true
+    receipt_summary:
+      pass: 3
+      fail: 3
+      skipped: 1
+      warnings: 1
+    invalid_target: false
+    invalid_target_reason: null
+    checks:
+      layout.overflow: "pass"
+      layout.responsive_collision: "fail"
+      text.truncation: "pass"
+      a11y.contrast: "fail"
+      a11y.focus_order: "skipped"
+      a11y.target_size: "pass"
+      type.min_projected_size: "fail"
+    measurement_valid: true
+    operator_screenshots: 2
+    screenshot_sha256:
+      1280x860: "74a13b96ec4599928991f69420a427148cca096ac5312c311fb92b045a95ed4b"
+      1440x900: "fc029540ae5373c6a56d5b7021efdd711a121256c93e40b8b8b12e6ae5e17477"
+    blind_review_eligible: true
+    prax_artifacts_archived: true
+    status: "agent_completed"
+  - run: "run-10"
+    cell: "cell-j06-s06"
+    arm: "a"
+    workspace: "cell-j06-s06-a"
+    package: "benchmark-runs/product-intelligence-matrix/cell-j06-s06/m3/m3-r2-20260909-run-10-a"
+    attempted: true
+    launch_failures_preserved: 0
+    session_id: "d7893d71-b788-4837-8cf3-3bbfe54bfdc6"
+    stop_reason: "agent_completed"
+    wall_clock_seconds: 1249
+    wall_budget: "within_90min"
+    token_in_out: 284903
+    token_budget_status: "within_budget"
+    cost_usd: 3.07
+    agent_declared_completion: true
+    contamination_precheck: "passed_before_launch"
+    source_snapshot: true
+    source_file_count: 10
+    receipt_present: true
+    receipt_file: "receipt-2026-09-15T19-54-32-877Z-37f728bd-3ae5-4bd1-8c54-6d429d7ed599.json"
+    receipt_count_in_run_dir: 1
+    receipt_schema_parsed: true
+    receipt_summary:
+      pass: 0
+      fail: 0
+      skipped: 7
+      warnings: 0
+    invalid_target: true
+    invalid_target_reason: "invalid_target: unexpected navigation target: http://127.0.0.1:2175/#sel=c02&asof=29"
+    checks:
+      layout.overflow: "skipped"
+      layout.responsive_collision: "skipped"
+      text.truncation: "skipped"
+      a11y.contrast: "skipped"
+      a11y.focus_order: "skipped"
+      a11y.target_size: "skipped"
+      type.min_projected_size: "skipped"
+    measurement_valid: false
+    operator_screenshots: 2
+    screenshot_sha256:
+      1280x860: "59b944b9301533a982e57a0b73b3e90f43d07539ca5fdc887d0880f79862ed7b"
+      1440x900: "fd468fbadd6ed983c0b40e1a34f9cc0bc1ea97a5272a2dd5728773d9b15468f7"
+    blind_review_eligible: true
+    prax_artifacts_archived: "n/a"
+    status: "agent_completed"
+  - run: "run-11"
+    cell: "cell-j08-s08"
+    arm: "a"
+    workspace: "cell-j08-s08-a"
+    package: "benchmark-runs/product-intelligence-matrix/cell-j08-s08/m3/m3-r2-20260909-run-11-a"
+    attempted: true
+    launch_failures_preserved: 0
+    session_id: "8a62e975-ed6f-4fca-b99e-a581286a44f2"
+    stop_reason: "agent_completed"
+    wall_clock_seconds: 2309
+    wall_budget: "within_90min"
+    token_in_out: 541730
+    token_budget_status: "within_budget"
+    cost_usd: 7.009
+    agent_declared_completion: true
+    contamination_precheck: "passed_before_launch"
+    source_snapshot: true
+    source_file_count: 12
+    receipt_present: true
+    receipt_file: "receipt-2026-09-15T20-33-06-254Z-d902aadf-f6e7-4b80-b12a-6a5ad76f9ba0.json"
+    receipt_count_in_run_dir: 1
+    receipt_schema_parsed: true
+    receipt_summary:
+      pass: 3
+      fail: 4
+      skipped: 0
+      warnings: 1
+    invalid_target: false
+    invalid_target_reason: null
+    checks:
+      layout.overflow: "pass"
+      layout.responsive_collision: "pass"
+      text.truncation: "pass"
+      a11y.contrast: "fail"
+      a11y.focus_order: "fail"
+      a11y.target_size: "fail"
+      type.min_projected_size: "fail"
+    measurement_valid: true
+    operator_screenshots: 2
+    screenshot_sha256:
+      1280x860: "416880f67cd202322d2fc58c1cbcfd8dc202ca66ca87fe67a2b054dca8ef6cf9"
+      1440x900: "ad24d5bc9c657193c8f4df43b2fe664457c116808fb75566083d927ef53d6b55"
+    blind_review_eligible: true
+    prax_artifacts_archived: "n/a"
+    status: "agent_completed"
+  - run: "run-12"
+    cell: "cell-j02-s02"
+    arm: "a"
+    workspace: "cell-j02-s02-a"
+    package: "benchmark-runs/product-intelligence-matrix/cell-j02-s02/m3/m3-r2-20260909-run-12-a"
+    attempted: true
+    launch_failures_preserved: 0
+    session_id: "ca990688-4ed4-4c66-a85a-6b42953d3612"
+    stop_reason: "agent_completed"
+    wall_clock_seconds: 1519
+    wall_budget: "within_90min"
+    token_in_out: 234562
+    token_budget_status: "within_budget"
+    cost_usd: 3.256
+    agent_declared_completion: true
+    contamination_precheck: "passed_before_launch"
+    source_snapshot: true
+    source_file_count: 8
+    receipt_present: true
+    receipt_file: "receipt-2026-09-15T20-58-35-005Z-e384d531-e86c-47c5-a84a-fd8042bf4464.json"
+    receipt_count_in_run_dir: 1
+    receipt_schema_parsed: true
+    receipt_summary:
+      pass: 4
+      fail: 3
+      skipped: 0
+      warnings: 1
+    invalid_target: false
+    invalid_target_reason: null
+    checks:
+      layout.overflow: "pass"
+      layout.responsive_collision: "pass"
+      text.truncation: "pass"
+      a11y.contrast: "fail"
+      a11y.focus_order: "fail"
+      a11y.target_size: "pass"
+      type.min_projected_size: "fail"
+    measurement_valid: true
+    operator_screenshots: 2
+    screenshot_sha256:
+      1280x860: "4e38b0e8490ec1909c0f0e4d5d21a5f1ac7d6c6a9b2e36a2c213f6f99a3ee0b1"
+      1440x900: "6dec19d747388e49df8a59643ca8621373b7da2da544a77204e658b87fbcb167"
+    blind_review_eligible: true
+    prax_artifacts_archived: "n/a"
+    status: "agent_completed"
+  - run: "run-13"
+    cell: "cell-j01-s01"
+    arm: "a"
+    workspace: "cell-j01-s01-a"
+    package: "benchmark-runs/product-intelligence-matrix/cell-j01-s01/m3/m3-r2-20260909-run-13-a"
+    attempted: true
+    launch_failures_preserved: 0
+    session_id: "45e6c4d0-03aa-45e6-b684-63f00796eafb"
+    stop_reason: "agent_completed"
+    wall_clock_seconds: 3267
+    wall_budget: "within_90min"
+    token_in_out: 1179293
+    token_budget_status: "within_budget"
+    cost_usd: 34.734
+    agent_declared_completion: true
+    contamination_precheck: "passed_before_launch"
+    source_snapshot: true
+    source_file_count: 7
+    receipt_present: true
+    receipt_file: "receipt-2026-09-15T21-53-07-286Z-180596d1-8e39-4472-8d2f-02e4d1608289.json"
+    receipt_count_in_run_dir: 1
+    receipt_schema_parsed: true
+    receipt_summary:
+      pass: 1
+      fail: 6
+      skipped: 0
+      warnings: 1
+    invalid_target: false
+    invalid_target_reason: null
+    checks:
+      layout.overflow: "fail"
+      layout.responsive_collision: "fail"
+      text.truncation: "pass"
+      a11y.contrast: "fail"
+      a11y.focus_order: "fail"
+      a11y.target_size: "fail"
+      type.min_projected_size: "fail"
+    measurement_valid: true
+    operator_screenshots: 2
+    screenshot_sha256:
+      1280x860: "cb6a917c014eda87cc164190ce4fcb6ecc4b23ecd3b9fce5a68a98024ed8b0fa"
+      1440x900: "ca463888e5ed504e79781bd9c0cbf6489ca3404faff2d04dd1773623af96184c"
+    blind_review_eligible: true
+    prax_artifacts_archived: "n/a"
+    status: "agent_completed"
+  - run: "run-14"
+    cell: "cell-j08-s08"
+    arm: "b"
+    workspace: "cell-j08-s08-b"
+    package: "benchmark-runs/product-intelligence-matrix/cell-j08-s08/m3/m3-r2-20260909-run-14-b"
+    attempted: true
+    launch_failures_preserved: 0
+    session_id: "1e11b450-4669-4a8d-9e04-26d6b908ca4c"
+    stop_reason: "agent_completed"
+    wall_clock_seconds: 2529
+    wall_budget: "within_90min"
+    token_in_out: 446682
+    token_budget_status: "within_budget"
+    cost_usd: 10.491
+    agent_declared_completion: true
+    contamination_precheck: "passed_before_launch"
+    source_snapshot: true
+    source_file_count: 20
+    receipt_present: true
+    receipt_file: "receipt-2026-09-15T22-35-22-932Z-d846bb97-0bd5-4755-b496-7cfaf14f1136.json"
+    receipt_count_in_run_dir: 1
+    receipt_schema_parsed: true
+    receipt_summary:
+      pass: 3
+      fail: 4
+      skipped: 0
+      warnings: 1
+    invalid_target: false
+    invalid_target_reason: null
+    checks:
+      layout.overflow: "pass"
+      layout.responsive_collision: "pass"
+      text.truncation: "pass"
+      a11y.contrast: "fail"
+      a11y.focus_order: "fail"
+      a11y.target_size: "fail"
+      type.min_projected_size: "fail"
+    measurement_valid: true
+    operator_screenshots: 2
+    screenshot_sha256:
+      1280x860: "a14b2bfb3e5015ebf0357788f184bd4a2a15263e2c9477ca2a5da8e7e503e92f"
+      1440x900: "d9c7911ff6136911fc6b0a3f70d0c64b6375615e567d3e6910f2c86749c96a22"
+    blind_review_eligible: true
+    prax_artifacts_archived: true
+    status: "agent_completed"
+  - run: "run-15"
+    cell: "cell-j04-s04"
+    arm: "a"
+    workspace: "cell-j04-s04-a"
+    package: "benchmark-runs/product-intelligence-matrix/cell-j04-s04/m3/m3-r2-20260909-run-15-a"
+    attempted: true
+    launch_failures_preserved: 0
+    session_id: "506dc042-3552-40d7-8741-035804b55056"
+    stop_reason: "agent_completed"
+    wall_clock_seconds: 1902
+    wall_budget: "within_90min"
+    token_in_out: 378937
+    token_budget_status: "within_budget"
+    cost_usd: 3.776
+    agent_declared_completion: true
+    contamination_precheck: "passed_before_launch"
+    source_snapshot: true
+    source_file_count: 15
+    receipt_present: true
+    receipt_file: "receipt-2026-09-16T17-12-34-332Z-070400cf-d8bd-498c-b657-35805ba4f0e6.json"
+    receipt_count_in_run_dir: 1
+    receipt_schema_parsed: true
+    receipt_summary:
+      pass: 3
+      fail: 4
+      skipped: 0
+      warnings: 1
+    invalid_target: false
+    invalid_target_reason: null
+    checks:
+      layout.overflow: "fail"
+      layout.responsive_collision: "pass"
+      text.truncation: "pass"
+      a11y.contrast: "fail"
+      a11y.focus_order: "fail"
+      a11y.target_size: "pass"
+      type.min_projected_size: "fail"
+    measurement_valid: true
+    operator_screenshots: 2
+    screenshot_sha256:
+      1280x860: "91c7f98cfeb9b8eaaa2b24bdac5c1baac72418b9803a26944625cf14f0864958"
+      1440x900: "b2bdbe03e1005748612c4c5261ca46159960e8959a22b9055280b7d4d5cd5579"
+    blind_review_eligible: true
+    prax_artifacts_archived: "n/a"
+    status: "agent_completed"
+  - run: "run-16"
+    cell: "cell-j04-s04"
+    arm: "b"
+    workspace: "cell-j04-s04-b"
+    package: "benchmark-runs/product-intelligence-matrix/cell-j04-s04/m3/m3-r2-20260909-run-16-b"
+    attempted: true
+    launch_failures_preserved: 0
+    session_id: "c951beeb-d50e-42c4-ae60-bc6607756d5d"
+    stop_reason: "agent_completed"
+    wall_clock_seconds: 3148
+    wall_budget: "within_90min"
+    token_in_out: 358941
+    token_budget_status: "within_budget"
+    cost_usd: 8.275
+    agent_declared_completion: true
+    contamination_precheck: "passed_before_launch"
+    source_snapshot: true
+    source_file_count: 7
+    receipt_present: true
+    receipt_file: "receipt-2026-09-16T18-05-06-885Z-43c811fd-09ef-4e6d-8929-f485391801a0.json"
+    receipt_count_in_run_dir: 1
+    receipt_schema_parsed: true
+    receipt_summary:
+      pass: 3
+      fail: 4
+      skipped: 0
+      warnings: 1
+    invalid_target: false
+    invalid_target_reason: null
+    checks:
+      layout.overflow: "pass"
+      layout.responsive_collision: "pass"
+      text.truncation: "pass"
+      a11y.contrast: "fail"
+      a11y.focus_order: "fail"
+      a11y.target_size: "fail"
+      type.min_projected_size: "fail"
+    measurement_valid: true
+    operator_screenshots: 2
+    screenshot_sha256:
+      1280x860: "a6cee45e2359f568f7869708a17f2a03bb204569c11fb96bcdef2b35841a28ea"
+      1440x900: "f33d4a4cbb05353310fd050b355ffb414b0de29b4aea47d79d0e926d1721a529"
+    blind_review_eligible: true
+    prax_artifacts_archived: true
+    status: "agent_completed"
+  - run: "run-17"
+    cell: "cell-j05-s05"
+    arm: "a"
+    workspace: "cell-j05-s05-a"
+    package: "benchmark-runs/product-intelligence-matrix/cell-j05-s05/m3/m3-r2-20260909-run-17-a"
+    attempted: true
+    launch_failures_preserved: 0
+    session_id: "dfa5a57b-ec3f-4c73-84ac-a0bf42afd78b"
+    stop_reason: "agent_completed"
+    wall_clock_seconds: 2953
+    wall_budget: "within_90min"
+    token_in_out: 782835
+    token_budget_status: "within_budget"
+    cost_usd: 8.154
+    agent_declared_completion: true
+    contamination_precheck: "passed_before_launch"
+    source_snapshot: true
+    source_file_count: 10
+    receipt_present: true
+    receipt_file: "receipt-2026-09-16T18-54-23-625Z-d2d94a1d-049d-4c50-8495-a1f7c89823fe.json"
+    receipt_count_in_run_dir: 1
+    receipt_schema_parsed: true
+    receipt_summary:
+      pass: 0
+      fail: 0
+      skipped: 7
+      warnings: 0
+    invalid_target: true
+    invalid_target_reason: "invalid_target: unexpected navigation target: http://127.0.0.1:10686/#sel=order-svc&dir=both&depth=1"
+    checks:
+      layout.overflow: "skipped"
+      layout.responsive_collision: "skipped"
+      text.truncation: "skipped"
+      a11y.contrast: "skipped"
+      a11y.focus_order: "skipped"
+      a11y.target_size: "skipped"
+      type.min_projected_size: "skipped"
+    measurement_valid: false
+    operator_screenshots: 2
+    screenshot_sha256:
+      1280x860: "ebb4a78f3f6894fc28c8bb934b5b70cc8cd5115a82163efa5a9c0656a18a2332"
+      1440x900: "f270d782b0f6a8c33d8d2886ed1be4590fd3f55e80fd43646ce9f94fe238168a"
+    blind_review_eligible: true
+    prax_artifacts_archived: "n/a"
+    status: "agent_completed"
+  - run: "run-18"
+    cell: "cell-j02-s02"
+    arm: "b"
+    workspace: "cell-j02-s02-b"
+    package: "benchmark-runs/product-intelligence-matrix/cell-j02-s02/m3/m3-r2-20260909-run-18-b"
+    attempted: true
+    launch_failures_preserved: 0
+    session_id: "1e6fa688-d4fb-4f5e-aaaf-31af72708a5c"
+    stop_reason: "agent_completed"
+    wall_clock_seconds: 2517
+    wall_budget: "within_90min"
+    token_in_out: 329202
+    token_budget_status: "within_budget"
+    cost_usd: 6.381
+    agent_declared_completion: true
+    contamination_precheck: "passed_before_launch"
+    source_snapshot: true
+    source_file_count: 7
+    receipt_present: true
+    receipt_file: "receipt-2026-09-16T19-36-27-073Z-deb9ab61-510e-42ef-ad56-abd1ab1bbe38.json"
+    receipt_count_in_run_dir: 1
+    receipt_schema_parsed: true
+    receipt_summary:
+      pass: 2
+      fail: 5
+      skipped: 0
+      warnings: 1
+    invalid_target: false
+    invalid_target_reason: null
+    checks:
+      layout.overflow: "fail"
+      layout.responsive_collision: "pass"
+      text.truncation: "pass"
+      a11y.contrast: "fail"
+      a11y.focus_order: "fail"
+      a11y.target_size: "fail"
+      type.min_projected_size: "fail"
+    measurement_valid: true
+    operator_screenshots: 2
+    screenshot_sha256:
+      1280x860: "b93c592e81ef9d2d790dced76f1219cdf0ece0a6a4db76d93598988f77d4500d"
+      1440x900: "2547ea3bf5ce19d1a7f3170c5539b3f54d047bab8c84a6266d0719f0d37b5d56"
+    blind_review_eligible: true
+    prax_artifacts_archived: true
+    status: "agent_completed"
+  - run: "run-19"
+    cell: "cell-j05-s05"
+    arm: "b"
+    workspace: "cell-j05-s05-b"
+    package: "benchmark-runs/product-intelligence-matrix/cell-j05-s05/m3/m3-r2-20260909-run-19-b"
+    attempted: true
+    launch_failures_preserved: 0
+    session_id: "d79b4753-6adb-4738-aefa-da740d93cd84"
+    stop_reason: "agent_completed"
+    wall_clock_seconds: 3267
+    wall_budget: "within_90min"
+    token_in_out: 716222
+    token_budget_status: "within_budget"
+    cost_usd: 8.711
+    agent_declared_completion: true
+    contamination_precheck: "passed_before_launch"
+    source_snapshot: true
+    source_file_count: 8
+    receipt_present: true
+    receipt_file: "receipt-2026-09-16T20-30-59-171Z-ccb7e2de-1315-4c22-8567-ca3e7b5b7bdb.json"
+    receipt_count_in_run_dir: 1
+    receipt_schema_parsed: true
+    receipt_summary:
+      pass: 5
+      fail: 2
+      skipped: 0
+      warnings: 1
+    invalid_target: false
+    invalid_target_reason: null
+    checks:
+      layout.overflow: "pass"
+      layout.responsive_collision: "pass"
+      text.truncation: "pass"
+      a11y.contrast: "fail"
+      a11y.focus_order: "pass"
+      a11y.target_size: "pass"
+      type.min_projected_size: "fail"
+    measurement_valid: true
+    operator_screenshots: 2
+    screenshot_sha256:
+      1280x860: "96660a354b52fc4be6291fe62b372db03d25c304999012ed4d1b047baad6953c"
+      1440x900: "aa168051fb4759207c754d8c955f8617fcbebbcae031613d1b8781abb307c7a0"
+    blind_review_eligible: true
+    prax_artifacts_archived: true
+    status: "agent_completed"
+  - run: "run-20"
+    cell: "cell-j13-s10"
+    arm: "b"
+    workspace: "cell-j13-s10-b"
+    package: "benchmark-runs/product-intelligence-matrix/cell-j13-s10/m3/m3-r2-20260909-run-20-b"
+    attempted: true
+    launch_failures_preserved: 0
+    session_id: "0511e79b-b1bc-42ff-a5f1-6086547993c7"
+    stop_reason: "agent_completed"
+    wall_clock_seconds: 5090
+    wall_budget: "within_90min"
+    token_in_out: 1079226
+    token_budget_status: "within_budget"
+    cost_usd: 15.449
+    agent_declared_completion: true
+    contamination_precheck: "passed_before_launch"
+    source_snapshot: true
+    source_file_count: 15
+    receipt_present: true
+    receipt_file: "receipt-2026-09-16T21-55-55-959Z-4611fdb5-cc8d-4061-8a4c-935a13d88eef.json"
+    receipt_count_in_run_dir: 1
+    receipt_schema_parsed: true
+    receipt_summary:
+      pass: 1
+      fail: 6
+      skipped: 0
+      warnings: 1
+    invalid_target: false
+    invalid_target_reason: null
+    checks:
+      layout.overflow: "fail"
+      layout.responsive_collision: "fail"
+      text.truncation: "pass"
+      a11y.contrast: "fail"
+      a11y.focus_order: "fail"
+      a11y.target_size: "fail"
+      type.min_projected_size: "fail"
+    measurement_valid: true
+    operator_screenshots: 2
+    screenshot_sha256:
+      1280x860: "877710a7a7bb171a191f82de1029da014deba00166c95d087a8ffca547259bb2"
+      1440x900: "7a30532c335ca1f637d38f2f9c7f377b9ff174585c678482acf00e9110bbf633"
+    blind_review_eligible: true
+    prax_artifacts_archived: true
+    status: "agent_completed"

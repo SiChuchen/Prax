@@ -1,0 +1,102 @@
+session_id: ds_20260915222626_faa2f104
+information_shape:
+  cardinality: one
+  relationality: low
+  hierarchy: medium
+  temporality: medium
+  density: low
+  dimensionality: medium
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: document
+    reason: 编辑与阅读的对象是文档本身：块序列以文档形态就地编辑（中栏）并按阅读排版呈现（右栏），两栏共享同一数据源
+  supporting:
+    - type: tree
+      reason: 左栏大纲以树形呈现标题块派生的分区层级，用于导航与层级总览
+  rejected:
+    - option: code_editor（Markdown 源码编辑 + 渲染预览）
+      reason: 语法层编辑要求用户掌握标记语言，且源码与渲染两态容易失一致，与「结构化编辑、不破坏结构」相悖
+    - option: form（每块独立表单面板）
+      reason: 把连续文档切成离散表单，破坏文档语境与阅读流，密度上升，与低密度意图冲突
+    - option: canvas（自由画布排版）
+      reason: 简报空间性为 none，引入空间自由度反而增加结构破坏面
+primary_structure:
+  pattern: PAT-APPLICATION-SHELL
+  rationale:
+    - 稳定顶栏（文档名 + 撤销/重做 + 导出 + 结构健康度）共享身份与工具，包住三个持久协作区：大纲（标题块派生的分区树，点击跳转）、结构化块编辑器（就地编辑的有序块序列 + 块操作）、实时预览（同一数据源的忠实渲染，点击回选块）
+    - 单文档单工作区、无全局导航需求；壳层 chrome 压到最小，空间让给三区（H-01 任务优先入口、P-01 分组使结构先于细节可见）
+    - 编辑与预览并列呈现且渲染自同一数据模型，一致性可见、即时、可验证（P-26 状态可见）
+    - 大纲为派生视图，结构层级显式可见；编辑破坏层级时大纲与诊断同步暴露问题
+  confidence: high
+information_hierarchy:
+  primary:
+    - 1 文档标题 + 结构健康状态（顶栏，常驻）
+    - 2 三区工作区：大纲 · 结构化编辑 · 实时预览（并列主导）
+    - 3 块级内容与块操作（编辑区内）
+    - 4 统计与导出（状态条/菜单，辅助）
+  secondary:
+    - 诊断列表随问题出现，定位到块
+    - 块插入菜单由上下文触发
+density:
+  intent: spacious
+  strategy:
+    - 低密度宽松行距与留白，预览区按阅读排版
+    - 块级操作按需显现（悬停/选中），不常驻堆叠
+    - 诊断与统计折叠为紧凑状态条，不占主工作区
+  avoid:
+    - 多面板堆叠与嵌套标签页
+    - 表格化密集控件
+    - 纯源码/纯表单形态
+major_choices:
+  - id: MC-1-single-source
+    choice: 编辑器与预览渲染自同一文档数据模型，任何块级编辑即时同步渲染两侧——一致是结构保证而非视觉巧合
+    rationale: 直接满足验收种子「结构化编辑与预览一致」
+    confidence: high
+    references:
+      - document
+      - block
+  - id: MC-2-block-model
+    choice: 文档 = 有序块序列（heading h2–h4 / paragraph / list / quote / code / callout / divider），标题块派生大纲；层级由标题级别表达
+    rationale: 匹配「层级中、密度低」的信息形状；大纲是派生视图，杜绝两处结构不一致
+    confidence: high
+    references:
+      - document
+      - block
+      - outline
+  - id: MC-3-structural-guard
+    choice: 连续结构校验（标题层级跳跃、多 H1、空标题、空块、空列表）+ 定位 + 一键修复；同时层级调整控件约束相邻层级增减，降低破坏概率（P-26 状态可见、P-28 可恢复）
+    rationale: 「编辑不破坏结构」：以可见诊断与低摩擦修复替代硬阻断，保留编辑自由
+    confidence: high
+    references:
+      - diagnostic
+      - block
+  - id: MC-4-undo-redo
+    choice: 快照式撤销/重做（Ctrl+Z / Ctrl+Shift+Z），编辑历史随文档持久化（P-28 可恢复动作）
+    rationale: 时间性=中的最小充分实现
+    confidence: high
+    references:
+      - document
+  - id: MC-5-vanilla-static
+    choice: 零依赖原生 HTML/CSS/JS，单页静态直开；初始文档随首屏内联
+    rationale: 满足静态交付与「加载即可用」约束，无构建/网络依赖（WEB-DESKTOP 平台惯例）
+    confidence: high
+    references:
+      - document
+      - block
+rejected: []
+unresolved: []
+complexity_budget:
+  permanent_panels: 4
+  permanent_primary_actions: 6
+  modes: 1
+  state_owners: 3
+  navigation_levels: 1
+  persistent_filters: 0
+  new_semantic_concepts: 2
+  keyboard_contracts: 2
+  mobile_conflicts: 0
+  permanent_surfaces: 4

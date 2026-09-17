@@ -1,0 +1,600 @@
+{
+  "receipt_version": "0.2",
+  "tool": {
+    "name": "prax-measure",
+    "version": "0.2.0"
+  },
+  "target": {
+    "app_root": "E:\\codex-prj\\Prax\\Prax\\benchmark-runs\\product-intelligence-matrix\\cell-j07-s07\\m3\\m3-r2-20260909-run-09-b\\measurement-root",
+    "base_url": "http://127.0.0.1:5084/",
+    "build_ref": null
+  },
+  "run_at": "2026-09-15T19:33:39.732Z",
+  "viewport_matrix": [
+    {
+      "width": 1280,
+      "height": 860
+    },
+    {
+      "width": 1440,
+      "height": 900
+    }
+  ],
+  "checks": [
+    {
+      "id": "layout.overflow",
+      "status": "pass",
+      "severity": "error",
+      "measured": {
+        "scroll_width": 1280,
+        "inner_width": 1280,
+        "overflow_px": 0,
+        "element_overflows": 0,
+        "flagged_elements": [],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "pass"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "pass"
+          }
+        ]
+      },
+      "threshold": {
+        "max_overflow_px": 0,
+        "element_overflow_tolerance_px": 1
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "layout.responsive_collision",
+      "status": "fail",
+      "severity": "error",
+      "subject": "main#stage ∩ button#btn-help-close",
+      "measured": {
+        "collisions": 1,
+        "pairs": [
+          {
+            "a": "main#stage",
+            "b": "button#btn-help-close",
+            "a_rect": {
+              "x": 0,
+              "y": 48,
+              "width": 1008,
+              "height": 812
+            },
+            "b_rect": {
+              "x": 878.5,
+              "y": 58,
+              "width": 79.5,
+              "height": 33
+            }
+          }
+        ],
+        "interactive_elements": 18,
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "max_collisions": 0
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/998d143a-c11c-4373-b076-4c6a11ba9a70/viewport-0/layout.responsive_collision/responsive-collision-1280x860.png",
+          "sha256": "caaca18d3276379308e9c77bd29b2dc0eda413eb1f58ee35180d4b487e4ef77c"
+        },
+        {
+          "ref": "validation-evidence/998d143a-c11c-4373-b076-4c6a11ba9a70/viewport-1/layout.responsive_collision/responsive-collision-1440x900.png",
+          "sha256": "fc029540ae5373c6a56d5b7021efdd711a121256c93e40b8b8b12e6ae5e17477"
+        }
+      ],
+      "supported_fixes": [
+        "separate the colliding interactive elements or restructure the layout so their hit areas do not intersect at this viewport"
+      ]
+    },
+    {
+      "id": "text.truncation",
+      "status": "pass",
+      "severity": "error",
+      "measured": {
+        "truncated": 0,
+        "elements": [],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "pass"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "pass"
+          }
+        ]
+      },
+      "threshold": {
+        "max_truncated": 0
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "a11y.contrast",
+      "status": "fail",
+      "severity": "error",
+      "subject": "kbd; button#btn-dup; kbd; button#btn-del; kbd; button#btn-back; kbd; button#btn-front; kbd; kbd; kbd; span; span; span; span; span; span; span; span; span; span; span; span; span; div; span; span; span; span; div; kbd",
+      "measured": {
+        "failing": 31,
+        "pairs": [
+          {
+            "selector": "kbd",
+            "ratio": 1.24,
+            "required": 4.5,
+            "font_px": 10,
+            "bold": false,
+            "foreground": "rgb(229, 231, 235)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "button#btn-dup",
+            "ratio": 2.81,
+            "required": 4.5,
+            "font_px": 12.5,
+            "bold": false,
+            "foreground": "rgb(209, 213, 219)",
+            "background": "rgb(22,24,29)"
+          },
+          {
+            "selector": "kbd",
+            "ratio": 1.08,
+            "required": 4.5,
+            "font_px": 10,
+            "bold": false,
+            "foreground": "rgb(229, 231, 235)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "button#btn-del",
+            "ratio": 2.81,
+            "required": 4.5,
+            "font_px": 12.5,
+            "bold": false,
+            "foreground": "rgb(209, 213, 219)",
+            "background": "rgb(22,24,29)"
+          },
+          {
+            "selector": "kbd",
+            "ratio": 1.08,
+            "required": 4.5,
+            "font_px": 10,
+            "bold": false,
+            "foreground": "rgb(229, 231, 235)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "button#btn-back",
+            "ratio": 2.81,
+            "required": 4.5,
+            "font_px": 12.5,
+            "bold": false,
+            "foreground": "rgb(209, 213, 219)",
+            "background": "rgb(22,24,29)"
+          },
+          {
+            "selector": "kbd",
+            "ratio": 1.08,
+            "required": 4.5,
+            "font_px": 10,
+            "bold": false,
+            "foreground": "rgb(229, 231, 235)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "button#btn-front",
+            "ratio": 2.81,
+            "required": 4.5,
+            "font_px": 12.5,
+            "bold": false,
+            "foreground": "rgb(209, 213, 219)",
+            "background": "rgb(22,24,29)"
+          },
+          {
+            "selector": "kbd",
+            "ratio": 1.08,
+            "required": 4.5,
+            "font_px": 10,
+            "bold": false,
+            "foreground": "rgb(229, 231, 235)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "kbd",
+            "ratio": 1.24,
+            "required": 4.5,
+            "font_px": 10,
+            "bold": false,
+            "foreground": "rgb(229, 231, 235)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "kbd",
+            "ratio": 1.24,
+            "required": 4.5,
+            "font_px": 10,
+            "bold": false,
+            "foreground": "rgb(229, 231, 235)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 4.48,
+            "required": 4.5,
+            "font_px": 10.5,
+            "bold": false,
+            "foreground": "rgb(107, 114, 128)",
+            "background": "rgb(254,245,231)"
+          },
+          {
+            "selector": "span",
+            "ratio": 4.36,
+            "required": 4.5,
+            "font_px": 10.5,
+            "bold": false,
+            "foreground": "rgb(107, 114, 128)",
+            "background": "rgb(237,244,254)"
+          },
+          {
+            "selector": "span",
+            "ratio": 4.36,
+            "required": 4.5,
+            "font_px": 10.5,
+            "bold": false,
+            "foreground": "rgb(107, 114, 128)",
+            "background": "rgb(229,247,241)"
+          },
+          {
+            "selector": "span",
+            "ratio": 2.35,
+            "required": 4.5,
+            "font_px": 9.5,
+            "bold": false,
+            "foreground": "rgb(176, 169, 149)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 2.35,
+            "required": 4.5,
+            "font_px": 9.5,
+            "bold": false,
+            "foreground": "rgb(176, 169, 149)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 2.35,
+            "required": 4.5,
+            "font_px": 9.5,
+            "bold": false,
+            "foreground": "rgb(176, 169, 149)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 2.35,
+            "required": 4.5,
+            "font_px": 9.5,
+            "bold": false,
+            "foreground": "rgb(176, 169, 149)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 2.35,
+            "required": 4.5,
+            "font_px": 9.5,
+            "bold": false,
+            "foreground": "rgb(176, 169, 149)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 2.35,
+            "required": 4.5,
+            "font_px": 9.5,
+            "bold": false,
+            "foreground": "rgb(176, 169, 149)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 2.35,
+            "required": 4.5,
+            "font_px": 9.5,
+            "bold": false,
+            "foreground": "rgb(176, 169, 149)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 2.35,
+            "required": 4.5,
+            "font_px": 9.5,
+            "bold": false,
+            "foreground": "rgb(176, 169, 149)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 4.3,
+            "required": 4.5,
+            "font_px": 10,
+            "bold": true,
+            "foreground": "rgb(107, 114, 128)",
+            "background": "rgb(238,242,247)"
+          },
+          {
+            "selector": "span",
+            "ratio": 2.35,
+            "required": 4.5,
+            "font_px": 9.5,
+            "bold": false,
+            "foreground": "rgb(176, 169, 149)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "div",
+            "ratio": 3.18,
+            "required": 4.5,
+            "font_px": 10.5,
+            "bold": true,
+            "foreground": "rgb(107, 114, 128)",
+            "background": "rgb(251,250,247)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.18,
+            "required": 4.5,
+            "font_px": 10.5,
+            "bold": false,
+            "foreground": "rgb(107, 114, 128)",
+            "background": "rgb(251,250,247)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.18,
+            "required": 4.5,
+            "font_px": 10.5,
+            "bold": false,
+            "foreground": "rgb(107, 114, 128)",
+            "background": "rgb(251,250,247)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.18,
+            "required": 4.5,
+            "font_px": 10.5,
+            "bold": false,
+            "foreground": "rgb(107, 114, 128)",
+            "background": "rgb(251,250,247)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.18,
+            "required": 4.5,
+            "font_px": 10.5,
+            "bold": false,
+            "foreground": "rgb(107, 114, 128)",
+            "background": "rgb(251,250,247)"
+          },
+          {
+            "selector": "div",
+            "ratio": 3.18,
+            "required": 4.5,
+            "font_px": 11.5,
+            "bold": false,
+            "foreground": "rgb(107, 114, 128)",
+            "background": "rgb(251,250,247)"
+          },
+          {
+            "selector": "kbd",
+            "ratio": 1.24,
+            "required": 4.5,
+            "font_px": 10,
+            "bold": false,
+            "foreground": "rgb(229, 231, 235)",
+            "background": "rgb(255,255,255)"
+          }
+        ],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "normal_min_ratio": 4.5,
+        "large_min_ratio": 3
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/998d143a-c11c-4373-b076-4c6a11ba9a70/viewport-0/a11y.contrast/contrast-1280x860.png",
+          "sha256": "caaca18d3276379308e9c77bd29b2dc0eda413eb1f58ee35180d4b487e4ef77c"
+        },
+        {
+          "ref": "validation-evidence/998d143a-c11c-4373-b076-4c6a11ba9a70/viewport-1/a11y.contrast/contrast-1440x900.png",
+          "sha256": "fc029540ae5373c6a56d5b7021efdd711a121256c93e40b8b8b12e6ae5e17477"
+        }
+      ],
+      "supported_fixes": [
+        "darken the failing text color (or lighten it against a dark background) until the measured ratio meets the required minimum"
+      ]
+    },
+    {
+      "id": "a11y.focus_order",
+      "status": "skipped",
+      "severity": "error",
+      "subject": "document focus traversal",
+      "measured": {
+        "stops": 0,
+        "sequence": [],
+        "missing_indicators": [],
+        "inversions": [],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "skipped"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "skipped"
+          }
+        ]
+      },
+      "threshold": {
+        "max_missing_focus_indicators": 0,
+        "max_order_inversions": 0
+      },
+      "evidence_refs": [],
+      "supported_fixes": [],
+      "reason": "incomplete focus traversal: focus remains on the document body"
+    },
+    {
+      "id": "a11y.target_size",
+      "status": "pass",
+      "severity": "error",
+      "measured": {
+        "undersized": 0,
+        "elements": [],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "pass"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "pass"
+          }
+        ]
+      },
+      "threshold": {
+        "min_target_px": 24
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "type.min_projected_size",
+      "status": "fail",
+      "severity": "warning",
+      "subject": "span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; kbd; span#st-zoom; span#st-sel; span#st-count; span",
+      "measured": {
+        "min_font_px": 9.5,
+        "undersized": 26,
+        "elements": [
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "kbd",
+          "span#st-zoom",
+          "span#st-sel",
+          "span#st-count",
+          "span"
+        ],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "min_projected_px": 12
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/998d143a-c11c-4373-b076-4c6a11ba9a70/viewport-0/type.min_projected_size/min-projected-size-1280x860.png",
+          "sha256": "caaca18d3276379308e9c77bd29b2dc0eda413eb1f58ee35180d4b487e4ef77c"
+        },
+        {
+          "ref": "validation-evidence/998d143a-c11c-4373-b076-4c6a11ba9a70/viewport-1/type.min_projected_size/min-projected-size-1440x900.png",
+          "sha256": "fc029540ae5373c6a56d5b7021efdd711a121256c93e40b8b8b12e6ae5e17477"
+        }
+      ],
+      "supported_fixes": [
+        "raise the listed primary-content text to at least 12px, or declare a density intent that justifies the smaller projection"
+      ]
+    }
+  ],
+  "summary": {
+    "pass": 3,
+    "fail": 3,
+    "skipped": 1,
+    "warnings": 1
+  },
+  "binding": {
+    "run_id": "998d143a-c11c-4373-b076-4c6a11ba9a70",
+    "entry": "/",
+    "scenario": "entry",
+    "implementation": {
+      "root": "E:\\codex-prj\\Prax\\Prax\\benchmark-runs\\product-intelligence-matrix\\cell-j07-s07\\m3\\m3-r2-20260909-run-09-b\\measurement-root",
+      "digest": "62e8e2109bfaa006d762d243c7bb833f5fb583e7597dffd4d86d75a78bb01565",
+      "kind": "static_tree"
+    },
+    "session_id": null,
+    "contract_digests": {
+      "screen.sdir.yaml": null,
+      "sdir-delta.yaml": null,
+      "implementation-brief.yaml": null
+    }
+  },
+  "target_validation": {
+    "status": "valid",
+    "issues": [],
+    "readiness": "document",
+    "ready_selector": null
+  }
+}

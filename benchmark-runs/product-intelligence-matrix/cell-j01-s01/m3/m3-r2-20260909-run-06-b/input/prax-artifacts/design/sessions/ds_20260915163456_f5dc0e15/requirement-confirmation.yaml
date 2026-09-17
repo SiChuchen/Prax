@@ -1,0 +1,31 @@
+version: "0.1"
+user_quote:
+  - 动词：manage；对象：结构化实体集合；成功标准：批量操作无误完成
+  - 批量选择与操作零误伤，状态归属显式
+  - 交付物必须能直接静态打开（根路径 index.html，或构建产物 dist/）
+  - 应用在页面加载完成时即处于可用状态（初始数据随首屏就绪，不得以加载态作为可测状态）
+restatement: 从零构建一个单页 Web 应用，用于管理一个大规模、有层级归属（高层级性、高密度、many 基数）的结构化实体集合。核心任务是 manage：对实体做批量选择与批量操作（状态变更、移动归属、删除等），成功标准是批量操作零误伤——操作只精确作用于显式选中的实体，绝不波及未选中或被折叠隐藏的实体；且每个实体的状态及其归属（属于哪个层级分组）在界面上始终显式可见。单屏交付，静态打开即可用，初始数据随首屏内联就绪，无后端、无账号、无持久化服务。
+boundaries:
+  in_scope:
+    - 单页应用，主屏 1 个，静态打开即用（index.html 或 dist/）
+    - 管理大规模层级化结构化实体集合：浏览、搜索/筛选、批量选择、批量操作（状态变更、归属移动、删除等）
+    - 批量操作零误伤：只作用于显式选中项，折叠/过滤不可见的实体不受影响
+    - 状态归属显式：每个实体的状态与层级归属始终显式呈现
+    - 初始数据随首屏内联，页面加载完成即可用
+  out_of_scope:
+    - 后端服务、账号体系、持久化服务
+    - 部署到外部服务
+    - 多屏/多路由
+    - 实时协作、时间线/比较类功能（时间性低、比较需求 none）
+  scope_complete: true
+open_questions: []
+confirmation:
+  status: requirement_is_sufficient
+  evidence:
+    - type: task_brief
+      ref: brief.md#user_job
+    - type: task_brief
+      ref: brief.md#acceptance-seed
+    - type: task_brief
+      ref: brief.md#交付约束
+  confirmed_at: 2026-09-16T00:00:00Z

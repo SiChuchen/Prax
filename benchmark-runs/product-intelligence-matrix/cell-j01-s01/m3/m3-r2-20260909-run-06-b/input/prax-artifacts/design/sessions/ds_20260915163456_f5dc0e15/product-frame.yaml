@@ -1,0 +1,77 @@
+version: "0.2"
+jtbd:
+  verb: manage
+  target: 层级分组下的大规模结构化实体集合
+  success: 批量操作无误完成：零误伤、影响范围与操作者预期完全一致，状态归属显式
+primary_object:
+  type: entity
+  label: 实体（结构化记录，如设备/资产条目）
+task_model:
+  frequency: high
+  reversibility: reversible
+  consequence: medium
+  expertise: mixed
+user:
+  primary_role: 实体台账管理员（负责设备/资产注册信息的运维人员）
+  expertise: intermediate
+  familiarity: high
+goal:
+  primary: 对大量有层级归属的结构化实体做准确、零误伤的批量管理：只改变显式选中的实体，且每个实体的状态与归属始终显式可见
+tasks:
+  primary: 在层级分组树中浏览/筛选实体，显式批量选择实体并执行批量操作（批量状态变更、批量移动归属、批量删除）
+  secondary:
+    - 搜索定位实体
+    - 展开/折叠分支核对归属范围
+    - 核对批量操作预览与结果回执（影响计数）
+    - 撤销上一次批量操作
+product_objects:
+  - id: entity
+    user_name: 实体
+    purpose: 被管理的结构化记录：有名称、编码、状态（在线/维护/停用）、所属分组
+  - id: group
+    user_name: 分组
+    purpose: 层级归属容器：站点→系统→子组三级树，每个分组记录其父分组（parent），决定实体的组织结构
+  - id: selection
+    user_name: 选择集
+    purpose: 显式勾选的实体集合，是批量操作唯一的作用范围
+  - id: batch_operation
+    user_name: 批量操作
+    purpose: 对选择集一次性执行的动作（状态变更/移动/删除），执行前有影响预览，执行后有结果回执
+relationships:
+  - id: rel_entity_group
+    source: entity
+    target: group
+    type: belongs_to
+    direction: forward
+    meaning: 每个实体恰好归属于一个分组节点
+    importance: primary
+  - id: rel_selection_entity
+    source: selection
+    target: entity
+    type: selects
+    direction: forward
+    meaning: 选择集只包含被显式勾选的实体；父节点勾选不隐式吸纳折叠中的子实体
+    importance: primary
+  - id: rel_batchop_selection
+    source: batch_operation
+    target: selection
+    type: applies_to
+    direction: forward
+    meaning: 批量操作严格作用于选择集，执行前展示逐项影响预览
+    importance: primary
+mental_model_hypothesis:
+  summary: 用户把系统理解为“树形分组 + 分组下的实体行”：勾选是逐项、显式的承诺，任何批量动作都只应触及看得见、勾了选的那些行；折叠或被筛选掉的实体是‘不在手边’的，绝不能被顺带改动。
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: 一次批量操作完成后：被改变状态的实体数与选择集计数完全一致，未选中实体及被折叠/被过滤隐藏的实体零误伤；界面即时显式回执“影响 N 项”并逐项标出变化；误选可通过预览发现、操作可撤销。
+open_questions: []
+existing_product:
+  stable_user_concepts: []
+  stable_patterns: []
+  current_user_pain_points:
+    - 扁平表格里批量操作看不到层级归属，容易误伤
+    - 全选把折叠/隐藏的实体也卷进来，事后才发现
+  current_constraints: []
+  legacy_debt: []

@@ -1,0 +1,73 @@
+needs:
+  - id: N1
+    product_action: 以块级结构编辑文档（增删/改写/重排块、调整标题层级）
+    required_experience:
+      - 就地编辑的块序列
+      - 块操作不离开文档语境
+      - 操作即时可见
+    capabilities: []
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端实现：文档模型（有序块数组）+ 渲染层，无后端依赖
+  - id: N2
+    product_action: 结构化编辑与预览实时一致（验收种子）
+    required_experience:
+      - 单一数据源双视图渲染
+      - 编辑后同步刷新，无手动刷新步骤
+    capabilities: []
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 编辑器与预览均从同一文档模型派生渲染，每次变更后同帧重渲两视图
+  - id: N3
+    product_action: 结构完整性保障：校验、定位、一键修复（编辑不破坏结构）
+    required_experience:
+      - 连续校验并显示问题数
+      - 点击问题定位到块
+      - 一键修复常见结构问题
+    capabilities: []
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 规则引擎（层级跳跃/多H1/空标题/空列表等）运行于每次变更；修复动作即模型变换，可撤销
+  - id: N4
+    product_action: 撤销/重做
+    required_experience:
+      - 键盘快捷键
+      - 状态可见（可撤销步数）
+    capabilities: []
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 快照栈实现于前端内存 + localStorage
+  - id: N5
+    product_action: 大纲分区导航与点击跳转
+    required_experience:
+      - 标题块派生分区树
+      - 点击滚动定位两视图
+    capabilities: []
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 大纲由标题块计算派生；跳转为滚动+选中同步
+  - id: N6
+    product_action: 导出 Markdown / HTML
+    required_experience:
+      - 本地生成文件下载
+      - 导出内容与预览一致
+    capabilities: []
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 由同一文档模型序列化为 Markdown/HTML，Blob 下载，无网络
+  - id: N7
+    product_action: 编辑成果本地留存（刷新不丢）
+    required_experience:
+      - 自动保存
+      - 可重置回初始样例
+    capabilities: []
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: localStorage 同步写；无持久化服务亦满足（约束明确不要求持久化服务）；提供「重置示例」入口

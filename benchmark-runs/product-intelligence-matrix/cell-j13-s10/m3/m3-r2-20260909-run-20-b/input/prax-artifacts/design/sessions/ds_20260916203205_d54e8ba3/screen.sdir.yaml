@@ -1,0 +1,163 @@
+version: "0.2"
+screen:
+  id: data_explorer_screen
+  intent:
+    primary_task: Explore the dataset by switching which dimensions are projected onto the visual encodings, keeping selection and filters intact across switches
+    secondary_tasks:
+      - Filter the record pool with clearly-owned, individually reversible filters
+      - Inspect a selected record's full dimensional profile
+      - Revert any filter or projection change without losing the rest of the session state
+  archetype:
+    pattern_ref: PAT-DATA-EXPLORER
+  density_intent: compact
+  regions:
+    - id: data
+      role: collection
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - comparison_group
+        - filter_then_inspect
+    - id: collection
+      role: experimental:collection
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: projection
+      role: experimental:projection
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: inspector
+      role: experimental:inspector
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: filters
+      role: experimental:filters
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: dimension rail
+      role: experimental:dimension rail
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: revert controls
+      role: experimental:revert controls
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: dataset summary
+      role: experimental:dataset summary
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: detail
+      role: contextual_inspector
+      importance: contextual
+      visibility:
+        condition: selection_driven
+      behavior_intent:
+        - selection_driven
+  relationships:
+    - id: region_rel_data_detail
+      source: data
+      target: detail
+      type: selection_drives_contextual_detail
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved: []
+  rejected_alternatives:
+    - option: Card grid of record cards
+      reason: Named anti-pattern for dense comparison; low density per pixel; dimension switching would reshuffle cards and reset spatial memory
+    - option: Freeform canvas workspace
+      reason: spatiality=none; spatial topology is not the cognitive burden, dimensions are
+    - option: Tree/browser navigation
+      reason: hierarchy=medium only; drilling would add navigation levels and reset context on each level change
+    - option: Wizard/form flow
+      reason: explore is open-ended and reversible; forcing linear steps would break cognition continuity
+  user_job:
+    verb: explore
+    target: multi-dimensional data
+    success: "Switching dimensions does not reset cognition: selection, filters, and reading context survive every dimension change, and filter/projection state is owned and reversible."
+  primary_object:
+    type: dataset
+    label: Dataset
+  information_shape:
+    cardinality: unbounded
+    relationality: medium
+    hierarchy: medium
+    temporality: low
+    density: high
+    dimensionality: high
+    spatiality: none
+    volatility: medium
+    uncertainty: low
+    comparison_need: none
+  representation:
+    primary:
+      type: chart
+      reason: "Dimensional data with dimensionality=high: a scatter field with four swappable encoding slots (X, Y, color, size) makes dimension switching the primary interaction while records stay the invariant substrate (PAT-DATA-EXPLORER surface)"
+    supporting:
+      - type: table
+        reason: Dense per-record rows anchor reading position and give stable list-order context that survives projection switches (H-21)
+      - type: form
+        reason: Inspector panel for the focused record's full dimensional profile (PAT-LIST-DETAIL-INSPECTOR)
+  priority:
+    primary:
+      - data
+      - collection
+      - projection
+      - inspector
+      - filters
+    contextual:
+      - dimension rail
+      - revert controls
+      - dataset summary
+      - detail
+  interaction:
+    preview: none
+    inspect: select
+    navigate: none
+    locate: none
+  state_ownership:
+    - state: selection
+      owner: data
+    - state: preview
+      owner: session
+  complexity_budget:
+    permanent_panels: 4
+    permanent_primary_actions: 3
+    modes: 1
+    state_owners: 3
+    navigation_levels: 1
+    persistent_filters: 4
+    new_semantic_concepts: 3
+    keyboard_contracts: 1
+    mobile_conflicts: 0
+    permanent_surfaces: 1
+  acceptance:
+    - "A user can swap any dimension in/out of the visual projection and: (1) their selected records remain selected, (2) their active filters remain applied and visible with clear ownership, (3) each projection/filter state can be individually reverted — with zero re-orientation cost."

@@ -1,0 +1,38 @@
+version: "0.1"
+session_id: ds_20260915173304_61822363
+task_ref: 按严格顺序完成切换 Runbook：完成每步验证与证据记录，通过门禁进入下一步
+selected:
+  - ref: product_relationships
+    reason:
+      - rel_runbook_phase:runbook->phase
+      - rel_phase_step:phase->step
+      - rel_step_check:step->check
+      - rel_step_recovery_path:step->recovery_path
+      - rel_deviation_log_runbook:deviation_log->runbook
+  - ref: region_relationships
+    reason: []
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-APPLICATION-SHELL
+  - ref: unresolved
+    reason: []
+  - ref: corrections
+    reason: []
+  - ref: validation-plan@1
+    reason:
+      - semantic_conformance
+      - state_completeness
+      - product_model_alignment
+      - keyboard
+      - hierarchy_review
+      - representation_decided
+      - state_ownership_declared
+      - acceptance_contract_present
+      - complexity_budget_declared
+      - destructive_recovery
+      - requirement_alignment
+excluded:
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata

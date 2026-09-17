@@ -1,0 +1,63 @@
+user:
+  expertise: expert
+  familiarity: high
+task:
+  primary: 聚焦任一对象，跟随其上游依赖与下游影响（多跳），理解关系结构与影响半径
+  modes:
+    - locate
+    - inspect
+    - navigate
+  frequency: medium
+domain:
+  type: 数据平台依赖网络（血缘）
+  entities:
+    - 数据源
+    - 数据表
+    - 管道作业
+    - 服务
+    - 指标
+    - 看板/告警
+    - 依赖关系（边）
+information:
+  volume: medium
+  relationship_complexity: high
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: none
+  error_cost: low
+priorities:
+  - 跟随依赖与影响时全局上下文不丢失
+  - 关系（边）作为一等内容：类型/关键度/说明可查看
+  - 连续跟随与面包屑回退
+  - 首屏即用：数据内联、静态 file:// 可打开
+  - 按关系类型过滤与搜索定位
+density_intent: regular
+confidence:
+  overall: high
+unknowns: []
+classification:
+  version: "1"
+  task_type: inspect_relationships
+  domain_id: data_exploration
+  interaction_mode: canvas_with_contextual_inspector
+  product_type: internal_engineering_tool
+  primary_object_type: node
+  secondary_object_types:
+    - relationship
+    - focus_trail
+  confidence: high
+  evidence:
+    - task_type=inspect_relationships ← token 'inspect' in context.task and frame.tasks
+    - domain_id=data_exploration ← token '数据' in context.domain
+    - interaction_mode=canvas_with_contextual_inspector ← token '关系' in context.task, frame.tasks, and context.priorities
+    - product_type=internal_engineering_tool ← expert user in an engineering domain
+    - primary_object_type=node ← most referenced product object in the Product Frame
+  open_questions: []

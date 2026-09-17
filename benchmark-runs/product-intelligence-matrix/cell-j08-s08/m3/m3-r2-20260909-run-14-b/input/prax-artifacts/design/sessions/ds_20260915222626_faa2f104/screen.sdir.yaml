@@ -1,0 +1,153 @@
+version: "0.2"
+screen:
+  id: application_shell_screen
+  intent:
+    primary_task: 以块级结构编辑文档内容（改标题层级、增删/重排/改写块），结构化编辑器与预览始终保持一致
+    secondary_tasks:
+      - 通过大纲在分区间跳转
+      - 发现并修复结构问题（层级跳跃、空标题等）
+      - 撤销/重做编辑操作
+      - 导出文档（Markdown/HTML）
+  archetype:
+    pattern_ref: PAT-APPLICATION-SHELL
+  density_intent: spacious
+  regions:
+    - id: region-topbar
+      role: experimental:identity_and_utilities
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: region-outline
+      role: experimental:derived_navigation
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: region-diagnostics
+      role: experimental:structure_integrity
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: region-editor
+      role: experimental:structured_editing
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: region-preview
+      role: experimental:faithful_rendering
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: region-statusbar
+      role: experimental:statistics_and_save_state
+      importance: contextual
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: region-insert-menu
+      role: experimental:block_type_insertion
+      importance: contextual
+      visibility:
+        condition: task_driven
+      behavior_intent: []
+  relationships: []
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+    - experimental:就地编辑块内容，预览同帧更新且不打断输入光标
+    - experimental:点击大纲项在编辑区与预览区双视图跳转
+    - experimental:点击预览块回选编辑区对应块（双向一致）
+    - experimental:结构诊断定位到块并一键修复
+    - experimental:Ctrl+Z 撤销 / Ctrl+Shift+Z 重做 / Alt+箭头移动块 / Tab 调标题层级
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: scroll_sync_strategy
+      question: 选中变化时两视图滚动跟随的策略？
+      adapter_may_choose:
+        - 每栏独立滚动 vs 同步滚动
+        - 平滑 vs 即时滚动
+    - id: view_mode_presentation
+      question: 编辑/分屏/预览三种视图密度的呈现方式？
+      adapter_may_choose:
+        - 顶部分段控件
+        - 面板显隐切换
+  unresolved: []
+  rejected_alternatives:
+    - option: Markdown 源码编辑 + 渲染预览
+      reason: 语法层编辑与「结构化编辑、不破坏结构」相悖，且两态易失一致
+    - option: 每块独立表单面板
+      reason: 破坏文档语境与阅读流，密度上升
+  user_job:
+    verb: edit
+    target: 文档
+    success: 编辑不破坏结构
+  primary_object:
+    type: document
+    label: 文档
+  information_shape:
+    cardinality: one
+    relationality: low
+    hierarchy: medium
+    temporality: medium
+    density: low
+    dimensionality: medium
+    spatiality: none
+    volatility: medium
+    uncertainty: low
+    comparison_need: none
+  representation:
+    primary:
+      type: document
+      reason: 编辑与阅读的对象是文档本身：块序列以文档形态就地编辑（中栏）并按阅读排版呈现（右栏），两栏渲染自同一数据源
+    supporting:
+      - type: tree
+        reason: 侧栏大纲以树形呈现标题块派生的分区层级，用于导航与层级总览
+  priority:
+    primary:
+      - region-editor
+      - region-preview
+      - region-topbar
+    contextual:
+      - region-outline
+      - region-diagnostics
+      - region-statusbar
+      - region-insert-menu
+  interaction:
+    preview: none
+    inspect: select
+    navigate: drill
+    locate: none
+  state_ownership:
+    - state: selection
+      owner: region-editor
+    - state: preview
+      owner: region-preview
+    - state: viewport
+      owner: session
+    - state: mode
+      owner: region-topbar
+  complexity_budget:
+    permanent_panels: 4
+    permanent_primary_actions: 6
+    modes: 1
+    state_owners: 3
+    navigation_levels: 1
+    persistent_filters: 0
+    new_semantic_concepts: 2
+    keyboard_contracts: 4
+    mobile_conflicts: 0
+    permanent_surfaces: 4
+  acceptance:
+    - 结构化编辑器中的每次修改即时、忠实地反映在实时预览中（单一数据源，双向点击同步）
+    - 破坏结构的编辑（层级跳跃、空标题、空列表等）被连续结构检查捕获，可定位并可一键修复（修复可撤销）
+    - 所有破坏性操作（删除块、重置示例）可经撤销恢复
+    - 初始文档随首屏内联就绪，页面加载完成即处于 ready 状态，无加载态

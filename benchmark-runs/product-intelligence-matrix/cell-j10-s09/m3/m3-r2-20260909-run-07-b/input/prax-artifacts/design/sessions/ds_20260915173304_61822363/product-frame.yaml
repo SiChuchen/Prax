@@ -1,0 +1,89 @@
+version: "0.2"
+jtbd:
+  verb: complete
+  target: 高后果流程（核心数据库主从切换 Runbook）
+  success: 零失误走完全程
+primary_object:
+  type: workflow
+  label: 主从切换 Runbook
+task_model:
+  frequency: low
+  reversibility: irreversible
+  consequence: high
+  expertise: expert
+user:
+  primary_role: 值班 SRE / 数据库应急指挥（在压力下按 Runbook 执行主从切换的操作者）
+  expertise: expert
+  familiarity: medium
+goal:
+  primary: 在故障压力下零失误走完一次核心数据库主从切换的高后果流程
+tasks:
+  primary: 按严格顺序完成切换 Runbook：完成每步验证与证据记录，通过门禁进入下一步
+  secondary:
+    - 在不可逆步骤执行前完成仪式化确认并确认恢复路径
+    - 在需要中止/回退时沿恢复路径安全撤回并记录偏差
+product_objects:
+  - id: runbook
+    user_name: 切换 Runbook
+    purpose: 唯一的高后果流程实例，定义阶段、顺序与全局完成标准
+  - id: phase
+    user_name: 阶段
+    purpose: 将流程分为预检、决策、执行、收尾四个层级段落
+  - id: step
+    user_name: 步骤
+    purpose: 最小可执行单元，含操作说明、验证检查项与证据字段；不可逆步骤含后果、确认词与恢复路径
+  - id: check
+    user_name: 验证检查项
+    purpose: 步骤放行前必须逐条确认的证据清单
+  - id: evidence
+    user_name: 执行证据
+    purpose: 关键操作必须留下的事实记录（位点号、时间戳、操作人）
+  - id: recovery_path
+    user_name: 恢复路径
+    purpose: 不可逆步骤执行失败后的安全回退方案，执行前可见
+  - id: deviation_log
+    user_name: 偏差记录
+    purpose: 记录任何回退、恢复路径触发或异常，构成零失误判定的审计依据
+relationships:
+  - source: runbook
+    target: phase
+    type: contains
+    direction: forward
+    meaning: Runbook 由有序阶段组成
+    importance: primary
+    id: rel_runbook_phase
+  - source: phase
+    target: step
+    type: contains
+    direction: forward
+    meaning: 阶段内有全局顺序的步骤
+    importance: primary
+    id: rel_phase_step
+  - source: step
+    target: check
+    type: gated_by
+    direction: forward
+    meaning: 步骤未满足全部检查项与证据时不可放行
+    importance: primary
+    id: rel_step_check
+  - source: step
+    target: recovery_path
+    type: recovers
+    direction: forward
+    meaning: 不可逆步骤绑定唯一恢复路径，执行前强制展示
+    importance: primary
+    id: rel_step_recovery_path
+  - source: deviation_log
+    target: runbook
+    type: audits
+    direction: forward
+    meaning: 偏差记录审计全程，判定是否零失误完成
+    importance: supporting
+    id: rel_deviation_log_runbook
+mental_model_hypothesis:
+  summary: 操作者把流程当作有严格顺序的关卡链：当前步→验证→放行→下一步；不可逆步骤是高危关卡，需要仪式化确认（看清后果、口头承诺、输入确认词）和身后的恢复绳索（明确回退方案）。
+  confidence: high
+  evidence:
+    - user_requirement
+primary_success_definition: 流程以零偏差走完全程：每个步骤的检查项与证据全部满足、不可逆步骤均经显式确认、未跳过或误操作任何步骤；若有偏差则如实记录并可沿恢复路径安全回退
+open_questions: []

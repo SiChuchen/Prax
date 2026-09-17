@@ -1,0 +1,1 @@
+Receipt: evidence/checks.json: "03 typed text appears in preview"=true (text typed via CDP input appears in preview), "04 level-jump detected"="1 个结构问题|1", "05 fix restores health"="结构完好", total ALL 18 CHECKS PASSED. Page opened directly via file:// URL (no server, no external services), doc inlined from data.js at first paint.

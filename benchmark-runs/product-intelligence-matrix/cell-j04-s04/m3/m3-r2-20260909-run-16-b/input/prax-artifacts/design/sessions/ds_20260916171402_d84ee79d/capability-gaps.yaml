@@ -1,0 +1,88 @@
+needs:
+  - id: cap-stream
+    product_action: 持续接收易变指标更新并以无闪烁方式呈现
+    required_experience:
+      - 页面加载后流自动推进
+      - 数值原位更新，布局零跳动
+      - 变化仅以短时高亮标记
+    capabilities:
+      - 模拟流引擎（定时器+随机过程）
+      - DOM 原位更新（仅文本/类名变更）
+      - 渲染节流
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: 纯前端：内联种子数据 + 本地定时器模拟流；更新仅改文本节点与 CSS 类，网格结构一次构建不重建
+  - id: cap-anomaly-glance
+    product_action: 异常指标在扫视内可发现
+    required_experience:
+      - 状态色（正常/警告/严重）瓦片边缘+底色
+      - 异常条聚拢并置顶第一落点
+      - 脉冲直至恢复
+    capabilities:
+      - 四态色彩编码
+      - 异常条 severity 排序聚合
+      - 低幅慢脉冲动画
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端视觉编码；色彩对比符合状态语义
+  - id: cap-trace
+    product_action: 任一指标变化可追溯
+    required_experience:
+      - 检查器显示带时间戳取值历史与状态跃迁链
+      - 事件流跨指标倒序可点击定位
+    capabilities:
+      - 环形缓冲历史（每指标 ~90 采样点）
+      - 事件日志（状态跃迁/阈值穿越/恢复）
+      - 选中态检查器
+      - 事件→指标反向定位
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 内存环形缓冲 + 事件数组；无后端也能给出完整会话内证据链
+  - id: cap-sparkline
+    product_action: 每指标近期走势可视化
+    required_experience:
+      - 瓦片内 sparkline
+      - 检查器内大图含阈值带
+    capabilities:
+      - Canvas/SVG 折线绘制
+      - 阈值带背景
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 内联 SVG polyline 实现，无第三方图表库，保证零依赖静态打开
+  - id: cap-inline-seed
+    product_action: 首屏加载即满数据可用（无加载态）
+    required_experience:
+      - 24 指标×90 采样点+历史事件随首屏就绪
+    capabilities:
+      - 种子生成器随构建内联
+      - 确定性 PRNG
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 初始数据由 JS 模块在加载时同步生成（确定性种子），DOMContentLoaded 前完成首帧渲染
+  - id: cap-controls
+    product_action: 暂停/恢复与注入异常演示控制
+    required_experience:
+      - 头部安静控制件≤3 个
+      - 注入后异常按正常检测管线呈现
+    capabilities:
+      - 暂停/恢复开关
+      - 异常注入器（spike/drift/stuck）
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: 注入走与模拟流相同的异常管线，保证演示即真实路径
+  - id: cap-persistence
+    product_action: 跨会话历史数据持久化
+    required_experience:
+      - 重启后仍可追溯上一会话历史
+    capabilities:
+      - 会话内环形缓冲已覆盖追溯验收
+    status: gap
+    resolution:
+      type: explicit_compromise
+      notes: 简报明确不要求持久化服务；会话内环形缓冲已满足『变化可追溯』验收；超出范围即不做

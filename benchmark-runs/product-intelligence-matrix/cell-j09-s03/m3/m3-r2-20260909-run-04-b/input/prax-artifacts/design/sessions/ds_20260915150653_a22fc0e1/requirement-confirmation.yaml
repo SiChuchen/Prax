@@ -1,0 +1,27 @@
+version: "0.1"
+user_quote:
+  - decide × 位置敏感的选项
+  - 成功标准：决策输入同屏可得
+  - 少量高密度条目并排比较，比较本身是任务、比较状态必须驻留同屏
+  - 地理语境与决策项同屏
+restatement: "Build a single-page web app where a user decides among a few location-sensitive options (object_type: location). The comparison is the task: a small set of high-density candidates must be compared side-by-side, with the geographic context and the decision inputs co-present on the same screen at all times (acceptance seed: 地理语境与决策项同屏). The app must open statically (index.html at root), be fully usable at page load with initial data inlined (no loading state as the measurable state), run locally without external services, and not be deployed anywhere."
+boundaries:
+  in_scope:
+    - "Single-page web app: side-by-side comparison panel of a few (3–5) location-sensitive candidate options with high-density attribute rows"
+    - "Geographic context co-present on the same screen (acceptance seed: 地理语境与决策项同屏) — a map/plan view without external tile services"
+    - "Decision-support interactions: highlight-on-compare, per-criterion leaders, weighting, and a final decision state resident on-screen"
+    - All initial data inlined so the app is fully usable at page load with no loading state
+    - Runs statically from index.html with no external services or network calls
+  out_of_scope:
+    - Backend, accounts, persistence services
+    - Multiple screens / app shell navigation
+    - Deployment to any external service
+    - Real map tile providers (external network)
+  scope_complete: true
+open_questions: []
+confirmation:
+  status: requirement_is_sufficient
+  evidence:
+    - type: task_brief
+      ref: task brief cell-j09-s03 (Product Brief, M2-frozen)
+  confirmed_at: 2026-09-15T00:00:00Z

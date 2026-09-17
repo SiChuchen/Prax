@@ -1,0 +1,110 @@
+session_id: ds_20260915172708_e17033a4
+information_shape:
+  cardinality: many
+  relationality: medium
+  hierarchy: high
+  temporality: low
+  density: high
+  dimensionality: medium
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: tree
+    reason: 层级性 high：树表同时呈现分组树结构与每行实体的密集属性，归属即结构；支持分组行折叠与逐行勾选
+  supporting:
+    - type: table
+      reason: 实体行本质是密集记录行：状态徽标、编码、归属路径等列属性对齐扫描
+    - type: list
+      reason: 检查器中按归属路径分组的选择集清单，核对作用域
+  rejected:
+    - option: graph
+      reason: 关系性仅 medium 且语义是树形归属不是网络，图布局牺牲密度且勾选困难
+    - option: cards
+      reason: 密度 high 且需批量勾选，卡片过耗空间
+    - option: document
+      reason: 无长文阅读任务
+  justification_vs_shape: many×high hierarchy×high density 的结构化实体集合，树表在密度与归属显式之间取得最优平衡；medium 关系性由归属路径与分组计数承载，无需图/画布
+primary_structure:
+  pattern: PAT-LIST-DETAIL-INSPECTOR
+  rationale:
+    - 复合 List-Detail + Contextual Inspector：主区为层级分组树表（tree-table），右检查器常驻选择集清单，批量操作栏绑定显式选择
+    - entity-hierarchy 形状要求归属即结构：树表让“实体属于哪个分组”在扫描时直接可见，不需点进详情
+    - 批量操作零误伤要求选择集成为一等可见对象：常驻选择计数 + 检查器选择清单 + 操作前影响预览，三重显式化
+    - PAT-CANVAS-WORKSPACE 明确 does_not_apply_when the information is naturally tabular，且本格空间性 none，排除
+    - H-13 Structured Density 允许紧凑密度，条件是分组、层级、交互保持可读——树表+分组行承载结构
+    - P-19/H-21 上下文保持：操作栏与检查器常驻，批量操作不离开主屏上下文
+  confidence: high
+information_hierarchy:
+  primary:
+    - 层级分组树与实体行（归属即结构，展开/折叠承载层级）
+    - 显式选择状态：每行复选框 + 常驻选择集计数与清单
+    - 实体状态徽标（在线/维护/停用）与完整归属路径
+  secondary:
+    - 搜索与状态筛选条件（持久显示当前作用域）
+    - 批量操作影响预览与执行回执
+    - 撤销入口
+density:
+  intent: compact
+  strategy:
+    - 实体行采用紧凑单行（复选框+状态徽标+名称+编码+归属路径），行高控制在约 32px 量级
+    - 分组行折叠承载子树，组头常驻显示组内实体计数与三态选择状态
+    - 工具栏常驻但轻量：搜索、状态筛选、批量动作按钮、选择计数
+    - 选中回执与影响预览使用按归属路径分组的紧凑列表
+  avoid:
+    - 大间距卡片网格
+    - 装饰性图表/图形
+    - 把批量操作藏进右键菜单深层
+major_choices:
+  - id: choice_selection_scope
+    choice: 可见即作用域：分组复选框只作用于其当前已展开渲染的下属实体行；折叠子分组内的实体不隐式入选；'全选'只覆盖当前可见行并明示『选中可见 N / 总计 M』
+    rationale: 把误伤从机制上排除：任何隐藏（折叠/被过滤）实体都不可能进入选择集；隐藏≠选中，归属变化必须显式展开确认
+    confidence: high
+    references:
+      - selection
+      - group
+      - entity
+  - id: choice_batch_preview
+    choice: 批量操作执行前强制模态预览：按归属路径分组列出将受影响的实体（分组计数+清单），操作者显式确认后才执行
+    rationale: 让影响范围在执行前可见可核对，误选在预览中被发现而非执行后被追悔
+    confidence: high
+    references:
+      - batch_operation
+      - selection
+  - id: choice_receipt_undo
+    choice: 执行后常驻回执：『已影响 N 项』+ 按状态/归属分组的差异清单 + 一次性全局撤销
+    rationale: 操作闭环：结果显式、可验证、可回退；回执本身也是状态归属显式的体现
+    confidence: high
+    references:
+      - batch_operation
+      - entity
+  - id: choice_inspector_ledger
+    choice: 右侧上下文检查器常驻显示选择集清单（按归属路径分组，逐项可移除）与所选实体统计
+    rationale: 选择集是批量操作的唯一作用域，必须作为一等对象可见可编辑，符合上下文检查器契约（绑定显式 selection 的从属面板）
+    confidence: high
+    references:
+      - selection
+      - entity
+rejected:
+  - option: PAT-CANVAS-WORKSPACE（空间画布）
+    reason: 信息天然表格化、空间性 none；画布增加 pan/zoom 成本且降低批量勾选密度
+  - option: 扁平表格（无树形归属列）
+    reason: 层级性 high，扁平化会把归属藏进一列文本，扫描时看不到结构，误伤风险与核对成本上升
+  - option: 分组复选框级联勾选全部后代（含折叠隐藏实体）
+    reason: 这是误伤的主要来源：折叠中被勾选的实体对操作者不可见，违反零误伤
+  - option: 向导式多步批量流程
+    reason: 单屏约束 + 高频操作；模态预览一步确认已足够安全，向导徒增步骤
+unresolved: []
+complexity_budget:
+  permanent_panels: 3
+  permanent_primary_actions: 4
+  modes: 0
+  state_owners: 4
+  navigation_levels: 1
+  persistent_filters: 2
+  new_semantic_concepts: 2
+  keyboard_contracts: 2
+  mobile_conflicts: 0
+  permanent_surfaces: 1

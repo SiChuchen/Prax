@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>文枢 StructDoc · 单文档结构化编辑器</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<noscript><p style="padding:16px">本应用需要启用 JavaScript。</p></noscript>
+
+<header class="topbar">
+  <div class="brand"><span class="logo">文枢</span><span class="brand-sub">STRUCTDOC · 单文档结构化编辑器</span></div>
+  <input id="docTitle" class="doc-title" type="text" value="" placeholder="文档标题…" aria-label="文档标题">
+  <div class="stats" id="statLine"></div>
+  <div id="syncBadge" class="sync ok"></div>
+  <div class="actions">
+    <button id="btnUndo" class="btn btn-icon" type="button" title="撤销 (Ctrl+Z)"></button>
+    <button id="btnRedo" class="btn btn-icon" type="button" title="重做 (Ctrl+Y)"></button>
+    <button id="btnHistory" class="btn" type="button" title="历史版本"><span>历史</span><span id="histCount" class="count"></span></button>
+    <button id="btnImport" class="btn" type="button" title="导入 Markdown"></button>
+    <button id="btnExport" class="btn" type="button" title="导出 Markdown (Ctrl+S)"></button>
+    <button id="btnReset" class="btn btn-icon" type="button" title="重置为示例文档"></button>
+  </div>
+</header>
+
+<main>
+  <aside class="outline-col">
+    <div class="col-head"><span>大纲</span></div>
+    <div id="outlineList" class="outline-list"></div>
+    <div id="outlineMeta" class="outline-meta"></div>
+  </aside>
+
+  <section class="editor-col">
+    <div class="col-head">
+      <span>编辑器 · 结构化块</span>
+      <span class="col-hint">Enter 新建下块 · 空块 Backspace 删除</span>
+    </div>
+    <div class="editor-inner">
+      <div id="issueStrip" class="issue-strip ok"></div>
+      <div id="editorList" class="editor-list"></div>
+    </div>
+  </section>
+
+  <section class="preview-col">
+    <div class="col-head"><span>预览</span><span class="col-hint" id="pvWords"></span></div>
+    <article id="previewBody" class="preview-body"></article>
+  </section>
+</main>
+
+<div id="menu" class="menu hidden" role="menu"></div>
+
+<div id="modal" class="modal hidden">
+  <div class="modal-card" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <h3 id="modalTitle"></h3>
+      <button id="modalClose" class="btn btn-icon" type="button" title="关闭"></button>
+    </div>
+    <p class="modal-hint" id="modalHint"></p>
+    <textarea id="modalText" class="modal-text" spellcheck="false"></textarea>
+    <div class="modal-foot" id="modalFoot"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="doc-model.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

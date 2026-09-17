@@ -1,0 +1,67 @@
+user:
+  expertise: expert
+  familiarity: medium
+task:
+  primary: 零失误走完主从切换 Runbook 全程
+  modes:
+    - guided_execution
+    - verification
+    - irreversible_confirmation
+    - recovery_rollback
+  frequency: low
+domain:
+  type: database_ops_incident_response
+  entities:
+    - runbook
+    - phase
+    - step
+    - check
+    - evidence
+    - recovery_path
+    - deviation_log
+information:
+  volume: low
+  relationship_complexity: low
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: high
+  error_cost: high
+priorities:
+  - 零失误完成全程（顺序门禁+验证放行）
+  - 不可逆步骤的显式确认与恢复路径可见性
+  - 执行证据完整可审计
+  - 偏差如实记录
+density_intent: spacious
+confidence:
+  overall: high
+unknowns: []
+classification:
+  version: "1"
+  task_type: unknown
+  domain_id: data_exploration
+  interaction_mode: unknown
+  product_type: internal_engineering_tool
+  primary_object_type: step
+  secondary_object_types:
+    - runbook
+    - phase
+    - check
+    - recovery_path
+    - deviation_log
+    - evidence
+  confidence: low
+  evidence:
+    - domain_id=data_exploration ← token 'data' in context.domain
+    - product_type=internal_engineering_tool ← expert user in an engineering domain
+    - primary_object_type=step ← most referenced product object in the Product Frame
+  open_questions:
+    - task_type could not be classified from the provided context; refine the context fields or record a custom classification
+    - interaction_mode could not be classified from the provided context; refine the context fields or record a custom classification

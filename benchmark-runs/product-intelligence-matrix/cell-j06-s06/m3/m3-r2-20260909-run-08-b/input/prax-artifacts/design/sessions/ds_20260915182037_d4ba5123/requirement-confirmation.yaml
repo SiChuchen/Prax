@@ -1,0 +1,31 @@
+version: "0.1"
+user_quote:
+  - 动词：understand / 对象：随时间演化的状态 / 成功标准：变更因果可读
+  - 判别：随时间演化的多元素序列，变更因果与时间结构必须互相一致。
+  - object_type：change_set
+  - 验收种子：时间结构与变更语义一致
+  - 交付物必须能直接静态打开（根路径 index.html，或构建产物 dist/）
+  - 应用在页面加载完成时即处于可用状态（初始数据随首屏就绪，不得以加载态作为可测状态）
+restatement: "Build a greenfield single-page static web app whose primary product object is a change_set: the user must be able to understand how a system's state evolves over time by reading a chronologically ordered sequence of change sets with causal links between them. Success = change causality is readable, and the temporal structure shown must stay consistent with change semantics (causes always precede effects in time). Initial data is inlined so the first screen is usable at load; deliverable opens statically from root index.html; no backend, accounts, persistence, or external deployment."
+boundaries:
+  in_scope:
+    - Single-page web app with exactly one main screen
+    - "Primary object: change_set (chronological sequence of changes to a system's state)"
+    - Timeline/temporal axis as dominant structure with causal links whose direction always follows time
+    - Before/after state inspection per change set (causality readable)
+    - Initial dataset inlined, first screen usable at page load
+    - "Static delivery: root index.html, runnable locally without external services"
+  out_of_scope:
+    - Backend services, accounts, persistence
+    - Deployment to any external host
+    - Multi-screen navigation, mobile layout
+    - Editing/authoring of change sets (read-only understanding surface)
+    - Real-time data feeds
+  scope_complete: true
+open_questions: []
+confirmation:
+  status: requirement_is_sufficient
+  evidence:
+    - type: task_brief
+      ref: brief.md
+  confirmed_at: 2026-09-16T00:00:00Z

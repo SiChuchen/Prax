@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aurora 变更编年史 · 2026 Q2</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <h1>Aurora 变更编年史</h1>
+      <span class="sub">Aurora 电商平台 · 2026 Q2 · 状态演化 × 因果追溯</span>
+    </div>
+    <div class="legend" id="legend"><!-- 类型图例由 app.js 填充 --></div>
+  </header>
+
+  <main>
+    <!-- 主区：时间轴画布（dominant） -->
+    <section class="card" id="timeline-card" aria-label="变更时间轴">
+      <div class="card-head">
+        <h2>变更时间轴 · 因果链</h2>
+        <span class="hint">连线方向 = 时间方向：诱因永远在左，后果永远在右</span>
+      </div>
+      <div class="toolbar" id="toolbar">
+        <span class="t-label">组件</span>
+        <!-- 组件过滤 chips 由 app.js 填充 -->
+        <span class="spacer"></span>
+        <span class="cursor-readout" id="cursor-readout"></span>
+        <button class="btn" id="play-btn" title="按时间顺序播放变更">▶ 播放</button>
+      </div>
+      <div class="canvas-wrap">
+        <svg id="timeline" viewBox="0 0 1180 620" preserveAspectRatio="xMidYMid meet" role="img"
+             aria-label="按时间排布的变更集节点与因果连线"></svg>
+      </div>
+    </section>
+
+    <!-- 侧栏：详情 + 状态切片 -->
+    <aside>
+      <section class="card detail-card" aria-label="变更详情">
+        <div class="card-head"><h2>变更详情</h2><span class="hint" id="detail-nav"></span></div>
+        <div class="card-body" id="detail-body"></div>
+      </section>
+      <section class="card snapshot-card" aria-label="状态切片">
+        <div class="card-head">
+          <h2>状态切片</h2>
+          <span class="hint">游标时刻各组件的状态 = 此前全部变更的折叠</span>
+        </div>
+        <div class="card-body" id="snapshot-body"></div>
+      </section>
+    </aside>
+  </main>
+
+  <footer id="footer">
+    <span class="stat" id="stat-counts"></span>
+    <span class="stat" id="stat-integrity"></span>
+    <span class="kbd-hint">
+      <kbd>←</kbd><kbd>→</kbd> 切换变更 · <kbd>C</kbd> 跳转诱因 · <kbd>E</kbd> 跳转后果 ·
+      <kbd>Esc</kbd> 清除选择 · 拖动游标查看任意时刻
+    </span>
+  </footer>
+
+  <div id="boot-status" style="position:fixed;left:-9999px" aria-hidden="true"></div>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

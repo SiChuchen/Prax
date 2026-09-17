@@ -1,0 +1,67 @@
+user:
+  expertise: intermediate
+  familiarity: medium
+task:
+  primary: Explore a multi-dimensional dataset by switching dimension-to-encoding projections without losing selection or filter context
+  modes:
+    - explore
+    - filter
+    - inspect
+  frequency: medium
+domain:
+  type: data_exploration_analytics
+  entities:
+    - dataset
+    - dimension
+    - record
+    - projection
+    - filter
+information:
+  volume: high
+  relationship_complexity: medium
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: none
+  error_cost: low
+priorities:
+  - Dimension switching preserves selection, filters, and reading context (no cognitive reset)
+  - Filter/projection state has visible ownership and is individually reversible
+  - "High-density single screen: many records and dimensions visible at once"
+  - "First screen usable immediately: data inlined, no loading state"
+density_intent: compact
+confidence:
+  overall: high
+unknowns:
+  - id: dataset_theme
+    impact: low
+    affects:
+      - domain
+      - classification
+classification:
+  version: "1"
+  task_type: compare_filter_records
+  domain_id: observability_analytics
+  interaction_mode: collection_with_contextual_detail
+  product_type: unknown
+  primary_object_type: record
+  secondary_object_types:
+    - dataset
+    - dimension
+    - projection
+    - filter_state
+  confidence: high
+  evidence:
+    - task_type=compare_filter_records ← token 'filter' in context.task and frame.tasks
+    - domain_id=observability_analytics ← token 'analytics' in context.domain
+    - interaction_mode=collection_with_contextual_detail ← token 'filter' in context.task, frame.tasks, and context.priorities
+    - primary_object_type=record ← most referenced product object in the Product Frame
+  open_questions:
+    - product_type could not be derived; record the intended audience and product kind

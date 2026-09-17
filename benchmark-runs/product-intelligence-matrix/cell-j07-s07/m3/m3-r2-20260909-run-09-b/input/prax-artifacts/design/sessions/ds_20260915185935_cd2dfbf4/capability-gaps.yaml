@@ -1,0 +1,111 @@
+needs:
+  - id: n-create
+    product_action: 创建物料卡（指针双击空白处 / 键盘 N / 工具栏按钮）
+    required_experience:
+      - 新建即获得合理落点（选中旁或视图中心）
+      - 新建后立即可选中并可键盘落位
+      - 创建即计入区域归属解读
+    capabilities:
+      - DOM 事件
+      - 状态数组重渲染
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端 DOM 事件 + 状态数组即可；无后端依赖
+  - id: n-move
+    product_action: 移动/微调卡片（拖动、方向键、Shift 加速），吸附网格并对齐参考
+    required_experience:
+      - 拖动与键盘位移几何等价（同格宽）
+      - 移动过程与结束实时更新区域归属
+    capabilities:
+      - pointer events
+      - CSS transform
+      - 几何吸附计算
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: pointer events + CSS transform；网格吸附为纯几何计算
+  - id: n-zone-read
+    product_action: 落位即意图：卡片中心点入区判定，实时改写区域徽标与 inspector
+    required_experience:
+      - 归属判定规则确定（中心点入区）
+      - 跨区移动实时可见
+    capabilities:
+      - 矩形包含判定
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 矩形包含判定，纯前端
+  - id: n-proximity
+    product_action: 邻近信号：阈值内卡片互相视为邻近并在 inspector 列出
+    required_experience:
+      - 阈值确定且两输入路径一致
+    capabilities:
+      - 中心距计算
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 中心距计算，纯前端
+  - id: n-zorder
+    product_action: 层级调整（[/] 键与工具栏）
+    required_experience:
+      - 视觉层级即时变化且可逆
+    capabilities:
+      - DOM 层级操作
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: DOM z-index/元素顺序操作
+  - id: n-dupe-delete
+    product_action: 复制（Ctrl+D）与删除（Delete）选中卡片
+    required_experience:
+      - 复制带相邻偏移并可继续键盘落位
+      - 删除即时且画布无残留
+    capabilities:
+      - 状态数组增删
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 状态数组增删 + 重渲染
+  - id: n-viewport
+    product_action: 视口平移/缩放/复位/聚焦（滚轮、+/−/0、F）
+    required_experience:
+      - 变换平滑且不破坏选中态
+    capabilities:
+      - CSS transform 矩阵
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: CSS transform 矩阵，纯前端
+  - id: n-edit
+    product_action: 就地编辑卡片标题（Enter 进入、Esc/失焦提交）
+    required_experience:
+      - 编辑期间禁用画布快捷键，避免冲突
+    capabilities:
+      - contenteditable
+      - 键盘路由
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: contenteditable + 键盘路由
+  - id: n-help
+    product_action: 键位契约文档化（? 帮助层全量列出）
+    required_experience:
+      - 契约列表与实际实现一致
+      - 覆盖层不打断画布状态
+    capabilities:
+      - 静态覆盖层
+      - 键位表单一数据源
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 静态覆盖层，同一键位表驱动工具栏徽标与帮助层
+  - id: n-persist
+    product_action: 跨会话持久化工作区
+    required_experience:
+      - 刷新后保留排布
+    capabilities: []
+    status: gap
+    resolution:
+      type: explicit_compromise
+      notes: 简报交付约束明确“不要求后端、账号体系或持久化服务”；单页会话内状态即满足验收；如需可后续以 localStorage 增量补齐（非本次验收范围）

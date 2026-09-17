@@ -1,0 +1,152 @@
+version: "0.2"
+screen:
+  id: scr-workspace
+  intent:
+    primary_task: 在物理画布上创建空间对象（物料卡）并通过落位（区域归属/邻近/对齐）表达意图；每个空间操作均有键盘等价物
+    secondary_tasks:
+      - 用键盘循环选择与编辑既有卡片
+      - 平移/缩放/复位视口纵览工作区
+      - 查看系统对落位的解读（区域归属/邻近）
+  density_intent: regular
+  regions:
+    - id: reg-canvas
+      role: experimental:物理画布：三命名区域（收集箱/进行中/已完成）+ 全部物料卡的自由落位空间
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:区域背景低饱和着色+标签常驻
+        - experimental:卡片渲染为小物料卡，选中态描边高亮
+        - experimental:移动时给出对齐参考反馈，落点吸附网格
+    - id: reg-toolbar
+      role: experimental:顶部工具栏：新建/复制/删除/层级/帮助/视图复位 + 键位徽标
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:每个按钮附 kbd 徽标显示等价键位
+        - experimental:复制/删除在无选中时禁用
+    - id: reg-inspector
+      role: experimental:选中上下文 inspector：区域徽标/坐标/邻近卡片
+      importance: primary
+      visibility:
+        condition: selection_driven
+      behavior_intent:
+        - experimental:显示区域徽标（落位解读）、坐标、邻近卡片列表（阈值内）
+        - experimental:无选中时显示全局摘要（对象总数/区域分布）并弱化
+    - id: reg-help
+      role: experimental:键位契约帮助层（覆盖层）
+      importance: supporting
+      visibility:
+        condition: task_driven
+      behavior_intent:
+        - experimental:键位契约全量列出，标注对应的空间操作
+        - experimental:打开时不中断画布状态，关闭后恢复原选中
+    - id: reg-status
+      role: experimental:底部状态读数：缩放比/网格开关/选中数/区域归属摘要
+      importance: contextual
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:实时更新，弱化呈现（quiet chrome）
+  relationships: []
+  interaction_intents:
+    - experimental:指针拖动卡片落位，落点吸附网格并显示对齐参考线（拖动与键盘微调同为空间位移的等价输入）
+    - experimental:方向键微调选中卡片（Shift 大步长），与拖动几何等价
+    - experimental:Tab/Shift+Tab 循环选择卡片；Enter 就地编辑标题；Esc 退出编辑/取消选择
+    - experimental:N 新建卡片（有选中→相邻格位；无选中→视图中心）
+    - experimental:Ctrl+D 复制选中卡片（相邻偏移）
+    - experimental:Delete/Backspace 删除选中卡片
+    - experimental:[ / ] 调整层级（后移/前置）
+    - experimental:1/2/3 将选中卡片移入对应区域（键盘等价的换区落位）
+    - experimental:滚轮/触控板平移，+/− 缩放，0 复位，F 聚焦选中卡片到视图中心
+    - experimental:? 打开键位契约帮助层（再次 ? 或 Esc 关闭）
+    - experimental:拖动画布空白处平移视图
+  required_states:
+    - ready
+    - selected
+    - empty
+    - loading
+    - error
+  decision_points:
+    - id: dp-create-anchor
+      question: 键盘新建（N）的落点锚定规则？
+      adapter_may_choose:
+        - 新建对象出现在选中卡片相邻格位
+        - 新建对象出现在视图中心
+        - 两者兼有（有选中→选中旁；无选中→中心）
+    - id: dp-proximity-threshold
+      question: 邻近（成组信号）距离阈值？
+      adapter_may_choose:
+        - 紧邻（约一卡宽以内）
+        - 近距（约两卡宽以内）
+        - 中距（约三卡宽以内）
+    - id: dp-nudge-grid
+      question: 键盘微调与网格的关系？
+      adapter_may_choose:
+        - 方向键步长 = 网格步长，Shift 加速数倍
+        - 方向键步长 = 网格半步（精调）
+    - id: dp-help-surface
+      question: 键位契约的文档化表面？
+      adapter_may_choose:
+        - 独立帮助层（? 开关）
+        - 仅工具栏 tooltip
+        - 首访引导浮层
+  unresolved: []
+  rejected_alternatives: []
+  user_job:
+    verb: create
+    target: 物理画布上的空间对象（物料卡）
+    success: 落位即意图，且每个空间操作有键盘等价物
+  primary_object:
+    type: canvas_object
+    label: 物料卡（canvas_object）
+  information_shape:
+    cardinality: many
+    relationality: medium
+    hierarchy: low
+    temporality: low
+    density: medium
+    dimensionality: medium
+    spatiality: physical
+    volatility: medium
+    uncertainty: low
+    comparison_need: none
+  representation:
+    primary:
+      type: canvas
+      reason: spatiality=physical 且成功标准为落位即意图：位置本身承载语义
+    supporting:
+      - type: cards
+        reason: 物料卡是画布上 canvas_object 的渲染单位（自由落位，非网格化卡片布局）
+  priority:
+    primary:
+      - reg-canvas
+      - reg-inspector
+      - reg-toolbar
+    contextual:
+      - reg-help
+      - reg-status
+  interaction:
+    preview: none
+    inspect: select
+    navigate: none
+    locate: none
+  state_ownership:
+    - state: selection
+      owner: reg-canvas
+    - state: viewport
+      owner: reg-canvas
+    - state: inspector
+      owner: reg-inspector
+    - state: query
+      owner: session
+    - state: mode
+      owner: reg-help
+    - state: preview
+      owner: reg-canvas
+  acceptance:
+    - 空间操作有键盘等价物（验收种子）：新建/移动/微调/换区/复制/删除/层级/选择/视图全部有键位
+    - 落位即意图：卡片中心入区即改写归属，inspector 实时反映
+    - 首屏即用：内联种子数据，ready 态随加载完成，不以加载态为可测状态
+    - 根路径 index.html 静态直开（file:// 可用），无外部服务

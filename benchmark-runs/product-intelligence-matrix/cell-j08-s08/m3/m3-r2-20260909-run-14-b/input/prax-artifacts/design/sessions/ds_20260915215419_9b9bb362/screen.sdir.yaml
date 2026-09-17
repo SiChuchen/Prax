@@ -1,0 +1,76 @@
+version: "0.1"
+screen:
+  id: application_shell_screen
+  intent:
+    primary_task: 以块级结构编辑文档内容（改标题层级、增删/重排/改写块），结构化编辑器与预览始终保持一致
+    secondary_tasks:
+      - 通过大纲在分区间跳转
+      - 发现并修复结构问题（层级跳跃、空标题等）
+      - 撤销/重做编辑操作
+      - 导出文档（Markdown/HTML）
+  archetype:
+    pattern_ref: PAT-APPLICATION-SHELL
+  density_intent: spacious
+  regions:
+    - id: 1 文档标题 + 结构健康状态（顶栏，常驻）
+      role: experimental:1 文档标题 + 结构健康状态（顶栏，常驻）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 2 三区工作区：大纲 · 结构化编辑 · 实时预览（并列主导）
+      role: experimental:2 三区工作区：大纲 · 结构化编辑 · 实时预览（并列主导）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 3 块级内容与块操作（编辑区内）
+      role: experimental:3 块级内容与块操作（编辑区内）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 4 统计与导出（状态条/菜单，辅助）
+      role: experimental:4 统计与导出（状态条/菜单，辅助）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 诊断列表随问题出现，定位到块
+      role: experimental:诊断列表随问题出现，定位到块
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 块插入菜单由上下文触发
+      role: experimental:块插入菜单由上下文触发
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: workspace
+      role: dominant_workspace
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - preserve_context
+  relationships: []
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved: []
+  rejected_alternatives: []

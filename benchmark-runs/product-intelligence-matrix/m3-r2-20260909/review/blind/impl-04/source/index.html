@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PulseWall · 指标值班墙</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- region-header：状态头 -->
+  <header id="region-header" class="hdr" role="banner">
+    <div class="hdr-brand">
+      <span class="hdr-logo" aria-hidden="true">▮▮▮</span>
+      <h1 class="hdr-title">PulseWall <span class="hdr-sub">指标值班墙</span></h1>
+    </div>
+    <div class="hdr-status">
+      <span class="hb-wrap" title="流心跳"><span id="hb-dot" class="hb-dot" aria-hidden="true"></span><span id="hb-label" class="hb-label">LIVE · 1Hz</span></span>
+      <span id="hdr-clock" class="hdr-clock" aria-label="当前时间">--:--:--</span>
+      <span id="hdr-stats" class="hdr-stats" aria-label="监控统计"></span>
+    </div>
+    <div class="hdr-actions">
+      <span id="hdr-alert" class="hdr-alert" role="status"></span>
+      <button id="btn-pause" class="btn" type="button" title="暂停/恢复数据流（Space）">⏸ 暂停</button>
+      <button id="btn-inject" class="btn" type="button" title="向随机正常指标注入异常（演示）">⚡ 注入异常</button>
+    </div>
+  </header>
+
+  <!-- region-anomaly-strip：异常聚拢条（扫视第一落点） -->
+  <section id="region-anomaly-strip" class="strip" role="region" aria-label="异常指标聚合">
+    <span class="strip-cap" id="strip-cap">异常</span>
+    <div id="strip-body" class="strip-body"></div>
+  </section>
+
+  <main class="main">
+    <!-- region-metric-grid：指标墙（dominant，固定网格不重排） -->
+    <section id="region-metric-grid" class="wall" role="region" aria-label="指标墙" aria-live="off"></section>
+
+    <!-- 右轨：检查器（selection_driven）+ 事件流（always） -->
+    <aside class="rail">
+      <section id="region-inspector" class="insp" role="region" aria-label="指标检查器" hidden>
+        <div class="insp-head">
+          <div class="insp-title">
+            <span id="insp-dot" class="dot" aria-hidden="true"></span>
+            <h2 id="insp-name" class="insp-name">—</h2>
+            <span id="insp-badge" class="badge">—</span>
+          </div>
+          <button id="insp-close" class="btn btn-ghost" type="button" title="关闭检查器（Esc）">✕</button>
+        </div>
+        <div class="insp-kv">
+          <span id="insp-meta" class="insp-meta">—</span>
+          <span id="insp-value" class="insp-value">—</span>
+        </div>
+        <div id="insp-thresholds" class="insp-th"></div>
+        <div id="insp-chart" class="insp-chart" aria-label="近期走势（含阈值带）"></div>
+        <h3 class="insp-h3">变化追溯 <span class="insp-h3-sub">时间倒序</span></h3>
+        <ol id="insp-history" class="insp-history" aria-label="带时间戳的变化历史"></ol>
+      </section>
+
+      <section id="region-event-feed" class="feed" role="region" aria-label="事件流">
+        <div class="feed-head">
+          <h2 class="feed-title">事件流</h2>
+          <button id="btn-filter" class="btn btn-ghost btn-tiny" type="button" aria-pressed="false" title="仅显示警告/严重/注入事件">仅看异常</button>
+        </div>
+        <ol id="feed-list" class="feed-list" aria-label="变化事件（时间倒序）"></ol>
+      </section>
+    </aside>
+  </main>
+
+  <footer class="ftr">
+    <span>键盘：<kbd>Tab</kbd> 移动 · <kbd>Enter</kbd> 选中 · <kbd>Esc</kbd> 关闭检查器 · <kbd>Space</kbd> 暂停/恢复（焦点不在按钮时）</span>
+    <span class="ftr-mut">本地模拟流 · 数据不入盘 · cell-j04-s04</span>
+  </footer>
+
+  <script src="js/stream.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

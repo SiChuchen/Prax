@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PulseWatch · 指标流监视台</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="pulse-dot" id="pulseDot" aria-hidden="true"></span>
+    <h1>PULSEWATCH <span class="sub">指标流监视台</span></h1>
+  </div>
+  <div class="stream-meta mono">
+    <span id="clock">--:--:--</span>
+    <span class="sep">·</span><span>采样间隔 2s</span>
+    <span class="sep">·</span><span id="flowState">实时流 1×</span>
+  </div>
+  <div class="counts" aria-label="指标状态计数">
+    <span class="cnt ok" id="cntOk">0 正常</span>
+    <span class="cnt warn" id="cntWarn">0 警告</span>
+    <span class="cnt crit" id="cntCrit">0 严重</span>
+  </div>
+  <div class="controls">
+    <div class="chips" id="catChips" role="group" aria-label="域筛选"></div>
+    <button id="btnOnlyBad" class="btn" aria-pressed="false">仅看异常</button>
+    <button id="btnSpeed" class="btn">速度 1×</button>
+    <button id="btnPause" class="btn primary">暂停</button>
+  </div>
+</header>
+
+<div id="attention" class="attention" aria-label="当前异常告警"></div>
+
+<main class="layout">
+  <section id="metrics" class="metrics" aria-label="指标网格"></section>
+  <aside class="rail">
+    <section class="panel feed-panel">
+      <h2>事件流 <span class="hint">状态变化 · 点击可追溯</span></h2>
+      <ol id="feed" class="feed"></ol>
+    </section>
+    <section class="panel detail-panel">
+      <h2>指标追溯 <button id="btnCloseDetail" class="btn tiny" hidden>关闭</button></h2>
+      <div id="detailEmpty" class="empty">在网格或事件流中选择一个指标，查看完整曲线与状态变化历史。</div>
+      <div id="detailBody" hidden>
+        <div class="d-head">
+          <span id="dName" class="d-name"></span>
+          <span id="dCat" class="cat-chip"></span>
+        </div>
+        <div class="d-now mono">
+          <span id="dVal" class="d-big"></span><span id="dUnit" class="d-unit"></span>
+          <span id="dDelta" class="d-delta mono"></span>
+        </div>
+        <canvas id="dChart" class="d-chart"></canvas>
+        <div id="dStats" class="d-stats mono"></div>
+        <h3>状态变化史 <span class="hint">本次会话内可回放</span></h3>
+        <ol id="dTrace" class="trace"></ol>
+      </div>
+    </section>
+  </aside>
+</main>
+
+<footer class="foot">
+  <span class="lg"><i class="sw ok"></i>正常</span>
+  <span class="lg"><i class="sw warn"></i>警告</span>
+  <span class="lg"><i class="sw crit"></i>严重</span>
+  <span class="note">本地模拟流 · 阈值判定带滞后（连续 2 样本触发 / 3 样本恢复），杜绝状态闪烁 · 网格定序不重排</span>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

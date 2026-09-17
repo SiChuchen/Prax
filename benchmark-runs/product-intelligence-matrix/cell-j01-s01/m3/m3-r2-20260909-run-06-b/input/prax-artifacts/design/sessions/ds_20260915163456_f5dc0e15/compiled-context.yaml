@@ -1,0 +1,57 @@
+version: "0.1"
+session_id: ds_20260915163456_f5dc0e15
+task:
+  surfaces: []
+  primary: 在层级分组树中浏览/筛选实体，显式批量选择实体并执行批量操作（批量状态变更、批量移动归属、批量删除）
+product_relationships:
+  - id: rel_entity_group
+    source: entity
+    target: group
+    type: belongs_to
+    direction: forward
+    meaning: 每个实体恰好归属于一个分组节点
+    importance: primary
+  - id: rel_selection_entity
+    source: selection
+    target: entity
+    type: selects
+    direction: forward
+    meaning: 选择集只包含被显式勾选的实体；父节点勾选不隐式吸纳折叠中的子实体
+    importance: primary
+  - id: rel_batchop_selection
+    source: batch_operation
+    target: selection
+    type: applies_to
+    direction: forward
+    meaning: 批量操作严格作用于选择集，执行前展示逐项影响预览
+    importance: primary
+region_relationships: []
+decisions:
+  primary_structure: PAT-LIST-DETAIL-INSPECTOR
+  density_intent: compact
+  major_choice_ids:
+    - choice_selection_scope
+    - choice_batch_preview
+    - choice_receipt_undo
+    - choice_inspector_ledger
+must_preserve: []
+regression_points: []
+unresolved:
+  - undo_depth
+  - select_all_scope_semantics
+corrections: []
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - destructive_recovery
+    - requirement_alignment
+  regression_check_ids: []

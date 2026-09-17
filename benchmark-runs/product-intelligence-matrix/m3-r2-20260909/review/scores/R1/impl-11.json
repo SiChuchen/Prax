@@ -1,0 +1,84 @@
+{
+  "reviewer": "R1",
+  "package_id": "impl-11",
+  "session_id": "06070107-6176-4917-b997-6ad55cfa1686",
+  "wall_clock_seconds": 200,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-11",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Brief's shape is open-collection (unbounded large set, locate burden) with object_type=item. Implementation is search + faceted filter rail + grouped results + selection-bound detail (source/index.html:18-50; source/app.js:30-47 defines Collection/Status/Era facets; source/app.js:90-114 compute pipeline joins query and facets over 2,260 items, header shows '2,260 records · 9 collections' in both screenshots). Medium hierarchy shown via section grouping plus group/taxa lines in the detail (source/app.js:361-368; source/data.js:113 groupTaxa). Representation matches the locate job directly."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "Initial screen in both screenshots is dominated by the locate path: search box top-center with placeholder 'Search records by name, catalog number, tag, locality…' and '/' hint, facet rail left with live counts, results list filling the remainder ('Ornithology 300 records'). No hero/marketing content; search-row is the first element of the main region (source/index.html:24-39)."
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "Both screenshots (1280x860, 1440x900) convey what/where immediately: brand + 'Natural History Index', header totals line, live '2,260 records' count beside the search, section head 'Ornithology 300 records', each row showing name, catalog badge (ORN-1901-0007) and locality/date. Search scope is self-describing via the placeholder (source/index.html:30-32); header totals rendered at source/app.js:118-121."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Locate fits inside three interactions: '/' focuses search (source/app.js:421-424), one query narrows 2,260 records (e.g., curated 'coelacanth' target, source/data.js:283-290), one click on a row opens the detail (source/app.js:306-308, 377-387); alternatively one facet checkbox click narrows by collection/status/era (screenshots show 17 count-labeled options). Facets are permanently visible — no drill-down modes or extra steps; results group headers carry counts so narrowing is guided."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "Structurally engineered against context loss: detail is a sibling region, not a modal/route (source/app.js:5-9, 337-373); selection updates aria-current in place without re-rendering the list so scroll/focus survive (source/app.js:377-387); sticky workbar keeps query, constraint chips and live total visible while scrolling (source/styles.css:154-162) and sticky facet rail (styles.css:102-110); facet focus restored after rail re-render (source/app.js:233-250); closeDetail returns focus to the originating row (app.js:389-397); zero-state offers removable chips in place ('Relax one constraint — the rest of your context stays put', app.js:311-335)."
+      },
+      "ui_surface_complexity": {
+        "score": 5,
+        "evidence": "Permanent surfaces are exactly what the locate job needs: header, 3 facet groups (17 options, each with live counts visible in both screenshots), search box, context row (empty until used), results list; the detail panel is hidden until selection (source/index.html:47, source/app.js:342-347). No tabs, modes, nav menus, or decorative controls anywhere in the source."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Receipt objectively fails all three a11y checks plus the type-size check: measurement-summary.json ids a11y.contrast=fail, a11y.focus_order=fail, a11y.target_size=fail, type.min_projected_size=fail. Code-level affordances exist (focus-visible outlines source/styles.css:49-53, aria-live total source/app.js:159, aria-current rows app.js:382-384, aria-labels on chips/close/reset), but small secondary type is pervasive in CSS — 11px group-clear (styles.css:126), 11.5px kbd-hint (styles.css:187), 11px chip-kind (styles.css:217), 11.5px row-id (styles.css:300), 12.5px row-meta (styles.css:314), 11.5px provenance (styles.css:437) — consistent with the failed projected-size check, and 18px chip-remove (styles.css:222) is a small target."
+      },
+      "frontend_rework": {
+        "score": 3,
+        "evidence": "5 of 7 receipt checks failed (measurement-summary.json: pass 2 / fail 5), implying follow-up fixes across layout and a11y. Visible defect: at 1280x860 the last visible row (ORN-1888-1011, Buteo leucoptera) shows no right-aligned locality/date text while the identical row shows 'Raptors · Altai Mountains, Mongolia · Jul 1888' at 1440x900 — consistent with layout.overflow=fail. Mitigating: layout.responsive_collision=pass and text.truncation=pass (meta truncates with a clean ellipsis at 1280, row ORN-1958-1010), and no error state rendered (target_invalid=false). Visual result is otherwise polished, so implied rework is real but bounded."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed: locate path supported by search/filter without losing context. Search covers name, catalog number, tag, locality (placeholder in both screenshots; haystack over 12 fields at source/data.js:374-379); filters are three count-labeled facet groups whose counts recompute against query and other groups (source/app.js:95-103); context preservation shown by sticky constraint bar, in-place selection, and focus restoration (app.js:135-181, 377-397). Brief's 'three interactions' standard is met via search→row-click (two interactions); curated verifiable landmarks exist for the locate path (data.js:251-371; source/selftest.html:85-96). Ready-at-load constraint satisfied: data materializes synchronously, first paint is the ready state (data.js:4-7; app.js:445-447)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "Receipt fails 5 of 7 checks: layout.overflow, a11y.contrast, a11y.focus_order, a11y.target_size, type.min_projected_size (measurement-summary.json:10-16).",
+      "At 1280x860 the row ORN-1888-1011 (Buteo leucoptera) loses its right-aligned locality/date meta that is visible at 1440x900 — consistent with the layout.overflow failure.",
+      "Right-hand row meta truncates at 1280x860 (row ORN-1958-1010 ends '…Jul…'); truncation is handled gracefully (text.truncation pass) but meta competes for space at the narrower viewport.",
+      "Secondary type sizes of 11-12.5px throughout (styles.css:126,187,217,300,314,437) and an 18px chip-remove hit target (styles.css:222) align with the failed type-size and target-size checks.",
+      "Minor: unused .detail-placeholder CSS block (styles.css:441-451) — dead style, no runtime surface."
+    ],
+    "missing_evidence": [
+      "The single 'warnings: 1' in measurement-summary.json:7 is not attributed to any check id in the sanitized summary.",
+      "No per-check detail (which contrast pairs, which elements break focus order/target size, overflow coordinates) is available to localize the five failures beyond their check ids.",
+      "Screenshots cover only the initial page; runtime behavior of the detail panel, show-more windows, and focus restoration is judged from source structure only, per blind-review scope."
+    ],
+    "overall_note": "impl-11 is a faceted-search list-detail index whose representation is a direct match for the brief's open-collection locate job: search over names/catalog numbers/tags/localities plus three count-labeled facet groups over 2,260 records, with the locate path dominant on the initial screen in both viewports and reachable in two-to-three interactions. Context preservation is unusually thorough for a single-page build — sticky workbar with removable constraint chips and a live total, a sibling detail panel that never re-renders the list, and explicit focus restoration on facet change, detail close, and show-more (source/app.js:233-250, 296-304, 377-397; styles.css:102-110, 154-162). The clear weaknesses are objective and receipt-backed: 5 of 7 checks failed, including all three a11y checks and the projected-type-size check, consistent with pervasive 11-12.5px secondary type and a visible 1280x860 defect where one row's locality/date meta disappears entirely (layout.overflow fail), while responsive collision and text truncation pass. Code-level accessibility scaffolding (focus-visible, aria-live, aria-current, labeled controls) exists but did not prevent the measured failures. Model-judged time-to-understand is high based on the screenshots' self-describing header and placeholder; task completion time, retrieval accuracy, and human preference remain not observable in this pilot, and model judgment here is not a substitute for human preference."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 82335,
+      "outputTokens": 8323,
+      "cacheReadInputTokens": 314496,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.7769980000000001,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-09-16T22:28:13.285Z"
+}

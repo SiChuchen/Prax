@@ -1,0 +1,69 @@
+version: "0.2"
+jtbd:
+  verb: decide
+  target: 位置敏感的选项（候选选址）
+  success: 决策输入同屏可得：地理语境与决策项（比较面板）同屏，比较状态驻留不丢失，用户能当场指认每个候选在哪、强在哪、弱在哪、最终选了哪个。
+primary_object:
+  type: location
+  label: 候选选址（location）
+task_model:
+  frequency: low
+  reversibility: costly
+  consequence: high
+  expertise: mixed
+user:
+  primary_role: 需要为团队选定办公地点的运营/行政决策者
+  expertise: mixed
+  familiarity: medium
+goal:
+  primary: 让用户在同一个屏幕上完成少量候选选址的并排比较并做出决定：地理语境（区位图）与高密度比较面板同时驻留可见，随比较的推进逐格决策输入。
+tasks:
+  primary: 在区位图与比较面板同屏的情况下，逐条标准比较 4 个候选选址，识别各标准优胜者并敲定最终选择
+  secondary:
+    - 按自己的侧重调整标准权重，观察领先者变化
+    - 排除明确不合格的候选，聚焦剩余候选
+product_objects:
+  - id: obj-candidate-site
+    user_name: 候选选址
+    purpose: 承载决策的被比较对象：每个选址有坐标区位与一组高密度属性
+  - id: obj-site-map
+    user_name: 区位图
+    purpose: 提供地理语境：候选点的相对位置与参照物（地铁线、团队重心、客户点）
+  - id: obj-comparison-panel
+    user_name: 比较面板
+    purpose: 并排比较高密度决策输入：一行一标准、一列一候选，含优胜标注与权重
+  - id: obj-decision
+    user_name: 决定
+    purpose: 记录比较结论：被选中（或排除）的候选与当前权重下的领先者
+relationships:
+  - id: rel-locate
+    source: obj-candidate-site
+    target: obj-site-map
+    type: located_at
+    direction: bidirectional
+    meaning: 候选点在区位图上的位置即该候选的地理语境；面板纵列与地图标记互为同一对象的两个面
+    condition: 任一候选在地图或面板中被选中时
+    importance: primary
+  - id: rel-compare
+    source: obj-candidate-site
+    target: obj-comparison-panel
+    type: compared_in
+    direction: bidirectional
+    meaning: 候选的属性按标准并排对齐，比较即任务本身
+    condition: 比较面板始终可见
+    importance: primary
+  - id: rel-decides
+    source: obj-decision
+    target: obj-candidate-site
+    type: selects
+    direction: forward
+    meaning: 决定落在具体候选上并回显于面板与地图（胜出标记）
+    condition: 用户敲定选择或调整权重时
+    importance: primary
+mental_model_hypothesis:
+  summary: 用户把选址决策理解为『一张区位图 + 一张对照表』并排放在同一屏：地图回答『它在哪、离什么近』，表格回答『它值不值、强在哪』；两边的选中状态互相联动，形成一个候选一纵列、一条标准一行的比较心智模型。
+  confidence: high
+  evidence:
+    - user_requirement
+primary_success_definition: 页面加载即同屏呈现区位图与 4 个候选选址的高密度并排比较面板；用户无需翻页或切屏即可完成比较并宣布决定；地图与表格选中状态互认，且每条决策输入（指标、权重、优胜标注、最终选择）在比较推进全程保持同屏。
+open_questions: []

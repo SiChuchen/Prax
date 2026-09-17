@@ -1,0 +1,62 @@
+user:
+  expertise: mixed
+  familiarity: medium
+task:
+  primary: Locate a target item in a large open collection (thousands of entries) and open its details
+  modes:
+    - search
+    - filter
+    - inspect
+  frequency: high
+domain:
+  type: collection catalog / open digital archive
+  entities:
+    - collection item
+    - collection section (category)
+    - tag
+    - filter facet
+    - search query
+information:
+  volume: high
+  relationship_complexity: low
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: none
+  error_cost: low
+priorities:
+  - "Locate path speed: target reachable within 3 interactions"
+  - "Context preservation: active filters, counts and results stay visible/recoverable while inspecting an item"
+  - "Count transparency: result set size visible at every step"
+  - "First-paint readiness: all data inlined, no loading state"
+  - Keyboard-reachable search and list navigation
+density_intent: regular
+confidence:
+  overall: high
+unknowns: []
+classification:
+  version: "1"
+  task_type: compare_filter_records
+  domain_id: data_exploration
+  interaction_mode: collection_with_contextual_detail
+  product_type: unknown
+  primary_object_type: result_set
+  secondary_object_types:
+    - item
+    - facet
+    - query
+  confidence: high
+  evidence:
+    - task_type=compare_filter_records ← token 'filter' in context.task and frame.tasks
+    - domain_id=data_exploration ← token 'log' in context.domain
+    - interaction_mode=collection_with_contextual_detail ← token 'filter' in context.task, frame.tasks, and context.priorities
+    - primary_object_type=result_set ← most referenced product object in the Product Frame
+  open_questions:
+    - product_type could not be derived; record the intended audience and product kind

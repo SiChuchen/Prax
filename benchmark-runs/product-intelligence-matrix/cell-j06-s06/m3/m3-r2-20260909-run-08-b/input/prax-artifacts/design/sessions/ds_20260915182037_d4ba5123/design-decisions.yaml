@@ -1,0 +1,106 @@
+session_id: ds_20260915182037_d4ba5123
+version: "0.2"
+information_shape:
+  cardinality: many
+  relationality: medium
+  hierarchy: medium
+  temporality: high
+  density: medium
+  dimensionality: medium
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: timeline
+    reason: 时间性=high 是束内最强 facet：阅读主线必须是按时间排布的变更集序列；因果连线叠加在同一时间轴上，使“何时”与“因何”共用一个坐标
+  supporting:
+    - type: diagram
+      reason: 因果弧线是时间轴上的一等视觉层，点击可高亮整条因果链并跳转（关系性 medium 的承载）
+    - type: table
+      reason: 状态切片用紧凑表格式呈现各组件当前字段值，读出“此刻状态从哪来”
+    - type: list
+      reason: 变更详情内的字段级操作按时间顺序纵向列出（+新增 / ~修改 / −删除 / ↩回滚）
+  rejected:
+    - option: feed（纯倒序事件流）
+      reason: 只有纵向时序，因果连线无法叠加在时间坐标上，关系性 medium 无处承载
+    - option: graph/network 力导向图
+      reason: 无时间轴，因果方向与时间顺序脱钩，违背验收种子
+    - option: table（全表主导）
+      reason: 可排序但时间结构不显性；作为状态切片的辅助呈现保留
+  justification_vs_shape: temporal-sequence 束：temporality=high → 主表征 timeline；基数 many → 节点按时间与阶段双编码；关系性 medium → 因果弧线而非全量 graph；层级 medium → 阶段带 + 组件泳道两层，不做树；空间性 none → 一律不用 map/canvas 自由布局；比较需求 none → 不做并排 diff 视图，只在详情内做单变更 before→after。
+primary_structure:
+  pattern: PAT-WORKSPACE
+  rationale:
+    - L1 检查证实 LIST-DETAIL 自我排除：本产品对象间的因果关关系主要对象；APPLICATION-SHELL 因“单一任务主导”排除；PAT-WORKSPACE 的 applies_when（反复检视相关对象、上下文丰富）与本任务完全吻合
+    - 时间性 high 要求时间轴作为主导结构，workspace 把 timeline canvas 作为 dominant region，详情与切片为 adjacent 固定面板，不丢上下文
+  confidence: high
+information_hierarchy:
+  primary:
+    - 时间轴：阶段带内按时间排布的变更集节点（many 的阅读主线）
+    - 因果连线：严格从左到右的 cause→effect 弧线，方向与时间同向
+    - 选中变更集的详情：诱因 / 字段级 before→after / 引发后果
+  secondary:
+    - 选定时刻的状态切片（折叠结果）
+    - 按组件过滤 / 组件泳道标记
+density:
+  intent: regular
+  strategy:
+    - 时间轴画布为主导区域，占最大视口份额
+    - 选中详情与状态切片为相邻固定面板，选择不变时保持稳定
+    - 阶段分组与组件泳道用对齐和留白分组，不用重装饰
+  avoid:
+    - 装饰性图表与无关 chrome
+    - 需要滚动才能看完因果链的布局
+    - 超过一屏的表单式堆叠
+major_choices:
+  - id: mc1_forward_only_edges
+    choice: 因果连线只允许从时间较早的变更集指向较晚的变更集，数据层校验因果方向与时间顺序一致
+    rationale: 验收种子“时间结构与变更语义一致”的第一道保证：视觉方向与时间同向，不可能出现回指
+    confidence: medium
+    references:
+      - causal_link
+      - change_set
+  - id: mc2_snapshot_is_fold
+    choice: 状态切片不单独存数据，运行时由变更序列折叠（fold ops ≤ t）计算
+    rationale: 第二道保证：切片显示值在结构上不可能与变更语义矛盾，二者同源
+    confidence: medium
+    references:
+      - state_snapshot
+      - change_set
+  - id: mc3_inline_dataset
+    choice: 单文件内联数据集：虚构平台 Aurora 平台 2026 Q2 的 24 个变更集、5 阶段、8 组件、12 条因果链
+    rationale: 满足“首屏即用、无后端、静态打开”；基数 many、关系性中、层级中，量级恰好
+    confidence: medium
+    references:
+      - change_set
+      - phase
+  - id: mc4_vanilla_no_build
+    choice: 无构建步骤的原生 HTML/CSS/JS（ES modules），根目录 index.html 直接打开
+    rationale: 交付约束要求静态直接打开；规模单屏，初始数据内联于 change_set 数据模块，无需框架与构建链，降低失败面
+    confidence: medium
+    references:
+      - change_set
+      - state_snapshot
+rejected:
+  - option: PAT-LIST-DETAIL
+    reason: L1 does_not_apply_when：条目间关系是主要对象；本产品因果关关系主要对象，纯列表无法呈现因果链的时间走向
+  - option: PAT-APPLICATION-SHELL
+    reason: L1 does_not_apply_when：单一任务主导整个产品；本应用单屏单任务，shell 只留一个轻头部即可
+  - option: graph/network 力导向图
+    reason: 无时间轴，因果方向与时间顺序脱钩，直接违背验收种子
+  - option: calendar
+    reason: 适合日粒度调度视图；本场景季度跨度、需要事件节点与因果弧，calendar 无此表达
+unresolved: []
+complexity_budget:
+  permanent_panels: 4
+  permanent_primary_actions: 3
+  modes: 0
+  state_owners: 2
+  navigation_levels: 1
+  persistent_filters: 1
+  new_semantic_concepts: 3
+  keyboard_contracts: 1
+  mobile_conflicts: 0
+  permanent_surfaces: 1

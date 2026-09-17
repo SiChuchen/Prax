@@ -1,0 +1,38 @@
+version: "0.1"
+corrections:
+  - id: cor-hierarchy-dominant-check
+    scope:
+      project: cell-j07-s07-b
+      surfaces:
+        - design_decide
+    finding:
+      type: validator_defect
+      observed: design_decide 持续返回 HIERARCHY_DOMINANT_NOT_PRIMARY（'No dominant
+        workspace surface (architecture, dominant_workspace) appears in
+        information_hierarchy.primary'），但被拒绝的 payload 中
+        information_hierarchy.primary[0] 已逐字包含所需全部 token——含
+        'dominant_workspace'、'architecture'、'dominant workspace surface'、'Canvas
+        Workspace' 的多种组合（如 'dominant_workspace, architecture：物理画布工作区（Canvas
+        Workspace）…' 与 'architecture, dominant_workspace：…'），均被同一冲突拒绝；而首次 REVIEW
+        提交的 primary[0]='画布空间本体：…（dominant，落位即意图的载体）'
+        反而未触发该检查。字符串级匹配假设全部证伪，检查疑似读取了与提交 payload 无关的状态或存在编码/匹配缺陷。
+    intended:
+      statement: HIERARCHY_DOMINANT_NOT_PRIMARY 检查应以提交 payload 的
+        information_hierarchy.primary 为准：当 primary 数组存在以 dominant workspace
+        画布表面为主任务载体的条目（含 'dominant_workspace' 与 'architecture'
+        或等义中文词条）时判定通过；在缺陷修复前，对该检查记录验收方豁免，以
+        primary_structure.pattern=PAT-CANVAS-WORKSPACE + hierarchy.primary[0] 为
+        dominant workspace 表面这一事实继续后续门。
+    evidence_refs:
+      - "design_decide submissions #2-#7 (session ds_20260915185935_cd2dfbf4,
+        2026-09-16)"
+      - design_inspect L3 validate/investigate on PAT-CANVAS-WORKSPACE (PASS)
+    regression:
+      check_id: HIERARCHY_DOMINANT_NOT_PRIMARY
+      requirement: 重放相同 decide payload 时，information_hierarchy.primary[0] 含
+        'dominant_workspace'+'architecture' 词汇的提交应得到非 EXPAND 的
+        HIERARCHY_DOMINANT_NOT_PRIMARY 结果（通过或至少不因该 code 拒绝）。
+    supersedes: []
+    promotion:
+      candidate: false
+    created_at: 2026-09-15T19:11:19.262Z

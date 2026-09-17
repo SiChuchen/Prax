@@ -1,0 +1,77 @@
+version: "0.1"
+session_id: ds_20260915172708_e17033a4
+task:
+  surfaces: []
+  primary: 在层级分组树中浏览/筛选实体，显式批量选择实体并执行批量操作（批量状态变更、批量移动归属、批量删除）
+product_relationships:
+  - id: rel_entity_group
+    source: entity
+    target: group
+    type: belongs_to
+    direction: forward
+    meaning: 每个实体恰好归属于一个分组节点
+    importance: primary
+  - id: rel_selection_entity
+    source: selection
+    target: entity
+    type: selects
+    direction: forward
+    meaning: 选择集只包含被显式勾选的实体；父节点勾选不隐式吸纳折叠中的子实体
+    importance: primary
+  - id: rel_batchop_selection
+    source: batch_operation
+    target: selection
+    type: applies_to
+    direction: forward
+    meaning: 批量操作严格作用于选择集，执行前展示逐项影响预览
+    importance: primary
+region_relationships: []
+decisions:
+  primary_structure: PAT-LIST-DETAIL-INSPECTOR
+  density_intent: compact
+  major_choice_ids:
+    - choice_selection_scope
+    - choice_batch_preview
+    - choice_receipt_undo
+    - choice_inspector_ledger
+must_preserve: []
+regression_points: []
+unresolved:
+  - undo_depth
+  - select_all_scope_semantics
+corrections: []
+state_ownership:
+  - state: selection
+    owner: session
+  - state: query
+    owner: toolbar
+  - state: viewport
+    owner: tree_table
+  - state: inspector
+    owner: selection_inspector
+  - state: preview
+    owner: batch_preview_modal
+acceptance:
+  - A1 批量操作仅作用于显式选择集：执行后受影响实体集合与选择集完全一致
+  - A2 折叠子分组内的实体不因勾选父分组或“全选”而进入选择集（可见即作用域）
+  - A3 被筛选/搜索隐藏的实体不会被全选纳入，作用域计数明示「可见 N / 总计 M」
+  - A4 每个实体行常驻显示状态徽标与完整归属路径，状态归属显式
+  - A5 批量操作执行前展示按归属路径分组的影响预览，需显式确认
+  - A6 执行后回执显示「已影响 N 项」，支持一键撤销恢复原状态
+  - A7 首屏即用：初始数据内联，页面加载完成即为 ready，无加载态作为可测状态
+  - A8 搜索与状态筛选持久可见，工具栏常驻显示当前作用域与选择计数
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - destructive_recovery
+    - requirement_alignment
+  regression_check_ids: []

@@ -1,0 +1,79 @@
+version: "0.1"
+session_id: ds_20260916185454_ef8edb3d
+task:
+  surfaces: []
+  primary: Locate a target item in the collection and open its details within three interactions.
+product_relationships:
+  - id: rel_facet_result_set
+    source: facet
+    target: result_set
+    type: narrows
+    direction: forward
+    meaning: Each active filter constrains the result set
+    importance: primary
+  - id: rel_query_result_set
+    source: query
+    target: result_set
+    type: narrows
+    direction: forward
+    meaning: Search text constrains the result set on top of filters
+    importance: primary
+  - id: rel_item_result_set
+    source: item
+    target: result_set
+    type: member_of
+    direction: forward
+    meaning: Items appear grouped inside the result set by their section
+    importance: supporting
+region_relationships: []
+decisions:
+  primary_structure: PAT-LIST-DETAIL
+  density_intent: regular
+  major_choice_ids:
+    - domain-instantiation
+    - side-panel-detail
+    - composable-search-filter
+    - incremental-render
+must_preserve: []
+regression_points: []
+unresolved: []
+corrections: []
+representation_portfolio:
+  primary:
+    type: list
+    reason: Locate over an unbounded weakly-related collection is a narrowing task; a count-labeled, grouped searchable list is the fastest scannable surface
+  supporting:
+    - type: form
+      reason: Filter rail is a small bounded form region composing with search
+    - type: cards
+      reason: Item detail panel is a compact card document for the selected item
+  rejected:
+    - option: graph
+      reason: relationality is low — no relationship structure to render
+    - option: tree
+      reason: hierarchy is medium (sections only); a tree would add a navigation level to the locate path
+    - option: table
+      reason: comparison_need is none; a table wastes width needed for the adjacent detail panel
+    - option: grid (cards)
+      reason: optimizes visual browsing, not 3-interaction target lookup
+state_ownership:
+  - state: selection
+    owner: Search entry (task-first, top of work region)
+  - state: preview
+    owner: session
+acceptance:
+  - A user can locate and open any target item within three interactions, via a path that always has search/filter support and never loses the results context.
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - requirement_alignment
+  regression_check_ids: []

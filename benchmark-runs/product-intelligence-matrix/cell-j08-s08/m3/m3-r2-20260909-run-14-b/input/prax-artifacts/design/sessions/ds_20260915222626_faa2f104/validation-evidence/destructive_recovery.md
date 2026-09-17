@@ -1,0 +1,1 @@
+Receipt: evidence/checks.json: "06 block deleted + toast shown"=true (undo toast visible), then real Ctrl+Z key event -> "06 Ctrl+Z restores block"=true (block b13 back). "08 reset restores sample"="18|结构完好" — reset is undoable via history stack.

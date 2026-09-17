@@ -1,0 +1,38 @@
+version: "0.1"
+session_id: ds_20260915150653_a22fc0e1
+task_ref: 在区位图与比较面板同屏的情况下，逐条标准比较 4 个候选选址，识别各标准优胜者并敲定最终选择
+selected:
+  - ref: product_relationships
+    reason:
+      - rel-locate:obj-candidate-site->obj-site-map
+      - rel-compare:obj-candidate-site->obj-comparison-panel
+      - rel-decides:obj-decision->obj-candidate-site
+  - ref: region_relationships
+    reason:
+      - region_rel_data_detail
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-DATA-EXPLORER
+  - ref: unresolved
+    reason: []
+  - ref: corrections
+    reason: []
+  - ref: validation-plan@1
+    reason:
+      - semantic_conformance
+      - state_completeness
+      - product_model_alignment
+      - keyboard
+      - hierarchy_review
+      - representation_decided
+      - state_ownership_declared
+      - acceptance_contract_present
+      - complexity_budget_declared
+      - filter_state
+      - comparison_scan
+      - requirement_alignment
+excluded:
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata

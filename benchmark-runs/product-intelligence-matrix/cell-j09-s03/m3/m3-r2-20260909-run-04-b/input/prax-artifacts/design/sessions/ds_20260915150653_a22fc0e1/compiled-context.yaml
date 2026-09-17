@@ -1,0 +1,82 @@
+version: "0.1"
+session_id: ds_20260915150653_a22fc0e1
+task:
+  surfaces: []
+  primary: 在区位图与比较面板同屏的情况下，逐条标准比较 4 个候选选址，识别各标准优胜者并敲定最终选择
+product_relationships:
+  - id: rel-locate
+    source: obj-candidate-site
+    target: obj-site-map
+    type: located_at
+    direction: bidirectional
+    meaning: 候选点在区位图上的位置即该候选的地理语境；面板纵列与地图标记互为同一对象的两个面
+    importance: primary
+  - id: rel-compare
+    source: obj-candidate-site
+    target: obj-comparison-panel
+    type: compared_in
+    direction: bidirectional
+    meaning: 候选的属性按标准并排对齐，比较即任务本身
+    importance: primary
+  - id: rel-decides
+    source: obj-decision
+    target: obj-candidate-site
+    type: selects
+    direction: forward
+    meaning: 决定落在具体候选上并回显于面板与地图（胜出标记）
+    importance: primary
+region_relationships:
+  - id: region_rel_data_detail
+    source: data
+    target: detail
+    type: selection_drives_contextual_detail
+decisions:
+  primary_structure: PAT-DATA-EXPLORER
+  density_intent: compact
+  major_choice_ids:
+    - mc-map-inline-svg
+    - mc-inline-data
+    - mc-selection-link
+    - mc-leader-marks
+    - mc-decision-commit
+must_preserve: []
+regression_points: []
+unresolved: []
+corrections: []
+representation_portfolio:
+  primary:
+    type: table
+    reason: 一行一标准、一列一候选的表格对齐是 comparison required 的最优承载（PAT-DATA-EXPLORER）
+  supporting:
+    - type: map
+      reason: 内联 SVG 区位图承载地理语境（验收种子：地理语境与决策项同屏）
+    - type: chart
+      reason: 表头区加权总分条形微图，让权重调整的后果即时可见
+  rejected:
+    - option: cards
+      reason: card-grid-for-dense-comparison 反模式
+    - option: map 作为 primary
+      reason: spatiality=none，地理语境同屏≠空间导航是主任务
+state_ownership:
+  - state: selection
+    owner: data table（比较矩阵，obj-comparison-panel 主工作面）：一行一标准、一列一候选的并排对齐，优胜格即时高亮；候选 collection 以列集合呈现，decide 的工作即在此面完成
+  - state: preview
+    owner: session
+acceptance:
+  - 页面加载即同屏呈现区位图与 4 个候选选址的高密度并排比较面板；用户无需翻页或切屏即可完成比较并宣布决定；地图与表格选中状态互认，且每条决策输入（指标、权重、优胜标注、最终选择）在比较推进全程保持同屏。
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - filter_state
+    - comparison_scan
+    - requirement_alignment
+  regression_check_ids: []

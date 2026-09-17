@@ -1,0 +1,69 @@
+needs:
+  - id: n1_timeline
+    product_action: 在阶段分组的时间轴上浏览 many 个变更集节点（时间顺序即视觉顺序）
+    required_experience:
+      - 时间轴画布横向铺开一个季度，阶段带分组、节点按时间定位
+      - 首屏即渲染完成，无加载态
+    capabilities:
+      - ES modules + DOM/SVG rendering
+      - 内联数据集随首屏加载
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端 SVG/DOM，数据为 JS 模块内联常量，页面加载即完成
+  - id: n2_causal_edges
+    product_action: 在时间轴上叠加 cause→effect 因果弧线，选中时高亮整链并可跳转
+    required_experience:
+      - 连线方向严格与时间同向（左→右），数据层校验
+      - 点击连线/节点高亮前后因果链
+    capabilities:
+      - SVG path 弧线
+      - 数据层校验 cause.time < effect.time
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: SVG overlay + JS 校验；不涉及服务端图计算
+  - id: n3_snapshot
+    product_action: 拖动时间游标，实时折叠出任意时刻各组件的状态切片
+    required_experience:
+      - 切片值 = 按时间顺序应用 ≤t 的全部字段操作的结果
+      - 切片与详情面板的 before/after 同源一致
+    capabilities:
+      - 客户端状态折叠函数 fold(changes, t)
+      - 无持久化需求
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯函数折叠，选中变更的 before/after 直接复用同一折叠函数，保证一致性
+  - id: n4_inspector
+    product_action: 选中变更集后读出诱因、字段级 before→after、引发的后果
+    required_experience:
+      - 详情面板固定相邻，选择变化时上下文不丢
+      - 诱因/后果为可点击链接，跳转后高亮对应节点
+    capabilities:
+      - DOM 详情渲染
+      - 因果链双向遍历
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 相邻固定面板 + 节点高亮，纯 DOM 操作
+  - id: n5_filter
+    product_action: 按组件过滤：只看某组件相关的变更节点与泳道标记
+    required_experience:
+      - 过滤为纯视图操作，不改变时间与因果结构
+    capabilities:
+      - 客户端集合过滤
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 未命中过滤器的节点降淡而非移除，保住时间结构完整性
+  - id: n6_delivery
+    product_action: 交付物以根 index.html 静态打开，本地可运行，不部署外部服务
+    required_experience:
+      - 无构建步骤、无外部 CDN/字体/接口依赖
+    capabilities:
+      - 静态文件本地打开（file:// 或本地静态服务）
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 全部资源内联或本地相对路径

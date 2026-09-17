@@ -1,0 +1,85 @@
+{
+  "reviewer": "R2",
+  "package_id": "impl-11",
+  "session_id": "5b104e67-c1f5-4f0a-bb4a-abda39b860e2",
+  "wall_clock_seconds": 213,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-11",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Open-collection shape realized as a search-first, facet-filtered item list: 2,260 synchronously materialized item records (source/data.js:246-249), 17 facet options across 3 groups with live counts (source/app.js:30-47), grouped results with per-section counts (1280x860 screenshot: 'Ornithology 300 records'), item-level detail inspector (source/app.js:337-373). Medium hierarchy handled by section grouping + group/taxa metadata rather than tree navigation, matching the brief's judgment that the burden is the locate path (brief.md:27)."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "Initial screen is dominated by the locate path: sticky search row with '/' hint and placeholder 'Search records by name, catalog number, tag, locality…' atop the results list in both screenshots; filter rail is secondary; detail panel hidden until selection (source/index.html:47). No competing task surfaces."
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "Header identity + totals ('2,260 records · 9 collections · index rebuilt 2026-09-17', both screenshots), self-describing search placeholder, group headers with counts, and per-row id/name/meta make the what/where legible within seconds; meta description states the three-interaction contract (source/index.html:7). Model-judged proxy per rubric; common name is visually secondary to the binomial (styles.css:280-296) but not confusing."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Any named target: '/' focuses search (source/app.js:419-424), live-filtering on each keystroke (source/app.js:440-443), one click on a row to inspect — 2 interactions, inside the brief's three-interaction success standard; facet path is also 2 clicks (screenshot rail). Unqueried deep browsing uses Show-more windows of 14/+28 (source/app.js:18-19,287-291), the only case where interactions grow."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "Directly serves the acceptance seed: detail is a sibling region, not a route/modal (source/app.js:5-9); selection updates aria-current in place without re-rendering the list, preserving scroll/focus (source/app.js:377-387); sticky workbar keeps query+chips visible (source/styles.css:155-162); removable constraint chips + live 'n of 2260' total (source/app.js:135-181); zero-state offers in-place relax chips (source/app.js:311-335); Escape closes detail and refocuses the row (source/app.js:389-397). No modes, no navigation, no context reset."
+      },
+      "ui_surface_complexity": {
+        "score": 5,
+        "evidence": "One main screen as the brief requires: header, filter rail (9+3+5 options, all with live counts), search+context bar, grouped list; detail appears only on selection (1280x860/1440x900 screenshots; source/index.html:18-50). Every permanent control maps to a locate job; no tabs, toolbars, or dead chrome."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "All three receipt a11y checks failed: a11y.contrast fail, a11y.focus_order fail, a11y.target_size fail (measurement-summary.json:13-15). Consistent with source: faint #9a9ea5-on-paper tier for placeholder/detail-labels/provenance (source/styles.css:184,408-411,432-437), 11-12.5px type on permanent surfaces (styles.css:300,314,126), tiny targets — 18px chip-remove (styles.css:218-225), unsized native checkboxes, 9px status dots (styles.css:317-322). Genuine but insufficient effort exists: focus-visible outlines (styles.css:49-53), aria-labels/aria-live/aria-current (index.html:20,32; app.js:159,258), focus restoration after rail rebuild (app.js:233-250) and show-more (app.js:301-302) — focus_order still failing per receipt."
+      },
+      "frontend_rework": {
+        "score": 2,
+        "evidence": "Receipt shows 5 of 7 checks failed — layout.overflow, a11y.contrast, a11y.focus_order, a11y.target_size, type.min_projected_size (measurement-summary.json:10-16) — a defect surface implying a rework pass on type scale, overflow, and a11y. Screenshots show no visible layout defect (alignment clean; text.truncation pass with ellipsis on the Galápagos row, 1280x860; layout.responsive_collision pass), so the fails are measurable-but-invisible classes rather than broken rendering."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed 'locate path supported by search/filter without losing context' is addressed end-to-end: unified haystack over name/id/tag/locality/collector/summary (source/data.js:373-379), query+facet composition with cross-group live counts (source/app.js:95-103), context-preserving inspect/escape paths (app.js:377-397), and a bundled self-test asserting search locates the curated 'coelacanth' landmark and multiplicative query×facet semantics (source/selftest.html:92-113); first paint is the ready state via synchronous data materialization (data.js:8-10; app.js:446-447)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "Receipt failures on 5 of 7 checks: layout.overflow, a11y.contrast, a11y.focus_order, a11y.target_size, type.min_projected_size (measurement-summary.json:10-16)",
+      "Sub-12px permanent type tier: row-id 11.5px, opt-count/meta 12-12.5px, detail dt 11px, provenance 11.5px, 'reset' 11px (source/styles.css:300,146,314,408,437,126)",
+      "Low-contrast faint text (#9a9ea5 on #f6f4ee) for search placeholder, detail field labels, provenance (source/styles.css:184,411,436)",
+      "Undersized interactive targets: 18x18 chip-remove button, small text-only 'reset' buttons, unsized native checkboxes, 9px status dots (source/styles.css:222-223,124-130,142,317-322)",
+      "Curated Dodo row carries group 'Pigeons & doves' with no groupTaxa mapping, so its detail Taxonomy falls back to the section label (source/data.js:303 vs 113; app.js:233 fallback taxa)",
+      "Dead focus-restore path: state.focusRowId is initialized and read (source/app.js:26,405-409) but never set; closeDetail duplicates the behavior manually (app.js:393-396)"
+    ],
+    "missing_evidence": [
+      "The single warning in measurement-summary.json:7 is not attributed to any check id, so its subject is unknown",
+      "The specific element causing layout.overflow fail cannot be identified from either screenshot or source (no visible overflow at 1280x860 or 1440x900; candidates are below-fold or subpixel)",
+      "Quantitative thresholds for the five failed checks (contrast ratio, min target px, min type px, overflow px) are not included in the sanitized summary, so severity is inferred from source inspection"
+    ],
+    "overall_note": "This package is an almost canonical representation of the locate×open-collection brief: a first-paint-ready single page (synchronous data materialization, source/data.js:8-10) whose entire surface serves the locate path — live search over a rich haystack, three facet groups with cross-group live counts, count-labeled grouped results, and a selection-bound sibling detail panel that never resets query, filters, scroll, or focus (source/app.js:5-9,377-397), directly satisfying the acceptance seed and the three-interaction success standard (any named target is 2 interactions; '/' shortcut at app.js:419-424). The weaknesses are measurable, not visible: the receipt fails 5 of 7 checks (layout.overflow, all three a11y checks, type.min_projected_size — measurement-summary.json:10-16) while both screenshots render cleanly with graceful truncation and no collisions, pointing at a small-type/low-contrast/undersized-target problem concentrated in the 11-12.5px faint tier and 18px chip controls rather than broken layout; the contrast with the implementation's real a11y effort (focus-visible, aria-live/current, focus restoration) suggests the failures are about sizing/contrast values, not structure. The unattributed warning and unidentifiable overflow element are noted as evidence gaps; task time, retrieval accuracy, and human preference remain unobserved, and model-judged understandability here is a proxy, not a human reading."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 73437,
+      "outputTokens": 9102,
+      "cacheReadInputTokens": 112320,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.650895,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-09-16T23:34:57.802Z"
+}

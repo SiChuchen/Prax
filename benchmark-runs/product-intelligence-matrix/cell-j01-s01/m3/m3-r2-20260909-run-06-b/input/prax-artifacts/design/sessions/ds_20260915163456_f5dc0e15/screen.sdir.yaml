@@ -1,0 +1,84 @@
+version: "0.1"
+screen:
+  id: list_detail_inspector_screen
+  intent:
+    primary_task: 在层级分组树中浏览/筛选实体，显式批量选择实体并执行批量操作（批量状态变更、批量移动归属、批量删除）
+    secondary_tasks:
+      - 搜索定位实体
+      - 展开/折叠分支核对归属范围
+      - 核对批量操作预览与结果回执（影响计数）
+      - 撤销上一次批量操作
+  archetype:
+    pattern_ref: PAT-LIST-DETAIL-INSPECTOR
+  density_intent: compact
+  regions:
+    - id: 层级分组树与实体行（归属即结构，展开/折叠承载层级）
+      role: experimental:层级分组树与实体行（归属即结构，展开/折叠承载层级）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 显式选择状态：每行复选框 + 常驻选择集计数与清单
+      role: experimental:显式选择状态：每行复选框 + 常驻选择集计数与清单
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 实体状态徽标（在线/维护/停用）与完整归属路径
+      role: experimental:实体状态徽标（在线/维护/停用）与完整归属路径
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 搜索与状态筛选条件（持久显示当前作用域）
+      role: experimental:搜索与状态筛选条件（持久显示当前作用域）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 批量操作影响预览与执行回执
+      role: experimental:批量操作影响预览与执行回执
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 撤销入口
+      role: experimental:撤销入口
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: workspace
+      role: dominant_workspace
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - preserve_context
+  relationships: []
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved: []
+  rejected_alternatives:
+    - option: PAT-CANVAS-WORKSPACE（空间画布）
+      reason: 信息天然表格化、空间性 none；画布增加 pan/zoom 成本且降低批量勾选密度
+    - option: 扁平表格（无树形归属列）
+      reason: 层级性 high，扁平化会把归属藏进一列文本，扫描时看不到结构，误伤风险与核对成本上升
+    - option: 分组复选框级联勾选全部后代（含折叠隐藏实体）
+      reason: 这是误伤的主要来源：折叠中被勾选的实体对操作者不可见，违反零误伤
+    - option: 向导式多步批量流程
+      reason: 单屏约束 + 高频操作；模态预览一步确认已足够安全，向导徒增步骤

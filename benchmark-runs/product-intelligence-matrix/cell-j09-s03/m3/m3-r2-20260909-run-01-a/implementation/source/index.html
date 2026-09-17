@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>落点 · 选址对比决策台</title>
+<style>
+  :root{
+    --bg:#f4f2ed; --card:#ffffff; --ink:#1d2433; --muted:#6b7280; --line:#e7e2d8;
+    --accent:#b45309; --good:#047857; --mapbg:#0c1424;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font:14px/1.45 -apple-system,"Segoe UI","Microsoft YaHei",system-ui,sans-serif;
+  }
+  .app{max-width:1480px;margin:0 auto;padding:14px 18px 18px;}
+
+  /* ---------- header ---------- */
+  header{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;padding:4px 2px 12px;}
+  h1{font-size:21px;margin:0;letter-spacing:.5px;}
+  h1 em{font-style:normal;color:var(--accent);}
+  .sub{margin:3px 0 0;color:var(--muted);font-size:12.5px;}
+  .h-right{display:flex;align-items:center;gap:12px;}
+  #cmpCount{font-size:12px;color:var(--muted);border:1px solid var(--line);background:#fff;border-radius:999px;padding:4px 12px;white-space:nowrap;}
+  #refreshBtn{font-size:12.5px;border:1px solid var(--accent);color:var(--accent);background:#fff;border-radius:8px;padding:5px 12px;cursor:pointer;}
+  #refreshBtn:hover{background:var(--accent);color:#fff;}
+
+  /* ---------- layout ---------- */
+  .main{display:grid;grid-template-columns:404px minmax(0,1fr);gap:14px;align-items:start;}
+  .left,.right{display:flex;flex-direction:column;gap:12px;min-width:0;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 2px rgba(28,35,51,.05);}
+  .card h2{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin:0;padding:11px 14px 8px;font-weight:700;}
+
+  /* ---------- map ---------- */
+  #map{display:block;width:100%;height:auto;border-radius:12px 12px 0 0;cursor:default;}
+  .map-note{font-size:11px;color:var(--muted);padding:0 14px 10px;display:flex;gap:14px;flex-wrap:wrap;}
+  .lg{display:inline-flex;align-items:center;gap:5px;}
+  .lg i{width:14px;height:3px;border-radius:2px;display:inline-block;}
+  .pin{cursor:pointer;}
+  .pin:focus{outline:none;}
+  .pin .hit{fill:transparent;}
+  .pin.off{opacity:.28;filter:grayscale(1);}
+  .pin.focus .focus-ring{display:block;}
+  .focus-ring{display:none;fill:none;stroke:#f8fafc;stroke-width:2;stroke-dasharray:5 4;}
+  .best-ring{fill:none;stroke:#fbbf24;stroke-width:2.5;opacity:.95;}
+  .pin-letter{text-anchor:middle;fill:#0c1424;font-weight:800;font-size:13px;pointer-events:none;}
+  .pin-name{text-anchor:middle;fill:#cbd5e1;font-size:11px;pointer-events:none;}
+  .star-bg{fill:#fbbf24;}
+  .star{text-anchor:middle;fill:#78350f;font-size:10px;pointer-events:none;}
+
+  /* ---------- chips ---------- */
+  .chips{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 12px 12px;}
+  .chip{display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--line);border-radius:10px;cursor:pointer;background:#fff;user-select:none;}
+  .chip:hover{border-color:#d6cdbb;}
+  .chip.focus{border-color:var(--accent);box-shadow:0 0 0 2px #fde68a;}
+  .chip.off{opacity:.45;}
+  .chip input{accent-color:var(--accent);margin:0;flex:none;}
+  .dot{width:9px;height:9px;border-radius:50%;flex:none;display:inline-block;}
+  .chip-name{min-width:0;line-height:1.25;}
+  .chip-name b{display:block;font-size:12.5px;}
+  .chip-name i{font-style:normal;font-size:10.5px;color:var(--muted);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pill{margin-left:auto;font-weight:700;font-size:13px;font-variant-numeric:tabular-nums;color:var(--ink);}
+
+  /* ---------- weights ---------- */
+  .presets{display:flex;gap:6px;padding:0 14px 10px;flex-wrap:wrap;}
+  .pbtn{font-size:11.5px;border:1px solid var(--line);background:#faf9f5;border-radius:999px;padding:4px 11px;cursor:pointer;color:var(--ink);}
+  .pbtn:hover{border-color:var(--accent);color:var(--accent);}
+  .pbtn.on{background:var(--ink);border-color:var(--ink);color:#fff;}
+  .wrow{display:grid;grid-template-columns:76px 1fr 28px 44px;gap:8px;align-items:center;padding:3px 14px;}
+  .wlabel{font-size:12px;color:var(--ink);}
+  .wrow input[type=range]{width:100%;accent-color:var(--accent);height:18px;margin:0;}
+  .wval{font-size:12px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;}
+  .wpct{font-size:10.5px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums;}
+  .wfoot{font-size:10.5px;color:var(--muted);padding:6px 14px 10px;border-top:1px dashed var(--line);margin-top:6px;}
+
+  /* ---------- comparison table ---------- */
+  .tblwrap{overflow:auto;max-height:664px;border-radius:0 0 12px 12px;}
+  .tbl{display:grid;min-width:560px;}
+  .trow{display:grid;grid-template-columns:132px repeat(4,minmax(0,1fr));border-top:1px solid var(--line);}
+  .trow:first-child{border-top:none;}
+  .trow>div{padding:6px 10px;min-width:0;}
+  .tlab{color:var(--muted);font-size:11.5px;background:#faf9f5;display:flex;align-items:center;}
+  .group-row>div{background:#efece3;font-weight:600;font-size:10.5px;letter-spacing:1px;color:#7c7468;padding:4px 10px;grid-column:1 / -1;}
+  .thead{position:sticky;top:0;background:var(--card);z-index:2;box-shadow:0 1px 0 var(--line);}
+  .cell{transition:background .12s;}
+  .trow:not(.thead):not(.group-row):hover .cell{background:#f8f6f0;}
+  .col{cursor:pointer;}
+  .col.off{opacity:.35;filter:grayscale(.85);}
+  .col.focus-col{background:#fffbeb;}
+  .trow:not(.thead):not(.group-row):hover .col.focus-col{background:#fdf3d7;}
+  .chead{display:flex;align-items:flex-start;gap:7px;}
+  .chead .dot{margin-top:4px;}
+  .cname{min-width:0;line-height:1.25;}
+  .cname b{display:block;font-size:13px;white-space:nowrap;}
+  .cname i{font-style:normal;font-size:10.5px;color:var(--muted);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .chead .pill{font-size:14px;margin-left:auto;}
+  .pick{margin-top:5px;font-size:11px;border:1px solid var(--line);background:#fff;border-radius:6px;padding:2px 9px;cursor:pointer;color:var(--ink);}
+  .pick:hover{border-color:var(--ink);}
+  .pick.on{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .val{font-weight:600;font-size:12.5px;font-variant-numeric:tabular-nums;display:flex;gap:6px;align-items:baseline;flex-wrap:wrap;}
+  .ctx{font-size:12px;color:#3f4756;}
+  .btag{font-size:10px;font-weight:700;color:var(--good);border:1px solid currentColor;border-radius:4px;padding:0 4px;line-height:1.5;}
+  .cellbest{background:#ecfdf5;}
+  .trow:not(.thead):not(.group-row):hover .cellbest{background:#ddf7ec;}
+  .bar{height:4px;border-radius:2px;background:#ece9e1;margin-top:5px;overflow:hidden;}
+  .bar i{display:block;height:100%;border-radius:2px;}
+
+  /* ---------- verdict ---------- */
+  .verdict{background:#111827;color:#e5e7eb;border-radius:12px;padding:12px 16px 11px;}
+  .v-main{font-size:15.5px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
+  .v-main b{font-size:17px;}
+  .vscore{font-weight:800;font-size:17px;color:#fbbf24;font-variant-numeric:tabular-nums;}
+  .vdelta{font-size:12px;color:#9ca3af;border:1px solid #374151;border-radius:6px;padding:1px 8px;}
+  .v-sub{font-size:12px;color:#9ca3af;margin-top:5px;}
+  .v-ticker{font-size:11px;color:#6b7280;margin-top:8px;padding-top:7px;border-top:1px dashed #374151;min-height:15px;}
+  .v-clear{font-size:11px;background:transparent;border:1px solid #374151;color:#9ca3af;border-radius:6px;padding:1px 8px;cursor:pointer;margin-left:auto;}
+  .v-clear:hover{border-color:#9ca3af;color:#e5e7eb;}
+
+  /* ---------- toast ---------- */
+  #toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(12px);background:#111827;color:#fff;font-size:12.5px;padding:8px 16px;border-radius:999px;opacity:0;pointer-events:none;transition:all .2s;z-index:50;box-shadow:0 6px 20px rgba(0,0,0,.25);}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  @media (max-width:1080px){
+    .main{grid-template-columns:1fr;}
+    .tblwrap{max-height:none;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div>
+      <h1>落点 <em>PinDown</em> · 选址对比决策台</h1>
+      <p class="sub">云洲市 · 12 人研发团队办公室 · 4 处候选并排比较 · 地图与决策输入同屏</p>
+    </div>
+    <div class="h-right">
+      <span id="cmpCount">对比中 4/4</span>
+      <button id="refreshBtn" title="模拟中介行情波动，租金小幅变动">模拟行情波动</button>
+    </div>
+  </header>
+
+  <div class="main">
+    <!-- ======== 左列：地理语境 + 权重 ======== -->
+    <div class="left">
+      <div class="card">
+        <h2>地理语境 · 云洲市轨道示意</h2>
+        <svg id="map" viewBox="0 0 640 560" role="img" aria-label="云洲市示意图，标注 4 处候选场地">
+          <rect width="640" height="560" fill="#0c1424"/>
+          <g opacity="0.55" fill="#16203a">
+            <rect x="70" y="70" width="150" height="100" rx="10"/>
+            <rect x="255" y="95" width="115" height="85" rx="10"/>
+            <rect x="415" y="150" width="145" height="105" rx="10"/>
+            <rect x="95" y="330" width="125" height="105" rx="10"/>
+            <rect x="420" y="330" width="150" height="85" rx="10"/>
+          </g>
+          <!-- 江 -->
+          <path d="M -10 470 C 160 462 260 512 400 512 C 500 512 580 472 650 432" fill="none" stroke="#16436b" stroke-width="40" stroke-linecap="round"/>
+          <path d="M -10 470 C 160 462 260 512 400 512 C 500 512 580 472 650 432" fill="none" stroke="#1e5c92" stroke-width="20" stroke-linecap="round" opacity=".85"/>
+          <text x="520" y="548" fill="#3d6a96" font-size="11">云洲江</text>
+          <!-- 环线 -->
+          <rect x="70" y="58" width="500" height="410" rx="115" fill="none" stroke="#2c3a58" stroke-width="7"/>
+          <text x="86" y="356" fill="#4a5878" font-size="10" transform="rotate(-90 86 356)">内环快速</text>
+          <!-- 轨道 -->
+          <path d="M 20 300 H 620" stroke="#eab308" stroke-width="4"/>
+          <path d="M 210 20 V 540" stroke="#38bdf8" stroke-width="4"/>
+          <path d="M 90 80 L 560 520" stroke="#f472b6" stroke-width="4"/>
+          <text x="598" y="292" fill="#eab308" font-size="11" text-anchor="end">1 号线</text>
+          <text x="222" y="34" fill="#38bdf8" font-size="11">4 号线</text>
+          <text x="548" y="528" fill="#f472b6" font-size="11">7 号线</text>
+          <!-- 换乘站 -->
+          <g fill="#0c1424" stroke="#e2e8f0" stroke-width="2">
+            <circle cx="210" cy="300" r="6"/>
+            <circle cx="325" cy="300" r="6"/>
+            <circle cx="210" cy="192" r="6"/>
+          </g>
+          <g fill="#94a3b8">
+            <circle cx="110" cy="300" r="3.5"/><circle cx="390" cy="300" r="3.5"/><circle cx="480" cy="300" r="3.5"/>
+            <circle cx="210" cy="100" r="3.5"/><circle cx="210" cy="400" r="3.5"/><circle cx="210" cy="500" r="3.5"/>
+            <circle cx="146" cy="140" r="3.5"/><circle cx="412" cy="389" r="3.5"/>
+          </g>
+          <!-- 商圈标注 -->
+          <g fill="#64748b" font-size="12" text-anchor="middle">
+            <text x="300" y="252">老城 · 金融街</text>
+            <text x="520" y="140">科技园</text>
+            <text x="255" y="462">滨江带</text>
+            <text x="128" y="52">站前商圈</text>
+            <text x="80" y="528">大学城</text>
+          </g>
+          <g id="pins"></g>
+        </svg>
+        <div class="map-note">
+          <span class="lg"><i style="background:#eab308"></i>1 号线</span>
+          <span class="lg"><i style="background:#38bdf8"></i>4 号线</span>
+          <span class="lg"><i style="background:#f472b6"></i>7 号线</span>
+          <span class="lg"><i style="background:#fbbf24;height:8px;width:8px;border-radius:50%"></i>加权最优</span>
+          <span>点击地标 / 表格列可聚焦</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>比较清单 · 纳入 / 聚焦</h2>
+        <div class="chips" id="chips"></div>
+      </div>
+
+      <div class="card">
+        <h2>决策权重 · 拖动即重算全表</h2>
+        <div class="presets" id="presets"></div>
+        <div id="wrows"></div>
+        <div class="wfoot">权重为相对值，评分按总和归一 · 调整后右侧评分、排名、地标光环即时更新</div>
+      </div>
+    </div>
+
+    <!-- ======== 右列：对比面板 + 结论 ======== -->
+    <div class="right">
+      <div class="card">
+        <h2>候选场地对比面板 · 4 列并排</h2>
+        <div class="tblwrap"><div class="tbl" id="tbl"></div></div>
+      </div>
+
+      <div class="verdict">
+        <div class="v-main" id="vMain"></div>
+        <div class="v-sub" id="vSub"></div>
+        <div class="v-ticker" id="ticker"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+/* ================= 数据（首屏内联，无任何加载态） ================= */
+const CANDIDATES=[
+  {id:'A',name:'中环大厦',district:'老城·金融街',color:'#f59e0b',addr:'中山北路 218 号 12F',
+   rent:46800,area:260,floor:'12F / 24F',fitout:'带装修 · 家具全',fee:'32 ¥/㎡/月',deposit:'押三付一',
+   free:'无',parking:'公共车位 0',register:'可注册',noise:68,quiet:3,commute:38,
+   metro:10,metroText:'2 线 · 260m',amenity:9,note:'业主急租，免租期可谈',map:{x:250,y:285}},
+  {id:'B',name:'创科广场',district:'科技园',color:'#10b981',addr:'科苑大道 88 号 6F',
+   rent:35500,area:420,floor:'6F / 18F',fitout:'简装 · 需自购家具',fee:'24 ¥/㎡/月',deposit:'押二付一',
+   free:'30 天',parking:'车位 6',register:'可注册',noise:44,quiet:8,commute:26,
+   metro:7,metroText:'1 线 · 550m',amenity:7,note:'园区有人才公寓补贴',map:{x:505,y:250}},
+  {id:'C',name:'江畔文创园',district:'滨江带',color:'#3b82f6',addr:'滨江东路 12 号 2F',
+   rent:30000,area:520,floor:'2F / 3F',fitout:'loft · 保留装修',fee:'18 ¥/㎡/月',deposit:'押一付三',
+   free:'45 天',parking:'车位 10',register:'需确认',noise:48,quiet:7,commute:47,
+   metro:3,metroText:'1 线 · 1.1km',amenity:8,note:'园区班车接地铁站',map:{x:360,y:450}},
+  {id:'D',name:'云锦中心',district:'站前商圈',color:'#a855f7',addr:'站前路 5 号 9F',
+   rent:24000,area:200,floor:'9F / 30F',fitout:'带装修 · 部分家具',fee:'28 ¥/㎡/月',deposit:'押二付一',
+   free:'无',parking:'公共车位 2',register:'可注册',noise:71,quiet:2,commute:33,
+   metro:8,metroText:'2 线 · 450m',amenity:6,note:'低区可俯瞰站前广场',map:{x:165,y:125}}
+];
+
+const CRITERIA=[
+  {id:'rent',   label:'月租金',   lowerBetter:true,  def:25, get:c=>c.rent,    fmt:c=>'¥'+c.rent.toLocaleString('en-US')},
+  {id:'commute',label:'通勤中位', lowerBetter:true,  def:25, get:c=>c.commute, fmt:c=>c.commute+' 分钟'},
+  {id:'metro',  label:'轨交可达', lowerBetter:false, def:15, get:c=>c.metro,   fmt:c=>c.metro+' /10 · '+c.metroText},
+  {id:'amenity',label:'周边配套', lowerBetter:false, def:15, get:c=>c.amenity, fmt:c=>c.amenity+' /10'},
+  {id:'quiet',  label:'环境安静', lowerBetter:false, def:10, get:c=>c.quiet,   fmt:c=>c.quiet+' /10 · '+c.noise+' dB'},
+  {id:'space',  label:'空间面积', lowerBetter:false, def:10, get:c=>c.area,    fmt:c=>c.area+' ㎡'}
+];
+
+const CONTEXT=[
+  {label:'商圈',    get:c=>c.district},
+  {label:'地址',    get:c=>c.addr},
+  {label:'楼层',    get:c=>c.floor},
+  {label:'交付状态',get:c=>c.fitout},
+  {label:'物业费',  get:c=>c.fee},
+  {label:'押付方式',get:c=>c.deposit},
+  {label:'免租期',  get:c=>c.free},
+  {label:'车位',    get:c=>c.parking},
+  {label:'工商注册',get:c=>c.register},
+  {label:'房东备注',get:c=>c.note}
+];
+
+const PRESETS={
+  balance:{label:'均衡',     w:{rent:25,commute:25,metro:15,amenity:15,quiet:10,space:10}},
+  cost:{   label:'成本优先', w:{rent:45,commute:15,metro:10,amenity:5, quiet:10,space:15}},
+  commute:{label:'通勤优先', w:{rent:15,commute:45,metro:20,amenity:5, quiet:10,space:5}},
+  exp:{    label:'体验优先', w:{rent:15,commute:15,metro:10,amenity:30,quiet:25,space:5}}
+};
+
+/* ================= 状态 ================= */
+const state={
+  included:new Set(['A','B','C','D']),
+  weights:Object.assign({},PRESETS.balance.w),
+  preset:'balance',
+  userPick:null,
+  focus:null
+};
+let ticker=['09:30 行情快照 · 4 处候选均在租'];
+
+/* ================= 工具 ================= */
+const $=s=>document.querySelector(s);
+const byId=id=>CANDIDATES.find(c=>c.id===id);
+
+function computeScores(){
+  const ids=[...state.included];
+  const sumW=CRITERIA.reduce((s,c)=>s+state.weights[c.id],0);
+  const res={};
+  ids.forEach(id=>res[id]={total:0,per:{}});
+  CRITERIA.forEach(crit=>{
+    const vals=ids.map(id=>crit.get(byId(id)));
+    const min=Math.min(...vals),max=Math.max(...vals);
+    ids.forEach((id,i)=>{
+      let n=(max-min)<1e-9?0.5:(crit.lowerBetter?1-(vals[i]-min)/(max-min):(vals[i]-min)/(max-min));
+      if(sumW<1e-9)n=0;
+      res[id].per[crit.id]=n*100;
+      res[id].total+=n*state.weights[crit.id];
+    });
+  });
+  if(sumW>1e-9)ids.forEach(id=>{res[id].total=res[id].total/sumW*100;});
+  return res;
+}
+
+function bestSetFor(crit,ids){
+  const arr=ids.map(id=>({id,v:crit.get(byId(id))}));
+  const bestV=crit.lowerBetter?Math.min(...arr.map(a=>a.v)):Math.max(...arr.map(a=>a.v));
+  return arr.filter(a=>a.v===bestV).map(a=>a.id);
+}
+
+function rankOf(critId,id){
+  const crit=CRITERIA.find(x=>x.id===critId);
+  const ids=[...state.included];
+  const arr=ids.map(i=>({id:i,v:crit.get(byId(i))}));
+  arr.sort((a,b)=>crit.lowerBetter?a.v-b.v:b.v-a.v);
+  return arr.findIndex(x=>x.id===id)+1;
+}
+
+function rationaleFor(id,res){
+  const n=state.included.size;
+  const crits=CRITERIA.filter(x=>state.weights[x.id]>0).sort((a,b)=>state.weights[b.id]-state.weights[a.id]);
+  const top=crits.slice(0,2).map(x=>{
+    const r=rankOf(x.id,id);
+    return x.label+(r===1?'全场最优':'第'+r);
+  });
+  let weak=CRITERIA[0];
+  CRITERIA.forEach(x=>{if(res[id].per[x.id]<res[id].per[weak.id])weak=x;});
+  return '强项 '+top.join(' · ')+'；短板 '+weak.label+' 第'+rankOf(weak.id,id)+' / '+n;
+}
+
+/* ================= 渲染 ================= */
+let bestId=null;
+
+function colCls(c){
+  return 'col cell'+(state.included.has(c.id)?'':' off')+(state.focus===c.id?' focus-col':'');
+}
+
+function renderTable(res){
+  const ids=[...state.included];
+  let h='<div class="trow thead"><div class="tlab">指标 / 候选</div>';
+  CANDIDATES.forEach(c=>{
+    const inc=state.included.has(c.id);
+    const sc=inc?res[c.id].total.toFixed(1):'—';
+    h+='<div class="'+colCls(c)+'" data-id="'+c.id+'">'
+      +'<div class="chead"><span class="dot" style="background:'+c.color+'"></span>'
+      +'<div class="cname"><b>'+c.name+'</b><i>'+c.district+(inc?'':' · 未纳入')+'</i></div>'
+      +'<span class="pill" style="color:'+(inc?c.color:'#9ca3af')+'">'+sc+'</span></div>'
+      +'<button class="pick'+(state.userPick===c.id?' on':'')+'" data-pick="'+c.id+'">'
+      +(state.userPick===c.id?'已定首选 ✓':'设为首选')+'</button></div>';
+  });
+  h+='</div>';
+  h+='<div class="trow group-row"><div>决策指标 · 参与加权评分</div></div>';
+  CRITERIA.forEach(crit=>{
+    const bestIds=ids.length>=2?bestSetFor(crit,ids):[];
+    h+='<div class="trow"><div class="tlab">'+crit.label+'</div>';
+    CANDIDATES.forEach(c=>{
+      const isBest=bestIds.indexOf(c.id)>=0;
+      const bar=state.included.has(c.id)?Math.round(res[c.id].per[crit.id]):0;
+      h+='<div class="'+colCls(c)+'" data-id="'+c.id+'">'
+        +'<div class="val">'+crit.fmt(c)+(isBest?'<span class="btag">优</span>':'')+'</div>'
+        +'<div class="bar"><i style="width:'+bar+'%;background:'+c.color+'"></i></div></div>';
+    });
+    h+='</div>';
+  });
+  h+='<div class="trow group-row"><div>场地信息 · 背景参考</div></div>';
+  CONTEXT.forEach(row=>{
+    h+='<div class="trow"><div class="tlab">'+row.label+'</div>';
+    CANDIDATES.forEach(c=>{
+      h+='<div class="'+colCls(c)+'" data-id="'+c.id+'"><div class="ctx">'+row.get(c)+'</div></div>';
+    });
+    h+='</div>';
+  });
+  $('#tbl').innerHTML=h;
+}
+
+function renderChips(res){
+  $('#chips').innerHTML=CANDIDATES.map(c=>{
+    const inc=state.included.has(c.id);
+    return '<label class="chip'+(inc?'':' off')+(state.focus===c.id?' focus':'')+'" data-id="'+c.id+'">'
+      +'<input type="checkbox" data-inc="'+c.id+'"'+(inc?' checked':'')+'>'
+      +'<span class="dot" style="background:'+c.color+'"></span>'
+      +'<span class="chip-name"><b>'+c.name+'</b><i>'+c.district+'</i></span>'
+      +'<span class="pill">'+(inc?res[c.id].total.toFixed(1):'—')+'</span></label>';
+  }).join('');
+}
+
+function renderPins(){
+  $('#pins').innerHTML=CANDIDATES.map(c=>{
+    const inc=state.included.has(c.id);
+    const isBest=inc&&bestId===c.id;
+    return '<g class="pin'+(inc?'':' off')+(state.focus===c.id?' focus':'')+'" data-id="'+c.id+'" transform="translate('+c.map.x+','+c.map.y+')" tabindex="0" role="button" aria-label="'+c.name+'">'
+      +(state.focus===c.id?'<circle r="22" class="focus-ring"/>':'')
+      +(isBest?'<circle r="19" class="best-ring"/>':'')
+      +'<circle r="13" style="fill:'+c.color+'"/>'
+      +'<text class="pin-letter" dy="4.5">'+c.id+'</text>'
+      +'<text class="pin-name" y="30">'+c.name+'</text>'
+      +(isBest?'<g transform="translate(11,-11)"><circle r="8" class="star-bg"/><text class="star" dy="3.5">★</text></g>':'')
+      +'<circle r="24" class="hit"/></g>';
+  }).join('');
+}
+
+function renderVerdict(res,ranked){
+  const vMain=$('#vMain'),vSub=$('#vSub');
+  if(state.included.size<2){
+    vMain.innerHTML='候选不足';
+    vSub.textContent='请至少保留 2 个候选参与比较，比较本身即决策任务。';
+  }else{
+    const best=ranked[0],bc=byId(best),bs=res[best].total;
+    if(!state.userPick){
+      vMain.innerHTML='加权最优：<b style="color:'+bc.color+'">'+bc.name+'</b><span class="vscore">'+bs.toFixed(1)+'</span>'
+        +'<button class="v-clear" id="vClear" hidden></button>';
+      vSub.textContent='尚未锁定首选 · '+rationaleFor(best,res)+' · 在列头点「设为首选」锁定你的决定。';
+    }else{
+      const pc=byId(state.userPick),ps=res[state.userPick].total;
+      const clearBtn='<button class="v-clear" id="vClear">清除锁定</button>';
+      if(state.userPick===best){
+        vMain.innerHTML='已锁定：<b style="color:'+pc.color+'">'+pc.name+'</b> ✓ 与加权评分一致<span class="vscore">'+ps.toFixed(1)+'</span>'+clearBtn;
+        vSub.textContent=rationaleFor(state.userPick,res);
+      }else{
+        const diff=bs-ps;
+        let wc=CRITERIA[0],wd=-1;
+        CRITERIA.forEach(x=>{const d=res[best].per[x.id]-res[state.userPick].per[x.id];if(d>wd){wd=d;wc=x;}});
+        vMain.innerHTML='已锁定：<b style="color:'+pc.color+'">'+pc.name+'</b><span class="vscore">'+ps.toFixed(1)+'</span>'
+          +'<span class="vdelta">较加权最优 −'+diff.toFixed(1)+' 分</span>'+clearBtn;
+        vSub.textContent='加权最优为 '+bc.name+'（'+bs.toFixed(1)+'）· 差距主要在「'+wc.label+'」 · '+rationaleFor(best,res);
+      }
+    }
+  }
+  const vc=$('#vClear');
+  if(vc)vc.onclick=()=>{state.userPick=null;renderData();};
+  $('#ticker').textContent=ticker.join('　·　');
+}
+
+function renderWeightValues(){
+  document.querySelectorAll('#wrows input[data-k]').forEach(inp=>{
+    const k=inp.dataset.k,w=state.weights[k];
+    const row=inp.closest('.wrow');
+    row.querySelector('.wval').textContent=w;
+    const sum=CRITERIA.reduce((s,c)=>s+state.weights[c.id],0);
+    row.querySelector('.wpct').textContent=sum>0?Math.round(w/sum*100)+'%':'—';
+  });
+  document.querySelectorAll('.pbtn').forEach(b=>{
+    b.classList.toggle('on',b.dataset.preset===state.preset);
+  });
+}
+
+function renderWeightsDOM(){
+  $('#wrows').innerHTML=CRITERIA.map(c=>
+    '<div class="wrow"><span class="wlabel">'+c.label+'</span>'
+    +'<input type="range" min="0" max="50" step="5" value="'+state.weights[c.id]+'" data-k="'+c.id+'" aria-label="'+c.label+'权重">'
+    +'<span class="wval">'+state.weights[c.id]+'</span><span class="wpct"></span></div>'
+  ).join('');
+  renderWeightValues();
+}
+
+function renderData(){
+  const res=computeScores();
+  const ranked=[...state.included].sort((a,b)=>res[b].total-res[a].total);
+  bestId=ranked.length?ranked[0]:null;
+  renderTable(res);
+  renderChips(res);
+  renderPins();
+  renderVerdict(res,ranked);
+  $('#cmpCount').textContent='对比中 '+state.included.size+'/'+CANDIDATES.length;
+  writeHash();
+}
+
+function renderAll(){renderWeightsDOM();renderData();}
+
+/* ================= 交互 ================= */
+let toastTimer=null;
+function toast(msg){
+  const t=$('#toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),1800);
+}
+
+function toggleFocus(id){state.focus=state.focus===id?null:id;renderData();}
+
+function toggleInclude(id,on){
+  if(!on&&state.included.size<=2){toast('至少保留 2 个候选才能比较');renderChips(computeScores());return;}
+  if(on)state.included.add(id);else{
+    state.included.delete(id);
+    if(state.userPick===id)state.userPick=null;
+    if(state.focus===id)state.focus=null;
+  }
+  renderData();
+}
+
+$('#tbl').addEventListener('click',e=>{
+  const b=e.target.closest('[data-pick]');
+  if(b){const id=b.dataset.pick;state.userPick=state.userPick===id?null:id;renderData();return;}
+  const cell=e.target.closest('.col[data-id]');
+  if(cell)toggleFocus(cell.dataset.id);
+});
+
+$('#chips').addEventListener('click',e=>{
+  if(e.target.matches('input'))return;
+  const chip=e.target.closest('.chip');
+  if(chip)toggleFocus(chip.dataset.id);
+});
+$('#chips').addEventListener('change',e=>{
+  const inp=e.target.closest('input[data-inc]');
+  if(inp)toggleInclude(inp.dataset.inc,inp.checked);
+});
+
+$('#map').addEventListener('click',e=>{
+  const pin=e.target.closest('.pin');
+  if(pin)toggleFocus(pin.dataset.id);
+});
+$('#map').addEventListener('keydown',e=>{
+  if(e.key!=='Enter'&&e.key!==' ')return;
+  const pin=e.target.closest('.pin');
+  if(pin){e.preventDefault();toggleFocus(pin.dataset.id);}
+});
+
+$('#wrows').addEventListener('input',e=>{
+  const inp=e.target.closest('input[data-k]');
+  if(!inp)return;
+  state.weights[inp.dataset.k]=+inp.value;
+  state.preset=null;
+  renderWeightValues();
+  renderData();
+});
+
+$('#presets').innerHTML=Object.keys(PRESETS).map(k=>
+  '<button class="pbtn" data-preset="'+k+'">'+PRESETS[k].label+'</button>').join('');
+$('#presets').addEventListener('click',e=>{
+  const b=e.target.closest('.pbtn');
+  if(!b)return;
+  state.weights=Object.assign({},PRESETS[b.dataset.preset].w);
+  state.preset=b.dataset.preset;
+  renderWeightsDOM();
+  renderData();
+});
+
+/* ================= 决策状态深链（可分享/还原比较状态） ================= */
+function applyHash(){
+  if(!location.hash||location.hash.length<2)return;
+  try{
+    const q=new URLSearchParams(location.hash.slice(1));
+    const excl=q.get('excl');
+    if(excl)excl.split(',').forEach(id=>{
+      if(CANDIDATES.some(c=>c.id===id)&&state.included.size>2)state.included.delete(id);
+    });
+    const preset=q.get('preset');
+    if(preset&&PRESETS[preset]){state.weights=Object.assign({},PRESETS[preset].w);state.preset=preset;}
+    const w=q.get('w');
+    if(w)w.split(',').forEach(pair=>{
+      const[k,v]=pair.split(':');
+      if(k in state.weights&&!isNaN(+v))state.weights[k]=Math.max(0,Math.min(50,Math.round(+v/5)*5));
+      if(k in state.weights)state.preset=null;
+    });
+    const pick=q.get('pick');
+    if(pick&&state.included.has(pick))state.userPick=pick;
+    const focus=q.get('focus');
+    if(focus&&CANDIDATES.some(c=>c.id===focus))state.focus=focus;
+  }catch(e){/* 非法 hash 忽略，使用默认状态 */}
+}
+function writeHash(){
+  const q=new URLSearchParams();
+  if(state.userPick)q.set('pick',state.userPick);
+  if(state.focus)q.set('focus',state.focus);
+  if(state.preset)q.set('preset',state.preset);
+  const excl=CANDIDATES.filter(c=>!state.included.has(c.id)).map(c=>c.id);
+  if(excl.length)q.set('excl',excl.join(','));
+  const h=q.toString();
+  try{history.replaceState(null,'',h?'#'+h:location.pathname+location.search);}catch(e){/* file:// 下个别环境限制，忽略 */}
+}
+
+$('#refreshBtn').addEventListener('click',()=>{
+  const c=CANDIDATES[Math.floor(Math.random()*CANDIDATES.length)];
+  const old=c.rent,pct=Math.random()*6-3;
+  c.rent=Math.round(old*(1+pct/100)/100)*100;
+  const now=new Date().toTimeString().slice(0,5);
+  ticker.unshift(now+' 行情：'+c.name+' 月租金 ¥'+old.toLocaleString('en-US')+' → ¥'+c.rent.toLocaleString('en-US')
+    +'（'+(pct>=0?'+':'')+pct.toFixed(1)+'%）');
+  ticker=ticker.slice(0,3);
+  renderData();
+});
+
+/* 首屏即绪：同步渲染，无加载态 */
+applyHash();
+renderAll();
+</script>
+</body>
+</html>

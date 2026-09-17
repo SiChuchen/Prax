@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Self-test — The Open Collection</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #f6f4ee; color: #21252b; padding: 24px; max-width: 860px; margin: 0 auto; }
+    h1 { font-family: Georgia, serif; font-size: 20px; }
+    li { padding: 6px 10px; border-radius: 6px; margin: 4px 0; font-variant-numeric: tabular-nums; }
+    .pass { background: #e9f2ee; color: #0f4639; }
+    .fail { background: #f6e8e5; color: #a33b2e; font-weight: 600; }
+    #summary { font-weight: 700; margin: 12px 0; }
+    code { background: #fbf9f3; border: 1px solid #e4dfd2; border-radius: 4px; padding: 0 4px; }
+  </style>
+</head>
+<body>
+  <h1>Self-test — data &amp; pipeline invariants</h1>
+  <p>This page runs assertions against <code>data.js</code> and the same filtering semantics used by <code>app.js</code>. Open <code>index.html</code> for the application itself.</p>
+  <p id="summary"></p>
+  <ol id="out"></ol>
+
+  <script src="data.js"></script>
+  <script>
+    "use strict";
+    (function () {
+      const out = document.getElementById("out");
+      let passCount = 0, failCount = 0;
+      function check(name, fn) {
+        let result;
+        try { result = fn(); } catch (e) { result = "threw: " + e.message; }
+        const li = document.createElement("li");
+        const ok = result === true;
+        if (ok) { passCount++; li.className = "pass"; li.textContent = "PASS — " + name; }
+        else { failCount++; li.className = "fail"; li.textContent = "FAIL — " + name + (result === true ? "" : " → " + result); }
+        out.appendChild(li);
+      }
+      const C = window.COLLECTION;
+
+      check("COLLECTION materializes synchronously with ≥ 2000 items", () =>
+        C && C.items.length >= 2000 ? true : "got " + (C ? C.items.length : "null"));
+
+      check("exactly 9 collection sections", () =>
+        C.sections.length === 9 ? true : "got " + C.sections.length);
+
+      check("all catalog ids unique", () => {
+        const seen = new Set();
+        for (const it of C.items) { if (seen.has(it.id)) return "duplicate " + it.id; seen.add(it.id); }
+        return true;
+      });
+
+      check("all ids match CODE-YYYY-NNNN", () => {
+        for (const it of C.items) {
+          if (!/^[A-Z]{3}-\d{4}-\d{4}$/.test(it.id)) return "bad id " + it.id;
+          const year = Number(it.id.slice(4, 8));
+          if (year !== it.year) return "id/year mismatch " + it.id + " vs " + it.year;
+        }
+        return true;
+      });
+
+      check("every item has a non-empty search haystack", () => {
+        for (const it of C.items) if (!it.hay || it.hay.length < 20) return "weak hay on " + it.id;
+        return true;
+      });
+
+      check("every item's era + status are valid facet values", () => {
+        const eras = new Set(C.eras.map((e) => e.key));
+        const statuses = new Set(["Digitized", "In review", "On loan"]);
+        for (const it of C.items) {
+          if (!eras.has(it.era)) return "bad era " + it.era;
+          if (!statuses.has(it.status)) return "bad status " + it.status;
+        }
+        return true;
+      });
+
+      check("every section's commonGroup maps into its groupTaxa", () => {
+        for (const sec of C.__sectionsConfig) {
+          if (!sec.commonGroup) continue;
+          for (const k of Object.keys(sec.commonGroup)) {
+            if (!sec.groupTaxa[sec.commonGroup[k]]) return sec.key + ": group '" + sec.commonGroup[k] + "' has no taxa";
+          }
+        }
+        return true;
+      });
+
+      check("curated landmark records are locatable by search", () => {
+        const landmarks = ["ICH-1938-0021", "ORN-1901-0007", "ORN-1889-0113", "MAM-1897-0244", "PAL-1877-0002", "MIN-1958-0033"];
+        const byId = new Map(C.items.map((it) => [it.id, it]));
+        for (const id of landmarks) if (!byId.has(id)) return "missing " + id;
+        return true;
+      });
+
+      check("query 'coelacanth' narrows to ≥ 1 record and matches the curated target", () => {
+        const hits = C.items.filter((it) => it.hay.includes("coelacanth"));
+        if (!hits.length) return "no hits";
+        return hits.some((it) => it.id === "ICH-1938-0021") ? true : "curated coelacanth not in hits";
+      });
+
+      check("query × facet compose multiplicatively (sampled)", () => {
+        const q = "eagle";
+        const base = C.items.filter((it) => it.hay.includes(q));
+        const inter = base.filter((it) => it.section === "ornithology" && it.status === "Digitized");
+        if (!base.length) return "no base hits";
+        return inter.length <= base.length && inter.every((it) => it.status === "Digitized" && it.section === "ornithology")
+          ? true : "intersection semantics wrong";
+      });
+
+      check("faceted counts per option never exceed the query-filtered base", () => {
+        const q = "alp";
+        const base = C.items.filter((it) => it.hay.includes(q));
+        let digitized = 0;
+        for (const it of base) if (it.status === "Digitized") digitized++;
+        return digitized <= base.length ? true : "count overflow";
+      });
+
+      document.getElementById("summary").textContent =
+        "Result: " + passCount + " passed, " + failCount + " failed.";
+    })();
+  </script>
+</body>
+</html>

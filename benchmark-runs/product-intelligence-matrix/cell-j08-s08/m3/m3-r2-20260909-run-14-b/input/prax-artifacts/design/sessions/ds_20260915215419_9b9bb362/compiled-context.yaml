@@ -1,0 +1,56 @@
+version: "0.1"
+session_id: ds_20260915215419_9b9bb362
+task:
+  surfaces: []
+  primary: 以块级结构编辑文档内容（改标题层级、增删/重排/改写块），结构化编辑器与预览始终保持一致
+product_relationships:
+  - id: rel-doc-block
+    source: document
+    target: block
+    type: contains_ordered
+    direction: forward
+    meaning: 文档由有序块序列构成
+    importance: primary
+  - id: rel-outline-block
+    source: outline
+    target: block
+    type: derived_from
+    direction: forward
+    meaning: 大纲由标题块派生，非独立存储
+    importance: supporting
+  - id: rel-diag-block
+    source: diagnostic
+    target: block
+    type: flags
+    direction: forward
+    meaning: 结构问题定位到具体块并可一键修复
+    importance: supporting
+region_relationships: []
+decisions:
+  primary_structure: PAT-APPLICATION-SHELL
+  density_intent: spacious
+  major_choice_ids:
+    - MC-1-single-source
+    - MC-2-block-model
+    - MC-3-structural-guard
+    - MC-4-undo-redo
+    - MC-5-vanilla-static
+must_preserve: []
+regression_points: []
+unresolved: []
+corrections: []
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - destructive_recovery
+    - requirement_alignment
+  regression_check_ids: []

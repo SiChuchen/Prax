@@ -1,0 +1,76 @@
+{
+  "receipt_version": "0.2",
+  "tool": {
+    "name": "prax-measure",
+    "version": "0.2.0-execution-arm-cdp"
+  },
+  "target": {
+    "app_root": "E:\\codex-prj\\ab-worktrees\\pi-matrix-r2\\cell-j08-s08-b",
+    "base_url": "file:///E:/codex-prj/ab-worktrees/pi-matrix-r2/cell-j08-s08-b/index.html",
+    "build_ref": null
+  },
+  "run_at": "2026-09-15T22:33:11.502Z",
+  "viewport_matrix": [
+    {
+      "width": 1600,
+      "height": 1000,
+      "label": "headless-chrome-cdp"
+    }
+  ],
+  "checks": [
+    {
+      "id": "a11y.focus_order",
+      "status": "pass",
+      "severity": "error",
+      "subject": "/index.html",
+      "measured": {
+        "method": "chrome-devtools-protocol-input-pipeline",
+        "keyboard_contracts_verified": [
+          "Ctrl+Z restores deleted block b13 (Input.dispatchKeyEvent modifiers=2 code=KeyZ)",
+          "Tab demotes heading b08 h3->h4, Shift+Tab promotes back, focus retained (Input.dispatchKeyEvent code=Tab)"
+        ],
+        "focus_visible": ":focus-visible outline accent",
+        "cdp_checks_total": 18,
+        "cdp_checks_passed": 18
+      },
+      "threshold": {
+        "required": "primary work and selection operable with keyboard; visible focus"
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/cdp-checks.json",
+          "sha256": "fe3c3716701e0ee9a86fa06f162341714e6ef957a8de07b9472acdaa0cfc6321"
+        }
+      ],
+      "supported_fixes": []
+    }
+  ],
+  "summary": {
+    "pass": 1,
+    "fail": 0,
+    "skipped": 0,
+    "warnings": 0
+  },
+  "binding": {
+    "run_id": "evd-cell-j08-s08-b-2026-09-15T22:33:11",
+    "entry": "/index.html",
+    "scenario": "single-document structured editing with live preview; editing never breaks structure",
+    "implementation": {
+      "root": "E:\\codex-prj\\ab-worktrees\\pi-matrix-r2\\cell-j08-s08-b",
+      "digest": "3a54c7fb21a8a570adde9fd6010d3dce5324ffd85a20c61f0c45a21279d6cf5b",
+      "kind": "static_tree"
+    },
+    "session_id": "ds_20260915222626_faa2f104",
+    "contract_digests": {
+      "screen.sdir.yaml": "9c7072507b8e422a52b96bf68459a16e9740732a86f399a3b38055805420ea88",
+      "sdir-delta.yaml": null,
+      "implementation-brief.yaml": "11b1eba1e9094e366912ac3df207b02cd466d9b592130221e9c24ca7ef21ef72"
+    }
+  },
+  "target_validation": {
+    "status": "valid",
+    "issues": [],
+    "readiness": "document",
+    "ready_selector": null
+  }
+}

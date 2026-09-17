@@ -1,0 +1,70 @@
+version: "0.1"
+session_id: ds_20260915173304_61822363
+task:
+  surfaces: []
+  primary: 按严格顺序完成切换 Runbook：完成每步验证与证据记录，通过门禁进入下一步
+product_relationships:
+  - id: rel_runbook_phase
+    source: runbook
+    target: phase
+    type: contains
+    direction: forward
+    meaning: Runbook 由有序阶段组成
+    importance: primary
+  - id: rel_phase_step
+    source: phase
+    target: step
+    type: contains
+    direction: forward
+    meaning: 阶段内有全局顺序的步骤
+    importance: primary
+  - id: rel_step_check
+    source: step
+    target: check
+    type: gated_by
+    direction: forward
+    meaning: 步骤未满足全部检查项与证据时不可放行
+    importance: primary
+  - id: rel_step_recovery_path
+    source: step
+    target: recovery_path
+    type: recovers
+    direction: forward
+    meaning: 不可逆步骤绑定唯一恢复路径，执行前强制展示
+    importance: primary
+  - id: rel_deviation_log_runbook
+    source: deviation_log
+    target: runbook
+    type: audits
+    direction: forward
+    meaning: 偏差记录审计全程，判定是否零失误完成
+    importance: supporting
+region_relationships: []
+decisions:
+  primary_structure: PAT-APPLICATION-SHELL
+  density_intent: spacious
+  major_choice_ids:
+    - MC-1
+    - MC-2
+    - MC-3
+    - MC-4
+    - MC-5
+must_preserve: []
+regression_points: []
+unresolved: []
+corrections: []
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - destructive_recovery
+    - requirement_alignment
+  regression_check_ids: []

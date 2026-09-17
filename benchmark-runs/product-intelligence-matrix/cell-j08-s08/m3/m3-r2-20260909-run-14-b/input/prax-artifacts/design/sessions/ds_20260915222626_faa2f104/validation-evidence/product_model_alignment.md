@@ -1,0 +1,1 @@
+Receipt: evidence/checks.json: "01 health pill ok"=true, "09 preview click selects editor block"=true. Screenshots evidence/01-initial-ready.png and evidence/09-preview-click-sync.png show the four named regions 大纲 / 结构化编辑 / 实时预览 / 结构检查 matching product objects document/block/outline/diagnostic.

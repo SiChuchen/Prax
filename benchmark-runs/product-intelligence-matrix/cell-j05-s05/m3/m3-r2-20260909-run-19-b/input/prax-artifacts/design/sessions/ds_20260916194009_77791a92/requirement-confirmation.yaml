@@ -1,0 +1,30 @@
+version: "0.1"
+user_quote:
+  - 动词：understand；对象：关系结构；成功标准：依赖与影响可跟随
+  - 判别：关系本身是内容，跟随依赖与影响不能丢失全局上下文。
+  - 验收种子：关系跟随不丢失全局上下文
+  - 交付物必须能直接静态打开（根路径 index.html，或构建产物 dist/）；页面加载完成时即处于可用状态
+restatement: 构建一个从零开始的静态单页 Web 应用，帮助用户理解一个关系结构（依赖/影响网络）：关系本身是一等内容，用户可以聚焦任意对象、跟随其上游依赖与下游影响（多跳），而在整个跟随过程中全图上下文始终可见、不丢失；首屏即用（数据内联），本地静态打开，无后端、无部署。
+boundaries:
+  in_scope:
+    - 单屏主界面：全量关系网络图（节点+关系边）常驻可见
+    - 节点聚焦：高亮其上游依赖与下游影响（1跳/2跳/全链路）
+    - 关系跟随：详情面板中邻居可点击、可连续跟随，带路径面包屑可回退
+    - 关系（边）作为一等对象：类型、关键度、说明可查看
+    - 节点搜索定位；按关系类型过滤
+    - 初始数据内联，页面加载即就绪；纯静态 file:// 可打开
+  out_of_scope:
+    - 后端服务、账号体系、持久化存储
+    - 部署到外部服务
+    - 多屏/移动端
+    - 实时数据更新与协同编辑
+  scope_complete: true
+open_questions: []
+confirmation:
+  status: requirement_is_sufficient
+  evidence:
+    - type: task_brief
+      ref: brief.md (cell-j05-s05 product brief, M2-frozen)
+    - type: conversation_message
+      ref: initial task message REQUIREMENT block
+  confirmed_at: 2026-09-17T00:00:00Z

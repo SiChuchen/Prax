@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-boot="init">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>脉络 Trace · 服务依赖图谱</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ======= 顶栏：标识 · 全局统计 · 检索 · 跟随控制 ======= -->
+  <header id="topbar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 20 20" width="20" height="20"><g fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="4" cy="10" r="2.2"/><circle cx="15" cy="4.5" r="2.2"/><circle cx="15" cy="15.5" r="2.2"/><path d="M6 8.8 L13 5.4 M6 11.2 L13 14.6"/></g></svg>
+      </div>
+      <div class="brand-text">
+        <h1>脉络 <span class="en">Trace</span></h1>
+        <p>青梧电商平台 · 依赖关系跟随</p>
+      </div>
+    </div>
+
+    <div class="global-stats" id="global-stats"><!-- JS: 全局统计 + 走访覆盖 --></div>
+
+    <div class="controls">
+      <div class="search-wrap">
+        <input id="search" type="text" placeholder="检索节点 / 域名…" autocomplete="off" spellcheck="false">
+        <div id="search-pop" class="search-pop hidden"></div>
+      </div>
+      <div class="seg" id="dir-seg" role="group" aria-label="跟随方向">
+        <button data-dir="deps"  title="只看它指向谁（它依赖谁）">依赖</button>
+        <button data-dir="both"  class="on" title="同时看依赖与影响">双向</button>
+        <button data-dir="impact" title="只看谁指向它（谁依赖它）">影响</button>
+      </div>
+      <div class="seg" id="depth-seg" role="group" aria-label="跟随深度">
+        <button data-depth="1" class="on">1 跳</button>
+        <button data-depth="2">2 跳</button>
+        <button data-depth="3">3 跳</button>
+        <button data-depth="99">闭包</button>
+      </div>
+      <button id="path-btn" class="ghost-btn" title="选两个节点，找出依赖路径与影响路径">路径分析</button>
+      <button id="reset-btn" class="ghost-btn" title="清空选中与轨迹，回到全景">重置</button>
+    </div>
+  </header>
+
+  <!-- ======= 轨迹条：跟随路径面包屑，永不丢失全局上下文 ======= -->
+  <div id="trailbar">
+    <span class="trail-label">跟随轨迹</span>
+    <div id="trail-chips" class="trail-chips"><!-- JS --></div>
+    <span id="coverage" class="coverage"><!-- JS --></span>
+  </div>
+
+  <!-- ======= 主区：全景图谱 + 详情侧栏 ======= -->
+  <main id="main">
+    <section id="graph-panel">
+      <svg id="graph" viewBox="0 0 1720 940" preserveAspectRatio="xMidYMid meet" aria-label="服务依赖关系全景图"></svg>
+      <div id="legend">
+        <div class="lg-row">
+          <span class="lg-title">节点</span>
+          <span class="lg-item"><i class="shape s-service"></i>服务</span>
+          <span class="lg-item"><i class="shape s-access"></i>接入</span>
+          <span class="lg-item"><i class="shape s-topic"></i>消息</span>
+          <span class="lg-item"><i class="shape s-data"></i>数据</span>
+          <span class="lg-item"><i class="shape s-external"></i>外部</span>
+        </div>
+        <div class="lg-row">
+          <span class="lg-title">关系</span>
+          <span class="lg-item"><i class="line l-sync"></i>同步调用</span>
+          <span class="lg-item"><i class="line l-event"></i>事件流</span>
+          <span class="lg-item"><i class="line l-data"></i>数据读写</span>
+        </div>
+        <div class="lg-row">
+          <span class="lg-title">方向</span>
+          <span class="lg-item"><i class="line l-dep"></i>依赖（指向所依赖方）</span>
+          <span class="lg-item"><i class="line l-impact"></i>影响（指向波及方）</span>
+        </div>
+      </div>
+      <div id="hint">点击节点跟随依赖与影响 · 图谱始终保持全景 · 点击空白回到总览</div>
+      <div id="tooltip" class="hidden"></div>
+    </section>
+
+    <aside id="sidebar">
+      <div id="panel"><!-- JS: 详情面板 --></div>
+    </aside>
+  </main>
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

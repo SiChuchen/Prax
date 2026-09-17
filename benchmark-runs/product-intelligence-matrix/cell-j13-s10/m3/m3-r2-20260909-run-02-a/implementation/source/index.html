@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>星穹棱镜 Prism · 系外行星多维探索台</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="errbox"></div>
+
+<!-- 顶栏：标识 / 数据概要 / 视角名 / 历史操作 -->
+<header id="topbar">
+  <div class="brand">
+    <span class="logo">◍</span>
+    <div>
+      <h1>星穹棱镜 <em>Prism</em></h1>
+      <p class="sub">系外行星目录 · 多维探索台</p>
+    </div>
+  </div>
+  <div class="datastat" id="datastat"></div>
+  <div class="spacer"></div>
+  <div class="lensbox" title="当前视角名：过滤与投影状态的归属容器">
+    <label>视角</label>
+    <input id="lensName" value="默认视角" spellcheck="false">
+  </div>
+  <div class="histbtns">
+    <button id="undoBtn" class="ghost" title="撤销 (Ctrl+Z)">↶ 撤销</button>
+    <button id="redoBtn" class="ghost" title="重做 (Ctrl+Y)">↷ 重做</button>
+    <button id="histBtn" class="ghost" title="打开状态历史">☰ 历史</button>
+  </div>
+</header>
+
+<main id="layout">
+
+  <!-- 左：维度货架 -->
+  <aside id="shelf">
+    <div class="panelhead">
+      <h2>维度</h2>
+      <span class="hint" id="dimCount"></span>
+    </div>
+    <div class="shelfhelp">拖直方图设区间过滤 · 点 <b>X</b>/<b>Y</b> 换投影轴（选中与过滤不重置）</div>
+    <div id="dimList"></div>
+  </aside>
+
+  <!-- 中：散点主屏 -->
+  <section id="stage">
+    <div id="plotbar">
+      <div class="plot-title" id="plotTitle"></div>
+      <div class="spacer"></div>
+      <label class="enc">颜色
+        <select id="encColor"></select>
+      </label>
+      <label class="enc">大小
+        <select id="encSize"></select>
+      </label>
+      <button id="clearSel" class="ghost sm">清空选择</button>
+    </div>
+    <div id="plotwrap">
+      <svg id="plot" width="100%" height="100%"></svg>
+      <div id="tooltip" class="hidden"></div>
+      <div id="legend"></div>
+    </div>
+  </section>
+
+  <!-- 右：锚点 / 详情 -->
+  <aside id="side">
+    <div class="panelhead"><h2>认知锚点</h2><span class="hint">跨维度切换保持</span></div>
+    <div id="anchorSummary" class="anchorbar"></div>
+    <div class="subhead">选中 <span id="selCount" class="cnt">0</span></div>
+    <div id="selList" class="reclist"></div>
+    <div class="subhead">已固定 <span id="pinCount" class="cnt">0</span></div>
+    <div id="pinList" class="reclist"></div>
+    <div id="detail"></div>
+  </aside>
+</main>
+
+<!-- 底：状态归属条 -->
+<footer id="statebar">
+  <div class="barhead" id="stateSummary"></div>
+  <div id="chips"></div>
+  <button id="clearAll" class="ghost sm">清除全部过滤</button>
+</footer>
+
+<!-- 历史抽屉 -->
+<div id="histDrawer" class="hidden">
+  <div class="panelhead">
+    <h2>状态历史</h2>
+    <div class="spacer"></div>
+    <button id="histClose" class="ghost sm">✕</button>
+  </div>
+  <p class="drawerhelp">每个节点是过滤+投影的一次变更，点击任意节点即可回退到该状态。<br>选中与固定是认知锚点，不随回退重置。</p>
+  <ol id="histList"></ol>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/state.js"></script>
+<script src="js/shelf.js"></script>
+<script src="js/plot.js"></script>
+<script>
+window.addEventListener('error', function (e) {
+  var b = document.getElementById('errbox');
+  if (b) { b.textContent = '⚠ 运行错误: ' + e.message + ' @' + e.filename + ':' + e.lineno; b.style.display = 'block'; }
+});
+App.init();
+if (new URLSearchParams(location.search).get('selftest')) App.selftest();
+</script>
+</body>
+</html>

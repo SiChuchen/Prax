@@ -1,0 +1,14 @@
+MEASUREMENT RECEIPT
+===================check_id: keyboard
+outcome: pass
+collected_at: "2026-09-16T01:30:00Z"
+method: CDP Input.dispatchKeyEvent (Tab x3) + Runtime.evaluate document.activeElement
+artifacts:
+  - evidence/11-keyboard-focus.png
+measured:
+  active_element_after_tab_x3: "BUTTON.btn-ghost (header 审计 button)"
+  native_controls_only: "all interactive elements are button/input/checkbox/radio/textarea; no div-click widgets"
+  visible_focus: "global :focus-visible 2px outline (styles.css); focus ring visible in screenshot"
+  modal_keyboard: "Escape closes modal (= cancel); disabled gate buttons unreachable for both pointer and keyboard"
+conclusion: "primary work and selection operable with keyboard and visible focus."
+

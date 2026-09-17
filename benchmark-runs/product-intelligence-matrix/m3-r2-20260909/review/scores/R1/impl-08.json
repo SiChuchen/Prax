@@ -1,0 +1,82 @@
+{
+  "reviewer": "R1",
+  "package_id": "impl-08",
+  "session_id": "61d07890-3ff5-4a9b-b04d-fd9164921289",
+  "wall_clock_seconds": 150,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-08",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Brief demands a comparison-panel of few (4) high-density, location-sensitive options with comparison as the task; initial screen shows exactly that: 4-column side-by-side panel titled 候选场地对比面板 · 4 列并排 (both screenshots; source/index.html:218), 4 location candidates with district/addr/map coordinates (source/index.html:234-251), 6 weighted decision-criteria rows plus 10 context rows per column (source/index.html:253-273), and an SVG geo-context map binding each candidate to a pin (source/index.html:149,397-410). Comparison state (include/focus/pick/weights) resides on-screen persistently (source/index.html:283-289)."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "The decide task dominates: comparison table occupies ~2/3 of the initial screen at both 1280x860 and 1440x900 with a 设为首选 lock button in every column head rendered on first paint (source/index.html:358-359), and a verdict bar 加权最优：创科广场 67.8 with next-step instruction (screenshots; source/index.html:420-422). Weight sliders (decision inputs) are permanently visible top-left (screenshot; source/index.html:208-211). No surface outranks the decision task."
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "(model-judged proxy, not human) What/where is conveyed immediately: title 选址对比决策台 + subtitle stating 4 candidates side-by-side, map and decision inputs same-screen (source/index.html:135-136); table is self-explanatory via group rows 决策指标 · 参与加权评分 / 场地信息 · 背景参考 (source/index.html:362,375); verdict states recommendation, rationale, and the exact next action (source/index.html:422). Both screenshots readable at a glance with best-in-row 优 tags and per-candidate bars."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Zero navigation: single static page, all primary objects (4 candidates, map, weights, verdict) present in one .main grid with no routes, tabs, or modals (source/index.html:144-228). Cross-object access costs one click: pin click or column click toggles focus and highlights the counterpart (source/index.html:501-506,518-526). Deliverable opens statically from index.html with data inlined and synchronous first render, no loading state (source/index.html:233,593-595)."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "Primary actions preserve context: exclude keeps the column in place, dimmed (.col.off source/index.html:90, 未纳入 label :356) rather than removing it; a guard blocks dropping below 2 candidates via non-destructive toast (source/index.html:492); focusing is a toggle that re-renders in place (source/index.html:489); full decision state (pick/focus/preset/weights/exclusions) is written to and restored from the URL hash (source/index.html:549-580). No page transitions or mode switches exist to lose context."
+      },
+      "ui_surface_complexity": {
+        "score": 4,
+        "evidence": "Six permanent surfaces (map card, include/focus chips, weight panel with 4 presets + 6 sliders, comparison table, verdict, ticker) each map to a brief need (few/high-density/comparison-required/volatility-medium; screenshots). Deduction: control redundancy — inclusion lives in chip checkboxes (source/index.html:389-390) while column focus lives in both chips (:508-512) and table columns (:501-506); plus the 模拟行情波动 button and ticker (:140,582-591) are extra machinery beyond the core decide job, though justifiable under 易变性 中."
+      },
+      "accessibility": {
+        "score": 3,
+        "evidence": "Receipt a11y checks unavailable: a11y.contrast, a11y.focus_order, a11y.target_size all skipped with target_invalid:true (measurement-summary.json:9-18), so scoring rests on source/visual inspection. Positives: map pins are keyboard-operable with tabindex=0, role=button, aria-label, Enter/Space handling (source/index.html:401,522-526); weight sliders have aria-label (:460); map svg has role=img + aria-label (:149). Negatives: .pin:focus{outline:none} removes the keyboard focus outline with no :focus replacement — the focus-ring only shows after activation via state.focus (:42,45); 设为首选 and 清除锁定 buttons are ~11px text with 1-2px vertical padding (:99,118), likely sub-minimum targets; the table is a div grid without table semantics/roles (:81-83); chip checkboxes have no :focus-within indicator (:55-59)."
+      },
+      "frontend_rework": {
+        "score": 4,
+        "evidence": "No visible layout defects at either viewport: no overflow, collision, or truncation artifacts at 1280x860 or 1440x900; below-fold continuation (weights panel, verdict) is normal scroll, and the sticky table header is intact (screenshots; .thead sticky source/index.html:86). Deducted one point because the receipt corroborates nothing: all seven checks skipped, target_invalid:true (measurement-summary.json:4-18), so the clean visual result is unverified by measurement rather than confirmed."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed 地理语境与决策项同屏 is directly satisfied: the card titled 地理语境 · 云洲市轨道示意 (source/index.html:148) with candidate pins is co-visible with the decision table in both screenshots at 1280x860 and 1440x900; pins carry candidate names and the 加权最优 ring (:397-410), and clicking a pin focuses the matching table column, tying geography to decision items (:518-526). Map legend and instruction 点击地标 / 表格列可聚焦 (:193-199) reinforce the link."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "Keyboard focus outline removed on map pins (.pin:focus{outline:none}, source/index.html:42) with no :focus-visible replacement — focus ring appears only after activation, so keyboard users lose the focus indicator",
+      "Small interactive targets: 设为首选 (source/index.html:99) and 清除锁定 (source/index.html:118) buttons use 11px text with 1-2px vertical padding",
+      "Comparison table is a div grid without table/th/scope semantics (source/index.html:81-83), weakening screen-reader row/column navigation",
+      "Receipt anomaly: all seven browser checks report skipped with target_invalid:true (measurement-summary.json:9-18), so automated layout/a11y verification never ran for this package"
+    ],
+    "missing_evidence": [
+      "Receipt-side measurements for contrast, focus order, target size, overflow, responsive collision, text truncation, and min projected type are all skipped (measurement-summary.json:9-17, target_invalid:true); these could only be assessed by visual/source inspection, not measurement",
+      "Human-preference data does not exist in this pilot; time-to-understand is scored only as a model-judged proxy"
+    ],
+    "overall_note": "impl-08 is a single-file, dependency-free index.html whose first paint already contains the complete decision surface: a 4-column comparison panel, an SVG geo-context map with candidate pins, include/focus chips, live weight sliders, and a verdict bar recommending a weighted best with a lock affordance — precisely the comparison-panel shape and the 地理语境与决策项同屏 seed the brief requires, verifiable in both screenshots and source/index.html:144-228,234-273. Structure earns top marks on fit, salience, navigation (zero-step, single page), and context preservation (dim-not-remove exclusion, min-2 guard, hash-persisted decision state at source/index.html:549-580). The main weaknesses are on the verification and accessibility side: the measurement receipt is invalid (target_invalid:true, all seven checks skipped), so layout/a11y quality rests solely on visual inspection, and inspection itself surfaces real a11y gaps — a removed pin focus outline, sub-minimum button targets, and a semantics-free div-grid table — leading to a middling accessibility score and a reserved frontend-rework score rather than a clean bill. This is a model-judged review; no human preference or task-time data exists in this pilot."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 60418,
+      "outputTokens": 6685,
+      "cacheReadInputTokens": 45696,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.49206300000000003,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-09-16T22:18:42.810Z"
+}

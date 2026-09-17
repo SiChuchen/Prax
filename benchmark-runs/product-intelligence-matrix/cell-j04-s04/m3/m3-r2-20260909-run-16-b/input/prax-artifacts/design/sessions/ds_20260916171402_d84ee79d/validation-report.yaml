@@ -1,0 +1,242 @@
+plan_revision: 2
+evidence:
+  submitted_by: implementation arm (Claude/GLM) — cell-j04-s04-b
+  collected_at: 2026-09-17T02:20:00Z
+  items:
+    - check_id: semantic_conformance
+      outcome: pass
+      source: prax-session-artifacts + delivered source
+      notes: SDIR gate PASS; pattern_ref = router-approved PAT-LIST-DETAIL-INSPECTOR; regions map 1:1 to implementation ids (region-anomaly-strip / region-metric-grid / region-inspector / region-event-feed / region-header).
+      artifact_refs:
+        - .prax/design/sessions/ds_20260916171402_d84ee79d/screen.sdir.yaml
+        - index.html
+        - js/app.js
+    - check_id: state_completeness
+      outcome: pass
+      source: prax-session-artifacts + delivered source
+      notes: ready/selected/empty/error implemented as real code paths (同步 boot、inspector、feed-empty+异常条安静摘要、流看门狗)；loading 仅存在于同步启动路径，页面加载完成前完成，不是可测状态。
+      artifact_refs:
+        - js/app.js
+        - js/stream.js
+        - css/style.css
+        - .prax/design/sessions/ds_20260916171402_d84ee79d/screen.sdir.yaml
+    - check_id: representation_decided
+      outcome: pass
+      source: prax-session-artifacts
+      notes: representation.primary = grid with non-empty reason, declared in validated SDIR 0.2.
+      artifact_refs:
+        - .prax/design/sessions/ds_20260916171402_d84ee79d/screen.sdir.yaml
+    - check_id: state_ownership_declared
+      outcome: pass
+      source: prax-session-artifacts
+      notes: selection owner=session AND preview owner=session（已补声明）；query owner=region-event-feed；viewport owner=session。
+      artifact_refs:
+        - .prax/design/sessions/ds_20260916171402_d84ee79d/screen.sdir.yaml
+    - check_id: acceptance_contract_present
+      outcome: pass
+      source: prax-session-artifacts
+      notes: 5 acceptance criteria carried in validated SDIR.
+      artifact_refs:
+        - .prax/design/sessions/ds_20260916171402_d84ee79d/screen.sdir.yaml
+    - check_id: complexity_budget_declared
+      outcome: pass
+      source: prax-session-artifacts
+      notes: complexity_budget block fully declared (10 fields).
+      artifact_refs:
+        - .prax/design/sessions/ds_20260916171402_d84ee79d/screen.sdir.yaml
+    - check_id: product_model_alignment
+      outcome: inconclusive
+      source: static inspection only — executed evidence blocked by environment
+      notes: 静态检查支持一致（metric/event/stream 均落地、metric_emits_event 证据链在代码中）；本会话无执行通道（主代理无 shell/浏览器工具，两个子代理实测 NO_SHELL，chrome MCP 已注册 .mcp.json 但本会话不可热载），无法产出真实用户旅程截图。恢复：evidence/collect.ps1 一键，或新会话加载 chrome MCP。
+      artifact_refs:
+        - js/stream.js
+        - js/app.js
+        - index.html
+    - check_id: keyboard
+      outcome: inconclusive
+      source: static inspection only — executed evidence blocked by environment
+      notes: 原生 button 语义 + Esc/Space/Enter 处理 + :focus-visible 已实现；真实按键旅程未能在本会话执行（collect.ps1 步骤 8 一键可补）；a11y.focus_order 的 measured 回执需运行 prax-measure，本会话无法执行。
+      artifact_refs:
+        - js/app.js
+        - css/style.css
+        - evidence/collect.ps1
+    - check_id: hierarchy_review
+      outcome: inconclusive
+      source: static inspection only — executed evidence blocked by environment
+      notes: 实现按 SDIR importance 组织（strip primary 第一落点、grid dominant、inspector 选中态、feed/header supporting、chrome 安静）；渲染截图待 collect.ps1。
+      artifact_refs:
+        - css/style.css
+        - js/app.js
+        - index.html
+    - check_id: requirement_alignment
+      outcome: inconclusive
+      source: static inspection only — executed evidence blocked by environment
+      notes: 代码层与确认的 restatement/scope/成功定义完整对齐（首屏即满数据、异常扫视、可追溯、无闪烁、静态单屏、无后端、未部署）；执行级确认（截图 + 30s 坐标零位移）待一键补齐。预算如实：wall-clock ≈ 60 min（含两次受阻子代理尝试），token 远低于 1.2M。
+      artifact_refs:
+        - index.html
+        - js/stream.js
+        - js/app.js
+        - css/style.css
+        - README.md
+        - evidence/collect.ps1
+evaluation:
+  status: WARN
+  checks:
+    - id: semantic_conformance
+      label: Semantic conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR is valid, semantic, and aligned to the approved pattern.
+      evidence_required: false
+    - id: state_completeness
+      label: State completeness
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Required loading, empty, ready, and error states exist.
+      evidence_required: false
+    - id: product_model_alignment
+      label: Product model alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: User-facing structure and language preserve the Product Frame.
+      evidence_required: true
+    - id: keyboard
+      label: Keyboard operability
+      kind: empirical
+      profile: keyboard_accessibility
+      facet: behavioral
+      requirement: Primary work and selection are operable with keyboard and visible focus.
+      evidence_required: true
+    - id: hierarchy_review
+      label: Hierarchy review
+      kind: assistive
+      profile: semantic_integrity
+      facet: visual_hierarchy
+      requirement: Visual prominence follows SDIR importance rather than implementation convenience.
+      evidence_required: true
+    - id: representation_decided
+      label: Representation decided
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares representation.primary with a non-empty reason.
+      evidence_required: false
+    - id: state_ownership_declared
+      label: State ownership declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: Selection and preview states both have declared owners.
+      evidence_required: false
+    - id: acceptance_contract_present
+      label: Acceptance contract present
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 carries at least one acceptance criterion.
+      evidence_required: false
+    - id: complexity_budget_declared
+      label: Complexity budget declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      evidence_required: false
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+  findings:
+    - check_id: semantic_conformance
+      kind: deterministic
+      outcome: pass
+      message: SDIR is valid, semantic, and aligned to the approved pattern.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_completeness
+      kind: deterministic
+      outcome: pass
+      message: Required loading, empty, ready, and error states exist.
+      source: prax-validator
+      provenance: measured
+    - check_id: representation_decided
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares representation.primary with a non-empty reason.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_ownership_declared
+      kind: deterministic
+      outcome: pass
+      message: Selection and preview states both have declared owners.
+      source: prax-validator
+      provenance: measured
+    - check_id: acceptance_contract_present
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 carries at least one acceptance criterion.
+      source: prax-validator
+      provenance: measured
+    - check_id: complexity_budget_declared
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      source: prax-validator
+      provenance: measured
+    - check_id: product_model_alignment
+      kind: assistive
+      outcome: inconclusive
+      message: 静态检查支持一致（metric/event/stream 均落地、metric_emits_event 证据链在代码中）；本会话无执行通道（主代理无 shell/浏览器工具，两个子代理实测 NO_SHELL，chrome MCP 已注册 .mcp.json 但本会话不可热载），无法产出真实用户旅程截图。恢复：evidence/collect.ps1 一键，或新会话加载 chrome MCP。
+      source: static inspection only — executed evidence blocked by environment
+      provenance: attested
+    - check_id: keyboard
+      kind: empirical
+      outcome: inconclusive
+      message: 原生 button 语义 + Esc/Space/Enter 处理 + :focus-visible 已实现；真实按键旅程未能在本会话执行（collect.ps1 步骤 8 一键可补）；a11y.focus_order 的 measured 回执需运行 prax-measure，本会话无法执行。
+      source: static inspection only — executed evidence blocked by environment
+      provenance: attested
+    - check_id: hierarchy_review
+      kind: assistive
+      outcome: inconclusive
+      message: 实现按 SDIR importance 组织（strip primary 第一落点、grid dominant、inspector 选中态、feed/header supporting、chrome 安静）；渲染截图待 collect.ps1。
+      source: static inspection only — executed evidence blocked by environment
+      provenance: attested
+    - check_id: requirement_alignment
+      kind: assistive
+      outcome: inconclusive
+      message: 代码层与确认的 restatement/scope/成功定义完整对齐（首屏即满数据、异常扫视、可追溯、无闪烁、静态单屏、无后端、未部署）；执行级确认（截图 + 30s 坐标零位移）待一键补齐。预算如实：wall-clock ≈ 60 min（含两次受阻子代理尝试），token 远低于 1.2M。
+      source: static inspection only — executed evidence blocked by environment
+      provenance: attested
+  missing_evidence: []
+  warnings: []
+  readiness:
+    deterministic_passed: true
+    measurement:
+      receipt_ref: null
+      binding: {}
+      error_failures_open: 0
+      warning_dispositions: []
+    convergence:
+      stalled: false
+      unresolved: []
+    evidence_current: true
+    claims:
+      measured:
+        - semantic_conformance
+        - state_completeness
+        - representation_decided
+        - state_ownership_declared
+        - acceptance_contract_present
+        - complexity_budget_declared
+      attested:
+        - product_model_alignment
+        - keyboard
+        - hierarchy_review
+        - requirement_alignment
+      skipped: []

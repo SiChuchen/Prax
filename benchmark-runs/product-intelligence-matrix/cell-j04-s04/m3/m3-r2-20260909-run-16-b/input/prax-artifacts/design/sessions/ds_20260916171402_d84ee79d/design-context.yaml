@@ -1,0 +1,69 @@
+user:
+  expertise: expert
+  familiarity: high
+task:
+  primary: 监控易变指标流，在扫视内发现异常并追溯变化
+  modes:
+    - ambient-watch
+    - scan-for-anomaly
+    - drill-in-trace
+    - pause-inspect
+  frequency: high
+domain:
+  type: observability / 实时运营监控
+  entities:
+    - metric（指标，含阈值与基线）
+    - sample（带时间戳取值）
+    - event（状态跃迁/阈值穿越记录）
+    - stream（持续推送的更新源）
+information:
+  volume: high
+  relationship_complexity: low
+  change_rate: high
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: none
+  error_cost: high
+priorities:
+  - 异常在扫视内可发现（色彩编码 + 异常聚拢呈现）
+  - 指标变化可追溯（时间序列与事件链）
+  - 更新稳定无闪烁（原位更新、布局零跳动）
+  - 高密度一屏承载 many 指标
+density_intent: compact
+confidence:
+  overall: high
+unknowns:
+  - id: stream_parameters
+    impact: low
+    affects:
+      - simulate
+      - trace
+  - id: threshold_semantics
+    impact: low
+    affects:
+      - thresholds
+classification:
+  version: "1"
+  task_type: browse_collection
+  domain_id: observability_analytics
+  interaction_mode: unknown
+  product_type: unknown
+  primary_object_type: metric
+  secondary_object_types:
+    - event
+    - stream
+  confidence: medium
+  evidence:
+    - task_type=browse_collection ← token 'scan' in context.task and frame.tasks
+    - domain_id=observability_analytics ← token 'observability' in context.domain
+    - primary_object_type=metric ← most referenced product object in the Product Frame
+  open_questions:
+    - interaction_mode could not be classified from the provided context; refine the context fields or record a custom classification
+    - product_type could not be derived; record the intended audience and product kind

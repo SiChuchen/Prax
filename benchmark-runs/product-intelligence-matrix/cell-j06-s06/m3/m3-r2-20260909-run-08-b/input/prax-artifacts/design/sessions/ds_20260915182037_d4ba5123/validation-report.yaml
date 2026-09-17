@@ -1,0 +1,205 @@
+plan_revision: 1
+evidence:
+  submitted_by: claude (implementation arm, cell-j06-s06-b)
+  collected_at: 2026-09-16T00:45:00Z
+  items:
+    - check_id: keyboard
+      outcome: pass
+      source: in-page selftest with dispatched KeyboardEvent, Edge headless over file://
+      notes: 键盘契约（1 个）：←→ 按时间顺序切换选中变更集，Esc 清除进入空态；C/E 跳诱因/后果为同一 keydown 契约的扩展路径。可见焦点：节点 tabindex + .node:focus ring 样式。
+      artifact_refs:
+        - evidence/selftest-run.md
+        - evidence/01-initial.png
+      measurement_receipt: validation-evidence/MEAS-KB-001-keyboard-selftest.yaml
+    - check_id: product_model_alignment
+      outcome: pass
+      source: headless Edge screenshots over file://
+      notes: Product Frame 的五个产品对象全部以用户语言呈现：变更集（节点+详情）、阶段（彩色阶段带 P1–P5）、组件（泳道+切片卡片）、因果链（橙色弧线+详情诱因/后果区，方向严格左→右）、状态切片（右下表格，值可追溯到产生它的变更集 tag）。无后端概念泄漏。
+      artifact_refs:
+        - evidence/02-cause-chain-c19.png
+        - evidence/01-initial.png
+        - evidence/06-end-state-c23.png
+    - check_id: hierarchy_review
+      outcome: pass
+      source: headless Edge screenshots over file://
+      notes: 视觉显著性与 SDIR 一致：时间轴画布占主导区域（dominant），因果链选中时以最高对比橙色呈现（primary），详情为右侧相邻固定面板（primary），状态切片与组件过滤为次级（supporting）；阶段带与类型行用留白与淡底色分组，无装饰压过信息。
+      artifact_refs:
+        - evidence/01-initial.png
+        - evidence/06-end-state-c23.png
+    - check_id: requirement_alignment
+      outcome: pass
+      source: headless Edge screenshots over file:// + in-page selftest
+      notes: 逐条核验确认的复述：①主对象 change_set、understand 任务——24 变更集时间轴+因果详情；②因果可读——任一变更可双向追溯（02：c19 回溯 c18←c17←c16←c14 并前向 c24）；③时间结构与变更语义一致——切片=折叠、连线方向=时间方向（selftest 13 项全 PASS）；④静态打开——6 张证据截图均以 file:// 直接打开截取；⑤首屏即用——数据内联，加载完成即交互（01 即首屏默认态）；⑥单页单主屏、无后端/账号/持久化、未部署。
+      artifact_refs:
+        - evidence/01-initial.png
+        - evidence/02-cause-chain-c19.png
+        - evidence/03-early-state-c06.png
+        - evidence/04-filter-payment-gateway.png
+        - evidence/05-empty-state.png
+        - evidence/06-end-state-c23.png
+evaluation:
+  status: BLOCK
+  checks:
+    - id: semantic_conformance
+      label: Semantic conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR is valid, semantic, and aligned to the approved pattern.
+      evidence_required: false
+    - id: state_completeness
+      label: State completeness
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Required loading, empty, ready, and error states exist.
+      evidence_required: false
+    - id: product_model_alignment
+      label: Product model alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: User-facing structure and language preserve the Product Frame.
+      evidence_required: true
+    - id: keyboard
+      label: Keyboard operability
+      kind: empirical
+      profile: keyboard_accessibility
+      facet: behavioral
+      requirement: Primary work and selection are operable with keyboard and visible focus.
+      evidence_required: true
+    - id: hierarchy_review
+      label: Hierarchy review
+      kind: assistive
+      profile: semantic_integrity
+      facet: visual_hierarchy
+      requirement: Visual prominence follows SDIR importance rather than implementation convenience.
+      evidence_required: true
+    - id: representation_decided
+      label: Representation decided
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares representation.primary with a non-empty reason.
+      evidence_required: false
+    - id: state_ownership_declared
+      label: State ownership declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: Selection and preview states both have declared owners.
+      evidence_required: false
+    - id: acceptance_contract_present
+      label: Acceptance contract present
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 carries at least one acceptance criterion.
+      evidence_required: false
+    - id: complexity_budget_declared
+      label: Complexity budget declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      evidence_required: false
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+  findings:
+    - check_id: semantic_conformance
+      kind: deterministic
+      outcome: pass
+      message: SDIR is valid, semantic, and aligned to the approved pattern.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_completeness
+      kind: deterministic
+      outcome: pass
+      message: Required loading, empty, ready, and error states exist.
+      source: prax-validator
+      provenance: measured
+    - check_id: representation_decided
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares representation.primary with a non-empty reason.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_ownership_declared
+      kind: deterministic
+      outcome: pass
+      message: Selection and preview states both have declared owners.
+      source: prax-validator
+      provenance: measured
+    - check_id: acceptance_contract_present
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 carries at least one acceptance criterion.
+      source: prax-validator
+      provenance: measured
+    - check_id: complexity_budget_declared
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      source: prax-validator
+      provenance: measured
+    - check_id: product_model_alignment
+      kind: assistive
+      outcome: pass
+      message: Product Frame 的五个产品对象全部以用户语言呈现：变更集（节点+详情）、阶段（彩色阶段带 P1–P5）、组件（泳道+切片卡片）、因果链（橙色弧线+详情诱因/后果区，方向严格左→右）、状态切片（右下表格，值可追溯到产生它的变更集 tag）。无后端概念泄漏。
+      source: headless Edge screenshots over file://
+      provenance: attested
+    - check_id: keyboard
+      kind: empirical
+      outcome: pass
+      message: 键盘契约（1 个）：←→ 按时间顺序切换选中变更集，Esc 清除进入空态；C/E 跳诱因/后果为同一 keydown 契约的扩展路径。可见焦点：节点 tabindex + .node:focus ring 样式。
+      source: in-page selftest with dispatched KeyboardEvent, Edge headless over file://
+      provenance: attested
+    - check_id: hierarchy_review
+      kind: assistive
+      outcome: pass
+      message: 视觉显著性与 SDIR 一致：时间轴画布占主导区域（dominant），因果链选中时以最高对比橙色呈现（primary），详情为右侧相邻固定面板（primary），状态切片与组件过滤为次级（supporting）；阶段带与类型行用留白与淡底色分组，无装饰压过信息。
+      source: headless Edge screenshots over file://
+      provenance: attested
+    - check_id: requirement_alignment
+      kind: assistive
+      outcome: pass
+      message: 逐条核验确认的复述：①主对象 change_set、understand 任务——24 变更集时间轴+因果详情；②因果可读——任一变更可双向追溯（02：c19 回溯 c18←c17←c16←c14 并前向 c24）；③时间结构与变更语义一致——切片=折叠、连线方向=时间方向（selftest 13 项全 PASS）；④静态打开——6 张证据截图均以 file:// 直接打开截取；⑤首屏即用——数据内联，加载完成即交互（01 即首屏默认态）；⑥单页单主屏、无后端/账号/持久化、未部署。
+      source: headless Edge screenshots over file:// + in-page selftest
+      provenance: attested
+  missing_evidence:
+    - keyboard
+  warnings: []
+  codes:
+    - MEASUREMENT_RECEIPT_INVALID
+    - MEASUREMENT_RECEIPT_MISSING
+  readiness:
+    deterministic_passed: true
+    measurement:
+      receipt_ref: null
+      binding:
+        validation-evidence/MEAS-KB-001-keyboard-selftest.yaml: invalid
+      error_failures_open: 0
+      warning_dispositions: []
+    convergence:
+      stalled: true
+      unresolved: []
+    evidence_current: false
+    claims:
+      measured:
+        - semantic_conformance
+        - state_completeness
+        - representation_decided
+        - state_ownership_declared
+        - acceptance_contract_present
+        - complexity_budget_declared
+      attested:
+        - product_model_alignment
+        - keyboard
+        - hierarchy_review
+        - requirement_alignment
+      skipped: []

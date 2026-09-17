@@ -1,0 +1,677 @@
+version: "0.1"
+events:
+  - question: 单一高后果流程（基数 one、层级高、不可逆步骤需确认与恢复路径、零失误走完全程）的主屏应采用什么结构模式与关键交互（步骤门禁、不可逆确认、恢复路径呈现、偏差审计）？
+    routed_at: 2026-09-15T17:34:37.444Z
+    result:
+      status: EXPAND
+      candidate_domains: []
+      principles:
+        - id: P-01
+          type: principle
+          name: Perceptual Grouping
+          one_line_use: Group related product objects so structure is visible before detail is read.
+          triggers:
+            - grouping
+            - architecture
+            - canvas
+            - relationships
+            - dense_information
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform:
+              - web_desktop
+            density: []
+            phase:
+              - routing
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=unknown and domain_id=data_exploration match this entry's scope
+            trigger: scope_and_lifecycle
+            scope_match:
+              - platform:web_desktop
+              - trigger_condition:platform
+              - trigger_condition:phase
+            confidence: medium
+        - id: P-03
+          type: principle
+          name: Visual Hierarchy
+          one_line_use: Make importance and reading order evident without relying on decoration.
+          triggers:
+            - hierarchy
+            - importance
+            - attention
+            - architecture
+            - toolbar
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform:
+              - web_desktop
+            density: []
+            phase:
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=unknown and domain_id=data_exploration match this entry's scope
+            trigger: scope_and_lifecycle
+            scope_match:
+              - platform:web_desktop
+              - trigger_condition:platform
+              - trigger_condition:phase
+            confidence: medium
+        - id: P-28
+          type: principle
+          name: Recoverable Action
+          one_line_use: Prevent costly mistakes and make ordinary actions reversible where possible.
+          triggers:
+            - destructive
+            - error_cost
+            - undo
+            - recovery
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform: []
+            density: []
+            phase:
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=unknown and domain_id=data_exploration match this entry's scope; natural-language trigger 'recovery' supports it
+            trigger: recovery
+            scope_match:
+              - trigger_condition:phase
+            confidence: medium
+        - id: P-10
+          type: principle
+          name: Match the Product Mental Model
+          one_line_use: Organize the interface around user-recognized objects and tasks, not backend records.
+          triggers:
+            - mental_model
+            - product_objects
+            - backend_leak
+            - architecture
+            - settings
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform: []
+            density: []
+            phase:
+              - product_framing
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=unknown and domain_id=data_exploration match this entry's scope
+            trigger: scope_and_lifecycle
+            scope_match:
+              - trigger_condition:phase
+            confidence: low
+        - id: P-26
+          type: principle
+          name: Visibility of System Status
+          one_line_use: Expose meaningful progress, readiness, selection, and failure states.
+          triggers:
+            - status
+            - loading
+            - empty
+            - ready
+            - error
+            - selected
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform: []
+            density: []
+            phase:
+              - decision
+              - sdir
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=unknown and domain_id=data_exploration match this entry's scope
+            trigger: scope_and_lifecycle
+            scope_match:
+              - trigger_condition:phase
+            confidence: low
+      heuristics:
+        - id: H-01
+          type: heuristic
+          name: Task-first Entry
+          one_line_use: The first view should make the primary user task obvious.
+          triggers:
+            - primary_task
+            - entry
+            - navigation
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform: []
+            density: []
+            phase:
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=unknown and domain_id=data_exploration match this entry's scope
+            trigger: scope_and_lifecycle
+            scope_match:
+              - trigger_condition:phase
+            confidence: low
+        - id: H-02
+          type: heuristic
+          name: Object Language
+          one_line_use: Use the same stable names for product objects across navigation, actions, and detail.
+          triggers:
+            - labels
+            - product_objects
+            - naming
+            - backend_leak
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform: []
+            density: []
+            phase:
+              - product_framing
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=unknown and domain_id=data_exploration match this entry's scope
+            trigger: scope_and_lifecycle
+            scope_match:
+              - trigger_condition:phase
+            confidence: low
+        - id: H-07
+          type: heuristic
+          name: State Completeness
+          one_line_use: Define loading, empty, ready, selected, and error behavior before implementation.
+          triggers:
+            - states
+            - loading
+            - empty
+            - ready
+            - selected
+            - error
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform: []
+            density: []
+            phase:
+              - sdir
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=unknown and domain_id=data_exploration match this entry's scope
+            trigger: scope_and_lifecycle
+            scope_match:
+              - generic
+            confidence: low
+      patterns:
+        - id: PAT-APPLICATION-SHELL
+          type: pattern
+          name: Application Shell
+          one_line_use: Stable global navigation and utilities around a changing work region.
+          triggers:
+            - navigation
+            - multi_area
+            - application
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform:
+              - web_desktop
+            density: []
+            phase:
+              - decision
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=unknown and domain_id=data_exploration match this entry's scope
+            trigger: scope_and_lifecycle
+            scope_match:
+              - platform:web_desktop
+              - trigger_condition:platform
+              - trigger_condition:phase
+            confidence: medium
+      platform_profile:
+        - id: WEB-DESKTOP
+          type: platform_convention
+          name: Web Desktop Professional Tool
+          one_line_use: Pointer-and-keyboard conventions for large-viewport, information-dense work.
+          triggers:
+            - web
+            - desktop
+            - pointer
+            - keyboard
+            - large_viewport
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform:
+              - web_desktop
+            density: []
+            phase:
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=unknown and domain_id=data_exploration match this entry's scope; natural-language trigger 'web' supports it
+            trigger: web
+            scope_match:
+              - platform:web_desktop
+              - trigger_condition:platform
+              - trigger_condition:phase
+            confidence: high
+      excluded:
+        - id: PAT-WORKSPACE
+          reason: density scope compact, regular does not include spacious
+        - id: PAT-CANVAS-WORKSPACE
+          reason: domain scope architecture does not match canonical domain_id data_exploration
+        - id: PAT-LIST-DETAIL
+          reason: task scope browse, inspect does not match canonical task_type unknown
+        - id: PAT-LIST-DETAIL-INSPECTOR
+          reason: task scope inspect, trace does not match canonical task_type unknown
+        - id: PAT-DATA-EXPLORER
+          reason: task scope compare, filter, inspect does not match canonical task_type unknown
+        - id: PAT-SETTINGS-SECTIONS
+          reason: domain scope settings does not match canonical domain_id data_exploration
+        - id: PAT-RESOURCE-MANAGEMENT
+          reason: task scope manage, administer does not match canonical task_type unknown
+      confidence: low
+  - question: 单一高后果流程（complete × consequential-flow）主屏结构选型：应用外壳内的步骤门禁流（phase/step 层级 + 当前步工作区 + 不可逆确认模态 + 恢复路径常驻呈现）？
+    routed_at: 2026-09-15T17:35:16.714Z
+    result:
+      status: EXPAND
+      candidate_domains: []
+      principles:
+        - id: P-01
+          type: principle
+          name: Perceptual Grouping
+          one_line_use: Group related product objects so structure is visible before detail is read.
+          triggers:
+            - grouping
+            - architecture
+            - canvas
+            - relationships
+            - dense_information
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform:
+              - web_desktop
+            density: []
+            phase:
+              - routing
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=unknown and domain_id=data_exploration match this entry's scope
+            trigger: scope_and_lifecycle
+            scope_match:
+              - platform:web_desktop
+              - trigger_condition:platform
+              - trigger_condition:phase
+            confidence: medium
+        - id: P-03
+          type: principle
+          name: Visual Hierarchy
+          one_line_use: Make importance and reading order evident without relying on decoration.
+          triggers:
+            - hierarchy
+            - importance
+            - attention
+            - architecture
+            - toolbar
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform:
+              - web_desktop
+            density: []
+            phase:
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=unknown and domain_id=data_exploration match this entry's scope
+            trigger: scope_and_lifecycle
+            scope_match:
+              - platform:web_desktop
+              - trigger_condition:platform
+              - trigger_condition:phase
+            confidence: medium
+        - id: P-28
+          type: principle
+          name: Recoverable Action
+          one_line_use: Prevent costly mistakes and make ordinary actions reversible where possible.
+          triggers:
+            - destructive
+            - error_cost
+            - undo
+            - recovery
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform: []
+            density: []
+            phase:
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=unknown and domain_id=data_exploration match this entry's scope; natural-language trigger 'recovery' supports it
+            trigger: recovery
+            scope_match:
+              - trigger_condition:phase
+            confidence: medium
+        - id: P-10
+          type: principle
+          name: Match the Product Mental Model
+          one_line_use: Organize the interface around user-recognized objects and tasks, not backend records.
+          triggers:
+            - mental_model
+            - product_objects
+            - backend_leak
+            - architecture
+            - settings
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform: []
+            density: []
+            phase:
+              - product_framing
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=unknown and domain_id=data_exploration match this entry's scope
+            trigger: scope_and_lifecycle
+            scope_match:
+              - trigger_condition:phase
+            confidence: low
+        - id: P-26
+          type: principle
+          name: Visibility of System Status
+          one_line_use: Expose meaningful progress, readiness, selection, and failure states.
+          triggers:
+            - status
+            - loading
+            - empty
+            - ready
+            - error
+            - selected
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform: []
+            density: []
+            phase:
+              - decision
+              - sdir
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=unknown and domain_id=data_exploration match this entry's scope
+            trigger: scope_and_lifecycle
+            scope_match:
+              - trigger_condition:phase
+            confidence: low
+      heuristics:
+        - id: H-01
+          type: heuristic
+          name: Task-first Entry
+          one_line_use: The first view should make the primary user task obvious.
+          triggers:
+            - primary_task
+            - entry
+            - navigation
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform: []
+            density: []
+            phase:
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=unknown and domain_id=data_exploration match this entry's scope
+            trigger: scope_and_lifecycle
+            scope_match:
+              - trigger_condition:phase
+            confidence: low
+        - id: H-02
+          type: heuristic
+          name: Object Language
+          one_line_use: Use the same stable names for product objects across navigation, actions, and detail.
+          triggers:
+            - labels
+            - product_objects
+            - naming
+            - backend_leak
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform: []
+            density: []
+            phase:
+              - product_framing
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=unknown and domain_id=data_exploration match this entry's scope
+            trigger: scope_and_lifecycle
+            scope_match:
+              - trigger_condition:phase
+            confidence: low
+        - id: H-07
+          type: heuristic
+          name: State Completeness
+          one_line_use: Define loading, empty, ready, selected, and error behavior before implementation.
+          triggers:
+            - states
+            - loading
+            - empty
+            - ready
+            - selected
+            - error
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform: []
+            density: []
+            phase:
+              - sdir
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=unknown and domain_id=data_exploration match this entry's scope
+            trigger: scope_and_lifecycle
+            scope_match:
+              - generic
+            confidence: low
+      patterns:
+        - id: PAT-APPLICATION-SHELL
+          type: pattern
+          name: Application Shell
+          one_line_use: Stable global navigation and utilities around a changing work region.
+          triggers:
+            - navigation
+            - multi_area
+            - application
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform:
+              - web_desktop
+            density: []
+            phase:
+              - decision
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=unknown and domain_id=data_exploration match this entry's scope
+            trigger: scope_and_lifecycle
+            scope_match:
+              - platform:web_desktop
+              - trigger_condition:platform
+              - trigger_condition:phase
+            confidence: medium
+      platform_profile:
+        - id: WEB-DESKTOP
+          type: platform_convention
+          name: Web Desktop Professional Tool
+          one_line_use: Pointer-and-keyboard conventions for large-viewport, information-dense work.
+          triggers:
+            - web
+            - desktop
+            - pointer
+            - keyboard
+            - large_viewport
+          scope:
+            user_type: []
+            task_type: []
+            domain: []
+            platform:
+              - web_desktop
+            density: []
+            phase:
+              - decision
+              - validation
+          lifecycle:
+            status: stable
+            version: 0.1.0
+            owner: prax-knowledge
+            review_by: 2027-02-25
+          routing:
+            selected_because: canonical task_type=unknown and domain_id=data_exploration match this entry's scope; natural-language trigger 'web' supports it
+            trigger: web
+            scope_match:
+              - platform:web_desktop
+              - trigger_condition:platform
+              - trigger_condition:phase
+            confidence: high
+      excluded:
+        - id: PAT-WORKSPACE
+          reason: density scope compact, regular does not include spacious
+        - id: PAT-CANVAS-WORKSPACE
+          reason: domain scope architecture does not match canonical domain_id data_exploration
+        - id: PAT-LIST-DETAIL
+          reason: task scope browse, inspect does not match canonical task_type unknown
+        - id: PAT-LIST-DETAIL-INSPECTOR
+          reason: task scope inspect, trace does not match canonical task_type unknown
+        - id: PAT-DATA-EXPLORER
+          reason: task scope compare, filter, inspect does not match canonical task_type unknown
+        - id: PAT-SETTINGS-SECTIONS
+          reason: domain scope settings does not match canonical domain_id data_exploration
+        - id: PAT-RESOURCE-MANAGEMENT
+          reason: task scope manage, administer does not match canonical task_type unknown
+      confidence: low
+    scope_gap_accepted:
+      question: 单一高后果流程（complete × consequential-flow）主屏结构与不可逆确认/恢复路径交互的领域专项知识
+      rationale: 路由仅返回通用原则（分组、视觉层级、可恢复操作、状态可见性、应用外壳、Web 桌面约定），candidate_domains 为空、置信度 low；简报由 M2 冻结且领域（数据库运维 Runbook）无既有产品知识可查，接受以通用指导+简报信息形状推进，风险由验收种子（不可逆步骤有恢复/确认路径）与 validation plan 兜底。

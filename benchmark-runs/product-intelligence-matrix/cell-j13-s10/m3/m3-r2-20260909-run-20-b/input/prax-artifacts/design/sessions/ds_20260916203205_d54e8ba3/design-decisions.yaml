@@ -1,0 +1,113 @@
+session_id: ds_20260916203205_d54e8ba3
+version: "0.2"
+information_shape:
+  cardinality: unbounded
+  relationality: medium
+  hierarchy: medium
+  temporality: low
+  density: high
+  dimensionality: high
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: chart
+    reason: "Dimensional data with dimensionality=high: a scatter field with four swappable encoding slots (X, Y, color, size) makes dimension switching the primary interaction while records stay the invariant substrate (PAT-DATA-EXPLORER surface)"
+  supporting:
+    - type: table
+      reason: Dense per-record rows anchor reading position and give stable list-order context that survives projection switches (H-21)
+    - type: form
+      reason: Inspector panel for the focused record's full dimensional profile (PAT-LIST-DETAIL-INSPECTOR)
+  rejected:
+    - option: map
+      reason: spatiality=none — no spatial semantics in the data
+    - option: graph
+      reason: relationality=medium — relations are attribute-sharing, not network topology
+    - option: cards
+      reason: density=high and unbounded cardinality — cards cap information per pixel
+  justification_vs_shape: dimensionality=high as the main cognitive burden → primary surface must be a re-projectable chart whose encoding slots are first-class, visible, swappable; density=high → chart + dense data beat cards; spatiality=none → position encodes projected dimension values, not geography
+primary_structure:
+  pattern: PAT-DATA-EXPLORER
+  rationale:
+    - "PAT-DATA-EXPLORER (inspected L1/L2): dense structured set + persistent narrowing + detail on demand fits unbounded records, high density, explore task"
+    - "Composed with PAT-LIST-DETAIL-INSPECTOR (Contextual Inspector, inspected L1/L2): inspector bound to explicit selection preserves the workspace during inspection (H-19)"
+    - "H-21 Orientation Invariants: stable anchors (selection, filters, inspector) across re-projection slots = the user_job success criterion"
+    - "H-22 Overview, Filter, Detail: overview field first, deliberate narrowing, detail on demand — the explore loop"
+  confidence: high
+information_hierarchy:
+  primary:
+    - data
+    - collection
+    - projection
+    - inspector
+    - filters
+  secondary:
+    - dimension rail
+    - revert controls
+    - dataset summary
+density:
+  intent: compact
+  strategy:
+    - "Single screen: dominant chart field (~60% width) center, dimension rail left, inspector right"
+    - Persistent filter chip bar above the chart; every chip shows owner dimension + predicate + individual remove
+    - Compact type scale, tabular numerals, 8px rhythm; encode by position/color/size, not by panels
+    - "Filter directly in the rail: inline range sliders for quantitative dims, checkbox groups for categorical"
+  avoid:
+    - card grid (anti-pattern for dense comparison)
+    - decorative chrome
+    - loading states as measurable states
+    - modeless ambiguity about what is active
+major_choices:
+  - id: mc-selection-identity
+    choice: "Selection attaches to record identity, never to pixel position or list index: swapping X/Y/color/size re-renders the same selected records highlighted"
+    rationale: "Implements the user_job success 维度切换不重置认知: record selection survives projection re-mapping because identity, not screen position, is the anchor (H-21 Orientation Invariants)."
+    confidence: high
+    references:
+      - record
+      - projection
+  - id: mc-inspector-all-dims
+    choice: Inspector shows the selected record's values for ALL dimensions (not only projected ones) and stays anchored across switches and filter changes
+    rationale: Gives the user a stable reading anchor during projection switches; the record's full profile is the invariant context (H-21 Orientation Invariants; Contextual Inspector pattern).
+    confidence: high
+    references:
+      - record
+      - dimension
+  - id: mc-owned-reversible-state
+    choice: Filter chips owned per dimension; projection changes tracked as owned state with per-step undo plus reset-to-default; every revert is individual and side-effect-free
+    rationale: "Acceptance seed: 过滤/投影状态有归属且可回退 — each state names its owner and each can be rolled back independently."
+    confidence: high
+    references:
+      - filter_state
+      - projection
+      - dimension
+  - id: mc-exoplanet-dataset
+    choice: "Synthetic exoplanet dataset (~1200 records, 10 dimensions: 7 quantitative, 3 categorical), seeded-PRNG generated and inlined at build time"
+    rationale: Satisfies unbounded-ish cardinality and high density with mixed dimension types; deterministic generation keeps first-screen data inlined with zero fetch.
+    confidence: high
+    references:
+      - dataset
+      - record
+      - dimension
+rejected:
+  - option: Card grid of record cards
+    reason: Named anti-pattern for dense comparison; low density per pixel; dimension switching would reshuffle cards and reset spatial memory
+  - option: Freeform canvas workspace
+    reason: spatiality=none; spatial topology is not the cognitive burden, dimensions are
+  - option: Tree/browser navigation
+    reason: hierarchy=medium only; drilling would add navigation levels and reset context on each level change
+  - option: Wizard/form flow
+    reason: explore is open-ended and reversible; forcing linear steps would break cognition continuity
+unresolved: []
+complexity_budget:
+  permanent_panels: 4
+  permanent_primary_actions: 3
+  modes: 1
+  state_owners: 3
+  navigation_levels: 1
+  persistent_filters: 4
+  new_semantic_concepts: 3
+  keyboard_contracts: 1
+  mobile_conflicts: 0
+  permanent_surfaces: 1

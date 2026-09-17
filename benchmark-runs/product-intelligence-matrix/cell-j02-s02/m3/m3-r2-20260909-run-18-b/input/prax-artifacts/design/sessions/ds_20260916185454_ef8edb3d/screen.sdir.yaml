@@ -1,0 +1,150 @@
+version: "0.2"
+screen:
+  id: list_detail_screen
+  intent:
+    primary_task: Locate a target item in the collection and open its details within three interactions.
+    secondary_tasks:
+      - Narrow the collection with search and facet filters while retaining visible context (active filters, counts, sections)
+      - Return to the exact prior results context after inspecting an item
+      - Verify result set size at every step so the user always knows how much is left
+  archetype:
+    pattern_ref: PAT-LIST-DETAIL
+  density_intent: regular
+  regions:
+    - id: Search entry (task-first, top of work region)
+      role: experimental:Search entry (task-first, top of work region)
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: Active-filter context bar (chips + live counts)
+      role: experimental:Active-filter context bar (chips + live counts)
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: Grouped, count-labeled results list (dominant)
+      role: experimental:Grouped, count-labeled results list (dominant)
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: Adjacent item detail panel (selection-bound)
+      role: experimental:Adjacent item detail panel (selection-bound)
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: Collection totals in the header
+      role: experimental:Collection totals in the header
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: Keyboard affordance hint (/ focuses search)
+      role: experimental:Keyboard affordance hint (/ focuses search)
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: Empty and zero-result states with clear-next-step guidance
+      role: experimental:Empty and zero-result states with clear-next-step guidance
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: workspace
+      role: dominant_workspace
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - preserve_context
+  relationships: []
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved: []
+  rejected_alternatives:
+    - option: PAT-APPLICATION-SHELL (persistent global nav)
+      reason: Single-workspace product; pattern contract says it does not apply — persistent chrome would waste locate-path space
+    - option: Tree navigation (expand/collapse hierarchy)
+      reason: Hierarchy is only medium (section grouping); a tree adds a navigation level and hurts the 3-interaction budget
+    - option: Card grid
+      reason: Medium density with a locate verb favors scannable rows; grid optimizes visual browsing over target lookup
+    - option: Modal detail overlay
+      reason: "Obscures the results list — violates context preservation (P-19 anti-pattern: detail-without-visible-selection)"
+  user_job:
+    verb: locate
+    target: a target item in a large open collection
+    success: Located and opened within three interactions, with search/filter support and no loss of context
+  primary_object:
+    type: item
+    label: Collection item
+  information_shape:
+    cardinality: unbounded
+    relationality: low
+    hierarchy: medium
+    temporality: low
+    density: medium
+    dimensionality: medium
+    spatiality: none
+    volatility: medium
+    uncertainty: low
+    comparison_need: none
+  representation:
+    primary:
+      type: list
+      reason: Locate over an unbounded weakly-related collection is a narrowing task; a count-labeled, grouped searchable list is the fastest scannable surface
+    supporting:
+      - type: form
+        reason: Filter rail is a small bounded form region composing with search
+      - type: cards
+        reason: Item detail panel is a compact card document for the selected item
+  priority:
+    primary:
+      - Search entry (task-first, top of work region)
+      - Active-filter context bar (chips + live counts)
+      - Grouped, count-labeled results list (dominant)
+      - Adjacent item detail panel (selection-bound)
+      - workspace
+    contextual:
+      - Collection totals in the header
+      - Keyboard affordance hint (/ focuses search)
+      - Empty and zero-result states with clear-next-step guidance
+  interaction:
+    preview: none
+    inspect: select
+    navigate: none
+    locate: none
+  state_ownership:
+    - state: selection
+      owner: Search entry (task-first, top of work region)
+    - state: preview
+      owner: session
+  complexity_budget:
+    permanent_panels: 3
+    permanent_primary_actions: 1
+    modes: 0
+    state_owners: 1
+    navigation_levels: 1
+    persistent_filters: 3
+    new_semantic_concepts: 2
+    keyboard_contracts: 1
+    mobile_conflicts: 0
+    permanent_surfaces: 1
+  acceptance:
+    - A user can locate and open any target item within three interactions, via a path that always has search/filter support and never loses the results context.

@@ -1,0 +1,1024 @@
+{
+  "receipt_version": "0.2",
+  "tool": {
+    "name": "prax-measure",
+    "version": "0.2.0"
+  },
+  "target": {
+    "app_root": "E:\\codex-prj\\Prax\\Prax\\benchmark-runs\\product-intelligence-matrix\\cell-j13-s10\\m3\\m3-r2-20260909-run-02-a\\measurement-root",
+    "base_url": "http://127.0.0.1:8446/",
+    "build_ref": null
+  },
+  "run_at": "2026-09-16T16:18:44.142Z",
+  "viewport_matrix": [
+    {
+      "width": 1280,
+      "height": 860
+    },
+    {
+      "width": 1440,
+      "height": 900
+    }
+  ],
+  "checks": [
+    {
+      "id": "layout.overflow",
+      "status": "fail",
+      "severity": "error",
+      "subject": "document.documentElement",
+      "measured": {
+        "scroll_width": 1280,
+        "inner_width": 1280,
+        "overflow_px": 0,
+        "element_overflows": 1,
+        "flagged_elements": [
+          "text"
+        ],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "max_overflow_px": 0,
+        "element_overflow_tolerance_px": 1
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/5d1d4a2a-de81-4cf1-959f-d693becda84d/viewport-0/layout.overflow/overflow-1280x860.png",
+          "sha256": "732db54e1b2b89a069468ece340506c30cf3361676447babb8c8b7ec5093ccdd"
+        },
+        {
+          "ref": "validation-evidence/5d1d4a2a-de81-4cf1-959f-d693becda84d/viewport-1/layout.overflow/overflow-1440x900.png",
+          "sha256": "d8d0f81b406a05c4889511b18d113950b4d4fd78654c407e89a24b0108f5a816"
+        }
+      ],
+      "supported_fixes": [
+        "find the widest row via the flagged elements and remove the fixed-width cause"
+      ]
+    },
+    {
+      "id": "layout.responsive_collision",
+      "status": "pass",
+      "severity": "error",
+      "measured": {
+        "collisions": 0,
+        "pairs": [],
+        "interactive_elements": 66,
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "pass"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "pass"
+          }
+        ]
+      },
+      "threshold": {
+        "max_collisions": 0
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "text.truncation",
+      "status": "fail",
+      "severity": "error",
+      "subject": "text",
+      "measured": {
+        "truncated": 1,
+        "elements": [
+          "text"
+        ],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "max_truncated": 0
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/5d1d4a2a-de81-4cf1-959f-d693becda84d/viewport-0/text.truncation/truncation-1280x860.png",
+          "sha256": "46181001ee6929d377d5ae98ad47b193c8521c5a6d026df6b3f24917ea13e365"
+        },
+        {
+          "ref": "validation-evidence/5d1d4a2a-de81-4cf1-959f-d693becda84d/viewport-1/text.truncation/truncation-1440x900.png",
+          "sha256": "d8d0f81b406a05c4889511b18d113950b4d4fd78654c407e89a24b0108f5a816"
+        }
+      ],
+      "supported_fixes": [
+        "let the clipped text wrap, widen its container, or declare truncation intent (ellipsis, title, or .truncation-intended)"
+      ]
+    },
+    {
+      "id": "a11y.contrast",
+      "status": "fail",
+      "severity": "error",
+      "subject": "button#undoBtn; button#redoBtn; div#plotTitle; i; span; label; label; button#clearSel; b; em; em; em; em; em; em",
+      "measured": {
+        "failing": 15,
+        "pairs": [
+          {
+            "selector": "button#undoBtn",
+            "ratio": 1.81,
+            "required": 4.5,
+            "font_px": 12,
+            "bold": false,
+            "foreground": "rgb(132, 150, 171)",
+            "background": "rgb(20,27,36)"
+          },
+          {
+            "selector": "button#redoBtn",
+            "ratio": 1.81,
+            "required": 4.5,
+            "font_px": 12,
+            "bold": false,
+            "foreground": "rgb(132, 150, 171)",
+            "background": "rgb(20,27,36)"
+          },
+          {
+            "selector": "div#plotTitle",
+            "ratio": 3.55,
+            "required": 4.5,
+            "font_px": 13,
+            "bold": true,
+            "foreground": "rgb(219, 228, 239)",
+            "background": "rgb(114,118,124)"
+          },
+          {
+            "selector": "i",
+            "ratio": 1.51,
+            "required": 4.5,
+            "font_px": 13,
+            "bold": true,
+            "foreground": "rgb(132, 150, 171)",
+            "background": "rgb(114,118,124)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.51,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(132, 150, 171)",
+            "background": "rgb(114,118,124)"
+          },
+          {
+            "selector": "label",
+            "ratio": 1.51,
+            "required": 4.5,
+            "font_px": 11.5,
+            "bold": false,
+            "foreground": "rgb(132, 150, 171)",
+            "background": "rgb(114,118,124)"
+          },
+          {
+            "selector": "label",
+            "ratio": 1.51,
+            "required": 4.5,
+            "font_px": 11.5,
+            "bold": false,
+            "foreground": "rgb(132, 150, 171)",
+            "background": "rgb(114,118,124)"
+          },
+          {
+            "selector": "button#clearSel",
+            "ratio": 1.51,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(132, 150, 171)",
+            "background": "rgb(114,118,124)"
+          },
+          {
+            "selector": "b",
+            "ratio": 3.5,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(132, 150, 171)",
+            "background": "rgb(59,63,69)"
+          },
+          {
+            "selector": "em",
+            "ratio": 3.5,
+            "required": 4.5,
+            "font_px": 10,
+            "bold": false,
+            "foreground": "rgb(132, 150, 171)",
+            "background": "rgb(59,63,69)"
+          },
+          {
+            "selector": "em",
+            "ratio": 3.5,
+            "required": 4.5,
+            "font_px": 10,
+            "bold": false,
+            "foreground": "rgb(132, 150, 171)",
+            "background": "rgb(59,63,69)"
+          },
+          {
+            "selector": "em",
+            "ratio": 3.5,
+            "required": 4.5,
+            "font_px": 10,
+            "bold": false,
+            "foreground": "rgb(132, 150, 171)",
+            "background": "rgb(59,63,69)"
+          },
+          {
+            "selector": "em",
+            "ratio": 3.5,
+            "required": 4.5,
+            "font_px": 10,
+            "bold": false,
+            "foreground": "rgb(132, 150, 171)",
+            "background": "rgb(59,63,69)"
+          },
+          {
+            "selector": "em",
+            "ratio": 3.5,
+            "required": 4.5,
+            "font_px": 10,
+            "bold": false,
+            "foreground": "rgb(132, 150, 171)",
+            "background": "rgb(59,63,69)"
+          },
+          {
+            "selector": "em",
+            "ratio": 3.5,
+            "required": 4.5,
+            "font_px": 10,
+            "bold": false,
+            "foreground": "rgb(132, 150, 171)",
+            "background": "rgb(59,63,69)"
+          }
+        ],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "normal_min_ratio": 4.5,
+        "large_min_ratio": 3
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/5d1d4a2a-de81-4cf1-959f-d693becda84d/viewport-0/a11y.contrast/contrast-1280x860.png",
+          "sha256": "46181001ee6929d377d5ae98ad47b193c8521c5a6d026df6b3f24917ea13e365"
+        },
+        {
+          "ref": "validation-evidence/5d1d4a2a-de81-4cf1-959f-d693becda84d/viewport-1/a11y.contrast/contrast-1440x900.png",
+          "sha256": "d8d0f81b406a05c4889511b18d113950b4d4fd78654c407e89a24b0108f5a816"
+        }
+      ],
+      "supported_fixes": [
+        "darken the failing text color (or lighten it against a dark background) until the measured ratio meets the required minimum"
+      ]
+    },
+    {
+      "id": "a11y.focus_order",
+      "status": "fail",
+      "severity": "error",
+      "subject": "tab order contradicts visual order: button → button; tab order contradicts visual order: button → button; tab order contradicts visual order: button → select#encColor",
+      "measured": {
+        "stops": 64,
+        "sequence": [
+          "input#lensName",
+          "button#histBtn",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "select#encColor",
+          "select#encSize",
+          "button#clearSel",
+          "button#clearAll"
+        ],
+        "missing_indicators": [],
+        "inversions": [
+          {
+            "from": "button",
+            "to": "button"
+          },
+          {
+            "from": "button",
+            "to": "button"
+          },
+          {
+            "from": "button",
+            "to": "select#encColor"
+          }
+        ],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "max_missing_focus_indicators": 0,
+        "max_order_inversions": 0
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/5d1d4a2a-de81-4cf1-959f-d693becda84d/viewport-0/a11y.focus_order/focus-order-1280x860.png",
+          "sha256": "d5a22e37b13aa6ac3a2c10a1fc0b784b4aa3d4dca26c3732344f0d5719103066"
+        },
+        {
+          "ref": "validation-evidence/5d1d4a2a-de81-4cf1-959f-d693becda84d/viewport-1/a11y.focus_order/focus-order-1440x900.png",
+          "sha256": "a2b64bf50357949aeae493a946a7830cfbce9ab2c497c516c8b7df3cde640259"
+        }
+      ],
+      "supported_fixes": [
+        "restore a visible focus indicator (outline or box-shadow) on the listed elements and order the tab sequence to follow the visual reading order (positive tabindex or DOM reordering)"
+      ]
+    },
+    {
+      "id": "a11y.target_size",
+      "status": "fail",
+      "severity": "error",
+      "subject": "input#lensName; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; select#encColor; select#encSize; button#clearSel; button#clearAll",
+      "measured": {
+        "undersized": 63,
+        "elements": [
+          {
+            "selector": "input#lensName",
+            "width": 110,
+            "height": 22
+          },
+          {
+            "selector": "button",
+            "width": 20,
+            "height": 18
+          },
+          {
+            "selector": "button",
+            "width": 20,
+            "height": 18
+          },
+          {
+            "selector": "button",
+            "width": 20,
+            "height": 18
+          },
+          {
+            "selector": "button",
+            "width": 20,
+            "height": 18
+          },
+          {
+            "selector": "button",
+            "width": 20,
+            "height": 18
+          },
+          {
+            "selector": "button",
+            "width": 20,
+            "height": 18
+          },
+          {
+            "selector": "button",
+            "width": 20,
+            "height": 18
+          },
+          {
+            "selector": "button",
+            "width": 20,
+            "height": 18
+          },
+          {
+            "selector": "button",
+            "width": 20,
+            "height": 18
+          },
+          {
+            "selector": "button",
+            "width": 20,
+            "height": 18
+          },
+          {
+            "selector": "button",
+            "width": 20,
+            "height": 18
+          },
+          {
+            "selector": "button",
+            "width": 20,
+            "height": 18
+          },
+          {
+            "selector": "button",
+            "width": 20,
+            "height": 18
+          },
+          {
+            "selector": "button",
+            "width": 20,
+            "height": 18
+          },
+          {
+            "selector": "button",
+            "width": 20,
+            "height": 18
+          },
+          {
+            "selector": "button",
+            "width": 20,
+            "height": 18
+          },
+          {
+            "selector": "button",
+            "width": 20,
+            "height": 18
+          },
+          {
+            "selector": "button",
+            "width": 20,
+            "height": 18
+          },
+          {
+            "selector": "button",
+            "width": 20,
+            "height": 18
+          },
+          {
+            "selector": "button",
+            "width": 20,
+            "height": 18
+          },
+          {
+            "selector": "button",
+            "width": 20,
+            "height": 18
+          },
+          {
+            "selector": "button",
+            "width": 20,
+            "height": 18
+          },
+          {
+            "selector": "button",
+            "width": 58.06,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 54.56,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 50.33,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 48.16,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 49.89,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 43.7,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 81.17,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 92.17,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 97.78,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 86.78,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 92.39,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 53.78,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 59.17,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 75.78,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 75.78,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 75.78,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 86.78,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 75.78,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 75.78,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 75.78,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 75.78,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 75.78,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 75.78,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 75.78,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 75.78,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 75.78,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 75.78,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 75.78,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 75.78,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 75.78,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 75.78,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 75.78,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 75.78,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 70.17,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 64.78,
+            "height": 21.94
+          },
+          {
+            "selector": "button",
+            "width": 81.17,
+            "height": 21.94
+          },
+          {
+            "selector": "select#encColor",
+            "width": 92,
+            "height": 20
+          },
+          {
+            "selector": "select#encSize",
+            "width": 92,
+            "height": 20
+          },
+          {
+            "selector": "button#clearSel",
+            "width": 62,
+            "height": 21.94
+          },
+          {
+            "selector": "button#clearAll",
+            "width": 84,
+            "height": 21.94
+          }
+        ],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "min_target_px": 24
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/5d1d4a2a-de81-4cf1-959f-d693becda84d/viewport-0/a11y.target_size/target-size-1280x860.png",
+          "sha256": "46181001ee6929d377d5ae98ad47b193c8521c5a6d026df6b3f24917ea13e365"
+        },
+        {
+          "ref": "validation-evidence/5d1d4a2a-de81-4cf1-959f-d693becda84d/viewport-1/a11y.target_size/target-size-1440x900.png",
+          "sha256": "d8d0f81b406a05c4889511b18d113950b4d4fd78654c407e89a24b0108f5a816"
+        }
+      ],
+      "supported_fixes": [
+        "raise the listed targets to at least 24×24 CSS px, or declare an equivalent alternative control via data-target-alternative"
+      ]
+    },
+    {
+      "id": "type.min_projected_size",
+      "status": "fail",
+      "severity": "warning",
+      "subject": "span#dimCount; div; b; b; div; span; button; button; div; span; button; button; div; span; button; button; div; span; button; button; div; span; button; button; div; span; button; button; div; span; button; button; div; button; button; div; span; button; button; div; span; button; button; div; button; button; div; div; button; em; button; em; button; em; button; em; button; em; button; em; button; em; button; em; button; em; button; em; button; em; button; em; button; em; button; em; button; em; button; em; button; em; button; em; button; em; button; em; button; em; button; em; button; em; button; em; button; em; button; em; button; em; button; em; button; em; button; em; button; em; button; em; button; em; button; em; button; em; button; em; span; label; option; option; option; option; option; option; label; option; option; option; option; option; option; option; option; option; option; option; option; button#clearSel; text; text; text; text; text; text; text; text; text; text; text; text; text; b; span; em; span; em; span; em; span; em; span; em; span; em; span; div; span; div; span; div; span#selCount; div; div; span#pinCount; div",
+      "measured": {
+        "min_font_px": 10,
+        "undersized": 179,
+        "elements": [
+          "span#dimCount",
+          "div",
+          "b",
+          "b",
+          "div",
+          "span",
+          "button",
+          "button",
+          "div",
+          "span",
+          "button",
+          "button",
+          "div",
+          "span",
+          "button",
+          "button",
+          "div",
+          "span",
+          "button",
+          "button",
+          "div",
+          "span",
+          "button",
+          "button",
+          "div",
+          "span",
+          "button",
+          "button",
+          "div",
+          "span",
+          "button",
+          "button",
+          "div",
+          "button",
+          "button",
+          "div",
+          "span",
+          "button",
+          "button",
+          "div",
+          "span",
+          "button",
+          "button",
+          "div",
+          "button",
+          "button",
+          "div",
+          "div",
+          "button",
+          "em",
+          "button",
+          "em",
+          "button",
+          "em",
+          "button",
+          "em",
+          "button",
+          "em",
+          "button",
+          "em",
+          "button",
+          "em",
+          "button",
+          "em",
+          "button",
+          "em",
+          "button",
+          "em",
+          "button",
+          "em",
+          "button",
+          "em",
+          "button",
+          "em",
+          "button",
+          "em",
+          "button",
+          "em",
+          "button",
+          "em",
+          "button",
+          "em",
+          "button",
+          "em",
+          "button",
+          "em",
+          "button",
+          "em",
+          "button",
+          "em",
+          "button",
+          "em",
+          "button",
+          "em",
+          "button",
+          "em",
+          "button",
+          "em",
+          "button",
+          "em",
+          "button",
+          "em",
+          "button",
+          "em",
+          "button",
+          "em",
+          "button",
+          "em",
+          "button",
+          "em",
+          "button",
+          "em",
+          "button",
+          "em",
+          "button",
+          "em",
+          "button",
+          "em",
+          "button",
+          "em",
+          "span",
+          "label",
+          "option",
+          "option",
+          "option",
+          "option",
+          "option",
+          "option",
+          "label",
+          "option",
+          "option",
+          "option",
+          "option",
+          "option",
+          "option",
+          "option",
+          "option",
+          "option",
+          "option",
+          "option",
+          "option",
+          "button#clearSel",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "b",
+          "span",
+          "em",
+          "span",
+          "em",
+          "span",
+          "em",
+          "span",
+          "em",
+          "span",
+          "em",
+          "span",
+          "em",
+          "span",
+          "div",
+          "span",
+          "div",
+          "span",
+          "div",
+          "span#selCount",
+          "div",
+          "div",
+          "span#pinCount",
+          "div"
+        ],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "min_projected_px": 12
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/5d1d4a2a-de81-4cf1-959f-d693becda84d/viewport-0/type.min_projected_size/min-projected-size-1280x860.png",
+          "sha256": "732db54e1b2b89a069468ece340506c30cf3361676447babb8c8b7ec5093ccdd"
+        },
+        {
+          "ref": "validation-evidence/5d1d4a2a-de81-4cf1-959f-d693becda84d/viewport-1/type.min_projected_size/min-projected-size-1440x900.png",
+          "sha256": "d8d0f81b406a05c4889511b18d113950b4d4fd78654c407e89a24b0108f5a816"
+        }
+      ],
+      "supported_fixes": [
+        "raise the listed primary-content text to at least 12px, or declare a density intent that justifies the smaller projection"
+      ]
+    }
+  ],
+  "summary": {
+    "pass": 1,
+    "fail": 6,
+    "skipped": 0,
+    "warnings": 1
+  },
+  "binding": {
+    "run_id": "5d1d4a2a-de81-4cf1-959f-d693becda84d",
+    "entry": "/",
+    "scenario": "entry",
+    "implementation": {
+      "root": "E:\\codex-prj\\Prax\\Prax\\benchmark-runs\\product-intelligence-matrix\\cell-j13-s10\\m3\\m3-r2-20260909-run-02-a\\measurement-root",
+      "digest": "b77d8ada372948cd101fb20c2d368287f1f286c0fb3b0d6a9bf9ed68c144cc96",
+      "kind": "static_tree"
+    },
+    "session_id": null,
+    "contract_digests": {
+      "screen.sdir.yaml": null,
+      "sdir-delta.yaml": null,
+      "implementation-brief.yaml": null
+    }
+  },
+  "target_validation": {
+    "status": "valid",
+    "issues": [],
+    "readiness": "document",
+    "ready_selector": null
+  }
+}

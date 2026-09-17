@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>落位板 · Placement Board — 落位即意图</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-state="loading">
+
+  <!-- ============ reg-toolbar · 顶部工具栏 ============ -->
+  <header id="toolbar" class="toolbar" role="toolbar" aria-label="工具栏：全部按钮附等价键位">
+    <div class="brand"><span class="brand-mark" aria-hidden="true"></span>落位板<span class="brand-sub">Placement Board</span></div>
+    <div class="tb-sep" aria-hidden="true"></div>
+    <div class="tb-group">
+      <button id="btn-create" class="tb-btn" type="button">＋ 新建<kbd>N</kbd></button>
+      <button id="btn-dup" class="tb-btn" type="button">复制<kbd>Ctrl+D</kbd></button>
+      <button id="btn-del" class="tb-btn" type="button">删除<kbd>Del</kbd></button>
+    </div>
+    <div class="tb-sep" aria-hidden="true"></div>
+    <div class="tb-group">
+      <button id="btn-back" class="tb-btn" type="button">后移<kbd>[</kbd></button>
+      <button id="btn-front" class="tb-btn" type="button">前置<kbd>]</kbd></button>
+    </div>
+    <div class="tb-sep" aria-hidden="true"></div>
+    <div class="tb-group">
+      <button id="btn-reset" class="tb-btn" type="button">复位视图<kbd>0</kbd></button>
+      <button id="btn-help" class="tb-btn" type="button">键位<kbd>?</kbd></button>
+    </div>
+    <div class="tb-spacer"></div>
+    <div class="tb-motto">空间操作 = 键盘等价 · <strong>落位即意图</strong></div>
+  </header>
+
+  <!-- ============ reg-canvas · dominant workspace surface ============ -->
+  <main id="stage" class="stage" tabindex="0" aria-label="物理画布工作区：三命名区域（收集箱/进行中/已完成），拖动或方向键落位">
+    <div id="world" class="world">
+      <div class="grid-layer" aria-hidden="true"></div>
+      <div id="zones" aria-hidden="true"></div>
+      <div class="guides" aria-hidden="true">
+        <div id="guide-v" class="guide guide-v" hidden></div>
+        <div id="guide-h" class="guide guide-h" hidden></div>
+      </div>
+      <div id="cards"></div>
+    </div>
+
+    <div id="empty-hint" class="empty-hint" hidden>画布为空 — 按 <kbd>N</kbd> 或双击空白处新建第一张物料卡</div>
+
+    <!-- ============ reg-status · 状态读数 ============ -->
+    <div id="status" class="status" role="status" aria-label="工作区状态">
+      <span id="st-zoom" class="st-chip">缩放 100%</span>
+      <span id="st-sel" class="st-chip">选中 0</span>
+      <span id="st-count" class="st-chip">卡片 0</span>
+      <span class="st-chip st-dim">网格 20px</span>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  </main>
+
+  <!-- ============ reg-inspector · 选中上下文 inspector ============ -->
+  <aside id="inspector" class="inspector" aria-label="落位解读 inspector">
+    <div id="insp-sel" class="insp-block" hidden>
+      <div class="insp-label">选中物料卡</div>
+      <div id="insp-title" class="insp-title"></div>
+      <div class="insp-label">落位解读 · 区域归属</div>
+      <div id="insp-zone" class="zone-badge"></div>
+      <div class="insp-label">世界坐标（已吸附 20px 网格）</div>
+      <div id="insp-pos" class="insp-mono"></div>
+      <div class="insp-label">邻近卡片 · 中心距 ≤ 120px</div>
+      <ul id="insp-near" class="near-list"></ul>
+      <div class="insp-label">层级</div>
+      <div id="insp-z" class="insp-mono"></div>
+      <div class="insp-hint">移动它：方向键（Shift 大步）· 换区：<kbd>1</kbd><kbd>2</kbd><kbd>3</kbd></div>
+    </div>
+    <div id="insp-sum" class="insp-block insp-dim">
+      <div class="insp-label">工作区摘要</div>
+      <ul id="insp-counts" class="near-list"></ul>
+      <div class="insp-hint">点击或 <kbd>Tab</kbd> 选中一张卡片，查看落位解读</div>
+    </div>
+  </aside>
+
+  <!-- ============ reg-help · 键位契约帮助层 ============ -->
+  <div id="help" class="help-backdrop" hidden>
+    <div class="help-card" role="dialog" aria-modal="true" aria-label="键位契约帮助">
+      <div class="help-head">
+        <h2>键位契约 <span class="help-sub">每个空间操作都有键盘等价物</span></h2>
+        <button id="btn-help-close" class="tb-btn tb-dark" type="button">关闭<kbd>Esc</kbd></button>
+      </div>
+      <div id="help-body" class="help-body"></div>
+    </div>
+  </div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>

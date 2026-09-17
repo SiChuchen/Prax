@@ -1,0 +1,69 @@
+needs:
+  - id: cap-ready-at-load
+    product_action: 页面加载完成即处于 ready 决策态（初始数据随首屏就绪）
+    required_experience:
+      - 无任何加载态/骨架屏
+      - 首屏同屏呈现区位图+比较矩阵+权重+决定栏
+    capabilities:
+      - 单文件内联 JS 数据常量
+      - DOMContentLoaded 即渲染 ready
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 4 个候选与全部属性内联在页面脚本中，渲染同步完成；无网络依赖
+  - id: cap-inline-map
+    product_action: 地理语境与决策项同屏（自绘示意区位图，候选点+地铁线+参照点）
+    required_experience:
+      - 区位图与比较矩阵同屏驻留
+      - 候选点与矩阵列双向选中联动
+    capabilities:
+      - 内联 SVG 绘制（纯静态资源，无瓦片请求）
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 手绘 SVG 拓扑示意（江/地铁线/参照物/候选点），拓扑正确性优先于测地精度；无外部服务
+  - id: cap-leader-calc
+    product_action: 每行标准优胜者即时标注（含权重方向）与加权总分即时重算
+    required_experience:
+      - 优胜格色带+角标
+      - 权重调整后领先者即时变化
+    capabilities:
+      - 纯客户端即时计算与渲染
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 标准数值内联且静态，比较计算在浏览器内同步完成；并列时双标
+  - id: cap-weight-adjust
+    product_action: 按侧重调整各标准权重并即时观察领先者变化
+    required_experience:
+      - 滑杆即时重算
+      - 权重值数值常驻可见
+    capabilities:
+      - range input + 对象状态单源更新
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 每标准 0–5 滑杆，输入事件驱动重算，全部同屏
+  - id: cap-decision-commit
+    product_action: 显式敲定最终选择并驻留回显（决定栏+地图标记+列头标记）
+    required_experience:
+      - 敲定动作可指认
+      - 决定状态驻留同屏
+      - 可排除候选、可重选
+    capabilities:
+      - 客户端状态机 + DOM 状态类
+    status: composable
+    resolution:
+      type: explicit_compromise
+      notes: 页面会话内状态驻留；简报明确不要求持久化服务，刷新后回到未决态属可接受折衷并在页头说明
+  - id: cap-keyboard-acc
+    product_action: 指针与键盘双输入可达（Web Desktop 约定）
+    required_experience:
+      - Tab/方向键移动列选中
+      - 可聚焦控件有可见焦点态
+    capabilities:
+      - button/tabindex + aria-label + 键盘事件
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: 所有交互元素原生可聚焦；列头 button 化，左右方向键切换选中候选

@@ -1,0 +1,1 @@
+Receipt: design_prepare_implementation response compiled_context.acceptance contains 4 non-empty acceptance criteria (edit-preview consistency, structural guard with one-click fix, destructive recovery, first-screen readiness).

@@ -1,0 +1,1 @@
+Receipt: design_sdir mode=validate returned status=PASS with schema_errors=[] and semantic_errors=[] for session ds_20260915222626_faa2f104. The submitted SDIR 0.2 (archetype PAT-APPLICATION-SHELL) was accepted and persisted to screen.sdir.yaml (version "0.2").

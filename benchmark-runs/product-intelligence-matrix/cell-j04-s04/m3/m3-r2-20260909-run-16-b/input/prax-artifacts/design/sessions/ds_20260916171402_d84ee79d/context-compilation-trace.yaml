@@ -1,0 +1,35 @@
+version: "0.1"
+session_id: ds_20260916171402_d84ee79d
+task_ref: 扫视指标墙，即时发现进入警告/严重状态的异常指标
+selected:
+  - ref: product_relationships
+    reason:
+      - metric_emits_event:metric->event
+  - ref: region_relationships
+    reason: []
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-LIST-DETAIL-INSPECTOR
+  - ref: unresolved
+    reason:
+      - stream_parameters
+      - threshold_semantics
+  - ref: corrections
+    reason: []
+  - ref: validation-plan@1
+    reason:
+      - semantic_conformance
+      - state_completeness
+      - product_model_alignment
+      - keyboard
+      - hierarchy_review
+      - representation_decided
+      - state_ownership_declared
+      - acceptance_contract_present
+      - complexity_budget_declared
+      - requirement_alignment
+excluded:
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata

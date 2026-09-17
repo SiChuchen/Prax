@@ -1,0 +1,83 @@
+{
+  "reviewer": "R1",
+  "package_id": "impl-20",
+  "session_id": "b397ab88-7b16-4a8a-a9b4-2d5f62ad85d9",
+  "wall_clock_seconds": 184,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-20",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Brief shape is dimensional-space (high dimensionality, high density, unbounded) with dataset as primary object; initial screen is a scatter field with 4 swappable encoding slots (X/Y/color/size) over 10 typed dimensions of a 1,204-record catalog, plus table+inspector — a canonical explore-multi-dimensional-data representation. screenshots/1280x860.png and 1440x900.png; source/index.html:32-37; source/data.js:64-79; source/app.js:19."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "The explore/dimension-switch job dominates the initial screen: ENCODING SLOTS is the top block of the left rail, the chart occupies roughly 60% of the 1280x860 viewport with labeled axes 'Planet Radius (R⊕) · lin' / 'Orbital Period (days) · log', and the header leads with scope state '1,204 / 1,204 in scope · 0 selected'. screenshots/1280x860.png."
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "Model-judged proxy: the screen self-explains in one glance — dataset title + 'Dimensional Explorer' subtitle, empty-state inspector that states the interaction ('Select a record — in the field or the table…', source/index.html:63), filters bar stating where filters come from (index.html:42-43), and chart legend/size note visible in both viewports. Only friction is the clipped right-edge table column (see defects)."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Single persistent screen, zero mode changes: primary object (the projection) is the default view; any of the 10 dimensions is reached in one interaction (slot select at source/app.js:149-156 or expanding a dim-row, index.html:37); records reachable by scroll + one click/Enter (app.js:531-541); inspector content is one click (app.js:424-448). No nav chrome exists in either screenshot."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "Structurally the strongest dimension: selection is bound to record ids and survives re-projection (source/app.js:26-27, setSlot only swaps slots at app.js:92-100), projection changes are undoable step-wise (app.js:91, 101-105; header shows 'N undoable', app.js:122), filter chips carry their owner dimension and remove exactly one filter (app.js:262-267), the inspector follows the record not the projection (app.js:423-448, index.html:63), and table scroll/focus persist across re-renders (app.js:382-385, 416-420). Directly satisfies the brief's success criterion '维度切换不重置认知'."
+      },
+      "ui_surface_complexity": {
+        "score": 4,
+        "evidence": "All permanent surfaces serve the job (4 slot selects, 10 collapsed dimension rows, chips bar, chart, table, inspector, 4 revert buttons in header) with nothing decorative; but at 1280x860 the permanent set slightly exceeds the viewport — the right column needs internal horizontal scrolling and the rail is full-height (screenshots/1280x860.png; styles.css:166, 181-186 nowrap table cells), and 4 global buttons (index.html:21-24) sit at the upper bound of need."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Receipt fails 3 of 3 a11y checks: a11y.contrast, a11y.focus_order, a11y.target_size (measurement-summary.json:13-15). Corroborated in source: --faint #5b6572 on panel backgrounds ≈2.9:1 used for inspector instructions and counts (styles.css:9, 198) and canvas tick labels (app.js:334); sub-24px targets (chip-x ≈18px styles.css:126-129, scale toggles styles.css:71-74); 9-9.5px type (styles.css:90, 139). Real effort exists (focus-visible outlines styles.css:50-53, aria-labels index.html:32-33, keyboard table rows app.js:531-541, role=status index.html:19), but the primary scatter field is pointer-only — canvas has no keyboard path to points (index.html:46, app.js:474-505)."
+      },
+      "frontend_rework": {
+        "score": 2,
+        "evidence": "Visible defect in both viewports: the RECORDS table is horizontally clipped — 2 of 5 columns (Stellar Class, Planet Mass) cut at the right edge ('STELL…' truncated header) in screenshots/1280x860.png and 1440x900.png, consistent with layout.overflow=fail and layout.responsive_collision=fail; receipt shows 6 of 7 checks failing (measurement-summary.json:4-16) including type.min_projected_size (9-9.5px rules in styles.css:90,139), implying polish rework across type, targets, and contrast. Scored 2 not 1 because core rendering is intact and text.truncation passes."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed '过滤/投影状态有归属且可回退' is addressed explicitly: ownership — one filter per dimension enforced (source/app.js:204, 208-210), chips labeled with owner dimension + per-chip × removal (app.js:262-267), rail rows show active-filter label and dot (app.js:140-146), inspector marks slot membership '◂ slot' (app.js:434-440); revertibility — per-dimension 'Remove <dim> filter' (app.js:183, 237-250), undo stack and reset that is itself undoable (app.js:91-111; self-test T5/T6 at app.js:671-687), Clear filters resyncs rail controls (app.js:548-559). A built-in self-test harness (?test) covers T1-T7 including 'selection survives dimension switch' (app.js:630-695)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "Record table horizontally clipped in both viewports: Stellar Class and Planet Mass columns cut at the right edge; 2 of 5 columns require horizontal scrolling inside the 296px right column (screenshots/1280x860.png, screenshots/1440x900.png; styles.css:166, 181-186 white-space:nowrap) — matches layout.overflow=fail and layout.responsive_collision=fail",
+      "a11y.contrast=fail: faint text #5b6572 on panel backgrounds ≈2.9:1 for meaningful text (styles.css:9, 198; canvas ticks app.js:334)",
+      "a11y.target_size=fail: chip remove button ≈18px (styles.css:126-129), scale toggle ≈20px tall (styles.css:71-74), table header sort targets 3px padding (styles.css:181)",
+      "a11y.focus_order=fail and primary scatter field is pointer-only: canvas points/tooltip unreachable by keyboard (index.html:46, app.js:474-505); keyboard selection exists only via the table",
+      "type.min_projected_size=fail: 9px badges and 9.5px legend-scale labels (styles.css:90, 139)",
+      "Receipt overall 6 fail / 1 pass (measurement-summary.json:4-16); only text.truncation passes"
+    ],
+    "missing_evidence": [
+      "measurement-summary.json reports warnings:1 but does not identify which check carries the warning, and per-check failure details (e.g., which elements collided) are sanitized out; layout/a11y fails above are cited from check ids plus corroborating screenshots/source, so no score required null"
+    ],
+    "overall_note": "Conceptually this is a near-ideal answer to the brief: a one-screen dimensional explorer whose four encoding slots over ten typed dimensions, 1,204 inlined records ready at synchronous first paint (source/app.js:575, data.js:2 — satisfying the no-loading-state constraint), and projection-invariant inspector put the explore job front and center in both viewports. Its standout strength is exactly the acceptance seed: filter/projection state is owned per dimension, labeled on chips and rail rows, and revertible at four granularities (per-chip, per-dimension, undo stack, reset-that-is-undoable), with selection bound to record ids so dimension switches never reset cognition — backed by an in-page self-test (T1-T7, app.js:630-695). The measured surface quality is the weak side: 6 of 7 browser checks fail, the record table is horizontally clipped in both 1280x860 and 1440x900 screenshots, faint-text contrast is ≈2.9:1, targets and type run below common minimums, and the primary scatter field has no keyboard path (the table is the only keyboard-operable selection route). Strong structural/interaction design, with rework concentrated in a11y and right-column layout polish rather than in the core representation or state model."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 45062,
+      "outputTokens": 8253,
+      "cacheReadInputTokens": 131648,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.497459,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-09-16T22:57:55.975Z"
+}

@@ -1,0 +1,19 @@
+MEASUREMENT RECEIPT
+===================check_id: product_model_alignment
+outcome: pass
+collected_at: "2026-09-16T01:30:00Z"
+method: browser screenshots + implementation review against product-frame.yaml
+artifacts:
+  - evidence/01-ready-first-screen.png
+  - evidence/04-irreversible-step-with-recovery.png
+measured:
+  runbook: "header title '哨兵 Runbook · 核心数据库主从切换' + code RUNBOOK-DB-FAILOVER-01 + INC-20260916-0042"
+  phase: "left rail groups: 预检与冻结 / 故障确认与决策 / 切换执行 / 验证与收尾"
+  step: "13 numbered step rows + dominant work-region step card (title/summary/操作指引)"
+  check: "'验证检查项' checklist with n/m counter, all-checked gate"
+  evidence: "'执行证据' required fields with format validation, archived read-only after completion"
+  recovery_path: "'恢复路径（执行前必读）' panel with 触发条件/步骤/影响, visible before execution"
+  deviation_log: "header 零偏差 badge + audit drawer timeline + completion report deviation stats"
+  relationships: "contains (rail hierarchy), gated_by (disabled advance + missing list), recovers (recovery panel/trigger), audits (drawer/report)"
+conclusion: "user-facing structure and language preserve the Product Frame; no backend concept leakage."
+

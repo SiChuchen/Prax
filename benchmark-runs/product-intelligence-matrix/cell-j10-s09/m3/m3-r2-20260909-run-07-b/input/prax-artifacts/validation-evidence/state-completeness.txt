@@ -1,0 +1,17 @@
+MEASUREMENT RECEIPT
+===================check_id: state_completeness
+outcome: pass
+collected_at: "2026-09-16T01:30:00Z"
+method: CDP headless Chrome (file:// direct open), node scripts/validate.mjs
+artifacts:
+  - evidence/01-ready-first-screen.png
+  - evidence/02-evidence-error-state.png
+  - evidence/07-recovery-armed.png
+measured:
+  ready: "document.readyState=complete; progress text '0 / 13 步'; step s1 active; badge 零偏差; no skeleton/spinner anywhere"
+  empty: "audit drawer renders '暂无事件…' empty state while events.length===0"
+  selected: "clicking a completed rail step renders read-only review (readonly-banner + recorded checks/evidence)"
+  error: "invalid evidence format '1430' → input.invalid + inline .field-error '格式：HH:MM' + advance button disabled"
+  loading: "intentionally not implemented as a measurable state per brief (data inlined in data.js, synchronous first render, zero network requests)"
+conclusion: "ready/empty/selected/error verified empirically; loading deliberately absent per requirement."
+

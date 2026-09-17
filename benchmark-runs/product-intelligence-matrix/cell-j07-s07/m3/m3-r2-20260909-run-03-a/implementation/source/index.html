@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>落位 LoWei · 空间排布画板</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header id="topbar">
+  <div class="brand"><span class="logo">▦</span>落位 <span class="sub">空间排布画板 · 落位即意图</span></div>
+  <div class="spacer"></div>
+  <span id="count" class="chip"></span>
+  <span id="warnchip" class="chip" hidden></span>
+  <button id="btn-undo" title="撤销 (Ctrl+Z)">↩ 撤销</button>
+  <button id="btn-redo" title="重做 (Ctrl+Y)">↪ 重做</button>
+  <button id="btn-help" title="键盘快捷键 (?)">⌨ 快捷键</button>
+</header>
+
+<div id="main">
+  <aside id="palette">
+    <h2>物品栏</h2>
+    <div id="pal-list"></div>
+    <p class="pal-tip">按 <kbd>1-8</kbd> 选类型，<kbd>N</kbd> 快速放置；或点击类型后连续盖印，也可直接拖入画布。</p>
+  </aside>
+
+  <section id="stage">
+    <div id="room" aria-label="房间画布">
+      <div id="zlayer"></div>
+      <div id="olayer"></div>
+      <div id="ghost" hidden></div>
+    </div>
+  </section>
+
+  <aside id="inspector">
+    <h2>检查器</h2>
+    <div id="insp-empty">
+      <p class="insp-lead">未选中物品</p>
+      <p class="insp-sub">点击画布中的物品，或按 <kbd>Tab</kbd> 循环选择。</p>
+      <div class="sum"><div class="sum-row"><span>物品总数</span><b id="sum-count">0</b></div>
+      <div class="sum-row"><span>冲突物品</span><b id="sum-warn">0</b></div></div>
+      <div id="sum-zones" class="zone-tally"></div>
+      <p class="insp-tip">💡 落位即意图：把物品放进对应区域（窗边 / 储物 / 休闲），并避开红色动线通道。所有空间操作都有键盘等价物。</p>
+    </div>
+    <div id="insp-obj" hidden>
+      <div class="i-head"><span id="i-emoji"></span><b id="i-type"></b></div>
+      <label class="fld">名称 <input id="i-label" type="text"></label>
+      <div class="fld-grid">
+        <label class="fld">X 坐标 <input id="i-x" type="number" step="10" min="0"></label>
+        <label class="fld">Y 坐标 <input id="i-y" type="number" step="10" min="0"></label>
+      </div>
+      <div class="i-meta" style="font-size:11.5px;color:#64748b;margin-bottom:8px">
+        尺寸 <b id="i-w"></b> × <b id="i-h"></b>　·　旋转 <b id="i-rot">0°</b>
+      </div>
+      <div id="i-zone" class="zone-badge"></div>
+      <div id="i-suggest" class="i-suggest" hidden></div>
+      <div id="i-warn" class="i-warn" hidden></div>
+      <div class="btn-grid">
+        <button id="b-rot">旋转 <kbd>R</kbd></button>
+        <button id="b-dup">复制 <kbd>D</kbd></button>
+        <button id="b-fwd">上移层 <kbd>]</kbd></button>
+        <button id="b-back">下移层 <kbd>[</kbd></button>
+        <button id="b-del" class="danger">删除 <kbd>Del</kbd></button>
+      </div>
+      <p class="insp-tip">💡 也可在上方 X / Y 直接输入精确坐标落位（键盘等价）。</p>
+    </div>
+  </aside>
+</div>
+
+<footer id="statusbar">
+  <span id="modehint"></span>
+  <span id="status"></span>
+</footer>
+
+<div id="help-overlay" hidden>
+  <div class="help-card">
+    <header>
+      <h2>键盘快捷键</h2>
+      <span class="help-tag">所有空间操作均有键盘等价物</span>
+      <button id="btn-help-close">✕ 关闭</button>
+    </header>
+    <table>
+      <tr><th colspan="2">创建（create）</th></tr>
+      <tr><td><kbd>1</kbd>–<kbd>8</kbd></td><td>选择物品类型（物品栏同步高亮）</td></tr>
+      <tr><td><kbd>N</kbd></td><td>在选中物品右侧 / 画布中央自动寻找空位，落位一个当前类型</td></tr>
+      <tr><td>物品栏点击 → 画布点击</td><td>连续盖印放置（<kbd>Esc</kbd> 退出）</td></tr>
+      <tr><td>物品栏拖入画布</td><td>一次性放置到落点</td></tr>
+      <tr><th colspan="2">移动（键盘等价）</th></tr>
+      <tr><td><kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd></td><td>移动选中物品，步进 10px（对齐网格）</td></tr>
+      <tr><td><kbd>Shift</kbd> + 方向键</td><td>1px 微调</td></tr>
+      <tr><td>检查器 X / Y</td><td>输入精确坐标落位</td></tr>
+      <tr><th colspan="2">变换与层级</th></tr>
+      <tr><td><kbd>R</kbd> / <kbd>Shift+R</kbd></td><td>顺时针 / 逆时针旋转 90°</td></tr>
+      <tr><td><kbd>[</kbd> / <kbd>]</kbd></td><td>下移 / 上移一层</td></tr>
+      <tr><th colspan="2">选择</th></tr>
+      <tr><td><kbd>Tab</kbd> / <kbd>Shift+Tab</kbd></td><td>循环选择物品</td></tr>
+      <tr><td><kbd>Esc</kbd></td><td>退出放置模式 / 取消选择 / 关闭面板</td></tr>
+      <tr><th colspan="2">编辑</th></tr>
+      <tr><td><kbd>Enter</kbd> / <kbd>F2</kbd></td><td>重命名选中物品</td></tr>
+      <tr><td><kbd>D</kbd> 或 <kbd>Ctrl+D</kbd></td><td>复制选中物品</td></tr>
+      <tr><td><kbd>Delete</kbd> / <kbd>Backspace</kbd></td><td>删除选中物品</td></tr>
+      <tr><th colspan="2">历史与帮助</th></tr>
+      <tr><td><kbd>Ctrl+Z</kbd> / <kbd>Ctrl+Y</kbd></td><td>撤销 / 重做</td></tr>
+      <tr><td><kbd>?</kbd></td><td>显示 / 隐藏本面板</td></tr>
+      <tr><td>鼠标</td><td>拖动物品移动（自动对齐 10px 网格），滚轮滚动查看</td></tr>
+    </table>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

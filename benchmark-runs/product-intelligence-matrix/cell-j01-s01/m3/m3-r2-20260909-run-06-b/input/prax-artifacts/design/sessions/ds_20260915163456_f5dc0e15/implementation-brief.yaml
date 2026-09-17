@@ -1,0 +1,47 @@
+version: "0.1"
+platform_profile: WEB-DESKTOP
+framework: react
+measurement_target:
+  app_root: .
+  entry: /index.html
+  scenario: 在层级分组树表中展开/筛选实体，显式批量选择（含折叠分支下的误伤防线）并执行批量状态变更/移动/删除，核对影响预览、回执与撤销
+sdir_ref: screen.sdir.yaml
+decision_ref: design-decisions.yaml
+approved_patterns:
+  - PAT-LIST-DETAIL-INSPECTOR
+approved_component_contracts:
+  - WORKSPACE
+  - STATE-FEEDBACK
+states_required:
+  - loading
+  - empty
+  - ready
+  - selected
+  - error
+capability_gaps:
+  - id: cap_persistence
+    product_action: 跨会话持久化
+    required_experience:
+      - 刷新后保留修改
+    capabilities: []
+    status: gap
+    resolution:
+      type: explicit_compromise
+      notes: 简报明确不要求持久化服务；内存态、刷新还原初始数据，如实记录为显式妥协
+validation_plan_ref:
+  artifact: validation-plan.yaml
+  revision: 1
+validation_requirements:
+  - semantic_conformance
+  - state_completeness
+  - product_model_alignment
+  - keyboard
+  - hierarchy_review
+  - representation_decided
+  - state_ownership_declared
+  - acceptance_contract_present
+  - complexity_budget_declared
+  - destructive_recovery
+  - requirement_alignment
+realization:
+  mode: direct_code

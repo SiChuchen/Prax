@@ -1,0 +1,50 @@
+version: "0.2"
+jtbd:
+  verb: create
+  target: 物理画布工作区中的空间对象（canvas_object）
+  success: 对象落位（所在区域/邻近关系/对齐）即被系统解读为意图，且每个空间操作都有键盘等价物
+primary_object:
+  type: canvas_object
+  label: 画布对象（物料卡）
+task_model:
+  frequency: medium
+  reversibility: reversible
+  consequence: low
+  expertise: mixed
+user:
+  primary_role: 桌面端知识工作者（白板/空间规划工具使用者）
+  expertise: intermediate
+  familiarity: high
+goal:
+  primary: 让用户通过在物理画布上的落位与排布，快速创建并赋予空间对象以明确含义；全程提供等价键盘路径。
+tasks:
+  primary: 在画布上创建空间对象（物料卡），通过落位（区域归属/邻近/对齐）表达其意图
+  secondary:
+    - 用键盘完成全部空间操作：新建、移动、微调、换区、复制、删除、层级、选择
+    - 平移/缩放/复位视口以纵观工作区
+product_objects:
+  - id: obj-card
+    user_name: 物料卡（画布对象）
+    purpose: 承载一条内容（物料/想法），其含义由所在区域、邻近排布与对齐决定（邻近关系为卡片间空间属性，不单设对象）
+  - id: obj-zone
+    user_name: 区域
+    purpose: 画布上的命名物理分区，卡片落入即获得该区含义（落位即意图的显式载体）
+  - id: obj-guide
+    user_name: 对齐参考线/网格
+    purpose: 对齐参考线与网格：拖动/键盘移动时提示与其他卡片/区域的邻近与对齐关系，让排布精确可预期
+relationships:
+  - id: rel-card-zone
+    source: obj-card
+    target: obj-zone
+    type: belongs_to
+    meaning: 落位于区域即赋予状态含义（如 收集箱/进行中/已完成）
+    condition: 卡片中心点落在区域边界内
+    importance: primary
+mental_model_hypothesis:
+  summary: 物理桌面隐喻：卡片即便签纸，命名区域即桌面分区；放到哪个区域、落在谁旁边即语义归属（落位即意图）；键盘等效沿用专业画布工具惯例（方向键微调、Tab 换选、Ctrl+D 复制、Delete 删除）。
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: 用户在一屏内创建多个画布对象，仅凭落位（拖放或键盘移动至区域/邻近/对齐位置）即被系统正确解读意图；且创建、移动、微调、换区、复制、删除、层级、视图控制每一步均有键盘等价路径。
+open_questions: []

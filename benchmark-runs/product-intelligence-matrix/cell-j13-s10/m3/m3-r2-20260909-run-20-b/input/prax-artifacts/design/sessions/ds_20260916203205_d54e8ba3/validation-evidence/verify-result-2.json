@@ -1,0 +1,28 @@
+{
+ "step2_test_report_innerText": "SELF-TEST 7/8 PASS\n✔\nT1 first paint ready (no loading state) — inScope=1204\n✔\nT2 selection survives dimension switch — rowsBefore=3 rowsAfter=3\n✔\nT3 filter chips exist with owners — chips=2 inScope=292\n✘\nT3b selection survived filter changes — selRows=1\n✔\nT4 chip removal reverts exactly one filter — inScope 292→730\n✔\nT5 projection undo is per-step and side-effect-free — x=temp\n✔\nT6 reset→default and undo→pre-reset — after reset x=radius? true; after undo x=temp\n✔\nT7 clear filters + selection — inScope=1204\nFAILURES PRESENT",
+ "step2_last_line": "FAILURES PRESENT",
+ "step2_check_row_count": 0,
+ "step3_console": [],
+ "step3_pageerrors": [],
+ "step5_selection_size": 1,
+ "step5_sel_rows": 1,
+ "step5_selected_id": [
+  "AUR-1000"
+ ],
+ "t3b_diagnosis": {
+  "replication_on_plain_index.html": {
+   "steps": "select([AUR-1000,AUR-1010,AUR-1020]); setSlot(x,temp); addQFilter(radius,1,4); addCFilter(star_class,[G,K])",
+   "selection_size": 3,
+   "selection_ids": [
+    "AUR-1000",
+    "AUR-1010",
+    "AUR-1020"
+   ],
+   "tr_sel": 1,
+   "inScope": 292,
+   "rendered_rows": 292,
+   "selected_visible_rows": 1
+  },
+  "conclusion": "Selection survives in state (3 ids intact) but the table renders only in-scope records; only AUR-1000 is inside the radius/star_class scope, so only 1 row has class sel. T3b expects selRows===3 after filtering, which requires selected-but-filtered-out rows to stay rendered."
+ }
+}

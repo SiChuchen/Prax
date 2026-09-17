@@ -1,0 +1,71 @@
+version: "0.2"
+jtbd:
+  verb: monitor
+  target: 易变指标流（many metrics, high volatility, high temporal density）
+  success: 异常在扫视内被发现，且任何指标变化均可追溯，过程无闪烁噪声
+primary_object:
+  type: metric
+  label: 指标
+task_model:
+  frequency: high
+  reversibility: reversible
+  consequence: medium
+  expertise: expert
+user:
+  primary_role: 值班/运维工程师（wallboard 观察者）
+  expertise: expert
+  familiarity: high
+goal:
+  primary: 在扫视内发现易变指标流中的异常，并能追溯变化
+tasks:
+  primary: 扫视指标墙，即时发现进入警告/严重状态的异常指标
+  secondary:
+    - 下钻单个指标查看带时间戳的取值与状态变化历史
+    - 在事件流中追溯异常发生的先后序列
+    - 检视/暂停数据流以核对细节
+product_objects:
+  - id: metric
+    user_name: 指标
+    purpose: 被监控的易变量：含当前值、单位、近期迷你走势、相对基线的偏差与正常/警告/严重状态
+  - id: event
+    user_name: 变化事件
+    purpose: 指标每次显著变化（状态跃迁、阈值穿越、突刺）产生的带时间戳记录，用于追溯
+  - id: stream
+    user_name: 数据流
+    purpose: 持续推送更新的时间性背景：心跳、时钟与回放控制（暂停/恢复）
+relationships:
+  - id: metric_emits_event
+    source: metric
+    target: event
+    type: emits
+    direction: forward
+    meaning: 指标每次显著变化生成一条事件；事件是指标历史的证据链
+    condition: 状态跃迁或显著取值变化时
+    importance: primary
+mental_model_hypothesis:
+  summary: 值班墙（wallboard）模型：一屏固定网格的指标卡常驻可见，色彩状态即语义（绿/琥珀/红）；异常卡以更强的色彩与标识在扫视中凸显；每卡可下钻到时间序列；所有显著变化汇入一条事件流；卡片位置固定、数值原位更新，不因数据流而重排闪烁。
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: 值班者扫视一屏即发现异常指标（无需逐格扫描），点击任一指标可在数秒内追溯其取值/状态变化的时间序列，且持续数据流不产生闪烁或布局跳动。
+open_questions: []
+existing_product:
+  stable_user_concepts:
+    - 指标卡
+    - 状态色（正常/警告/严重）
+    - 迷你走势 sparkline
+    - 事件流
+    - 心跳/时钟
+  stable_patterns:
+    - 固定网格 wallboard
+    - 原位数值更新
+    - 色彩编码状态
+  current_user_pain_points:
+    - 易变流刷新导致整屏闪烁
+    - 异常被均质信息淹没，需逐格扫描
+    - 变化不可追溯，只能看到瞬时值
+  current_constraints:
+    - 纯静态单页，无后端
+    - 首屏即可用，不得有加载态
+  legacy_debt: []

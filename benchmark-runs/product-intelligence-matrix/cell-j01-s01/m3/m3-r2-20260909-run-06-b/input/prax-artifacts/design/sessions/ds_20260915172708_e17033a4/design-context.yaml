@@ -1,0 +1,71 @@
+user:
+  expertise: intermediate
+  familiarity: high
+task:
+  primary: 批量选择并批量操作层级实体
+  modes:
+    - 浏览/展开折叠层级
+    - 筛选与搜索
+    - 批量选择
+    - 批量执行（状态变更/移动/删除）
+    - 预览确认
+    - 结果核对/撤销
+  frequency: high
+domain:
+  type: asset/registry management（运维资产台账）
+  entities:
+    - 实体 entity（名称/编码/状态/所属分组）
+    - 分组 group（站点→系统→子组三级树）
+    - 选择集 selection
+    - 批量操作 batch_operation（含预览与回执）
+information:
+  volume: high
+  relationship_complexity: medium
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: medium
+  error_cost: high
+priorities:
+  - 零误伤：操作范围严格等于显式选择集
+  - 状态归属显式：每行可见状态徽标与完整归属路径
+  - 批量效率：一次操作处理数十至数百项
+  - 密度：单屏容纳尽可能多的实体行而不牺牲可读性
+density_intent: compact
+confidence:
+  overall: high
+unknowns:
+  - id: undo_depth
+    impact: low
+    affects:
+      - undo 深度
+  - id: select_all_scope_semantics
+    impact: medium
+    affects:
+      - 默认全选语义
+classification:
+  version: "1"
+  task_type: compare_filter_records
+  domain_id: software_architecture
+  interaction_mode: collection_with_contextual_detail
+  product_type: unknown
+  primary_object_type: entity
+  secondary_object_types:
+    - selection
+    - group
+    - batch_operation
+  confidence: high
+  evidence:
+    - task_type=compare_filter_records ← token '筛选' in context.task and frame.tasks
+    - domain_id=software_architecture ← token '系统' in context.domain
+    - interaction_mode=collection_with_contextual_detail ← token '筛选' in context.task, frame.tasks, and context.priorities
+    - primary_object_type=entity ← most referenced product object in the Product Frame
+  open_questions:
+    - product_type could not be derived; record the intended audience and product kind

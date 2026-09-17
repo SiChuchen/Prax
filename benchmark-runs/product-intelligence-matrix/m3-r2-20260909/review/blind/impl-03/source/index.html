@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Meridian 变更时序档案 · cell-j06-s06</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="app">
+  <div class="brand">
+    <div class="mark">◆</div>
+    <div>
+      <h1>Meridian 变更时序档案</h1>
+      <p class="sub">ChangeSet Timeline · <span id="envTxt"></span></p>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stat"><b id="stEv">–</b><span>记录</span></div>
+    <div class="stat"><b id="stEdge">–</b><span>因果边</span></div>
+    <div class="stat"><b id="stObs">–</b><span>观测记录</span></div>
+    <div class="pill ok" id="valPill">时序校验中…</div>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="col-left">
+    <div class="windowline"><span id="winTxt"></span><span class="digest" id="digestTxt"></span></div>
+
+    <div class="chain-wrap">
+      <div class="pane-title">因果链路 <span class="hint">点击时间线任一记录，追其来龙去脉</span></div>
+      <div id="chain" class="chain"></div>
+    </div>
+
+    <div class="filters">
+      <div class="fgroup"><span class="flabel">组件</span><div id="fComp" class="chips"></div></div>
+      <div class="fgroup"><span class="flabel">类型</span><div id="fType" class="chips"></div></div>
+    </div>
+
+    <div id="timeline" class="timeline"></div>
+  </section>
+
+  <aside class="col-right">
+    <section class="pane">
+      <div class="pane-title">记录详情 <span class="hint" id="selHint"></span></div>
+      <div id="detail"></div>
+    </section>
+
+    <section class="pane">
+      <div class="pane-title">状态回放 <span class="hint">按时间顺序重放每条变更后的系统状态</span></div>
+      <div class="replay-ctl">
+        <input type="range" id="asOf" min="0" max="1" value="1" aria-label="回放时间">
+        <div class="replay-meta"><b id="asOfTxt"></b></div>
+        <button id="nextBtn" class="nextbtn" hidden></button>
+      </div>
+      <div id="stateTable"></div>
+    </section>
+  </aside>
+</main>
+
+<footer class="foot">cell-j06-s06 · understand × temporal-sequence · 演示数据为虚构生产变更档案 · 纯本地静态运行，无外部依赖</footer>
+
+<script>
+/* ============ 初始数据（内联，首屏即就绪） ============ */
+window.CHANGE_SET = {
+  system: "Meridian 支付网关",
+  env: "prod · cn-east-1",
+  window: "2026-09-07 08:00 → 2026-09-11 18:00 · Asia/Shanghai",
+  digest: "5 个工作日 · 3 起 SEV 事件 · 2 次应急回退 · 全部闭环",
+  compOrder: ["gw", "paycore", "ledger", "ledgerdb", "cache", "risk", "notify"],
+  components: {
+    gw:       { name: "接入网关",   tier: "core" },
+    paycore:  { name: "支付核心",   tier: "core" },
+    ledger:   { name: "清结算账本", tier: "core" },
+    ledgerdb: { name: "账本数据库", tier: "core" },
+    cache:    { name: "会话缓存",   tier: "support" },
+    risk:     { name: "风控引擎",   tier: "support" },
+    notify:   { name: "通知服务",   tier: "support" }
+  },
+  types: {
+    deploy:    { name: "发布" },
+    hotfix:    { name: "热修" },
+    config:    { name: "配置" },
+    flag:      { name: "开关" },
+    migration: { name: "迁移" },
+    infra:     { name: "基础设施" },
+    revert:    { name: "回退" },
+    alert:     { name: "告警" },
+    report:    { name: "反馈" },
+    recover:   { name: "恢复" },
+    note:      { name: "节点" }
+  },
+  stateFields: [
+    { comp: "gw",       key: "replicas",    label: "副本数",             init: 4 },
+    { comp: "paycore",  key: "version",     label: "版本",               init: "5.6.2" },
+    { comp: "paycore",  key: "pool",        label: "连接池上限",         init: 40 },
+    { comp: "paycore",  key: "split_v2",    label: "开关 split_v2",      init: "off" },
+    { comp: "ledger",   key: "version",     label: "版本",               init: "1.18.2" },
+    { comp: "ledgerdb", key: "schema_rev",  label: "schema 版本",        init: 441 },
+    { comp: "ledgerdb", key: "idx_created", label: "索引 idx_created_at", init: "absent" },
+    { comp: "cache",    key: "ttl",         label: "会话 TTL (s)",       init: 900 },
+    { comp: "risk",     key: "ruleset",     label: "规则集",             init: "v40" },
+    { comp: "risk",     key: "sync",        label: "名单同步间隔 (s)",   init: 60 },
+    { comp: "notify",   key: "version",     label: "版本",               init: "2.13.8" }
+  ],
+  events: [
+    /* ---------- 09-07 周一 ---------- */
+    { id: "c01", t: "2026-09-07 08:37", comp: "notify", type: "deploy", actor: "陈牧", trigger: "例行发布窗口 RW-36", sev: "info",
+      title: "例行发布：通知服务 2.13.9",
+      rows: [ { k: "版本", b: "2.13.8", a: "2.13.9" }, { k: "变更面", b: "—", a: "重试队列参数外置（未启用）" } ],
+      notes: [ "回执链路行为不变；本窗口后续出现的重试问题与本次发布无关（参数未启用）" ],
+      set: [ { comp: "notify", key: "version", val: "2.13.9" } ] },
+    { id: "c02", t: "2026-09-07 09:12", comp: "cache", type: "config", actor: "周奕", trigger: "容量优化 PERF-218", sev: "info",
+      title: "会话缓存 TTL 由 900s 调至 3600s",
+      rows: [ { k: "会话 TTL", b: "900s", a: "3600s" }, { k: "预期收益", b: "缓存穿透 QPS 1.2k", a: "预期 −60%" } ],
+      notes: [ "评审记录仅评估了命中率，未覆盖『支付状态读取走同一缓存』的路径（复盘定级：变更评估遗漏）" ],
+      set: [ { comp: "cache", key: "ttl", val: 3600 } ] },
+    { id: "c03", t: "2026-09-07 10:05", comp: "risk", type: "flag", actor: "吴限", trigger: "反欺诈季度更新 RQ-41", sev: "info",
+      title: "风控规则集 v41 灰度 5% → 50%",
+      rows: [ { k: "灰度比例", b: "5%", a: "50%" }, { k: "命中告警", b: "—", a: "无" } ],
+      notes: [ "v41 已于 09-06 完成影子比对；本窗口内 v41 无相关事件" ],
+      set: [ { comp: "risk", key: "ruleset", val: "v40 + v41@50%" } ] },
+    { id: "c04", t: "2026-09-07 14:30", comp: "gw", type: "infra", actor: "平台值班", trigger: "容量评审 CAP-07", sev: "info",
+      title: "接入网关扩容 4 → 6 副本",
+      rows: [ { k: "副本数", b: "4", a: "6" } ],
+      notes: [ "例行水平扩容，无伴随事件" ],
+      set: [ { comp: "gw", key: "replicas", val: 6 } ] },
+    { id: "c05", t: "2026-09-07 16:45", comp: "paycore", type: "deploy", actor: "李崭", trigger: "例行发布窗口 RW-36", sev: "info",
+      title: "例行发布：支付核心 5.6.3",
+      rows: [ { k: "版本", b: "5.6.2", a: "5.6.3" }, { k: "变更面", b: "—", a: "对账文件换行符兼容修复" } ],
+      set: [ { comp: "paycore", key: "version", val: "5.6.3" } ] },
+
+    /* ---------- 09-08 周二 · 事件 INC-0908 ---------- */
+    { id: "c06", t: "2026-09-08 01:47", comp: "paycore", type: "report", actor: "客服渠道", trigger: "商户工单", sev: "warn", causes: ["c02"],
+      title: "工单激增：支付结果长时间停留『处理中』",
+      rows: [ { k: "工单量（2h）", b: "—", a: "37 件" }, { k: "样例", b: "—", a: "商户后台状态与账单不一致 > 1h" } ],
+      notes: [ "模式特征：所有工单均为『支付完成后 20–60 分钟仍显示处理中』，与 1h 缓存窗口吻合" ] },
+    { id: "c07", t: "2026-09-08 02:10", comp: "notify", type: "alert", actor: "监控自动", trigger: "告警规则 ALT-112", sev: "warn", causes: ["c02"],
+      title: "回执延迟 P95 8m40s（阈值 5m）",
+      rows: [ { k: "回执延迟 P95", b: "基线 42s", a: "8m40s" }, { k: "重试队列", b: "≈0", a: "4.3k 条堆积" } ],
+      notes: [ "通知服务读取会话缓存判断『是否已回执』；TTL 拉长后读到过期状态，重复投递并退避堆积" ] },
+    { id: "c08", t: "2026-09-08 09:26", comp: "paycore", type: "report", actor: "值班经理", trigger: "事件升级流程", sev: "high", causes: ["c06"],
+      title: "工单累计 112 件，升级为事件 INC-0908（SEV-3）",
+      rows: [ { k: "累计工单", b: "37", a: "112" } ],
+      notes: [ "正式宣告事件，组建响应小组" ] },
+    { id: "c09", t: "2026-09-08 09:58", comp: "cache", type: "revert", actor: "周奕", trigger: "INC-0908 应急处置", sev: "info", causes: ["c08"],
+      title: "回退 PERF-218：会话 TTL 恢复 900s",
+      rows: [ { k: "会话 TTL", b: "3600s", a: "900s" } ],
+      notes: [ "变更单 CHG-2211（应急通道，双人复核）" ],
+      set: [ { comp: "cache", key: "ttl", val: 900 } ] },
+    { id: "c10", t: "2026-09-08 11:02", comp: "notify", type: "recover", actor: "值班小组", trigger: "INC-0908 收敛确认", sev: "info", causes: ["c09"],
+      title: "INC-0908 解除：回执延迟回落至 P95 1m12s",
+      rows: [ { k: "回执延迟 P95", b: "8m40s", a: "1m12s" }, { k: "重试队列", b: "4.3k", a: "≈0" } ],
+      notes: [ "观察 30 分钟无反弹；工单增速归零" ] },
+
+    /* ---------- 09-09 周三 · 事件 INC-0909 ---------- */
+    { id: "c11", t: "2026-09-09 10:00", comp: "ledgerdb", type: "migration", actor: "郑芜", trigger: "慢查询治理 SLOW-12", sev: "warn",
+      title: "orders 表新增索引 idx_created_at（ONLINE DDL）",
+      rows: [ { k: "DDL", b: "—", a: "ALTER TABLE orders ADD INDEX idx_created_at(created_at)" }, { k: "预估", b: "—", a: "耗时 20min · 锁影响低" } ],
+      notes: [ "平台标称 ONLINE；该表 2.1 亿行，构建期间仍需短暂元数据锁（复盘确认被低估）" ] },
+    { id: "c12", t: "2026-09-09 10:14", comp: "ledgerdb", type: "alert", actor: "监控自动", trigger: "告警规则 ALT-207", sev: "high", causes: ["c11"],
+      title: "行锁等待 avg 1.8s（阈值 0.2s）",
+      rows: [ { k: "锁等待 avg", b: "0.03s", a: "1.8s" }, { k: "活跃线程", b: "12", a: "96" } ],
+      notes: [ "索引构建持有 MDL 元数据锁，写入事务开始排队" ] },
+    { id: "c13", t: "2026-09-09 10:22", comp: "paycore", type: "alert", actor: "监控自动", trigger: "告警规则 ALT-031", sev: "high", causes: ["c12"],
+      title: "事务提交延迟 P99 2.3s（基线 180ms）",
+      rows: [ { k: "提交延迟 P99", b: "180ms", a: "2.3s" } ] },
+    { id: "c14", t: "2026-09-09 10:31", comp: "paycore", type: "report", actor: "客服渠道", trigger: "商户投诉", sev: "high", causes: ["c13"],
+      title: "收银台『支付转圈 / 超时』投诉 61 件",
+      rows: [ { k: "投诉（10min）", b: "—", a: "61 件" } ] },
+    { id: "c15", t: "2026-09-09 10:38", comp: "paycore", type: "config", actor: "韩妥（ON-CALL）", trigger: "INC-0909 应急处置", sev: "info", causes: ["c13"],
+      title: "应急限流：连接池 40 → 25",
+      rows: [ { k: "连接池上限", b: "40", a: "25" } ],
+      notes: [ "牺牲吞吐换取锁队列消化；商业收款通道优先保级" ],
+      set: [ { comp: "paycore", key: "pool", val: 25 } ] },
+    { id: "c16", t: "2026-09-09 10:47", comp: "ledgerdb", type: "note", actor: "郑芜", trigger: "DDL 执行完成", sev: "info", causes: ["c11"],
+      title: "idx_created_at 构建完成（实际 47min）",
+      rows: [ { k: "实际耗时", b: "预估 20min", a: "47min" }, { k: "锁等待 avg", b: "1.8s", a: "0.05s" } ],
+      notes: [ "DDL 结束，MDL 释放" ],
+      set: [ { comp: "ledgerdb", key: "idx_created", val: "online" }, { comp: "ledgerdb", key: "schema_rev", val: 442 } ] },
+    { id: "c17", t: "2026-09-09 11:05", comp: "paycore", type: "config", actor: "韩妥（ON-CALL）", trigger: "INC-0909 恢复动作", sev: "info", causes: ["c16"],
+      title: "解除限流：连接池恢复 40",
+      rows: [ { k: "连接池上限", b: "25", a: "40" } ],
+      set: [ { comp: "paycore", key: "pool", val: 40 } ] },
+    { id: "c18", t: "2026-09-09 11:40", comp: "paycore", type: "recover", actor: "值班小组", trigger: "INC-0909 收敛确认", sev: "info", causes: ["c15", "c16", "c17"],
+      title: "INC-0909 解除：提交延迟 P99 回落 210ms",
+      rows: [ { k: "提交延迟 P99", b: "2.3s", a: "210ms" } ],
+      notes: [ "复盘行动项转入 R28：DDL 锁影响评估纳入变更评审清单" ] },
+
+    /* ---------- 09-10 周四 · 事件 INC-0910 ---------- */
+    { id: "c19", t: "2026-09-10 11:20", comp: "paycore", type: "deploy", actor: "李崭", trigger: "迭代 R27 发布窗", sev: "info",
+      title: "发布：支付核心 5.7.0（分账引擎 v2，开关默认关）",
+      rows: [ { k: "版本", b: "5.6.3", a: "5.7.0" }, { k: "开关 split_v2", b: "—", a: "off（新增）" } ],
+      notes: [ "分账 v2 含金额取整新逻辑；上线时全量关闭" ],
+      set: [ { comp: "paycore", key: "version", val: "5.7.0" }, { comp: "paycore", key: "split_v2", val: "off" } ] },
+    { id: "c20", t: "2026-09-10 13:05", comp: "paycore", type: "flag", actor: "钱斯", trigger: "产品全量决策 PM-332", sev: "warn", causes: ["c19"],
+      title: "split_v2 全量放开（0% → 100%）",
+      rows: [ { k: "split_v2", b: "off", a: "100%" }, { k: "放量路径", b: "白名单", a: "直接全量（跳过 10% 阶段）" } ],
+      notes: [ "复盘发现：跳过灰度阶段使影响面从预估 8% 扩大到 100%" ],
+      set: [ { comp: "paycore", key: "split_v2", val: "100%" } ] },
+    { id: "c21", t: "2026-09-10 15:42", comp: "paycore", type: "report", actor: "客服渠道", trigger: "商户反馈", sev: "high", causes: ["c20"],
+      title: "商户反馈手续费少收，涉及订单约 1,200 笔",
+      rows: [ { k: "反馈商户", b: "—", a: "23 户" }, { k: "涉及订单", b: "—", a: "≈1,200 笔" } ],
+      notes: [ "财务对账侧同时发现分账尾差为负（少收）" ] },
+    { id: "c22", t: "2026-09-10 15:58", comp: "paycore", type: "flag", actor: "钱斯", trigger: "INC-0910 应急处置", sev: "warn", causes: ["c21"],
+      title: "紧急关闸：split_v2 100% → off",
+      rows: [ { k: "split_v2", b: "100%", a: "off" } ],
+      notes: [ "流量切回旧分账路径；90s 内全量生效" ],
+      set: [ { comp: "paycore", key: "split_v2", val: "off" } ] },
+    { id: "c23", t: "2026-09-10 16:30", comp: "paycore", type: "recover", actor: "财务 + 值班小组", trigger: "INC-0910 影响确认", sev: "info", causes: ["c22"],
+      title: "INC-0910 影响面确认：1,204 笔少计手续费 ¥3,187.40",
+      rows: [ { k: "影响订单", b: "预估 1,200", a: "确认 1,204" }, { k: "金额", b: "—", a: "¥3,187.40（待补扣）" } ],
+      notes: [ "补扣方案走线下批量，T+1 完成" ] },
+    { id: "c24", t: "2026-09-10 18:02", comp: "paycore", type: "hotfix", actor: "李崭", trigger: "缺陷 DEFECT-1188", sev: "warn", causes: ["c21"],
+      title: "热修 5.7.1：分账金额取整修正（尾差挂账）",
+      rows: [ { k: "版本", b: "5.7.0", a: "5.7.1" }, { k: "取整策略", b: "四舍五入", a: "尾差挂账（精确到分）" } ],
+      set: [ { comp: "paycore", key: "version", val: "5.7.1" } ] },
+    { id: "c25", t: "2026-09-10 19:10", comp: "paycore", type: "flag", actor: "钱斯", trigger: "INC-0910 复盘行动 #2", sev: "info", causes: ["c24"],
+      title: "split_v2 重新灰度 10%（带修正逻辑）",
+      rows: [ { k: "split_v2", b: "off", a: "10%" }, { k: "放量策略", b: "—", a: "强制 10% → 50% → 100%，间隔 ≥24h" } ],
+      set: [ { comp: "paycore", key: "split_v2", val: "10%" } ] },
+
+    /* ---------- 09-11 周五 ---------- */
+    { id: "c26", t: "2026-09-11 09:30", comp: "risk", type: "config", actor: "吴限", trigger: "配额治理 QUOTA-21", sev: "info",
+      title: "风控名单同步间隔 60s → 300s",
+      rows: [ { k: "同步间隔", b: "60s", a: "300s" } ],
+      notes: [ "名单时效要求 T+5min，300s 满足；同步 API QPS 回落到配额内" ],
+      set: [ { comp: "risk", key: "sync", val: 300 } ] },
+    { id: "c27", t: "2026-09-11 11:00", comp: "notify", type: "deploy", actor: "陈牧", trigger: "INC-0908 复盘行动 #1", sev: "info", causes: ["c07"],
+      title: "发布：通知服务 2.14.0（回执重试指数退避）",
+      rows: [ { k: "版本", b: "2.13.9", a: "2.14.0" }, { k: "重试策略", b: "固定 30s × 5", a: "指数退避 30s → 8m" } ],
+      notes: [ "结构性修复：即使缓存 TTL 再被调大，重试风暴也不会复现" ],
+      set: [ { comp: "notify", key: "version", val: "2.14.0" } ] },
+    { id: "c28", t: "2026-09-11 14:20", comp: "ledger", type: "deploy", actor: "孙桥", trigger: "例行发布窗口 RW-37", sev: "info",
+      title: "例行发布：清结算账本 1.18.3",
+      rows: [ { k: "版本", b: "1.18.2", a: "1.18.3" }, { k: "变更面", b: "—", a: "对账文件分片导出" } ],
+      set: [ { comp: "ledger", key: "version", val: "1.18.3" } ] },
+    { id: "c29", t: "2026-09-11 17:45", comp: "paycore", type: "note", actor: "周奕（主持）", trigger: "周度变更复盘会", sev: "info", causes: ["c10", "c18", "c23"],
+      title: "周度变更复盘：本窗口 3 起事件全部闭环",
+      notes: [ "行动项 4 项：TTL 变更评审清单、DDL 锁评估、开关灰度强制阶梯、重试退避（已完成）", "SEC 复核：财务补扣 T+1 完成，无资损扩大" ] }
+  ]
+};
+</script>
+<script src="app.js"></script>
+</body>
+</html>

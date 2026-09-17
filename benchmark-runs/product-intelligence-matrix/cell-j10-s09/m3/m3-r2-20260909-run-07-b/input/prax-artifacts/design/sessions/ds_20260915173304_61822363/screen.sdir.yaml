@@ -1,0 +1,219 @@
+version: "0.2"
+archetype:
+  pattern_ref: PAT-APPLICATION-SHELL
+complexity_budget:
+  permanent_panels: 2
+  permanent_primary_actions: 1
+  modes: 1
+  state_owners: 1
+  navigation_levels: 2
+  persistent_filters: 0
+  new_semantic_concepts: 4
+  keyboard_contracts: 0
+  mobile_conflicts: 0
+  permanent_surfaces: 1
+state_ownership:
+  - state: selection
+    owner: step-rail
+  - state: preview
+    owner: work-region
+  - state: mode
+    owner: confirm-modal
+  - state: query
+    owner: audit-drawer
+user_job:
+  verb: complete
+  target: 高后果流程（主从切换 Runbook）
+  success: 零失误走完全程
+screen:
+  id: application_shell_screen
+  intent:
+    primary_task: 按严格顺序完成切换 Runbook：完成每步验证与证据记录，通过门禁进入下一步
+    secondary_tasks:
+      - 在不可逆步骤执行前完成仪式化确认并确认恢复路径
+      - 在需要中止/回退时沿恢复路径安全撤回并记录偏差
+  archetype:
+    pattern_ref: PAT-APPLICATION-SHELL
+  density_intent: spacious
+  user_job:
+    verb: complete
+    target: 高后果流程（主从切换 Runbook）
+    success: 零失误走完全程
+  primary_object:
+    type: workflow
+    label: 主从切换 Runbook
+  information_shape:
+    cardinality: one
+    relationality: low
+    hierarchy: high
+    temporality: low
+    density: low
+    dimensionality: medium
+    spatiality: none
+    volatility: medium
+    uncertainty: medium
+    comparison_need: none
+  interaction:
+    preview: none
+    inspect: select
+    navigate: drill
+    locate: none
+  priority:
+    primary:
+      - work-region
+      - recovery-panel
+      - confirm-modal
+      - step-rail
+      - header
+      - audit-drawer
+    contextual:
+      - completion-view
+  regions:
+    - id: header
+      role: experimental:全局状态与零偏差标识
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:流程名/编号/进度/零偏差徽标
+        - experimental:带确认的安全中止出口
+    - id: step-rail
+      role: experimental:阶段/步骤层级进度地图
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:4 阶段 13 步层级展示
+        - experimental:状态图标：锁定/当前/已放行/偏差
+        - experimental:点击已到达步骤回看
+    - id: work-region
+      role: experimental:当前步工作区
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:操作指引/验证检查项/证据字段/主行动按钮
+        - experimental:不可逆步骤含后果块与恢复路径面板
+    - id: recovery-panel
+      role: experimental:不可逆步骤恢复路径呈现
+      importance: primary
+      visibility:
+        condition: task_driven
+      behavior_intent:
+        - experimental:触发条件/恢复步骤/影响
+        - experimental:回退窗口内可二次确认触发
+    - id: confirm-modal
+      role: experimental:不可逆确认仪式
+      importance: primary
+      visibility:
+        condition: task_driven
+      behavior_intent:
+        - experimental:后果明示区
+        - experimental:承诺复选+确认词
+        - experimental:恢复路径同屏展示
+    - id: audit-drawer
+      role: experimental:偏差与证据审计
+      importance: supporting
+      visibility:
+        condition: task_driven
+      behavior_intent:
+        - experimental:事件时间线
+        - experimental:零偏差判定依据
+    - id: completion-view
+      role: experimental:完成/中止结果态
+      importance: primary
+      visibility:
+        condition: task_driven
+      behavior_intent:
+        - experimental:四态判定：零失误完成/完成但有偏差/安全中止/中止且有偏差
+        - experimental:统计+时间线+导出
+  relationships: []
+  interaction_intents:
+    - experimental:顺序门禁导航：仅当前步可放行，已到达步可回看，未来步锁定
+    - experimental:检查项逐条勾选即时更新放行资格
+    - experimental:证据字段填写与格式校验
+    - experimental:不可逆步骤进入确认仪式模态（后果+承诺+确认词+恢复路径）
+    - experimental:恢复路径可展开，触发恢复记录偏差并回退
+    - experimental:完成/中止后生成零偏差判定报告
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: dp-gate
+      question: 当前步是否满足放行条件？
+      adapter_may_choose:
+        - 禁用态视觉样式
+        - 差缺提示的呈现位置与粒度
+    - id: dp-confirm
+      question: 不可逆步骤采用何种确认仪式？
+      adapter_may_choose:
+        - 确认词内容与长度
+        - 承诺复选措辞
+    - id: dp-decision-gate
+      question: 决策步骤的分支如何呈现与记录？
+      adapter_may_choose:
+        - 分支以并置卡片或单选组呈现
+        - 决策摘要落盘格式
+    - id: dp-abort
+      question: 中止/恢复如何呈现并记入偏差？
+      adapter_may_choose:
+        - 中止入口位置与强度
+        - 恢复入口的确认层级
+  representation:
+    primary:
+      type: wizard
+      reason: 单一高后果流程的步骤门禁流本质是有严格顺序的向导；外壳常驻层级地图以保留定位与恢复可见性，故主表示为 wizard 而非 dashboard/cards/tabs 默认壳（论证见 decide.justification_vs_shape，含对 myth-more-disclosure-better 的回应）
+    supporting:
+      - type: list
+        reason: 左轨以列表承载阶段→步骤层级进度地图
+      - type: form
+        reason: 当前步工作区以表单承载检查项与证据字段
+      - type: document
+        reason: 恢复路径与操作说明以文档块呈现
+    rejected:
+      - option: dashboard 卡片概览壳
+        reason: 基数 one、比较需求 none，概览稀释门禁注意力
+      - option: tabs 平行分区壳
+        reason: 步骤是严格顺序关系，tabs 暗示可任意切换，破坏门禁语义
+  state_ownership:
+    - state: selection
+      owner: step-rail
+    - state: preview
+      owner: work-region
+    - state: mode
+      owner: confirm-modal
+    - state: query
+      owner: audit-drawer
+  acceptance:
+    - 不可逆步骤执行前必须经过确认模态（后果+承诺复选+确认词）且同屏展示完整恢复路径
+    - 检查项与证据未满足时放行按钮禁用且差缺原因可见
+    - 未来步骤锁定不可操作，仅当前步可放行、已到达步可只读回看
+    - 页面加载即处于 ready 态：首屏数据内联同步渲染，无 loading 作为可测状态
+    - 偏差（恢复触发/回退/中止）全程记录并可审计
+    - 完成/中止态给出零偏差判定报告
+  complexity_budget:
+    permanent_panels: 2
+    permanent_primary_actions: 1
+    modes: 1
+    state_owners: 1
+    navigation_levels: 2
+    persistent_filters: 0
+    new_semantic_concepts: 4
+    keyboard_contracts: 0
+    mobile_conflicts: 0
+    permanent_surfaces: 1
+  rejected_alternatives:
+    - option: 整页向导（一屏一步、无层级地图）
+      reason: 丢失全局进度定位与恢复路径常驻性，高压下加剧隧道视野
+    - option: 平铺 checklist（全部步骤勾选）
+      reason: 无顺序门禁与层级，跳步不可阻止，无法支撑零失误
+    - option: 空间画布/流程图编辑器
+      reason: 空间性 none、基数 one，空间编辑无任务收益且徒增复杂度
+    - option: 表格化多列布局
+      reason: 密度 low，表格徒增噪音
+  unresolved: []

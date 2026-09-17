@@ -1,0 +1,19 @@
+MEASUREMENT RECEIPT
+===================check_id: destructive_recovery
+outcome: pass
+collected_at: "2026-09-16T01:30:00Z"
+method: CDP-driven real interaction through irreversible steps and recovery paths
+artifacts:
+  - evidence/05-confirm-modal.png
+  - evidence/06-confirm-modal-wrong-word.png
+  - evidence/07-recovery-armed.png
+  - evidence/08-recovery-deviation.png
+measured:
+  prevention_gate: "irreversible step s7 advance entry disabled until checks+evidence pass (assertion '门禁：不可逆步骤同样受检查项/证据门禁约束' PASS)"
+  prevention_ritual: "modal requires consequence block + acknowledgement checkbox + exact confirm word; wrong word 'REMOVE' → button stays disabled + inline error '确认词不匹配' (assertion PASS)"
+  recovery_visibility: "recovery path (trigger/steps/impact) rendered in work region BEFORE execution (04) and again inside modal (05)"
+  recovery_trigger: "rollback window allows armed two-click trigger from read-only review; fires → step reset to pending, deviation badge 偏差 ×1, event logged (assertions PASS)"
+  window_truthfulness: "closed window shows '恢复窗口已关闭…不可就地回退' — no fake recovery affordance"
+  safe_abort: "abort is a designed reversible exit; confirmed, logged as event, not counted as deviation"
+conclusion: "destructive actions match high error cost with both prevention and recovery."
+

@@ -1,0 +1,1 @@
+Receipt: evidence/checks.json: "06 Ctrl+Z restores block"=true — block b13 deleted then restored via real CDP key events (Input.dispatchKeyEvent, modifiers=2, code=KeyZ); "07 Tab demotes to H4"=true and "07 Shift+Tab promotes back to H3"=true via real Tab key events (windowsVirtualKeyCode=9, shift modifiers=8). Focus retained in heading content after level change.

@@ -1,0 +1,79 @@
+{
+  "reviewer": "R1",
+  "package_id": "impl-13",
+  "session_id": "30093439-9bc4-4a69-b1e5-489776a587ff",
+  "wall_clock_seconds": 342,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-13",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Brief shape (entity-hierarchy: many, high hierarchy, high density) is matched by a 3-level tree table (site→system→unit, 164 entities; data.js:29-80) with an explicit 归属路径 column and status badges visible on both screenshots (1280x860, 1440x900); app.js:4-18 declares tree_table + selection_inspector + batch_preview/receipt, exactly the manage×entity-hierarchy job."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "Initial screen is dominated by the entity tree (~80% width) with the batch toolbar directly above it ('对已选 0 项执行:', 全选可见（164）, 移动归属, 删除) and a 选择集 inspector at right — both screenshots; app.js:384-399, 403-417."
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "What/where is conveyed redundantly at load: title '实体台账管理台 — 层级实体·批量操作台' and badge '可见即作用域·零误伤' (app.js:355-357), panel caption '勾选仅作用于当前可见的下属实体行；折叠分支不会被批量选中' (app.js:407), inspector empty-state explaining selection scope (app.js:705-711) — all visible in both screenshots."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Single static page (index.html:10-20); the primary object (hierarchical entity list) is fully rendered at load with zero navigation; batch operations are persistent toolbar buttons opening an in-page modal (app.js:220-225, 806-925)."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "All actions preserve context: preview modal overlays in place (app.js:806-925), undo restores data and selection (app.js:322-339), tree focus is restored across re-renders (app.js:597-618), cancel keeps selection (selftest.js:171-172); no routes or page transitions exist."
+      },
+      "ui_surface_complexity": {
+        "score": 5,
+        "evidence": "Permanent surfaces are header, 2-row toolbar, tree panel, inspector, footer — each tied to the batch job; buttons disabled until selection exists (app.js:454-460); compact 30px rows (styles.css:23) match the brief's high-density requirement; modals/menu are on-demand only."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Measured receipt fails 4 checks: a11y.contrast, a11y.focus_order, a11y.target_size, type.min_projected_size (measurement-summary.json:13-16). Source corroborates small targets: 14px checkboxes (styles.css:223), 18px remove/rm buttons (styles.css:291-295), and the broken 18×18 变更状态 target (see frontend_rework). Semantic markup exists (treegrid role, aria-checked mixed, :focus-visible outline — app.js:411, 502; styles.css:40) but measured outcomes contradict it."
+      },
+      "frontend_rework": {
+        "score": 2,
+        "evidence": "Visible defect at BOTH viewports: the 变更状态 batch button collapses to an ~18px sliver, its label wrapping vertically one glyph per line and spilling below the toolbar row (4x magnified crops of 1280x860 and 1440x900 toolbar region). Root cause visible in source: app.js:388 assigns class 'btn caret', colliding with styles.css:227-234 `.caret{width:18px;height:18px;border:0;background:transparent}` intended for tree expand carets. Additionally the shipped self-test is stale: selftest.js:93-95,106,213 assert 160 total/154 visible while data.js generates 164 (screenshots show 全部 164, footer 实体总数 164), so the app's own harness would report failures. Measured receipt: 4 fail / 3 pass (measurement-summary.json:3-16), though layout.overflow, responsive_collision and text.truncation pass."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed '批量选择与操作零误伤，状态归属显式' is addressed end-to-end: selection only enters from rendered visible rows (app.js:201-216, 683-694), zero-effect guard blocks no-op ops with explicit error (app.js:263-268, 842-845), preview modal groups affected items by ownership path with counts (app.js:855-877), receipt '已影响 N 项' with per-item path→delta detail and one-step undo (app.js:296-320, 750-775), explicit 归属路径 column and status badges on screen (both screenshots)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "变更状态 batch-action button renders as an ~18px-wide sliver with its label stacked vertically and clipped, spilling past the toolbar row, on both 1280x860 and 1440x900 initial screens; caused by class name collision between app.js:388 ('btn caret') and styles.css:227-234 (tree-caret box styles)",
+      "Measured receipt failures: a11y.contrast, a11y.focus_order, a11y.target_size, type.min_projected_size all fail (measurement-summary.json:13-16)",
+      "Self-test fixture out of sync with shipped data: selftest.js asserts 160 entities / 154 visible (selftest.js:93-95,106,213) but data.js produces 164, confirmed by screenshots (全部 164, 实体总数 164), so the bundled verification harness would fail its own asserts",
+      "Group rows repurpose the 状态 column as a selection-progress pill using status-badge styling (e.g. gray '0/12' next to chip '12/12'; app.js:519-525), which reads ambiguously next to real status pills"
+    ],
+    "missing_evidence": [],
+    "overall_note": "The implementation is a strong structural fit for the brief: a single-page, zero-navigation tree table of 164 entities across a 3-level site→system→unit hierarchy, with an explicit ownership-path column, status filters, visible-scope-only selection, an affected-items preview modal, per-item receipt detail, and one-step undo — covering the acceptance seed (batch zero-collateral ops, explicit status ownership) thoroughly in both UI and source (app.js:201-216, 263-320, 806-925). Permanent surfaces are lean and every control maps to the manage job, so comprehension at load is fast despite one real visual defect: at both viewports the 变更状态 batch button is crushed to an 18px sliver with its label wrapped vertically (a CSS class collision between the toolbar button and tree caret styles, app.js:388 vs styles.css:227-234), which also produces a tiny click target. Accessibility is the weakest area, corroborated by four failed receipt checks (contrast, focus order, target size, min projected size) despite genuinely thoughtful aria semantics. A secondary consistency defect: the bundled self-test still asserts a 160-entity dataset while the shipped data.js yields 164, meaning the app's own verification harness would fail if run as delivered. All modals, menus and undo flows were judged structurally from source only; no human-user data exists in this pilot, and model preference here should not be read as human preference."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 93224,
+      "outputTokens": 13582,
+      "cacheReadInputTokens": 508736,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 1.060038,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-09-16T22:36:24.311Z"
+}

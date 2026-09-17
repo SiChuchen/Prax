@@ -1,0 +1,71 @@
+user:
+  expertise: expert
+  familiarity: high
+task:
+  primary: understand：读懂一个平台随时间演化的状态——每个变更因何而起、改了什么、引发了什么
+  modes:
+    - 沿时间轴浏览变更集
+    - 选中变更集读因果与前后状态
+    - 拖动游标查看历史状态切片
+    - 按组件过滤演化
+  frequency: medium
+domain:
+  type: 平台工程 / 变更管理（发布与配置演化史）
+  entities:
+    - 变更集 change_set
+    - 阶段 phase
+    - 组件 entity（服务/配置）
+    - 因果链 causal_link
+    - 状态切片 state_snapshot
+information:
+  volume: medium
+  relationship_complexity: medium
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: none
+  error_cost: low
+priorities:
+  - 因果可读性优先：因果链可从任一变更集双向追溯并可跳转
+  - 时间顺序在视觉上不可违背：因果连线方向严格与时间同向
+  - 状态切片与变更序列的语义折叠一致（验收种子）
+  - 中等密度：many 变更集可扫读，阶段分组降层级负担
+density_intent: regular
+confidence:
+  overall: high
+unknowns:
+  - id: u1_data_scale
+    impact: low
+    affects:
+      - information.volume
+      - primary_structure
+  - id: u2_no_real_data_source
+    impact: low
+    affects: []
+classification:
+  version: "1"
+  task_type: compare_filter_records
+  domain_id: preferences
+  interaction_mode: unknown
+  product_type: configuration_surface
+  primary_object_type: change_set
+  secondary_object_types:
+    - phase
+    - entity
+    - causal_link
+    - state_snapshot
+  confidence: medium
+  evidence:
+    - task_type=compare_filter_records ← token '过滤' in context.task and frame.tasks
+    - domain_id=preferences ← token '配置' in context.domain
+    - product_type=configuration_surface ← preferences domain
+    - primary_object_type=change_set ← most referenced product object in the Product Frame
+  open_questions:
+    - interaction_mode could not be classified from the provided context; refine the context fields or record a custom classification

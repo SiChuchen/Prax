@@ -1,0 +1,37 @@
+version: "0.1"
+session_id: ds_20260915182037_d4ba5123
+task_ref: 沿时间轴浏览变更集序列，选中某个变更后读出其前后因果与前后状态差异
+selected:
+  - ref: product_relationships
+    reason:
+      - rel_modify:change_set->entity
+      - rel_group:phase->change_set
+      - rel_link:causal_link->change_set
+  - ref: region_relationships
+    reason: []
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-WORKSPACE
+  - ref: unresolved
+    reason:
+      - u1_data_scale
+      - u2_no_real_data_source
+  - ref: corrections
+    reason: []
+  - ref: validation-plan@1
+    reason:
+      - semantic_conformance
+      - state_completeness
+      - product_model_alignment
+      - keyboard
+      - hierarchy_review
+      - representation_decided
+      - state_ownership_declared
+      - acceptance_contract_present
+      - complexity_budget_declared
+      - requirement_alignment
+excluded:
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata

@@ -1,0 +1,71 @@
+version: "0.2"
+jtbd:
+  verb: explore
+  target: multi-dimensional data
+  success: "Switching dimensions does not reset cognition: selection, filters, and reading context survive every dimension change, and filter/projection state is owned and reversible."
+primary_object:
+  type: dataset
+  label: Dataset
+task_model:
+  frequency: medium
+  reversibility: reversible
+  consequence: low
+  expertise: mixed
+user:
+  primary_role: Data analyst / product person exploring a multi-dimensional dataset
+  expertise: intermediate
+  familiarity: medium
+goal:
+  primary: Enable exploration of a high-density multi-dimensional dataset where switching dimensions never resets the user's cognitive context.
+tasks:
+  primary: Explore the dataset by switching which dimensions are projected onto the visual encodings, keeping selection and filters intact across switches
+  secondary:
+    - Filter the record pool with clearly-owned, individually reversible filters
+    - Inspect a selected record's full dimensional profile
+    - Revert any filter or projection change without losing the rest of the session state
+product_objects:
+  - id: dataset
+    user_name: Dataset
+    purpose: The single pool of records being explored; invariant across all dimension switches.
+  - id: dimension
+    user_name: Dimension
+    purpose: A named attribute of every record that can be projected onto an encoding (axis, color, sort) at will.
+  - id: record
+    user_name: Record
+    purpose: One data point; the unit of selection, filtering, and inspection.
+  - id: projection
+    user_name: Projection
+    purpose: The current mapping of dimensions to visual encodings (X axis, Y axis, color, size); owned and reversible.
+  - id: filter_state
+    user_name: Filter
+    purpose: A named, owned, reversible restriction on which records are in scope.
+relationships:
+  - id: rel-dim-record
+    source: dimension
+    target: record
+    type: projects
+    direction: forward
+    meaning: Each dimension provides one value for every record; projection re-maps, never mutates records.
+    condition: any dimension is assigned to an encoding
+    importance: primary
+  - id: rel-filter-dataset
+    source: filter_state
+    target: dataset
+    type: restricts
+    direction: forward
+    meaning: Each filter narrows the visible subset of the dataset and is owned by a named control so it can be individually reverted.
+    importance: primary
+  - id: rel-sel-record
+    source: projection
+    target: record
+    type: selects
+    direction: bidirectional
+    meaning: Selection attaches to record identity, not to screen position, so it survives re-projection.
+    importance: primary
+mental_model_hypothesis:
+  summary: The user thinks of the dataset as one fixed pool of records; dimensions are interchangeable lenses projected onto visual encodings. Switching a lens re-maps values but must not touch the record pool, current selection, or active filters — 'the data is the same, I'm just looking at it differently'.
+  confidence: high
+  evidence:
+    - user_requirement
+primary_success_definition: "A user can swap any dimension in/out of the visual projection and: (1) their selected records remain selected, (2) their active filters remain applied and visible with clear ownership, (3) each projection/filter state can be individually reverted — with zero re-orientation cost."
+open_questions: []

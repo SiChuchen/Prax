@@ -1,0 +1,122 @@
+session_id: ds_20260915150653_a22fc0e1
+version: "0.2"
+information_shape:
+  cardinality: few
+  relationality: medium
+  hierarchy: low
+  temporality: low
+  density: high
+  dimensionality: medium
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: required
+representation:
+  primary:
+    type: table
+    reason: 一行一标准、一列一候选的表格对齐是 comparison required 的最优承载（PAT-DATA-EXPLORER）
+  supporting:
+    - type: map
+      reason: 内联 SVG 区位图承载地理语境（验收种子：地理语境与决策项同屏）
+    - type: chart
+      reason: 表头区加权总分条形微图，让权重调整的后果即时可见
+  rejected:
+    - option: cards
+      reason: card-grid-for-dense-comparison 反模式
+    - option: map 作为 primary
+      reason: spatiality=none，地理语境同屏≠空间导航是主任务
+  justification_vs_shape: few×high×required → 一列一候选的表格对齐使每条标准横向可比；spatiality=none → 地图不作主表示，只作同屏语境（map 为 supporting）；dimensionality=medium → 每候选 10+ 条属性一个矩阵即可承载，无需多图表
+primary_structure:
+  pattern: PAT-DATA-EXPLORER
+  rationale:
+    - shape 束 few×high×required：少量高密度候选按共享字段对齐比较，tabular alignment 是 PAT-DATA-EXPLORER 契约的正解（shared fields support comparison）
+    - 实例化为 comparison-panel 双区同屏：左区位图（地理语境，内联 SVG 示意地图，对应 PAT-CANVAS-WORKSPACE 的 context-preserving 精神但仅作语境区）+ 右并排比较矩阵（一行一标准、一列一候选）
+    - 选中状态双向联动，权重滑杆与决定栏驻留同屏；比较状态驻留：两区固定同屏、无页面切换（P-19 Preserve Context、H-21 Orientation Invariants）
+    - PAT-DATA-EXPLORER 反模式 card-grid-for-dense-comparison 排除卡片网格
+  confidence: high
+information_hierarchy:
+  primary:
+    - data table（比较矩阵，obj-comparison-panel 主工作面）：一行一标准、一列一候选的并排对齐，优胜格即时高亮；候选 collection 以列集合呈现，decide 的工作即在此面完成
+    - 区位图 obj-site-map：候选点+参照物的地理语境，与矩阵同屏驻留（P-19 Preserve Context）
+  secondary:
+    - 每条标准的权重滑杆与加权总分
+    - 决定栏 obj-decision：领先者与最终选择的明确回显
+  override:
+    basis: 需求明示比较状态必须驻留同屏、地理语境与决策项同屏：比较矩阵为主工作面、区位图为共驻语境（spatiality=none）；evidence 取 product frame 对象
+    evidence_refs:
+      - obj-comparison-panel
+      - obj-site-map
+    risks:
+      - 若用户更依赖地理直觉判断，矩阵可能喧宾夺主；以选中联动保证两区互为入口缓解
+    accepted_by: agent
+density:
+  intent: compact
+  strategy:
+    - 行高紧凑但保持行分隔与斑马对照，高密度可扫读（H-13 Structured Density）
+    - 分组承载密度：标准按『成本/通勤/场地/风险』分组，组标题行隔断
+    - 优胜格用色带+角标承载，不靠文字解释（P-22 Signal over Chrome）
+    - 表格纵向滚动时表头与候选列头冻结，比较状态不丢（H-21）
+  avoid:
+    - 卡片网格（PAT-DATA-EXPLORER 反模式 card-grid-for-dense-comparison）
+    - 为装饰而生的图形元素
+    - 大留白导致比较跨屏断裂
+major_choices:
+  - id: mc-map-inline-svg
+    choice: 地理语境用内联 SVG 示意区位图（自绘：地铁线、参照点、候选点），不依赖任何外部瓦片/网络服务
+    rationale: 交付约束要求静态打开、本地无外部服务；示意拓扑（谁挨着谁、离什么近）即满足『地理语境与决策项同屏』
+    confidence: high
+    references:
+      - obj-site-map
+      - obj-candidate-site
+  - id: mc-inline-data
+    choice: 初始数据内联进首屏脚本，DOMContentLoaded 即为 ready 态，无任何加载态
+    rationale: 验收要求『页面加载完成即处于可用状态，不得以加载态作为可测状态』
+    confidence: high
+    references:
+      - obj-comparison-panel
+      - obj-candidate-site
+  - id: mc-selection-link
+    choice: 选中联动：矩阵列头/任一格 ↔ 地图标记双向高亮，悬停预览、点击锁定
+    rationale: P-19/H-21：比较推进全程保持方位感，地理语境与决策输入互认不丢
+    confidence: high
+    references:
+      - obj-candidate-site
+      - obj-site-map
+      - obj-comparison-panel
+  - id: mc-leader-marks
+    choice: 每行标准即时计算优胜者（考虑权重方向），行内色带标注；加权总分常驻表头
+    rationale: 比较即任务：优胜必须是面板本身的属性而非用户心算；权重调整即时反映领先者变化
+    confidence: high
+    references:
+      - obj-comparison-panel
+      - obj-decision
+  - id: mc-decision-commit
+    choice: 决定显式落定：『敲定此处』把最终选择写入决定栏，地图与列头出现已选定标记；支持排除候选（列置灰）
+    rationale: decide 的产物需要可指认的状态驻留同屏，而非隐式的『排第一就是选了』
+    confidence: high
+    references:
+      - obj-decision
+      - obj-candidate-site
+rejected:
+  - option: PAT-CANVAS-WORKSPACE 以地图为主画布
+    reason: spatiality=none，比较而非空间关系是任务主体；地图降级为共驻语境区
+  - option: PAT-LIST-DETAIL 单候选详情
+    reason: 任务是横跨 few 个候选的并排比较，单详情视图会打断比较状态
+  - option: 卡片网格逐候选排列
+    reason: "PAT-DATA-EXPLORER 明示 anti_patterns: card-grid-for-dense-comparison；属性无法按行对齐"
+  - option: 外部地图瓦片服务（Leaflet/OSM）
+    reason: 交付约束：本地静态运行、无外部服务
+  - option: 弹层/抽屉放决定输入
+    reason: 成功标准『决策输入同屏可得』被弹层直接破坏
+unresolved: []
+complexity_budget:
+  permanent_panels: 2
+  permanent_primary_actions: 3
+  modes: 0
+  state_owners: 3
+  navigation_levels: 1
+  persistent_filters: 0
+  new_semantic_concepts: 2
+  keyboard_contracts: 1
+  mobile_conflicts: 0
+  permanent_surfaces: 3

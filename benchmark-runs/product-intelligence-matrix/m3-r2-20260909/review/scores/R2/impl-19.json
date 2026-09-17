@@ -1,0 +1,81 @@
+{
+  "reviewer": "R2",
+  "package_id": "impl-19",
+  "session_id": "e07f76e9-f848-4e9c-b29f-612187bc1460",
+  "wall_clock_seconds": 190,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-19",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Brief's shape (comparison-panel, few/high-density, comparison-required) and object (location) are both materialized: left SVG 区位图 panel with metro lines M1/M3, team center, client HQ and A–D candidate pins (source/index.html:344-445; visible in both screenshots), right comparison matrix of 14 criteria × 4 candidates (index.html:259-275, 497-535); decide verb served by 领先 chip, 敲定此处 commit and resident decision bar (index.html:470-476, 538-562). Both viewports (1280x860, 1440x900) show map + matrix side-by-side."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "Matrix occupies ~2/3 of the initial screen in both screenshots; the topbar states the task verbatim (任务：对照区位图与比较矩阵逐标准权衡…， index.html:196) and the resident decision bar with current leader 65.1 分 sits in the top-right of both screenshots (index.html:197-199, 554-561)."
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "Model-judged proxy: both panels are explicitly labeled (区位图 / 比较矩阵, index.html:205, 213), task line and leader are readable at first glance in both screenshots, map legend explains symbols (index.html:439-444); a viewer can tell what/where within seconds despite high density."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Zero navigation: single workbench grid, no routes/modes/dialogs (index.html:202-223); primary objects (candidates) are on the initial screen; column-header select buttons, pins and ←/→ keys operate in place (index.html:616-689)."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "All primary actions (select/exclude/restore/commit/weight change/reset) re-render in place via renderAll() (index.html:565-577); thead is sticky so comparison headers persist while scrolling (index.html:100-103); decision state is resident in the top bar with aria-live (index.html:197, 538-562); no context-losing transitions found in source or screenshots."
+      },
+      "ui_surface_complexity": {
+        "score": 5,
+        "evidence": "Permanent surfaces are just 4 (topbar+decision bar, map, matrix, statusbar, index.html:191-230); 14 sliders and per-candidate commit/exclude buttons are each justified by the brief's 权重可调 comparison job and density:high shape — no redundant chrome; only minor duplication of the hint text between panel-heads and statusbar (index.html:214 vs 229)."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Receipt objectively fails all a11y-type checks: a11y.contrast, a11y.focus_order, a11y.target_size, type.min_projected_size (measurement-summary.json checks, ids a11y.contrast/a11y.focus_order/a11y.target_size/type.min_projected_size). Source corroborates: --ink-3 #8a99a8 small text at 10.5px (index.html:10, 123, 148), 9.5px detail text (index.html:175), 11px buttons with 1px 7px padding (index.html:131) and 14px-high range inputs (index.html:28). Some genuine affordances exist (focus-visible outlines index.html:26-27; pins as role=button tabindex=0 with Enter/Space index.html:349-350, 609-612; aria-labels index.html:525), but the measured checks all fail, so the score cannot be high."
+      },
+      "frontend_rework": {
+        "score": 2,
+        "evidence": "6 of 7 receipt checks fail: layout.overflow, text.truncation, a11y.contrast, a11y.focus_order, a11y.target_size, type.min_projected_size (measurement-summary.json, summary pass:1/fail:6). The rendered surface looks composed in both screenshots, but the objective failures (overflow, truncated text, undersized type) imply visible defects requiring rework. Likely sources in source: nowrap ellipsis taskline (index.html:38-39), pervasive 9.5–11.5px type (index.html:79, 123, 148, 161, 175), and an invalid <span> inside <colgroup> (index.html:217) that browsers foster outside the table."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed 地理语境与决策项同屏 is directly satisfied and even annotated in source (<!-- 区位图：地理语境（验收种子：地理语境与决策项同屏） -->, index.html:203): both screenshots show the geographic-context map (river, metro, team center, client HQ, per-candidate metro walking distances, index.html:344-444) on the same screen as the decision items (4 candidate columns), with hover/click linkage between the two (index.html:594-662)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "Receipt checks layout.overflow, text.truncation, a11y.contrast, a11y.focus_order, a11y.target_size, type.min_projected_size all fail (measurement-summary.json; only layout.responsive_collision passes, plus one unattributed warning)",
+      "Sub-11px type used widely (9.5–11.5px: index.html:79, 123, 148, 161, 175) consistent with the min_projected_size and contrast failures",
+      "Small interactive targets: 11px buttons with 1px/7px padding (index.html:131) and 14px-high range inputs (index.html:28) consistent with a11y.target_size fail",
+      "Invalid markup: stray <span> inside <colgroup> (index.html:217) — browsers foster it outside the table, a plausible contributor to layout.overflow",
+      "Task line is nowrap with text-overflow:ellipsis (index.html:38-39), a designed-in truncation point consistent with text.truncation fail",
+      "At 1280x860 the last criterion row (午餐便利) is clipped at the bottom of the matrix panel (screenshot), though sticky headers keep column context while scrolling"
+    ],
+    "missing_evidence": [],
+    "overall_note": "impl-19 is a single-file, zero-navigation comparison workbench that matches the brief's cell almost exactly: a schematic location map and a 14-criterion × 4-candidate weighted comparison matrix share the initial screen in both viewports, the decide workflow (leader chip, exclude, commit, resident decision bar) works in place without context loss, and the acceptance seed (geographic context beside the decision items) is explicitly and visibly satisfied, with ready-on-load inline data and no loading state. The weakness is entirely on measured quality: six of seven receipt checks fail, including all a11y checks (contrast, focus order, target size) plus layout.overflow, text.truncation and min projected type size, and the source corroborates these with pervasive 9.5–11.5px text, low-contrast gray labels, tiny buttons/sliders and an invalid <span> inside <colgroup> — so the visual composition is strong but the measurable surface (especially accessibility) needs real rework. Task completion time, information retrieval accuracy and human preference are not observable in this blind pilot, and model-judged time-to-understand is not a substitute for human preference."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 48805,
+      "outputTokens": 6042,
+      "cacheReadInputTokens": 60224,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.425187,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-09-17T15:26:42.870Z"
+}

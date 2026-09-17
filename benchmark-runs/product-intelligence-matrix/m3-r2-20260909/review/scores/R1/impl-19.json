@@ -1,0 +1,82 @@
+{
+  "reviewer": "R1",
+  "package_id": "impl-19",
+  "session_id": "6f5f67fb-67ef-49f6-978a-7373f0292371",
+  "wall_clock_seconds": 179,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-19",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Brief shape comparison-panel (few items, high density, comparison required) and object location are both realized: source/index.html:202-223 renders a two-pane workbench with a schematic location map (SVG pins A–D, metro lines, river, team center, client HQ at lines 369-445) beside a 14-criterion × 4-candidate comparison matrix; live weighted leader and '敲定此处' commit (lines 538-562) serve the decide job"
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "1280x860.png and 1440x900.png: the comparison matrix fills ~2/3 of the initial screen with all 14 criteria rows + 4 candidate columns visible with no scrolling; topbar task line '对照区位图与比较矩阵逐标准权衡，敲定最终选址' (index.html:196) and decision bar with current leader + commit affordance sit in the header"
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "1280x860.png: title '选址决定台', explicit task line, labeled panels '区位图'/'比较矩阵', and per-panel interaction hints (index.html:205-206, 213-214) convey what/where immediately; column heads show scores, leader chip and actions without decoding"
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Single static page, no routes or modes: primary object (4 candidates × 14 criteria) fully present at load in both screenshots; map↔matrix linkage is hover/click (index.html:594-662) and ←/→ keys cycle candidates (lines 678-689); zero navigation steps"
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "All primary actions (select, exclude, restore, commit, weight change, reset) mutate in place via renderAll (index.html:565-577, 616-704); committed decision persists in the top decision bar '已决定' (lines 545-552) and status bar messages (setStatus, line 579); comparison state never leaves the screen"
+      },
+      "ui_surface_complexity": {
+        "score": 5,
+        "evidence": "Four permanent surfaces only (topbar, map, matrix, statusbar; index.html:191-230); dense controls are all job-serving: 14 weight sliders implement the brief's '逐标准权衡' with live score recompute (lines 663-675), and per-candidate 敲定/排除/恢复 map to decide workflow — no decorative chrome, matching the brief's density:high"
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Good intent in source: focus-visible outlines (index.html:26-27), role=button pins with aria-label and Enter/Space handling (lines 349-350, 609-612), aria-labels on sliders (line 525), aria-live decision bar (line 197) — but measurement-summary.json shows a11y.contrast=fail, a11y.focus_order=fail, a11y.target_size=fail (3/3 a11y checks failed), consistent with visible affordances: --ink-3 #8a99a8 hints (index.html:10,79), 11px buttons with 1px 7px padding (line 131), 14px-tall range inputs (line 28)"
+      },
+      "frontend_rework": {
+        "score": 2,
+        "evidence": "measurement-summary.json: 6 of 7 checks fail (layout.overflow, text.truncation, a11y.contrast, a11y.focus_order, a11y.target_size, type.min_projected_size; layout.responsive_collision the only pass, target_invalid=false), implying rework; visible defect at 1280x860.png: map panel-head wraps mid-word ('…非等比/尺', '…矩阵联/动' each orphaned on their own line), enabled by nowrap-unfriendly flex head (index.html:65-71); truncation-prone surfaces in code: ellipsized taskline (lines 38-39) and nowrap+hidden statusbar (line 181); sub-10px type at lines 161 (9px), 175 (9.5px)"
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed '地理语境与决策项同屏' is directly addressed: map panel aria-label '候选选址的地理语境' with inline comment '区位图：地理语境（验收种子：地理语境与决策项同屏）' (index.html:203-209); screenshots show both candidates and geographic context (metro lines M1/M3, stations, walking-distance dashes with meter labels, team center, client HQ, districts) on one screen; each pin aria-label includes distance to its metro (lines 350-354)"
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "Receipt fails 6/7 browser checks (layout.overflow, text.truncation, a11y.contrast, a11y.focus_order, a11y.target_size, type.min_projected_size) against a valid target (target_invalid=false)",
+      "At 1280x860 the map panel-head hint wraps mid-word, orphaning single characters (尺 / 动) on their own lines",
+      "Numerous sub-10px text elements (win badge 9px index.html:161, cell detail 9.5px line 175, dir chip 10px line 149, lead chip 10px line 128) — matches type.min_projected_size fail",
+      "Small interactive targets: 11px column action buttons with 1px 7px padding (index.html:131) and 14px-tall weight sliders (line 28) — matches a11y.target_size fail",
+      "Low-contrast #8a99a8/#8a99a8-class grays used for hints, units and legends (index.html:10,79,123,148) — matches a11y.contrast fail",
+      "Invalid markup: <span> nested inside <colgroup> (index.html:217) and td headers attribute points to data-id values instead of th ids (line 515)",
+      "a11y.focus_order fails despite focus-visible/aria affordances present in source (index.html:26-27,349-350,525)"
+    ],
+    "missing_evidence": [],
+    "overall_note": "impl-19 is a single-file static page (index.html) whose representation matches the brief almost exactly: a 4-candidate × 14-criterion comparison matrix with per-criterion weight sliders, live normalized totals, a leader chip and an in-column commit action, beside a schematic but information-rich location map (metro lines/stations, walking distances, team center, client HQ, districts) — the acceptance seed of geographic context and decision items sharing one screen is visibly satisfied at both 1280x860 and 1440x900 with the entire matrix on screen and no navigation anywhere (context preserved through in-place actions and a persistent decision bar). The clear weakness is measurement quality of the surface itself: the receipt fails 6 of 7 checks, with all three a11y checks failing alongside overflow, truncation and sub-10px projected type, and a visible mid-word header wrap at 1280x860 confirms small-viewport polish gaps even though the responsive-collision check passes. Scores for time_to_understand/navigation/context are structural and high; note these are model-judged proxies — no user study exists in this pilot, so task_completion_time, information_retrieval_accuracy and human_preference remain not_observable."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 68476,
+      "outputTokens": 7386,
+      "cacheReadInputTokens": 84608,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.569334,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-09-16T22:54:52.332Z"
+}

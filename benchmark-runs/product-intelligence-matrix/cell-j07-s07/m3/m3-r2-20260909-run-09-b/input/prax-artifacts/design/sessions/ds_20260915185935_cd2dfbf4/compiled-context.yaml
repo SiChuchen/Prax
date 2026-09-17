@@ -1,0 +1,64 @@
+version: "0.1"
+session_id: ds_20260915185935_cd2dfbf4
+task:
+  surfaces: []
+  primary: 在画布上创建空间对象（物料卡），通过落位（区域归属/邻近/对齐）表达其意图
+product_relationships:
+  - id: rel-card-zone
+    source: obj-card
+    target: obj-zone
+    type: belongs_to
+    meaning: 落位于区域即赋予状态含义（如 收集箱/进行中/已完成）
+    importance: primary
+region_relationships: []
+decisions:
+  primary_structure: PAT-CANVAS-WORKSPACE
+  density_intent: regular
+  major_choice_ids:
+    - mc-zones
+    - mc-grid-nudge
+    - mc-keyboard-parity
+    - mc-inspector
+    - mc-seed-inline
+    - mc-vanilla-stack
+    - mc-create-placement
+must_preserve: []
+regression_points: []
+unresolved: []
+corrections: []
+state_ownership:
+  - state: selection
+    owner: reg-canvas
+  - state: viewport
+    owner: reg-canvas
+  - state: inspector
+    owner: reg-inspector
+  - state: query
+    owner: session
+  - state: mode
+    owner: reg-help
+  - state: preview
+    owner: reg-canvas
+acceptance:
+  - 空间操作有键盘等价物（验收种子）：新建/移动/微调/换区/复制/删除/层级/选择/视图全部有键位
+  - 落位即意图：卡片中心入区即改写归属，inspector 实时反映
+  - 首屏即用：内联种子数据，ready 态随加载完成，不以加载态为可测状态
+  - 根路径 index.html 静态直开（file:// 可用），无外部服务
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - relationship_trace
+    - context_preservation
+    - canvas_signal_hierarchy
+    - destructive_recovery
+    - requirement_alignment
+  regression_check_ids: []

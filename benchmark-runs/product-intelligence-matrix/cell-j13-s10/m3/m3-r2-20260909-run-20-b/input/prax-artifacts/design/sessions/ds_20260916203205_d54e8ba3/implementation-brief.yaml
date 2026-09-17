@@ -1,0 +1,43 @@
+version: "0.1"
+platform_profile: WEB-DESKTOP
+framework: react
+measurement_target:
+  app_root: .
+  entry: /index.html
+  scenario: "explore-dimensional-data: user swaps dimensions across X/Y/color/size encoding slots; selection, filters, and inspector binding survive every switch; filter chips and projection undo/reset provide owned, reversible state; first paint renders ~1200 inlined records with no loading state"
+sdir_ref: screen.sdir.yaml
+decision_ref: design-decisions.yaml
+approved_patterns:
+  - PAT-DATA-EXPLORER
+approved_component_contracts:
+  - DATA-SURFACE
+  - FILTER-CONTROLS
+  - CONTEXTUAL-DETAIL
+states_required:
+  - loading
+  - empty
+  - ready
+  - selected
+  - error
+capability_gaps: []
+validation_plan_ref:
+  artifact: validation-plan.yaml
+  revision: 1
+validation_requirements:
+  - semantic_conformance
+  - state_completeness
+  - product_model_alignment
+  - keyboard
+  - hierarchy_review
+  - representation_decided
+  - state_ownership_declared
+  - acceptance_contract_present
+  - complexity_budget_declared
+  - filter_state
+  - comparison_scan
+  - requirement_alignment
+representation_portfolio_ref: compiled-context.yaml#representation_portfolio
+state_ownership_ref: compiled-context.yaml#state_ownership
+acceptance_ref: compiled-context.yaml#acceptance
+realization:
+  mode: direct_code

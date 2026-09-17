@@ -1,0 +1,80 @@
+{
+  "reviewer": "R1",
+  "package_id": "impl-07",
+  "session_id": "1b3f31ea-87f6-4b8d-afe6-d90e19b50320",
+  "wall_clock_seconds": 112,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-07",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Brief is edit × single-document with '编辑不破坏结构'. Package is a purpose-built single-document structured block editor: doc-model.js:3-9 defines the block model (h/p/li/quote/code/hr) with heading levels and list indent (medium hierarchy), app.js:65-89 adds snapshot history (medium temporality), and the UI is one document in three synchronized views (1280x860.png: 大纲/编辑器·结构化块/预览). Density is low — one document, no comparison or spatial facets, matching the shape bundle."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "The center column '编辑器 · 结构化块' dominates the initial screen at both 1280x860 and 1440x900: every block carries a structural rail (上移/下移/升降级/转换/插入/删除, app.js:168-196) plus an inline textarea, headed by the hint 'Enter 新建下块 · 空块 Backspace 删除' (index.html:38) and a green lint banner '结构检查通过' (1280x860.png top of editor column). Editing is the first and largest surface; preview/outline are supporting panes."
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "Model-judged proxy: both screenshots are self-explanatory within seconds — brand line 'STRUCTDOC · 单文档结构化编辑器' (index.html:14), three column headers literally labeled 大纲/编辑器·结构化块/预览 (index.html:30,37,47), doc title and stats '17 块 · 358 字' in the topbar, and the check strip states its own meaning ('标题层级连续，一级标题唯一，无空标题'). No loading state; app.js:654-676 initializes synchronously per the brief's first-screen-ready constraint."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "The primary object (the document) is fully on screen at load in editor and preview form — zero navigation steps. Within-document navigation is one click: outline items call focusBlock(i) which scrolls and focuses the target block (app.js:282-288, 258-270). Import/export/history are single topbar clicks (index.html:19-24) opening overlays, not new screens."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "Single-screen app: no routes; import/export are modal overlays over the unchanged document (app.js:506-539, index.html:54-64). Text input re-renders only derived views and never rebuilds the editor, so typing is not interrupted (app.js:91-101 comment and schedulePreview). Structural ops rebuild the DOM but explicitly restore focus, caret position, and scroll (focusBlock, app.js:258-270). Undo/redo/jump operate on in-memory snapshots (app.js:87-89)."
+      },
+      "ui_surface_complexity": {
+        "score": 4,
+        "evidence": "All surfaces serve the brief's structure-preserving edit job (block rails enforce '编辑不破坏结构' by routing structure changes through model ops, app.js:5-6), and the lint strip with per-issue 修复/全部修复 buttons (app.js:304-323) is functional, not decorative. Deduction: the 7-control rail is permanently visible on every block (styles.css:139 '.rail { opacity: .9 }', no hover-reveal), so at 17 blocks the editor column shows ~100+ persistent controls (visible in 1280x860.png), a heavier permanent surface than the low-density brief strictly needs."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Receipt: a11y.contrast=fail, a11y.focus_order=fail, a11y.target_size=fail, type.min_projected_size=fail (measurement-summary.json:13-16) — 4 of 7 checks failed. Source is consistent with the fails: rail buttons are 2px 5px padded 14px icons (styles.css:140, app.js:50 size=14), below any reasonable target size; low-contrast faint text (#98a2b0 on white, styles.css:10) is used for brand-sub, col-hint, outline-meta and menu current item (styles.css:46,97,240); focus outlines removed on block-input and doc-title (styles.css:169,54). Positive affordances exist (aria-labels app.js:57,209; role=menu/dialog index.html:52,55) but cannot offset the four objective failures."
+      },
+      "frontend_rework": {
+        "score": 3,
+        "evidence": "No visible layout defects: layout.overflow=pass, layout.responsive_collision=pass, text.truncation=pass (measurement-summary.json:10-12), and both screenshots show clean three-column rendering at 1280x860 and 1440x900 with no clipping or collision. However 4 of 7 receipt checks failed (all a11y/typography, measurement-summary.json:13-16), implying a rework pass on contrast, focus order, and control target sizes before the UI would meet accessibility baselines."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed '结构化编辑与预览一致': preview is rendered from the same block model as the editor (renderPreview app.js:326-371; export hint states '派生自同一份结构模型' app.js:510), updates on every input via schedulePreview (app.js:95-101), and the preview header shows '与编辑器实时同步 · 358 字' (1440x900.png). '编辑不破坏结构' is actively enforced: lint rules for multiple H1 / level jumps / empty headings with structured fixes (doc-model.js:199-223), demonstrated in source/screenshots/03-lint-warn.png (warning strip '一级标题不止一个' + outline '!' marker) and the #demo=edit/lint/fix verification hooks driving real UI paths (app.js:590-641). Unit tests cover lint/fix/round-trip (tests/model.test.mjs:53-140)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "Receipt failures on all four a11y/typography checks: a11y.contrast, a11y.focus_order, a11y.target_size, type.min_projected_size (measurement-summary.json:13-16)",
+      "Sub-minimum click targets: per-block rail buttons padded 2px 5px around 14px icons (styles.css:140, app.js:50)",
+      "Low-contrast text tokens: --faint #98a2b0 on white used for col-hint, brand-sub, outline-meta, and disabled/current menu items (styles.css:10,46,97,240,242)",
+      "Native confirm() used for reset (app.js:541), inconsistent with the styled modal system and unstyled by the app's a11y patterns",
+      "Outline column is hidden entirely below 1100px (styles.css:274-278), removing one-click structure navigation on narrow screens (layout checks still passed)"
+    ],
+    "missing_evidence": [],
+    "overall_note": "This package is a near-canonical representation of the brief's edit × single-document job: a three-pane structured block editor (outline / block editor / live preview) whose editor, preview, and Markdown export all derive from one block model (doc-model.js header comment, app.js:326-371), directly implementing the acceptance seed '结构化编辑与预览一致' and backing it with lint rules, one-click structured fixes, snapshot history, and unit tests — the initial screen at both viewports is immediately legible and requires zero navigation to reach the primary object, with text edits designed not to interrupt typing and structural ops restoring focus. The clear weakness is measurable accessibility: 4 of 7 browser checks failed (contrast, focus order, target size, minimum projected type size), consistent with small icon-button rails and faint gray text visible in the source styles, which is the main driver of implied rework; layout checks all passed and no visual defects appear in either screenshot. Model-judged proxies only: task completion time, retrieval accuracy, and human preference are not observable in this blind review, and no human user study exists in this pilot."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 73493,
+      "outputTokens": 5022,
+      "cacheReadInputTokens": 123840,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.554935,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-09-16T22:16:12.493Z"
+}

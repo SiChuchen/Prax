@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AssetGrid · 设备资产批量管理台</title>
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+<header id="topbar">
+  <div class="brand">
+    <div class="logo">▦</div>
+    <div class="brand-text">
+      <strong>AssetGrid</strong>
+      <span>设备资产批量管理台</span>
+    </div>
+  </div>
+  <div id="global-stats"></div>
+  <div class="top-actions">
+    <button id="btn-log" class="btn ghost">🕘 操作日志 <span id="log-count" class="pill">0</span></button>
+    <button id="btn-undo" class="btn ghost" disabled>↩ 撤销上一步</button>
+  </div>
+</header>
+
+<main id="layout">
+  <aside class="panel" id="tree-panel">
+    <div class="panel-head">
+      <h2>组织层级</h2>
+      <div class="seg" id="scope-toggle" title="勾选分组时的选取范围">
+        <button data-scope="direct" class="on">仅直属</button>
+        <button data-scope="all">含子孙</button>
+      </div>
+    </div>
+    <p class="hint" id="scope-hint">勾选分组 ＝ 勾选其<b>直属</b>设备；切到「含子孙」将连同下级分组设备一并选中。</p>
+    <div id="tree"></div>
+  </aside>
+
+  <section class="panel" id="table-panel">
+    <div class="panel-head wrap">
+      <div id="breadcrumb"></div>
+      <div class="filters">
+        <input id="table-search" type="search" placeholder="搜索 名称/编号/型号/标签…" />
+        <select id="status-filter">
+          <option value="ALL">全部生效状态</option>
+          <option value="active">运行中</option>
+          <option value="maint">维护中</option>
+          <option value="paused">已停用</option>
+          <option value="retired">已报废</option>
+          <option value="override">仅看：自身覆盖</option>
+        </select>
+        <label class="chk"><input type="checkbox" id="only-selected" /> 仅看已选</label>
+      </div>
+    </div>
+    <div id="table-wrap"></div>
+  </section>
+
+  <aside class="panel" id="ops-panel">
+    <div class="panel-head accent">
+      <h2>🛡 批量操作区</h2>
+    </div>
+    <div id="result-card"></div>
+    <div id="sel-summary"></div>
+    <div class="ops-grid">
+      <button class="op" data-op="status" disabled>🛠 修改状态 <span class="n"></span></button>
+      <button class="op" data-op="move" disabled>📦 移动分组 <span class="n"></span></button>
+      <button class="op" data-op="tag" disabled>🏷 添加标签 <span class="n"></span></button>
+      <button class="op danger" data-op="delete" disabled>🗑 删除设备 <span class="n"></span></button>
+    </div>
+    <p class="hint">每次批量操作都会生成<b>确认单</b>：逐台列出将受影响的设备，可逐台排除；受保护设备默认跳过，确保零误伤。所有操作可撤销（限最近一次）。</p>
+  </aside>
+</main>
+
+<div id="modal-root"></div>
+<div id="drawer-root"></div>
+<div id="toast-root"></div>
+<div id="menu-root"></div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

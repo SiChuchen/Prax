@@ -1,0 +1,17 @@
+version: "0.1"
+realization_mode: direct_code
+conditions:
+  - id: defect_fix_fit
+    holds: true
+    basis: 无既有缺陷需修；条件平凡成立，不构成对 direct_code 的阻碍
+  - id: visual_polish_fit
+    holds: true
+    basis: 视觉语言为常规 wallboard 惯例（状态色网格+sparkline），无视觉不确定性；SDIR 已定语义结构，代码可直接实现
+  - id: small_modification
+    holds: true
+    basis: 单屏单页、零依赖、复杂度预算小（4 面板/3 控件/0 模式），代码规模适合直接实现
+  - id: mature_design_system
+    holds: true
+    basis: greenfield 无既有设计系统，但本产品以一组内联 design tokens（状态四色+间距+字号阶）自足，不需要系统级复用
+proposed_at: 2026-09-16T17:25:46.837Z
+overridden: false

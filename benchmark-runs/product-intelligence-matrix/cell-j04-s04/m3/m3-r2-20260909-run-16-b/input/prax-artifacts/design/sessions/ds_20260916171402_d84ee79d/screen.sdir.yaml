@@ -1,0 +1,166 @@
+version: "0.2"
+screen:
+  id: wallboard-main
+  intent:
+    primary_task: 扫视监控墙，在数秒内发现异常指标并下钻追溯其变化
+    secondary_tasks:
+      - 暂停/恢复数据流以核对细节
+      - 注入异常以演示检测
+      - 点击事件定位来源指标
+  archetype:
+    pattern_ref: PAT-LIST-DETAIL-INSPECTOR
+  density_intent: compact
+  regions:
+    - id: region-anomaly-strip
+      role: experimental:异常聚拢条：当前警告/严重/恢复中指标的横向聚合（severity 排序），扫视第一落点
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:异常项弹入并以低幅度缓慢脉冲直至恢复
+        - experimental:点击项→选中对应瓦片并打开检查器
+        - experimental:全部恢复时收敛为一条安静的正常摘要
+    - id: region-metric-grid
+      role: experimental:指标墙：按业务域分组的固定瓦片网格，每瓦片=名称+当前值+变化量+sparkline+状态色边
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:位置恒定不重排，结构仅在首次渲染时构建
+        - experimental:数值原位更新 + 短时高亮后静止；状态跃迁才改变状态色
+        - experimental:点击→选中 + 检查器展开
+    - id: region-inspector
+      role: experimental:选中指标检查器：大图走势（含阈值带）、状态跃迁链与带时间戳的取值历史
+      importance: primary
+      visibility:
+        condition: selection_driven
+      behavior_intent:
+        - experimental:选中时自右滑入，不遮挡网格（推压或叠加网格边缘），Esc/关闭退出
+        - experimental:选择期间数据流继续，选择与滚动位置保持
+        - experimental:瓦片保持可见（保留监控上下文）
+    - id: region-event-feed
+      role: experimental:事件流：跨指标时间倒序的变化事件（状态跃迁/阈值穿越/恢复），跨指标追溯视图
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:新事件顶部插入，异常事件状态色标识
+        - experimental:提供『仅看异常』持久过滤
+        - experimental:点击条目→选中来源指标
+    - id: region-header
+      role: experimental:状态头：产品名、时钟、流心跳/速率、暂停/恢复、注入异常
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:心跳随流节奏低频闪烁，暂停时停跳并显示暂停态
+        - experimental:控制件安静（Signal over Chrome）
+  relationships: []
+  interaction_intents:
+    - experimental:click 瓦片 → 选中并在检查器展开该指标证据链
+    - experimental:click 事件流条目/异常条项 → 选中来源指标
+    - experimental:Esc 或关闭钮 → 取消选中收起检查器
+    - experimental:Space → 暂停/恢复数据流
+    - experimental:click 注入异常 → 对随机正常指标强制异常场景（演示用）
+  required_states:
+    - ready
+    - selected
+    - empty
+    - error
+    - loading
+  decision_points:
+    - id: dp-anomaly-salience
+      question: 异常在不重排前提下如何达到扫视显著性？
+      adapter_may_choose:
+        - 色彩强度/左边框/角标的具体视觉实现
+        - 脉冲的节奏参数（保持低频低调）
+    - id: dp-sparkline-form
+      question: sparkline 具体视觉与采样窗口长度？
+      adapter_may_choose:
+        - 线/面积样式
+        - 窗口长度 60–120 个采样点
+        - 阈值带画法
+    - id: dp-inspector-form
+      question: 检查器形态与进入方式？
+      adapter_may_choose:
+        - 右滑入面板 vs 浮层
+        - 面板宽度取紧凑至中等（网格须保持主导可见）
+        - 历史列表行高密度
+  unresolved: []
+  rejected_alternatives:
+    - option: 异常指标置顶重排
+      reason: 重排=位置跳动=闪烁噪声，违反验收种子
+    - option: 全屏详情页代替检查器
+      reason: 离开监控上下文，无法保持扫视；违反 H-19/H-21
+    - option: auto-scroll 事件流
+      reason: 持续滚动干扰扫视并制造运动噪声
+  user_job:
+    verb: monitor
+    target: 易变指标流（many / high temporality / high volatility）
+    success: 异常在扫视内被发现；任一变化可经检查器/事件流追溯；全程无闪烁噪声
+  primary_object:
+    type: metric
+    label: 指标
+  information_shape:
+    cardinality: many
+    relationality: low
+    hierarchy: medium
+    temporality: high
+    density: high
+    dimensionality: medium
+    spatiality: none
+    volatility: high
+    uncertainty: low
+    comparison_need: none
+  representation:
+    primary:
+      type: grid
+      reason: many×高密度×无比较：固定瓦片网格是扫视型监控最小眼动成本表示
+    supporting:
+      - type: chart
+        reason: 瓦片内 sparkline + 检查器大图（阈值带）
+      - type: feed
+        reason: 跨指标事件时间线（追溯）
+      - type: list
+        reason: 检查器内结构化取值历史（证据链）
+  priority:
+    primary:
+      - region-anomaly-strip
+      - region-metric-grid
+      - region-inspector
+    contextual:
+      - region-event-feed
+      - region-header
+  interaction:
+    preview: none
+    inspect: select
+    navigate: none
+    locate: filter
+  state_ownership:
+    - state: selection
+      owner: session
+    - state: preview
+      owner: session
+    - state: mode
+      owner: session
+    - state: query
+      owner: region-event-feed
+    - state: viewport
+      owner: session
+  complexity_budget:
+    permanent_panels: 4
+    permanent_primary_actions: 3
+    modes: 0
+    state_owners: 2
+    navigation_levels: 1
+    persistent_filters: 1
+    new_semantic_concepts: 2
+    keyboard_contracts: 2
+    mobile_conflicts: 0
+    permanent_surfaces: 1
+  acceptance:
+    - 页面加载完成即满数据呈现，无骨架屏/加载态可被测得
+    - 模拟流运行中，异常指标在异常条与网格瓦片两处均可在扫视内发现
+    - 任一指标可打开检查器查看带时间戳的取值/状态变化历史（可追溯）
+    - 持续 60s 更新后无布局跳动、无整屏重绘闪烁
+    - 所有交互（选中/事件/暂停）均不改变瓦片网格位置
