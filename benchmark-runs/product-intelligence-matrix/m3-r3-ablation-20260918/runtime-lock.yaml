@@ -1,0 +1,13 @@
+# M3 r3 ablation runtime lock — cut 2026-09-18 AFTER the H-23 intervention was
+# committed (dad3707) and BEFORE any r3 run. Protocol: protocol-addendum.md.
+frozen_runtime:
+  path: E:/codex-prj/pi-m3-frozen-runtime-r3-20260918
+  differs_from_r1_r2_snapshot_by: knowledge entry H-23 + pack inventory test update (commit dad3707)
+  content_manifest: runtime-content-sha256.txt  # 1020 files
+  content_manifest_sha256: 681653b4643c2850601a75dc09d90a92d2a5f11f1ee16eafe3811d95bf548fdb
+  knowledge_yaml_sha256_head: 735ffbbe858c3f35
+  mcp_entry: packages/prax-mcp/dist/stdio.js
+  npm_ci_verification: npm-ci.log (exit 0)
+  doctor: PASS 2026-09-18 — knowledge_pack "55 validated entries"
+host_toolchain: identical to runtime-lock in m3-20260906 (node v24.14.0, playwright 1.62.1, chromium-1234)
+arm_client: identical (claude 2.1.251, --model sonnet = glm-5.3-flash[1M], --strict-mcp-config, -p)
