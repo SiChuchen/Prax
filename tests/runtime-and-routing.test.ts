@@ -152,8 +152,8 @@ describe("product-first runtime", () => {
 describe("context routing and disclosure", () => {
   it("loads the built-in knowledge pack on any platform", async () => {
     const store = await loadBuiltInKnowledgeStore();
-    // 23 migrated assets + 11 myth seeds (K3) + 20 first-batch corpus entries (K4)
-  expect(store.entries().filter((entry) => entry.asset_class !== "myth" && !entry.id.startsWith("CORPUS-"))).toHaveLength(23);
+    // 23 migrated assets + H-23 (admitted 2026-09-18, a11y AA floor) + 11 myth seeds (K3) + 20 first-batch corpus entries (K4)
+  expect(store.entries().filter((entry) => entry.asset_class !== "myth" && !entry.id.startsWith("CORPUS-"))).toHaveLength(24);
   expect(store.entriesOfType("myth")).toHaveLength(11);
   expect(store.entries().filter((entry) => entry.id.startsWith("CORPUS-"))).toHaveLength(20);
   });
