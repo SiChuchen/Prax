@@ -29,15 +29,23 @@ const inReviewWindow = () => { const m = minsNow(); return m >= 23 * 60 || m < 7
 opEv({ kind: "r2_night_start", local: new Date().toString().slice(0, 24) });
 
 // ---- phase 1: freeze verification ------------------------------------------
-const man = readFileSync(`${OP1}/runtime-content-sha256.txt`, "utf8");
-if (createHash("sha256").update(man).digest("hex") !== "23e770b3a48bf75111c9a56e963467fb8a7d40061f10ca06261dc33b5a3a4bab") {
-  throw new Error("runtime manifest hash drifted — refusing to run");
+// Verify the R3 snapshot manifest (OP3), not the round-1 one.
+const man = readFileSync(`${OP2}/runtime-content-sha256.txt`, "utf8");
+if (createHash("sha256").update(man).digest("hex") !== "681653b4643c2850601a75dc09d90a92d2a5f11f1ee16eafe3811d95bf548fdb") {
+  throw new Error("r3 runtime manifest hash drifted — refusing to run");
 }
 const entry = createHash("sha256").update(readFileSync(`${FROZEN}/packages/prax-mcp/dist/stdio.js`)).digest("hex");
 if (entry !== "1ca1783c34c1e1e0a625c6de4fd771dbd2effed7a8ed9ebace2f42d1aeaf8bb5") {
   throw new Error("frozen MCP entry hash drifted — refusing to run");
 }
-log("freeze verified");
+// Launch-config checklist (r2 night-1 lesson, recurred r3 night-1: missing
+// empty MCP config kills every Arm A launch). Verify before ANY slot.
+if (!existsSync(`${OP2}/launch/mcp-config-empty.json`)) {
+  throw new Error("launch/mcp-config-empty.json missing — Arm A launches would fail");
+}
+const promptFiles = readdirSync(`${OP2}/launch`).filter((f) => f.endsWith("-prompt.md")).length;
+if (promptFiles !== 20) throw new Error(`expected 20 launch prompts, found ${promptFiles}`);
+log("freeze verified (r3 manifest); launch checklist OK");
 
 // ---- phase 2: runs -----------------------------------------------------------
 const order = readFileSync(`${OP2}/run-order.yaml`, "utf8");
