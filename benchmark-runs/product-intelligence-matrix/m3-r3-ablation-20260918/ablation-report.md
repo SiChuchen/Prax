@@ -86,3 +86,33 @@ Honesty notes (required by protocol A5/inherited disciplines):
   transition ledger.
 - Automation deleted by operator 2026-10-24; R3-COMPLETE marker written by
   `r3-loop.mjs` the same day.
+
+## 6. Independent verification addendum (coordinator session, 2026-10-24)
+
+A second coordinator pass re-derived the endpoints from the raw receipts
+(`a11y-endpoints-r3.json`) and the session artifacts. Two corrections and one
+refinement, none changing the NEGATIVE verdict:
+
+1. **B focus_order pass count is 3/9 (33.3%), not 4/9 (44.4%)** — pass runs:
+   run-02, run-10, run-17; run-11's focus is `skipped` (not pass). The
+   instance-level composite therefore reads 5/27 ≈ 18.5% (not 6/27), and the
+   focus relative gain is 2.1× (not 2.8×). Fisher p for 3/9 vs 3/19 ≈ 0.37 —
+   the honesty note's substance stands, weaker.
+2. **Route check needs two layers** (verified per session artifact):
+   - routing-log.yaml (router SELECTION): H-23 in **9/10** B sessions
+     (run-09-b the exception) — as reported;
+   - session.yaml disclosures (actually SURFACED to the agent): H-23 in
+     **2/10** (run-12, run-18). The gap is the L0–L3 progressive-disclosure
+     authorization: the router selected the entry, the disclosure layer did
+     not surface it in 8/10 sessions.
+3. **Refined mechanism statement** (supersedes §3's "disclosure without
+   application"): the failure has TWO stages — **selection-without-surfacing
+   (8/10)** upstream of **surfacing-without-application (2/2 disclosed
+   sessions showed no check improvement; run-18 invalid target, run-12
+   all-fail)**. The routing-layer engineering candidate therefore splits:
+   (a) why the disclosure layer does not surface an admitted, router-selected
+   entry at the styling/validation phase, and (b) deterministic injection at
+   validation-plan time regardless of brief keywords.
+
+Run-level composite (a receipt passing all three) re-verified: 0/9 B, 0/10 A —
+both pre-registered readings fail the success bar; verdict unchanged.
