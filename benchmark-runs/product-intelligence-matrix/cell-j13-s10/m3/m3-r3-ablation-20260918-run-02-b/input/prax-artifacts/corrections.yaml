@@ -1,0 +1,25 @@
+version: "0.1"
+corrections:
+  - id: corr-filter-same-dim-union
+    scope:
+      project: cell-j13-s10-b
+      surfaces:
+        - explore-projection-main
+    finding:
+      type: filter_semantics_defect
+      observed: 初版 recomputeVisible 将所有过滤谓词做全局 AND：同一数值维度点击两个相邻分箱（半开区间
+        [lo,hi)）时交集恒为空，任何双箱组合都导致 0 可见记录（首版 07 截图实测：营收∈[0.9k,1.2k) ∧
+        营收∈[1.2k,1.5k) ∧ 上线季度=2024Q2 → 可见 0/2,400）。类别维度同维多值同理不可能同时成立
+    intended:
+      statement: 过滤谓词组合语义必须是：同维度内取并集（任一命中的分箱/取值即通过），跨维度取交集（分面语义）。已实现于 index.html
+        recomputeVisible（byDim 分组 → 组内 some / 组间 every），并以 capture2.mjs A1/A2/A3
+        断言验证：3 个营收分箱+1 个渠道取值 → 可见 33；全选可见 33 条选中；切换 X/Y/颜色投影后 4 项过滤与 33
+        条选中全部保留。回归判据：任意同维多箱组合的可见数 ≥ 单箱可见数（不为恒空）
+    evidence_refs: []
+    regression:
+      check_id: filter_state
+      requirement: 同维度多分箱/多取值过滤为并集语义，跨维度为交集语义；同维多箱组合不得产生恒空结果
+    supersedes: []
+    promotion:
+      candidate: true
+    created_at: 2026-09-18T15:53:58.077Z

@@ -1,0 +1,95 @@
+needs:
+  - id: cap-carryover-context
+    product_action: 维度切换时保留过滤/选中/颜色编码上下文并给出显式回执
+    required_experience:
+      - 切换 X/Y/颜色后旧过滤仍生效、旧选中仍高亮
+      - 回执条显示保留计数
+    capabilities:
+      - reactive state store
+      - selection as record-id set
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 单一客户端 store：selection 按记录 id、filter 为谓词数组，与 projection 解耦；切换投影只改 projection 字段
+  - id: cap-attributed-ledger
+    product_action: 过滤/投影/选中操作写入带归属的流水（来源部件+动作摘要+时间）
+    required_experience:
+      - 账本每条显示来源与动作
+      - 单条过滤可单独移除
+    capabilities:
+      - immutable snapshots
+      - operation metadata (source part, action label, timestamp)
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 每次 mutation 推入快照栈，快照携带 source/label/timestamp 元数据；渲染为紧凑列表
+  - id: cap-rollback
+    product_action: 撤销/重做/点击任意快照跳转回退
+    required_experience:
+      - Ctrl+Z / Ctrl+Shift+Z
+      - 点击账本任意快照恢复该全量状态且不销毁后续快照
+    capabilities:
+      - snapshot stack with pointer
+      - undo/redo/jump-to-snapshot
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 状态栈 + 指针模型；跳转=移动指针并恢复状态，forward 历史保留
+  - id: cap-dense-render
+    product_action: ~2400 点高密度投影的流畅渲染与框选/悬停取样
+    required_experience:
+      - 半透明叠渲表达密度
+      - 被过滤点淡灰背景层
+      - 框选与最近点取样即时反馈
+    capabilities:
+      - Canvas 2D layered rendering
+      - alpha blending for density
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Canvas 2D 双层（参考层+主层），requestAnimationFrame 按需重绘；空间上用网格分桶加速最近点查询
+  - id: cap-inline-data
+    product_action: 首屏即用：初始数据内联、无加载态
+    required_experience:
+      - 页面加载完成即渲染完整画布
+      - 无网络请求、无骨架屏
+    capabilities:
+      - seeded PRNG data generation inlined in bundle
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 种子化合成数据在脚本内同步生成（<10ms），DOMContentLoaded 前完成首次渲染
+  - id: cap-static-delivery
+    product_action: 静态直接打开（file:// 下 index.html 可用），无外部服务
+    required_experience:
+      - 双击 index.html 即可运行
+      - 零 CDN/零构建依赖
+    capabilities:
+      - single-file vanilla JS/CSS/HTML
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯 vanilla HTML/CSS/JS 单文件入口，无模块加载器、无外部字体/脚本
+  - id: cap-mixed-axis
+    product_action: 数值维→连续轴，类别维→分带抖动条带，同一画布语义
+    required_experience:
+      - 任意维度可作 X/Y
+      - 类别轴带标签与抖动防重叠
+    capabilities:
+      - scales for continuous & banded axes
+      - jitter within bands
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 线性/条带两种 scale 函数；抖动用记录 id 散列保证跨切换稳定（同一点换投影不跳动）
+  - id: cap-dist-feedback
+    product_action: 维度卡微缩分布随当前过滤实时反馈
+    required_experience:
+      - 数值维 12 箱直方、类别维频次条
+      - 分箱点击即过滤并联动画布
+    capabilities:
+      - incremental histogram computation per dimension
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 每次过滤变化后对全部维度重算分布（2400×10 量级，微秒级）；分箱高亮当前过滤覆盖

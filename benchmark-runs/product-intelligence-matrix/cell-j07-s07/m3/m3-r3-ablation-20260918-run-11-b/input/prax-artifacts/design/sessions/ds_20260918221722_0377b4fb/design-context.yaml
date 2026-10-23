@@ -1,0 +1,65 @@
+user:
+  expertise: mixed
+  familiarity: medium
+task:
+  primary: Create canvas objects and land them in zones so the landing position itself is the record of intent
+  modes:
+    - direct manipulation (drag)
+    - keyboard-first placement (ghost + arrows + Enter)
+    - inspect (select → derived facts)
+  frequency: medium
+domain:
+  type: Physical floor layout / spatial arrangement (gallery-exhibit-to-shop-floor family)
+  entities:
+    - Placed object (tile)
+    - Zone (region)
+    - Floor canvas
+    - Derived relation
+information:
+  volume: medium
+  relationship_complexity: medium
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: low
+  error_cost: low
+priorities:
+  - "Placement-is-intent fidelity: zone membership and neighbors derived from position only"
+  - Keyboard equivalence for every spatial operation (acceptance seed)
+  - Instant usable first paint — inlined initial scene, no loading state
+  - Derived relations visible at a glance (zone tint, inspector, status landing hint) without edit dialogs
+density_intent: regular
+confidence:
+  overall: high
+unknowns:
+  - id: domain_theme
+    impact: low
+    affects:
+      - copy/labels
+      - initial demo scene
+classification:
+  version: "1"
+  task_type: inspect_relationships
+  domain_id: unknown
+  interaction_mode: canvas_with_contextual_inspector
+  product_type: unknown
+  primary_object_type: canvas_object
+  secondary_object_types:
+    - region
+    - floor_canvas
+    - derived_relation
+  confidence: medium
+  evidence:
+    - task_type=inspect_relationships ← token 'inspect' in context.task and frame.tasks
+    - interaction_mode=canvas_with_contextual_inspector ← token 'canvas' in context.task, frame.tasks, and context.priorities
+    - primary_object_type=canvas_object ← most referenced product object in the Product Frame
+  open_questions:
+    - domain_id could not be classified from the provided context; refine the context fields or record a custom classification
+    - product_type could not be derived; record the intended audience and product kind

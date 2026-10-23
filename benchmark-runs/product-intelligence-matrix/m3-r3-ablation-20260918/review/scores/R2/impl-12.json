@@ -1,0 +1,79 @@
+{
+  "reviewer": "R2",
+  "package_id": "impl-12",
+  "session_id": "a2cc38a2-36fe-41bc-8621-abafb280d130",
+  "wall_clock_seconds": 253,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-12",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Both viewports show a 24-tile metric wall in 4 groups (name, value+unit, signed delta, 60-sample sparkline with threshold hairlines, status badge) plus a timestamped event-stream panel — matching the brief's metric/volatile-evidence-stream shape; source defines 4 groups × 6 metrics with warn/crit thresholds (source/index.html:222-250) and event kinds 'threshold crossed'/'sudden move Nσ' (source/index.html:312-322, 468-470)."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "Monitoring dominates the initial screen: ~73% of width is the live tile wall; 2 active alerts surface in a top strip with name/value/duration ('CRIT 5xx response rate · 13.1% · for 1m47s') and anomalous tiles carry red/amber borders in 1280x860.png and 1440x900.png; alert strip logic at source/index.html:163, 440-461."
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "Model-judged label proxy only: brand subtitle states the job ('volatile metric stream · monitor', source/index.html:148), tiles are self-describing (name/value/status/delta/recency foot 'OK 2m14s'), panel hint explains interaction ('click an event to trace it on the metric', source/index.html:171); first paint fully populated via synchronous 90-tick boot (source/index.html:630-636), no loading state. Not a human measurement."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Primary object (metric) needs 0 steps to view, 1 click to drill into: tiles are buttons (source/index.html:366-378), alert chips call selectMetric (:458), events call traceEvent (:476); deep links via #m=<id> (:501, 637-638); groups expanded by default."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "Selecting a metric swaps only the right panel to detail; the wall stays visible and keeps live-updating while selected (onTick re-renders wall, source/index.html:600-603); back button and Escape restore the stream (:624-626); selection persisted in URL hash (:501). No mode change hides the primary surface."
+      },
+      "ui_surface_complexity": {
+        "score": 5,
+        "evidence": "Permanent surfaces: topbar (clock, counters, pause/1×/4×, LIVE), conditional alert strip (hidden when no alerts, source/index.html:163, 452), tile wall, one panel. All controls functional; high density matches the brief's density facet; no unused chrome in either screenshot."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Receipt: a11y.contrast=fail, a11y.focus_order=fail, a11y.target_size=fail, plus type.min_projected_size=fail (measurement-summary.json). Consistent with 9.5–11.5px secondary text (chips source/index.html:134, status :84, foot :92) and ~22px-tall header segment buttons (:42). Mitigating structure exists: :focus-visible outlines (:67, :78), aria-pressed/aria-expanded (:347, :368, :612), Enter/Space on group heads (:362), prefers-reduced-motion (:139); but focus can drop when #panel-stream is hidden while focused (:499-500)."
+      },
+      "frontend_rework": {
+        "score": 2,
+        "evidence": "Layout receipts are clean (layout.overflow, layout.responsive_collision, text.truncation all pass; no clipping at either viewport; target_invalid=false), but a pervasive visible defect exists: every unit-bearing tile prints its unit twice ('8.42 Gbps Gbps', '174 ms ms', '13.1% %' in both screenshots) because fmtVal embeds the unit (source/index.html:268-271) and the tile template appends mt.unit again (:372); combined with 4/7 failed receipt checks this implies substantial remediation."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed 'metric changes traceable, no flicker noise' is directly addressed: every status change and 3.5σ jump is recorded with prev→new value and cause (source/index.html:312-323), listed in the event stream and per-metric change log with click-to-trace + flash highlight (:507-511), detail chart shows 90 samples with threshold hairlines and hover time/value (:529-583), tile foot shows 'Δ ago · STATUS for' (:394). Flicker controlled: 0.45s eased status/background transitions (:77, :82), 0.4s fade on new events (:125-126), bounded drift (:301), prefers-reduced-motion (:139)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "Unit duplicated on every unit-bearing tile ('8.42 Gbps Gbps', '174 ms ms', '13.1% %') visible in both screenshots; caused by fmtVal embedding the unit (source/index.html:268-271) plus the tile template appending mt.unit again (:372)",
+      "Receipt failures: a11y.contrast=fail, a11y.focus_order=fail, a11y.target_size=fail, type.min_projected_size=fail (measurement-summary.json checks)",
+      "Very small secondary type consistent with the type/contrast failures: 9.5px chips, 10px status labels, 10.5px footers (source/index.html:84, 92, 134)",
+      "Focus-management defect path: selectMetric hides #panel-stream while focus may be inside it, dropping focus to body (source/index.html:499-500)"
+    ],
+    "missing_evidence": [],
+    "overall_note": "impl-12 is a dense single-screen volatile-metric monitor: a 24-tile wall in 4 groups (value, delta, sparkline with threshold hairlines, status) plus a sticky event stream whose entries give prev→new values and causes, clickable to a metric detail that highlights the matching change-log row (source/index.html:507-511); the first paint is fully populated by a synchronous 90-tick seeded boot (:630-636), satisfying the brief's no-loading-state constraint and its traceability acceptance seed, with smoothed transitions against flicker. The weaknesses are concentrated in typographic/accessibility quality: all three a11y checks and the minimum-type check fail in the receipt, consistent with 9.5–11.5px secondary labels and small header controls in source, and a visible formatting defect duplicates the unit on nearly every tile ('8.42 Gbps Gbps', '174 ms ms'). Layout receipts and both viewports show no overflow, collision, or truncation. Scores for understanding and navigation are model-judged structural proxies, not human measurements; human preference is not observable in this pilot."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 30194,
+      "outputTokens": 10845,
+      "cacheReadInputTokens": 68608,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.456399,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-10-23T17:47:31.838Z"
+}

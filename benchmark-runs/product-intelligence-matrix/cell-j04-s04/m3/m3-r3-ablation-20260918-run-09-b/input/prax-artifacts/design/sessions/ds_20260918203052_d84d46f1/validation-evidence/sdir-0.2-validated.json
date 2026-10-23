@@ -1,0 +1,144 @@
+{
+  "_meta": {
+    "what": "The complete SDIR 0.2 for screen monitor-wall, exactly as submitted to design_sdir mode=validate (result: PASS, schema_errors=[], semantic_errors=[], semantic_issues=[] at 2026-09-19T05:17+08:00).",
+    "why_here": "The session's persisted screen.sdir.yaml remained the 0.1 auto-generated form produced by the earlier generate_from_decisions call; this file preserves the validated 0.2 contract for audit and for later sessions.",
+    "note": "priority/state_ownership owners use region ids and 'session' per sdir lint rules; free-text semantic strings carry the experimental: prefix as required by the lint."
+  },
+  "version": "0.2",
+  "screen": {
+    "id": "monitor-wall",
+    "intent": {
+      "primary_task": "扫视指标墙，即时发现异常（critical/warning）",
+      "secondary_tasks": [
+        "点选 metric 追溯其 change_history（何时开始异常、如何演变）",
+        "按 severity/group 过滤收窄扫视范围",
+        "暂停/恢复数据流以定格读数"
+      ]
+    },
+    "archetype": { "pattern_ref": "PAT-LIST-DETAIL-INSPECTOR" },
+    "density_intent": "compact",
+    "regions": [
+      {
+        "id": "status-bar",
+        "role": "experimental:全局状态与控制条（流心跳/时钟/严重度计数/severity 与 group 过滤/暂停指示）",
+        "importance": "supporting",
+        "visibility": { "condition": "always" },
+        "behavior_intent": [
+          "experimental:心跳点随每次采样脉动（CSS opacity，非重排）",
+          "experimental:计数就地更新"
+        ]
+      },
+      {
+        "id": "metric-wall",
+        "role": "experimental:按 metric_group 分区的恒定位置紧凑瓦片网格",
+        "importance": "dominant",
+        "visibility": { "condition": "always" },
+        "behavior_intent": [
+          "experimental:仅文本/色值/sparkline 属性就地替换，位置恒定",
+          "experimental:异常瓦片左边框+背景色调，healthy 低对比底色",
+          "experimental:过滤时置灰保位，不做隐藏重排"
+        ]
+      },
+      {
+        "id": "inspector",
+        "role": "experimental:选中 metric 的 contextual 详情（90 点轨迹图/异常起始与持续时长/逐点带时间戳变化列表）",
+        "importance": "primary",
+        "visibility": { "condition": "selection_driven" },
+        "behavior_intent": [
+          "preserve_context",
+          "experimental:跟随流实时追加",
+          "experimental:Esc 关闭选区后回到 empty 态"
+        ]
+      },
+      {
+        "id": "anomaly-feed",
+        "role": "experimental:时间戳化 anomaly 事件流（可点击跳选）",
+        "importance": "supporting",
+        "visibility": { "condition": "always" },
+        "behavior_intent": [
+          "experimental:新条目顶部插入，最多保留 8 条",
+          "experimental:纯文本插入无动画"
+        ]
+      }
+    ],
+    "interaction_intents": [
+      "experimental:点选 metric 瓦片 → inspector 展示其 change_history（大轨迹图+逐点带时间戳变化列表）",
+      "experimental:severity（all/crit/warn）与 group 过滤收窄墙面（置灰保位）",
+      "experimental:空格键暂停/恢复流（暂停时心跳停摆，可定格读数）",
+      "experimental:点击 anomaly feed 条目 → 跳选对应 metric",
+      "experimental:Esc 关闭选区",
+      "preserve_context",
+      "keyboard_equivalent"
+    ],
+    "required_states": ["ready", "selected", "empty", "loading", "error"],
+    "decision_points": [
+      {
+        "id": "dp-initial-selection",
+        "question": "初始预选哪个 metric？（适配器选择：最近一次异常，保证首屏即展示追溯）",
+        "adapter_may_choose": ["默认选中最近一次异常的 metric", "无预选"]
+      },
+      { "id": "dp-update-cadence", "question": "流推进周期？（适配器选择 1.2s）", "adapter_may_choose": ["1.0s", "1.2s", "1.5s"] },
+      { "id": "dp-severity-encoding", "question": "anomaly 严重度的颜色编码形式？（适配器选择左边框+徽标）", "adapter_may_choose": ["色块+左边框", "徽标+顶边框"] }
+    ],
+    "representation": {
+      "primary": {
+        "type": "grid",
+        "reason": "many 个高频更新 metric 需要恒定位置的紧凑瓦片：颜色/徽标承载 anomaly 显著性（扫视可见），sparkline 承载近期轨迹（时间性），位置恒定承载无闪烁；comparison=none 故不采用 table"
+      },
+      "supporting": [
+        { "type": "chart", "reason": "inspector 内选中 metric 的 90 点大轨迹图 + 逐点变化表（变化追溯）" },
+        { "type": "feed", "reason": "时间戳化 anomaly 事件流，跨 metric 追溯线索" },
+        { "type": "list", "reason": "inspector 内逐点采样明细列表" }
+      ]
+    },
+    "state_ownership": [
+      { "state": "selection", "owner": "inspector" },
+      { "state": "preview", "owner": "session" },
+      { "state": "query", "owner": "status-bar" },
+      { "state": "mode", "owner": "session" },
+      { "state": "viewport", "owner": "session" }
+    ],
+    "acceptance": [
+      "首屏即 ready：24+ metric 内联就位并持续更新，无 loading 态作为可测状态",
+      "任一 anomaly 在扫视内（≤3s）凭颜色/徽标/分区计数被识别",
+      "选中任一 metric 可追溯带时间戳的逐点变化（inspector 不打断墙）",
+      "更新为就地替换：DOM 位置恒定、无闪烁、无整页重排",
+      "severity 与 group 过滤收窄扫视范围，计数与墙面一致"
+    ],
+    "complexity_budget": {
+      "permanent_panels": 3,
+      "permanent_primary_actions": 2,
+      "modes": 0,
+      "state_owners": 2,
+      "navigation_levels": 1,
+      "persistent_filters": 2,
+      "new_semantic_concepts": 2,
+      "keyboard_contracts": 1,
+      "mobile_conflicts": 0,
+      "permanent_surfaces": 1
+    },
+    "information_shape": {
+      "cardinality": "many",
+      "relationality": "low",
+      "hierarchy": "medium",
+      "temporality": "high",
+      "density": "high",
+      "dimensionality": "medium",
+      "spatiality": "none",
+      "volatility": "high",
+      "uncertainty": "low",
+      "comparison_need": "none"
+    },
+    "priority": {
+      "primary": ["metric-wall", "inspector", "status-bar", "anomaly-feed"],
+      "contextual": ["anomaly-feed"]
+    },
+    "interaction": { "preview": "none", "inspect": "select", "navigate": "none", "locate": "filter" },
+    "user_job": { "verb": "monitor", "target": "易变指标流", "success": "异常在扫视内发现；变化可追溯；无闪烁噪声" },
+    "primary_object": { "type": "metric", "label": "指标（metric）" },
+    "rejected_alternatives": [
+      { "option": "table 主面", "reason": "comparison=none，行内异常显著性弱" },
+      { "option": "feed 主面", "reason": "位置不稳定，异常滚出视口" }
+    ]
+  }
+}

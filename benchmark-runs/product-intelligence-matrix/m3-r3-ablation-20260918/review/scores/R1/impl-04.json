@@ -1,0 +1,80 @@
+{
+  "reviewer": "R1",
+  "package_id": "impl-04",
+  "session_id": "2c39dfcc-1c33-44d3-8817-c961f9408f4e",
+  "wall_clock_seconds": 151,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-04",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Brief shape is unbounded low-relation medium-hierarchy collection, job = locate target (brief.md user_job/shape). source/index.html implements exactly this: faceted 'collection locator' with 680 synthetic items across 8 domains / 2-level category tree (DOMAINS, index.html:369-413), search over name/desc/tags (searchIdx, index.html:504-510), and item-row list with format/size/date meta (rowHTML, index.html:701-714). Primary object is the item as suggested."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "Both screenshots (1280x860, 1440x900): search input is the dominant centered top-bar control with task-naming placeholder 'Search 680 items — name, description or tag' (index.html:1057), and it is auto-focused on load (index.html:1059). Locate machinery (search + 4 facet blocks + result list) fills the entire first screen."
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "Initial screen self-labels: brand 'OpenVault — collection locator' (index.html:6, 287-288), 'Showing 680 items' count (index.html:793-797), snapshot '680 items · 8 domains' (index.html:1055), grouped headers 'Environment 106'. A viewer reads what/where within seconds in both viewports."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Locate path is ≤3 interactions per the success standard: query typed into auto-focused search (interaction 1) + Enter selects best match or a row click opens the item (index.html:957-960, 999-1003); facet path is one click per level (single-select domain, then group, index.html:973-986). Detail opens as an in-place third column, no page navigation (layout.with-detail, index.html:77, 799-803)."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "Filtering never navigates: active filters render as removable chips (index.html:772-791) and state persists to the URL hash and restores on reload (writeHash/initState, index.html:825-848, 920-948). Selection keeps list context — detail hint 'a tag adds one search term — your other filters and your place in the list are kept' (index.html:822), selection scroll-preserved via pendingScrollSel (index.html:744, 752)."
+      },
+      "ui_surface_complexity": {
+        "score": 5,
+        "evidence": "Exactly three permanent surfaces (topbar, filter sidebar, results) plus a context bar; every control maps to the locate job: 8-domain tree, format/license/size facets each with live counts (index.html:644-699), 4-option sort. Detail panel hidden until an item is selected (index.html:330, 802); chips row empty at rest (both screenshots)."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "All four a11y/type checks fail in the receipt: a11y.contrast=fail, a11y.focus_order=fail, a11y.target_size=fail, type.min_projected_size=fail (measurement-summary.json checks). Source is consistent with the failures: 20px clear button (index.html:63), 16px chip-remove (index.html:157), 22x26 twist (index.html:111), 10.5px pill/meta-dt text (index.html:199, 243), #8b95a2 secondary ink at 11-12px (index.html:18, 104). Markup does show a11y intent (role=search :290, aria-expanded :660, listbox/option :327/:703, :focus-visible :35), but the measured outcomes are 4 fails of 7."
+      },
+      "frontend_rework": {
+        "score": 4,
+        "evidence": "No layout rework signals: layout.overflow=pass, layout.responsive_collision=pass, text.truncation=pass and both screenshots are defect-free at 1280x860 and 1440x900; target_invalid=false. Score held at 4 because 4/7 receipt failures (contrast, focus order, target size, min type size) imply a round of frontend fixes before the surface would pass acceptance."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed 'locate path has search/filter support and does not lose context' is directly addressed: whitespace-AND search with matchQ (index.html:563-568), faceted filtering with counts-relaxed-per-facet applyFilters(except) (index.html:570-586, 644-698), removable filter chips + Clear all (index.html:785-789), URL-hash context survival (index.html:825-848, 920-948), tag-click addTerm keeping filters (index.html:883-888), and empty-state 'Clear search & filters' recovery (index.html:722-725)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "a11y.contrast: fail (measurement-summary.json) — consistent with #8b95a2 secondary text at 11-12.5px on white (index.html:18, 104, 127)",
+      "a11y.focus_order: fail (measurement-summary.json) despite strong keyboard markup in source; unexplained by visible code but measured",
+      "a11y.target_size: fail (measurement-summary.json) — 16px chip-remove (index.html:157), 20px search-clear (index.html:63), 22x26 twist (index.html:111)",
+      "type.min_projected_size: fail (measurement-summary.json) — 10.5px pill and meta labels (index.html:199, 243), 11px kbd (index.html:38-39)",
+      "No visible layout defects: overflow, responsive collision, and truncation checks all pass; both screenshots render cleanly"
+    ],
+    "missing_evidence": [],
+    "overall_note": "impl-04 is a single-file, zero-dependency static page (source/index.html) that matches the brief's deliverable constraints: usable at first paint by construction via synchronous seeded generation (index.html:338-344, 1051-1059), one main screen, no loading state, noscript fallback (:334). The representation is a strong fit for locate-in-an-open-collection: auto-focused search, a 2-level domain/group tree, three counted facet blocks, removable filter chips, in-place detail panel, and URL-hash state persistence together make the ≤3-interaction locate path real in the UI structure (index.html:953-1003, 825-848). Initial screen comprehension is immediate in both screenshots thanks to task-naming placeholder and live counts. The one clear weak area is accessibility as measured: all four a11y/type checks fail, traceable in source to sub-24px targets and sub-12px low-contrast text, even though semantic markup (roles, aria-expanded, focus-visible) is careful. No layout defects are visible or measured, so implied rework is limited to an accessibility/token pass. Task completion time, retrieval accuracy, and human preference remain unobservable in this blind pilot; the accessibility score reflects the receipt plus source evidence, and preference judgments here are model-judged proxies, not human ones."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 69385,
+      "outputTokens": 5208,
+      "cacheReadInputTokens": 61248,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.507749,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-10-23T16:17:17.252Z"
+}

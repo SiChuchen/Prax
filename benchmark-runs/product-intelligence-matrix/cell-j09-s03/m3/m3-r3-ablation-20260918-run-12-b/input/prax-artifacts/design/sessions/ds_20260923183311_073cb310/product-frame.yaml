@@ -1,0 +1,88 @@
+version: "0.2"
+jtbd:
+  verb: decide
+  target: 位置敏感的候选地点（租房/选址类）
+  success: 决策输入（地理语境 + 属性对比 + 权重结果）同屏可得，用户当场落定选择
+primary_object:
+  type: location
+  label: 候选地点
+task_model:
+  frequency: low
+  reversibility: reversible
+  consequence: medium
+  expertise: mixed
+user:
+  primary_role: 正在租房/选址的个人决策者（如租客、小团队选址负责人）
+  expertise: intermediate
+  familiarity: medium
+goal:
+  primary: 在 3–5 个位置敏感的候选地点中做出一个可辩护的最终选择，且全程不需要离开首屏或依赖记忆拼凑信息
+tasks:
+  primary: 并排比较候选地点：在同一屏内对照地理语境与高密度属性逐维权衡，得出加权排序
+  secondary:
+    - 调整偏好权重观察排名与推荐变化
+    - 在地图上核对单个候选的位置、通勤与周边
+    - 落定最终选择并记录理由
+product_objects:
+  - id: candidate
+    user_name: 候选地点
+    purpose: 被比较与被选择的位置敏感选项，承载地理坐标与高密度属性
+  - id: map_context
+    user_name: 地图语境
+    purpose: 提供地理语境：候选相对位置、通勤锚点、街区要素
+  - id: comparison_dimension
+    user_name: 比较维度
+    purpose: 对齐比较的属性行（价格、通勤、面积、噪音等），是判断优劣的单位
+  - id: weight_profile
+    user_name: 偏好权重
+    purpose: 用户可调的偏好权重，驱动加权评分与排序，体现决策偏好
+  - id: decision
+    user_name: 决定
+    purpose: 落定的最终选择及其理由摘要，决策状态驻留同屏
+relationships:
+  - id: rel-cand-map
+    source: candidate
+    target: map_context
+    type: located_on
+    direction: bidirectional
+    meaning: 候选在地图上有唯一位置标注，选中候选时地图高亮其位置与通勤线路
+    condition: 任何候选选中时
+    importance: primary
+  - id: rel-cand-dim
+    source: candidate
+    target: comparison_dimension
+    type: has_value
+    direction: bidirectional
+    meaning: 候选在每个比较维度上有一个取值，列间同行对齐形成比较
+    condition: 始终
+    importance: primary
+  - id: rel-weights-cand
+    source: weight_profile
+    target: candidate
+    type: ranks
+    direction: forward
+    meaning: 偏好权重对全部候选逐维评分，产生加权总分与排名
+    condition: 权重调整时
+    importance: primary
+  - id: rel-decision-cand
+    source: decision
+    target: candidate
+    type: selects
+    direction: forward
+    meaning: 决定选中恰好一个候选，记录时间与理由
+    condition: 用户落定时
+    importance: primary
+mental_model_hypothesis:
+  summary: 用户心智模型 ≈ 房产/选址平台上「对比清单 + 地图」的组合：左边（或下层）是一张带候选标注的地图提供地理语境，右边（或上层）是每个候选一列的对比表，行对齐、优劣可辨，最后加权得出推荐并落定选择。
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: 页面加载完成即进入可用状态：地理语境（地图上各候选位置与关键锚点）与高密度比较面板同屏驻留；用户完成「比较 → 调权 → 落定」全程无加载态、无翻页、无信息出屏。
+open_questions: []
+existing_product:
+  stable_user_concepts: []
+  stable_patterns: []
+  current_user_pain_points: []
+  current_constraints: []
+  legacy_debt: []

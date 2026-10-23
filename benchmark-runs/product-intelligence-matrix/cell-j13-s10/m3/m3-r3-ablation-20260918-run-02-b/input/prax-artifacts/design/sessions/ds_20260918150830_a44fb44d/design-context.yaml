@@ -1,0 +1,70 @@
+user:
+  expertise: intermediate
+  familiarity: high
+task:
+  primary: 在多维数据集上切换投影维度探索分布，同时维持过滤/选中上下文并可回退
+  modes:
+    - explore
+    - filter
+    - select
+    - project_switch
+    - rollback
+  frequency: high
+domain:
+  type: exploratory_data_analysis
+  entities:
+    - 数据集（只读记录集）
+    - 维度（数值/类别，可投影可过滤）
+    - 投影（当前 X×Y+颜色 的维度组合）
+    - 过滤（带归属的谓词）
+    - 选中集（按记录身份引用）
+    - 状态快照（探索轨迹检查点）
+information:
+  volume: high
+  relationship_complexity: medium
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: low
+  error_cost: low
+priorities:
+  - 维度切换不重置认知（成功标准）
+  - 过滤/投影状态有归属且可回退（验收种子）
+  - 高密度记录（~2400 条）的可读渲染与点选取样
+  - 首屏即用：初始数据内联，无加载态
+density_intent: compact
+confidence:
+  overall: high
+unknowns:
+  - id: dataset_source_not_given
+    impact: low
+    affects:
+      - data seeding
+classification:
+  version: "1"
+  task_type: compare_filter_records
+  domain_id: data_exploration
+  interaction_mode: collection_with_contextual_detail
+  product_type: unknown
+  primary_object_type: dataset
+  secondary_object_types:
+    - filter
+    - dimension
+    - projection
+    - selection
+    - state_snapshot
+  confidence: high
+  evidence:
+    - task_type=compare_filter_records ← token 'filter' in context.task and frame.tasks
+    - domain_id=data_exploration ← token 'data' in context.domain
+    - interaction_mode=collection_with_contextual_detail ← token 'filter' in context.task, frame.tasks, and context.priorities
+    - primary_object_type=dataset ← most referenced product object in the Product Frame
+  open_questions:
+    - product_type could not be derived; record the intended audience and product kind

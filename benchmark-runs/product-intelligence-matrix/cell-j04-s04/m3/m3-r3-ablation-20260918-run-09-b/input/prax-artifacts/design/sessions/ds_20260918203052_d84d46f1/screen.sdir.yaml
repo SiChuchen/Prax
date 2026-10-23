@@ -1,0 +1,80 @@
+version: "0.1"
+screen:
+  id: list_detail_inspector_screen
+  intent:
+    primary_task: 扫视指标墙，即时发现新出现/仍在持续的异常
+    secondary_tasks:
+      - 点选单个指标，追溯其最近的变化序列（何时开始异常、如何演变）
+      - 按分组/严重度收窄扫视范围，抑制无关噪声
+  archetype:
+    pattern_ref: PAT-LIST-DETAIL-INSPECTOR
+  density_intent: compact
+  regions:
+    - id: 异常显著性（critical > warning > healthy 的颜色/徽标编码）
+      role: experimental:异常显著性（critical > warning > healthy 的颜色/徽标编码）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 分组分区（4 组恒定顺序的分区标题）
+      role: experimental:分组分区（4 组恒定顺序的分区标题）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 每指标当前值 + 环比变化 + 状态
+      role: experimental:每指标当前值 + 环比变化 + 状态
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 最近采样时间 / 流心跳
+      role: experimental:最近采样时间 / 流心跳
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 异常事件流（最近 N 条）
+      role: experimental:异常事件流（最近 N 条）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 指标历史明细（inspector 内）
+      role: experimental:指标历史明细（inspector 内）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: workspace
+      role: dominant_workspace
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - preserve_context
+  relationships: []
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved: []
+  rejected_alternatives:
+    - option: PAT-DATA-EXPLORER 纯表格式主面
+      reason: comparison_need=none，表格的对齐比较优势无处发挥；异常颜色显著性在行内弱于瓦片；sparkline 列会挤压密度
+    - option: 全屏 feed / 事件流做主面
+      reason: 滚动 feed 位置不稳定，异常会滚出视口，违反 Orientation Invariants；仅作 supporting 区域
+    - option: 每指标大图时间线墙（多 chart 主面）
+      reason: many × 高密度下大图数量爆炸，同屏容纳不下；降级为瓦片内 sparkline + inspector 内大图

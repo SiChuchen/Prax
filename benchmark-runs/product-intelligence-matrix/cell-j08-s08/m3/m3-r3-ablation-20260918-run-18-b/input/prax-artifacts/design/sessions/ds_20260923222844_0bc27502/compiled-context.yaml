@@ -1,0 +1,79 @@
+version: "0.1"
+session_id: ds_20260923222844_0bc27502
+task:
+  surfaces: []
+  primary: Edit the content of one structured document via structure-preserving controls while the live preview stays exactly consistent.
+product_relationships:
+  - id: doc_has_sections
+    source: document
+    target: section
+    type: composed_of
+    direction: forward
+    meaning: The document is an ordered sequence of sections; adding/removing/reordering sections changes the document structure.
+    importance: primary
+  - id: preview_derives_doc
+    source: document
+    target: preview
+    type: rendered_as
+    direction: forward
+    meaning: The preview renders exactly the current document model; every edit is immediately reflected, guaranteeing editor↔preview consistency.
+    importance: primary
+  - id: section_in_preview
+    source: section
+    target: preview
+    type: mirrored_in
+    direction: bidirectional
+    meaning: Selecting a section in the editor highlights its block in the preview and vice versa, making the correspondence inspectable.
+    importance: supporting
+region_relationships: []
+decisions:
+  primary_structure: PAT-APPLICATION-SHELL
+  density_intent: spacious
+  major_choice_ids:
+    - MC-1
+    - MC-2
+    - MC-3
+    - MC-4
+    - MC-5
+must_preserve: []
+regression_points: []
+unresolved: []
+corrections: []
+representation_portfolio:
+  primary:
+    type: form
+    reason: Editing happens in typed fields per section block; a form representation with in-place inputs is the safest structure-preserving surface (no syntax to corrupt).
+  supporting:
+    - type: document
+      reason: Preview is the rendered document itself (paper-like), giving the 'what it looks like' truth that must stay identical to the editor.
+    - type: list
+      reason: Ordered section cards read as a list; ordering is the hierarchy backbone and supports move up/down operations.
+  rejected:
+    - option: code_editor (raw Markdown/JSON source)
+      reason: Raw source editing is exactly what breaks structure; rejected by the user job itself.
+    - option: wizard
+      reason: Single continuous editing task, no prescribed step sequence.
+    - option: canvas
+      reason: Spatiality is none; free placement adds structure risk with no benefit.
+state_ownership:
+  - state: selection
+    owner: Document title + structure status (header strip)
+  - state: preview
+    owner: session
+acceptance:
+  - Any sequence of edit operations (field edits, add/remove/reorder sections, list item edits) leaves the document structurally valid, and the live preview — rendered from the same in-memory model — exactly reflects the edited structure at all times, with the first screen fully usable at page load.
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - destructive_recovery
+    - requirement_alignment
+  regression_check_ids: []

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>功能自检 — 设备资产工作台（cell-j01-s01）</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body { font: 13px/1.5 "Segoe UI", system-ui, sans-serif; color: #111827; background: #f5f6f8; margin: 0; padding: 24px; }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  .sub { color: #6b7280; margin-bottom: 16px; }
+  #summary { font-size: 15px; font-weight: 600; padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; }
+  #summary.all-pass { background: #dcfce7; color: #166534; }
+  #summary.has-fail { background: #fee2e2; color: #991b1b; }
+  table { border-collapse: collapse; width: 100%; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid #f0f1f3; vertical-align: top; }
+  th { background: #f9fafb; font-size: 12px; color: #374151; }
+  td.num { white-space: nowrap; }
+  .pass { color: #166534; font-weight: 600; }
+  .fail { color: #991b1b; font-weight: 600; }
+  .detail { color: #6b7280; font-size: 12px; }
+</style>
+</head>
+<body>
+<h1>功能自检（真实浏览器执行）</h1>
+<div class="sub">验收种子：批量选择与操作零误伤，状态归属显式 · 本页加载 seed.js + app-core.js 并在浏览器内运行断言套件，无任何网络请求。</div>
+<div id="summary">运行中…</div>
+<table>
+  <thead><tr><th class="num">结果</th><th style="width:340px">断言</th><th>验证内容 / 明细</th></tr></thead>
+  <tbody id="rows"></tbody>
+</table>
+<script src="../seed.js"></script>
+<script src="../app-core.js"></script>
+<script>
+(function () {
+  "use strict";
+  var rowsEl = document.getElementById("rows");
+  var pass = 0, fail = 0;
+
+  function mapToObjSorted(m) {
+    var o = {};
+    Array.from(m.keys()).sort().forEach(function (k) { o[k] = m.get(k); });
+    return o;
+  }
+  function j(v) { return JSON.stringify(v); }
+
+  function check(name, desc, fn) {
+    var tr = document.createElement("tr");
+    var outcome, detail = "";
+    try {
+      var r = fn();
+      if (r === true || r === undefined) { outcome = "pass"; }
+      else if (r && r.ok) { outcome = "pass"; detail = r.detail || ""; }
+      else { outcome = "fail"; detail = (r && r.detail) || "断言返回 false"; }
+    } catch (err) {
+      outcome = "fail"; detail = "异常: " + (err && err.message || err);
+    }
+    if (outcome === "pass") pass++; else fail++;
+    tr.innerHTML =
+      '<td class="num ' + outcome + '">' + (outcome === "pass" ? "✓ PASS" : "✗ FAIL") + "</td>" +
+      "<td>" + name + "</td>" +
+      "<td>" + desc + (detail ? '<div class="detail">' + detail + "</div>" : "") + "</td>";
+    rowsEl.appendChild(tr);
+  }
+
+  function assert(cond, msg) { if (!cond) throw new Error(msg || "assertion failed"); }
+  function assertEq(a, b, msg) {
+    if (a !== b) throw new Error((msg || "assertEq failed") + " — expected " + j(b) + ", got " + j(a));
+  }
+
+  // ---------- 初始化（与 index.html 相同的装配路径） ----------
+  var index = Core.buildTreeIndex(window.SEED.tree);
+  var entities = new Map();
+  window.SEED.entities.forEach(function (e) { entities.set(e.id, Object.assign({}, e)); });
+
+  // T1 种子数据不变量（首屏内联就绪）
+  check("T1 种子数据内联就绪且自洽", "实体数 / ID 唯一 / 状态合法 / 归属均为叶子科室；SEED 为页面解析期同步构建，无网络请求", function () {
+    assert(window.SEED && Array.isArray(window.SEED.entities), "window.SEED 缺失");
+    assertEq(entities.size, 196, "实体数应为 196");
+    var ids = window.SEED.entities.map(function (e) { return e.id; });
+    assertEq(new Set(ids).size, ids.length, "ID 必须唯一");
+    var deptSet = new Set(index.deptIds);
+    entities.forEach(function (e) {
+      assert(Core.STATUS_META[e.status], "非法状态: " + e.id + " " + e.status);
+      assert(deptSet.has(e.deptId), "归属不是叶子科室: " + e.id);
+    });
+    return { ok: true, detail: "196 个实体 · " + index.centerIds.length + " 中心 · " + index.deptIds.length + " 科室" };
+  });
+
+  // T2 层级索引正确性（状态归属显式的数据基础）
+  check("T2 层级索引：子树归属与路径", "各中心子树科室并集 = 全部科室；归属路径 = 中心 / 科室", function () {
+    var allDepts = [];
+    index.centerIds.forEach(function (c) {
+      allDepts = allDepts.concat(index.subtreeDeptIds[c]);
+    });
+    assertEq(allDepts.length, index.deptIds.length, "子树科室并集应覆盖全部科室");
+    var e0 = entities.get("AST-2401");
+    assertEq(Core.entityPathString(index, e0), "医学检验中心 / 生化免疫科", "AST-2401 归属路径");
+    return { ok: true, detail: "路径示例 AST-2401 → " + Core.entityPathString(index, e0) };
+  });
+
+  // T3 节点子树实体计数（树节点显式全选的数量预览依据）
+  check("T3 节点显式全选数量预览 = 实际选中数量", "entityIdsInSubtree(center) 与该中心实体数一致；各中心之和 = 总数", function () {
+    var sum = 0;
+    index.centerIds.forEach(function (c) {
+      sum += Core.entityIdsInSubtree(entities, index, c).length;
+    });
+    assertEq(sum, 196, "各中心实体数之和");
+    var ultrasound = Core.entityIdsInSubtree(entities, index, "d0202");
+    assertEq(ultrasound.length, 11, "超声科设备数");
+    ultrasound.forEach(function (id) {
+      assertEq(entities.get(id).deptId, "d0202", "子树实体必须真实归属该科室");
+    });
+    return { ok: true, detail: "超声科 " + ultrasound.length + " 台 · 四中心合计 " + sum + " 台" };
+  });
+
+  // T4 ★ 零误伤核心：批量状态变更只作用于快照集合
+  // 向量（seed 状态序列手工核对）：2401:active 2420:active 2455:active 2480:stock 2520:active —— 均非 repair
+  check("T4 零误伤：批量状态变更只触碰快照集合", "跨中心选 5 项（均非目标状态）→ 变更为维修中；其余 191 项逐字段比对不变；影响数 = 确认数", function () {
+    var ids = ["AST-2401", "AST-2420", "AST-2455", "AST-2480", "AST-2520"];
+    var beforeAll = mapToObjSorted(entities);
+    ids.forEach(function (id) {
+      assert(entities.get(id).status !== "repair", "向量前置失效: " + id + " 已是 repair");
+    });
+    var res = Core.applyBatch(entities, { type: "status", ids: ids, value: "repair" });
+    assertEq(res.confirmedCount, 5, "确认数");
+    assertEq(res.affectedIds.length, 5, "影响数 = 确认数");
+    ids.forEach(function (id) { assertEq(res.entities.get(id).status, "repair"); });
+    var others = Object.keys(beforeAll).filter(function (id) { return ids.indexOf(id) === -1; });
+    others.forEach(function (id) {
+      var b = beforeAll[id], a = res.entities.get(id);
+      assert(a && a.name === b.name && a.model === b.model && a.status === b.status && a.deptId === b.deptId,
+        "误伤实体: " + id);
+    });
+    return { ok: true, detail: "5 项变更 · 其余 191 项逐字段一致 · 回执 影响 5 = 确认 5" };
+  });
+
+  // T5 幂等透明：已处目标状态的实体如实计入 skipped
+  // 动态取第一个 repair 实体混入；其余静态向量均 ≠ repair（2402:active 2444:active 2449:scrap 2490:active）
+  check("T5 幂等透明：已处目标状态计入 skipped", "5 项中混入 1 项已维修中 → 影响 4 · skipped 1 · skipped 实体未被改写", function () {
+    var repairId = null;
+    entities.forEach(function (e, id) { if (!repairId && e.status === "repair") repairId = id; });
+    assert(repairId, "种子应含维修中实体");
+    var ids = ["AST-2402", repairId, "AST-2444", "AST-2449", "AST-2490"];
+    ["AST-2402", "AST-2444", "AST-2449", "AST-2490"].forEach(function (id) {
+      assert(entities.get(id).status !== "repair", "向量前置失效: " + id);
+    });
+    var res = Core.applyBatch(entities, { type: "status", ids: ids, value: "repair" });
+    assertEq(res.confirmedCount, 5, "确认数");
+    assertEq(res.affectedIds.length, 4, "实际变更数");
+    assert(res.skippedIds.indexOf(repairId) !== -1, "skipped 应含已维修中实体");
+    assertEq(res.skippedIds.length, 1, "skipped 仅 1 项");
+    assertEq(res.entities.get(repairId).status, "repair", "skipped 实体状态不变");
+    return { ok: true, detail: "确认 5 · 变更 4 · skipped=[" + res.skippedIds.join(",") + "]" };
+  });
+
+  // T6 批量移动归属：路径即时更新 + 待报废阻止规则
+  check("T6 批量移动归属与业务规则", "移动后 deptId/路径更新；validateMove 仅阻止待报废设备", function () {
+    var ids = ["AST-2403", "AST-2460", "AST-2510"];
+    var res = Core.applyBatch(entities, { type: "move", ids: ids, deptId: "d0202" });
+    ids.forEach(function (id) {
+      assertEq(res.entities.get(id).deptId, "d0202", id + " 应移入超声科");
+      assertEq(Core.entityPathString(index, res.entities.get(id)), "医学影像中心 / 超声科");
+    });
+    var scrapIds = [];
+    entities.forEach(function (e, id) { if (e.status === "scrap") scrapIds.push(id); });
+    assert(scrapIds.length >= 2, "种子应含待报废设备");
+    var v = Core.validateMove(entities, ["AST-2404"].concat(scrapIds.slice(0, 2)));
+    assertEq(v.ok, false, "含待报废 → 阻止");
+    assertEq(v.blockedIds.length, 2, "仅阻止待报废");
+    var vOk = Core.validateMove(entities, ["AST-2404"]);
+    assertEq(vOk.ok, true, "无待报废 → 放行");
+    return { ok: true, detail: "3 项移入超声科 · 阻止规则命中 " + v.blockedIds.length + " 项待报废" };
+  });
+
+  // T7 批量删除 + 整体撤销精确恢复
+  check("T7 批量删除与整体撤销", "删除 4 项 → 实体表精确少 4 项；undoBatch 恢复后与操作前逐字段一致", function () {
+    var beforeAll = mapToObjSorted(entities);
+    var ids = ["AST-2405", "AST-2406", "AST-2407", "AST-2408"];
+    var res = Core.applyBatch(entities, { type: "delete", ids: ids });
+    assertEq(res.affectedIds.length, 4, "影响数");
+    assertEq(res.entities.size, 192, "删除后实体数");
+    var restored = Core.undoBatch(res.entities, res.record);
+    assertEq(mapToObjSorted(restored), beforeAll, "撤销后必须与操作前完全一致");
+    return { ok: true, detail: "196 → 192 → 撤销 → 196，逐字段一致" };
+  });
+
+  // T8 撤销只触碰该次快照集合（2410:active 2411:repair → stock 均变更；2412:active 为旁观者）
+  check("T8 撤销不波及其他实体", "撤销记录之外的实体在撤销前后保持不变；记录内实体精确恢复", function () {
+    var ids = ["AST-2410", "AST-2411"];
+    var res = Core.applyBatch(entities, { type: "status", ids: ids, value: "stock" });
+    assertEq(res.affectedIds.length, 2, "两条均应变更");
+    var bystanderBefore = j(entities.get("AST-2412"));
+    var afterUndo = Core.undoBatch(res.entities, res.record);
+    assertEq(j(afterUndo.get("AST-2412")), bystanderBefore, "旁观实体必须不变");
+    assertEq(afterUndo.get("AST-2410").status, "active", "记录内实体恢复");
+    assertEq(afterUndo.get("AST-2411").status, "repair", "记录内实体恢复");
+    return { ok: true };
+  });
+
+  // T9 可见范围语义（全选可见 = 精确的过滤结果集）
+  check("T9 全选可见 = 过滤后可见集的精确闭包", "定位 + 状态 + 搜索三条件叠加的可见集与独立核对一致；全选可见不丢弃跨节点已有选中", function () {
+    var view = { locatedNode: "c01", status: "repair", query: "分析仪" };
+    var vis = Core.visibleIds(entities, index, view);
+    var manual = [];
+    entities.forEach(function (e, id) {
+      if (index.subtreeDeptIds.c01.indexOf(e.deptId) !== -1 &&
+          e.status === "repair" &&
+          (e.name.indexOf("分析仪") !== -1 || e.model.toLowerCase().indexOf("分析仪") !== -1 || e.id.indexOf("分析仪") !== -1)) {
+        manual.push(id);
+      }
+    });
+    assertEq(vis.length, manual.length, "可见集大小");
+    vis.forEach(function (id) { assert(manual.indexOf(id) !== -1, "多余实体: " + id); });
+    var selection = new Set(["AST-2470"]);
+    vis.forEach(function (id) { selection.add(id); });
+    assert(selection.has("AST-2470"), "跨节点选中不得被全选可见丢弃");
+    return { ok: true, detail: "医学检验中心 ∩ 维修中 ∩『分析仪』→ " + vis.length + " 项" };
+  });
+
+  // T10 视图与选中解耦（隐藏的已选实体仍保留在选中集）
+  check("T10 折叠/筛选不改变选中集成员", "切换定位使部分已选实体不可见后，选中集不变、hiddenSelected 精确可算", function () {
+    var selection = new Set(["AST-2450", "AST-2451", "AST-2470"]); // 前两者属 c01，2470 属 c02
+    var view = { locatedNode: "c02", status: null, query: "" };    // 仅 c02 子树可见
+    var vis = Core.visibleIds(entities, index, view);
+    var hidden = Array.from(selection).filter(function (id) { return vis.indexOf(id) === -1; });
+    assertEq(selection.size, 3, "选中集不受视图影响");
+    assertEq(hidden.length, 2, "c01 的选中项应计为隐藏");
+    assert(vis.indexOf("AST-2470") !== -1, "c02 内选中项应可见");
+    return { ok: true, detail: "已选 3 · 隐藏 " + hidden.length + " · 可见范围内 1" };
+  });
+
+  // T11 连续两次操作后逆序撤销（2412:active；移动无状态限制）
+  check("T11 操作栈逆序撤销", "状态变更 → 移动归属 → 撤销移动 → 撤销变更 = 回到初始", function () {
+    var start = mapToObjSorted(entities);
+    var r1 = Core.applyBatch(entities, { type: "status", ids: ["AST-2412"], value: "suspended" });
+    var r2 = Core.applyBatch(r1.entities, { type: "move", ids: ["AST-2413"], deptId: "d0302" });
+    var u2 = Core.undoBatch(r2.entities, r2.record);
+    var u1 = Core.undoBatch(u2, r1.record);
+    assertEq(mapToObjSorted(u1), start, "逆序撤销后必须回到初始");
+    return { ok: true };
+  });
+
+  // T12 选中集分组摘要（确认对话框依据）
+  check("T12 确认摘要：按科室×状态分组", "summarize 的分组行合计与状态分组合计均 = 选中总数", function () {
+    var ids = Core.entityIdsInSubtree(entities, index, "c04");
+    var s = Core.summarize(entities, index, ids);
+    var totalFromRows = s.deptRows.reduce(function (n, r) { return n + r.total; }, 0);
+    assertEq(totalFromRows, ids.length, "分组行合计 = 选中总数");
+    assertEq(s.deptRows.length, 3, "生命支持中心应含 3 个科室分组");
+    var totalFromStatus = Object.keys(s.byStatus).reduce(function (n, k) { return n + s.byStatus[k]; }, 0);
+    assertEq(totalFromStatus, ids.length, "状态分组合计 = 选中总数");
+    return { ok: true, detail: "c04 " + ids.length + " 项 · " + s.deptRows.length + " 个科室分组" };
+  });
+
+  var summary = document.getElementById("summary");
+  summary.textContent = (fail === 0 ? "✓ 全部通过：" : "✗ 存在失败：") + pass + " 通过 · " + fail + " 失败（共 " + (pass + fail) + " 项断言场景）";
+  summary.className = fail === 0 ? "all-pass" : "has-fail";
+})();
+</script>
+</body>
+</html>

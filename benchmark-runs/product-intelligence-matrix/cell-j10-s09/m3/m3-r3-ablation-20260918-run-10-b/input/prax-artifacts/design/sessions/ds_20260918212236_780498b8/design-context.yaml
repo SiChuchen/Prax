@@ -1,0 +1,75 @@
+user:
+  expertise: mixed
+  familiarity: low
+task:
+  primary: 零失误走完一个高后果流程：按阶段执行步骤，通过门禁，对不可逆动作先确认后执行并保留恢复路径
+  modes:
+    - 引导执行
+    - 确认不可逆动作
+    - 撤销/恢复
+    - 查看执行记录
+  frequency: low
+domain:
+  type: 生产变更/高危运维操作（runbook 驱动的变更执行）
+  entities:
+    - 高后果流程 runbook
+    - 阶段
+    - 步骤
+    - 确认门
+    - 恢复路径
+    - 执行记录
+information:
+  volume: low
+  relationship_complexity: low
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: high
+  error_cost: high
+priorities:
+  - 零失误走完全程（门禁校验阻止跳步/带错推进）
+  - 不可逆步骤的确认路径（后果可见+显式确认）
+  - 不可逆步骤的恢复路径（冷静期撤销/恢复点/回滚指引）
+  - 偏差可追溯（执行记录/审计摘要）
+  - 首屏即用、无加载态
+density_intent: spacious
+confidence:
+  overall: high
+unknowns:
+  - id: u1-domain-scenario
+    impact: low
+    affects:
+      - domain
+      - content
+  - id: u2-user-expertise-mix
+    impact: medium
+    affects:
+      - information
+classification:
+  version: "1"
+  task_type: compare_filter_records
+  domain_id: data_exploration
+  interaction_mode: unknown
+  product_type: unknown
+  primary_object_type: step
+  secondary_object_types:
+    - phase
+    - irreversible_gate
+    - runbook
+    - recovery_path
+    - execution_record
+  confidence: medium
+  evidence:
+    - task_type=compare_filter_records ← token '日志' in context.task and frame.tasks
+    - domain_id=data_exploration ← token '记录' in context.domain
+    - primary_object_type=step ← most referenced product object in the Product Frame
+  open_questions:
+    - interaction_mode could not be classified from the provided context; refine the context fields or record a custom classification
+    - product_type could not be derived; record the intended audience and product kind

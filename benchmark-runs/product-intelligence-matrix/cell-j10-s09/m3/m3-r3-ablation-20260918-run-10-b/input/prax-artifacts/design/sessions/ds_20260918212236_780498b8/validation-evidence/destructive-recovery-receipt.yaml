@@ -1,0 +1,35 @@
+check_id: destructive_recovery
+captured_at: "2026-09-19T06:12:00Z"
+captured_by: implementation-arm
+tool: chrome.exe (headless)
+method: >-
+  driver stages 3/4/5/6/8 drive the app into each safety state; headless chrome --screenshot;
+  --dump-dom + Select-String text verification of state strings.
+commands:
+  - chrome.exe --headless=new --screenshot=evidence/shotC-confirm-modal.png <evidence.html?stage=3> (budget 1200)
+  - chrome.exe --headless=new --screenshot=evidence/shotD-undo-strip.png <evidence.html?stage=4> (budget 1500)
+  - chrome.exe --headless=new --screenshot=evidence/shotE-after-undo.png <evidence.html?stage=5> (budget 1500)
+  - chrome.exe --headless=new --screenshot=evidence/shotF-final-confirm.png <evidence.html?stage=6> (budget 1200)
+  - chrome.exe --headless=new --screenshot=evidence/shotH-record-drawer.png <evidence.html?stage=8> (budget 90000)
+artifacts:
+  - path: evidence/shotC-confirm-modal.png
+    shows: 可撤销步骤 s4 确认门——执行后果 + 恢复路径双块、知晓勾选、确认按钮默认禁用
+  - path: evidence/shotD-undo-strip.png
+    shows: 执行后顶部撤销窗口横条，倒计时 00:29，一键撤销此步
+  - path: evidence/shotE-after-undo.png
+    shows: 撤销后回到执行前状态（步骤 4 重新成为当前步），勾选保留，偏差计数不变
+  - path: evidence/shotF-final-confirm.png
+    shows: 最终类步骤 s9 确认门——后果『永久不可恢复』、恢复路径=恢复点 bk-20260919-final；上方两条叠加撤销横条（s4/s8）并存
+  - path: evidence/shotH-record-drawer.png
+    shows: 24 条执行记录时间线（含偏差 +1 与撤销事件）；凭证审计表 s4/s8=窗口关闭已生效、s9/s11=不可撤销（恢复点已留档）
+observed:
+  prevention: 门禁未过尝试执行被拦截并记偏差（shotB，DOM 命中 门禁校验未通过 / 偏差 1）
+  confirmation: 4 个不可逆动作均需确认门（后果陈述+恢复路径+知晓勾选）
+  recovery_undoable: 可撤销类 30s/45s 撤销窗口 + 一键撤销 + 级联回退
+  recovery_final: 最终类常驻恢复点/回滚指引（确认门内、回看卡片、审计表三处）
+text_verification:
+  "撤销窗口剩余": 1
+  "撤销此步": 1
+  "已生效": 1
+  "不可撤销（恢复点已留档）": 1
+  "bk-20260919-final": 1

@@ -1,0 +1,126 @@
+session_id: ds_20260923204039_b63ace47
+information_shape:
+  cardinality: many
+  relationality: high
+  hierarchy: medium
+  temporality: low
+  density: medium
+  dimensionality: medium
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: graph
+    reason: relationality=high：关系本身是内容，节点间的有向依赖必须以图形式同时呈现方向与拓扑；验收要求跟随中全图常驻，graph 是唯一能同屏承载 cardinality=many+relationality=high 的表示
+  supporting:
+    - type: cards
+      reason: 检查器顶部以属性卡呈现选中节点（类型/负责人/说明/关键度）
+    - type: list
+      reason: 直接上游/下游以分组列表呈现，支持逐项点击继续跟随
+    - type: map
+      reason: 小地图以概念地图形式提供全局轮廓、视口框与追踪范围，保证全局上下文
+  rejected:
+    - option: grid/dashboard 卡网格
+      reason: relationality=high 下边不可见、关系降为相邻性暗示，无法承载跟随多跳的路径语境
+    - option: tree 树形
+      reason: 依赖网是 DAG 有汇合节点，树形必须复制节点才能表达多父，破坏“同一节点唯一位置”的全局锚定
+    - option: table 表格
+      reason: 邻接表可查但不可见：拓扑结构（层级、分叉、汇合）不可感知，跟随需要空间化边
+  justification_vs_shape: 对默认壳层的论证（myth-dashboard-default-home / myth-card-grid-default）：本产品 relationality=high、cardinality=many——关系本身是内容，dashboard/卡网格把节点间关系降格为卡片相邻性，边（方向/路径）不可见，无法支撑逐跳跟随；故主表示为 graph。hierarchy=medium → 分层确定性布局而非力导向；spatiality=none → 小地图是概念轮廓而非地理图；density=medium → regular，画布为主体+从属检查器；comparison_need=none → 不设并排比较区。cards 仅作为检查器内部选中节点属性卡（从属表示），非主壳层；无 tabs、无 modal。
+primary_structure:
+  pattern: PAT-WORKSPACE
+  rationale:
+    - PAT-WORKSPACE（路由返回+已 inspect L2）：主对象空间持久化、支持围绕对象的迭代动作——持久全图画布正是逐跳追踪所需形态
+    - 以 PAT-LIST-DETAIL-INSPECTOR（路由返回+已 inspect L2，含 Contextual Inspector）为补：检查器绑定显式选中、保留父工作区
+    - "PAT-LIST-DETAIL 自身契约 does_not_apply_when: relationships dominate——关系主导故不取列表为主"
+    - Preserve Context + Orientation Invariants：检查/追踪不得移动或吞掉全局画布，锚点（小地图、面包屑、节点位置）全程稳定
+  confidence: high
+information_hierarchy:
+  primary:
+    - 全图关系画布（常驻 dominant，含追踪着色）
+    - 选中与追踪状态表达（节点高亮/距离徽标 + 面包屑链）
+    - 检查器（选中节点属性与直接上/下游明细 + 追踪控制）
+  secondary:
+    - 小地图（全局轮廓+视口框+追踪范围）
+    - 图例与统计（节点/关系计数）
+    - 搜索框
+    - 画布工具（缩放/适应全图）
+density:
+  intent: regular
+  strategy:
+    - 画布为绝对主体（≥72% 宽），检查器为从属栏，信号强于 chrome
+    - 分层布局+等距行距让结构在零交互时就可见（Perceptual Grouping）
+    - 非选中/非追踪内容以降不透明度而非隐藏的方式退后，保持可发现
+    - 检查器用紧凑列表型明细（直接上游/下游分组列表），字号≥12px，对比≥AA
+  avoid:
+    - 仪表盘化多卡片拼贴（dashboard-as-workspace）
+    - 装饰性 chrome 与无信息量的色块
+    - 把非追踪内容从画布上移除——全局上下文永远常驻
+major_choices:
+  - id: layout
+    choice: 分层布局（最长路径分层+重心法排序），行列固定
+    rationale: hierarchy=medium 且确定性布局让“同一节点永远在同一位置”，保方向不变量；力导向每次重算抖动会破坏定位记忆
+    confidence: medium
+    references:
+      - node
+      - relation
+  - id: trace_model
+    choice: 追踪=BFS 距离着色+逐步扩展（下一步/自动到底），非选中内容降到 0.18 不透明度但常驻
+    rationale: 距离着色让“跳数”成为可感知变量；逐步扩展匹配“跟随”动作本身；降透明度而非隐藏保全全局（Preserve Context）
+    confidence: medium
+    references:
+      - trace
+      - node
+      - relation
+  - id: minimap
+    choice: 常驻小地图：全图轮廓点阵+视口框+追踪范围高亮
+    rationale: 验收种子（关系跟随不丢失全局上下文）的直接载体：全局上下文的最强锚点；平移缩放后仍能回答“我在哪”
+    confidence: medium
+    references:
+      - minimap
+      - trace
+  - id: breadcrumb
+    choice: 面包屑链记录已跟随跳序，可点击回溯任一跳
+    rationale: 路径上下文（从起点到当前的链）与全局上下文并列，回溯可逆
+    confidence: medium
+    references:
+      - breadcrumb
+      - trace
+  - id: tech
+    choice: 原生 JS+SVG、零依赖、数据内联，不使用 CDN
+    rationale: file:// 静态可开+离线可用+加载即用（无加载态）；30 节点规模 SVG 完全胜任
+    confidence: medium
+    references:
+      - node
+      - relation
+  - id: semantics
+    choice: 上游=沿边方向（我所依赖），下游=逆边方向（依赖我者）；箭头指向被依赖方
+    rationale: 与工程领域约定一致（依赖图箭头指向被依赖者），一图两读：顺读=依赖，逆读=影响
+    confidence: medium
+    references:
+      - relation
+      - trace
+      - node
+rejected:
+  - option: List-Detail（列表为主、点开看图）
+    reason: 关系主导场景下把边降为跳转手段，跟随多跳时丢失网状上下文；其模式契约明确不适用于关系主导
+  - option: 力导向布局（d3-force 式）
+    reason: 布局不确定、交互微抖动，破坏“位置即记忆”的方向不变量；需外部库且离线不可用
+  - option: 聚焦/钻取模式（放大选中子图、隐藏其余）
+    reason: 直接违反验收种子：跟随即丢失全局上下文
+  - option: Canvas 渲染
+    reason: 30 节点规模下 SVG 的 DOM 可访问性（每节点可聚焦/可提示）成本更低，无需重绘管线
+unresolved: []
+complexity_budget:
+  permanent_panels: 3
+  permanent_primary_actions: 4
+  modes: 2
+  state_owners: 4
+  navigation_levels: 1
+  persistent_filters: 0
+  new_semantic_concepts: 3
+  keyboard_contracts: 1
+  mobile_conflicts: 0
+  permanent_surfaces: 1

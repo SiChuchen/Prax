@@ -1,0 +1,61 @@
+user:
+  expertise: expert
+  familiarity: high
+task:
+  primary: 持续扫视易变指标流，发现并追溯异常
+  modes:
+    - scan
+    - drill-in
+    - filter
+  frequency: high
+domain:
+  type: 运维可观测性 / 服务健康监控（模拟数据源）
+  entities:
+    - metric
+    - anomaly
+    - metric_group
+    - change_history
+information:
+  volume: high
+  relationship_complexity: low
+  change_rate: high
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: none
+  error_cost: medium
+priorities:
+  - 异常在扫视内可见（颜色+徽标编码，位置稳定）
+  - 无闪烁噪声（就地更新、恒定布局、无入场动画轰炸）
+  - 变化可追溯（每指标保留带时间戳的历史，点选即看）
+  - 首屏即 ready（初始数据内联）
+  - 高密度（many 指标同屏）
+density_intent: compact
+confidence:
+  overall: high
+unknowns: []
+classification:
+  version: "1"
+  task_type: compare_filter_records
+  domain_id: observability_analytics
+  interaction_mode: collection_with_contextual_detail
+  product_type: unknown
+  primary_object_type: metric
+  secondary_object_types:
+    - anomaly
+    - metric_group
+    - change_history
+  confidence: high
+  evidence:
+    - task_type=compare_filter_records ← token 'filter' in context.task and frame.tasks
+    - domain_id=observability_analytics ← token 'metric' in context.domain
+    - interaction_mode=collection_with_contextual_detail ← token 'filter' in context.task, frame.tasks, and context.priorities
+    - primary_object_type=metric ← most referenced product object in the Product Frame
+  open_questions:
+    - product_type could not be derived; record the intended audience and product kind

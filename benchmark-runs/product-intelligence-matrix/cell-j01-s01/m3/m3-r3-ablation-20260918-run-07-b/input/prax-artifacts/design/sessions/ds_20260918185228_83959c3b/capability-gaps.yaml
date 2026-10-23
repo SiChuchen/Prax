@@ -1,0 +1,88 @@
+needs:
+  - id: precise_selection
+    product_action: 精确圈定选中集（行复选框、Shift 范围、节点显式全选带数量预览；视图折叠/过滤不增删成员）
+    required_experience:
+      - 选中计数任何时刻可见
+      - 隐藏（折叠/被筛）的已选实体保留在选中集中
+      - 节点点击只定位不选中
+    capabilities:
+      - explicit_id_set_selection
+      - checkbox_toggle
+      - shift_range_select
+      - node_scoped_select_with_preview
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端状态管理：选中集为独立于视图状态的 Set<entityId>，工具栏/树/表格全部只读引用它
+  - id: batch_status_change
+    product_action: 批量变更状态（选中集 → 目标状态）
+    required_experience:
+      - 确认对话框列出选中数与按状态×节点分组摘要
+      - 执行后回执计数 = 确认计数
+    capabilities:
+      - confirm_dialog_with_grouped_preview
+      - selection_snapshot_binding
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 确认时冻结选中集快照，变更仅作用于快照 ID 集合，回执校验相等
+  - id: batch_move
+    product_action: 批量移动归属（选中集 → 目标组织节点）
+    required_experience:
+      - 目标节点树形选择
+      - 执行后行内归属路径即时更新
+    capabilities:
+      - target_node_picker
+      - snapshot_binding
+      - path_immediate_refresh
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 变更实体 parentId 并重算路径缓存；禁止移入自身子树（校验）
+  - id: batch_delete
+    product_action: 批量删除（选中集，可撤销）
+    required_experience:
+      - 高危操作二次确认（红色强调 + 输入不可省略的明确确认按钮）
+      - 撤销完整恢复
+    capabilities:
+      - confirm_dialog_with_grouped_preview
+      - snapshot_binding
+      - undo_stack
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 软删除入撤销栈：撤销按快照集合原样恢复 id/状态/归属
+  - id: receipt_and_undo
+    product_action: 操作回执与整体撤销（影响 N 项 = 确认 N 项）
+    required_experience:
+      - 回执持久可见直至下一次操作
+      - 撤销仅作用于该次快照集合
+    capabilities:
+      - affected_vs_confirmed_equality
+      - undo_stack
+      - inverse_apply
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 每个批量操作记录 {opType, targetPayload, idSet, beforeState[]}，撤销逆向应用
+  - id: first_paint_usable
+    product_action: 首屏加载完成即可用（初始数据随首屏就绪）
+    required_experience:
+      - 无网络请求、无加载态作为可测状态
+      - 静态打开 index.html 即运行
+    capabilities:
+      - inline_data_bootstrap
+      - no_network_dependency
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 种子数据以 <script> 内联 JSON 随页面交付，DOMContentLoaded 前完成渲染路径；零外部依赖（无 CDN、无字体请求）
+  - id: cross_session_persistence
+    product_action: 跨会话持久化（刷新后保留变更）
+    required_experience:
+      - 刷新/重开后数据保留
+    capabilities: []
+    status: gap
+    resolution:
+      type: explicit_compromise
+      notes: 简报交付约束明确『不要求后端、账号体系或持久化服务』；刷新回到种子数据为约束内行为，非能力缺口

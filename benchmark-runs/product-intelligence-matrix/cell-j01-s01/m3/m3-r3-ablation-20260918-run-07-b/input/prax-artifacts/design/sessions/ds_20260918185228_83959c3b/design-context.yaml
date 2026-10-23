@@ -1,0 +1,67 @@
+user:
+  expertise: intermediate
+  familiarity: high
+task:
+  primary: 在层级树中定位、筛选并批量选中实体，执行批量状态变更/移动归属/删除，并核对回执与选中集一致
+  modes:
+    - manage
+    - locate
+    - select
+    - execute_batch
+    - verify_receipt
+    - undo
+  frequency: high
+domain:
+  type: 企业设备资产管理（IT 资产台账：中心—科室两级部门树下挂设备实体）
+  entities:
+    - 设备资产（实体）
+    - 组织节点（层级容器）
+    - 选中集
+    - 批量操作与回执
+information:
+  volume: high
+  relationship_complexity: medium
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: high
+  error_cost: high
+priorities:
+  - 批量选择与操作零误伤（作用范围 = 确认时的选中集）
+  - 状态与层级归属显式可见（徽标 + 归属路径）
+  - 高密度信息呈现（一屏容纳大量实体）
+  - 操作可撤销、有明确回执
+density_intent: compact
+confidence:
+  overall: high
+unknowns:
+  - id: no_visual_spec
+    impact: low
+    affects:
+      - visual_design
+classification:
+  version: "1"
+  task_type: manage_lifecycle
+  domain_id: unknown
+  interaction_mode: collection_with_contextual_detail
+  product_type: unknown
+  primary_object_type: entity
+  secondary_object_types:
+    - selection
+    - hierarchy_node
+    - batch_operation
+  confidence: medium
+  evidence:
+    - task_type=manage_lifecycle ← token 'manage' in context.task and frame.tasks
+    - interaction_mode=collection_with_contextual_detail ← token '筛选' in context.task, frame.tasks, and context.priorities
+    - primary_object_type=entity ← most referenced product object in the Product Frame
+  open_questions:
+    - domain_id could not be classified from the provided context; refine the context fields or record a custom classification
+    - product_type could not be derived; record the intended audience and product kind

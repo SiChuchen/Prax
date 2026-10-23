@@ -31,7 +31,7 @@ if (slots.length !== 20) throw new Error(`expected 20 slots, got ${slots.length}
 const launchReport = JSON.parse(readFileSync(`${OP}/launch/prepare-launch-report.json`, "utf8"));
 
 // ---- freeze verification ---------------------------------------------------
-const freeze = { briefs_unchanged: true, brief_drift: [], runtime_manifest_sha256_expected: "23e770b3a48bf75111c9a56e963467fb8a7d40061f10ca06261dc33b5a3a4bab" };
+const freeze = { briefs_unchanged: true, brief_drift: [], runtime_manifest_sha256_expected: "681653b4643c2850601a75dc09d90a92d2a5f11f1ee16eafe3811d95bf548fdb" };
 for (const w of launchReport.workspaces) {
   const now = sha256(`${PI}/${w.ws}/brief.md`);
   if (now !== w.brief_sha256) { freeze.briefs_unchanged = false; freeze.brief_drift.push(w.ws); }

@@ -1,0 +1,81 @@
+{
+  "reviewer": "R2",
+  "package_id": "impl-02",
+  "session_id": "4f84d6aa-6cce-48b9-b141-4c7f59deab69",
+  "wall_clock_seconds": 201,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-02",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Brief demands explore×dimensional-space on a dataset with high dimensionality/density; source implements exactly that shape: 10 dimensions with per-dim role slots X/Y/彩 (source/index.html:315-329,549-555), a central 2,400-point scatter projection (index.html:505-519; both screenshots), per-dim histograms and category-value chips in the rail (index.html:559-577), and color encoding (index.html:344-347). 1280x860.png shows all three zones working on first paint."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "The projection scatter dominates the initial screen (~60% width in both 1280x860.png and 1440x900.png); the rail header states the primary action '点槽位切换投影 · 点分布/取值过滤' (index.html:221) and the canvas head names the current projection '投影：营收 × 利润率 · 颜色 地区' (index.html:227). No competing task surface exists."
+      },
+      "time_to_understand": {
+        "score": 4,
+        "evidence": "What/where is conveyed fast: brand+dataset line '多维数据探索台 · 2,400 记录 × 10 维' (index.html:209-210), axis titles drawn on canvas (index.html:500-503), and a footer hint line listing all interactions (index.html:244). Deducted for reading load: repeated 10px hint strings on all five numeric cards (index.html:563) and a legend that wraps to two rows at 1280x860.png."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Single-screen app, zero modes or routes (grid layout index.html:31-37). Reaching any projection is one click on a slot button (assignRole, index.html:553); filtering is one click on a bin, category value, or legend chip (index.html:574, 818). Primary object is on screen at load in both viewports."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "Context preservation is structural, not cosmetic: selection is a Set of record ids held invariant across projection changes (index.html:353-354 '跨投影不变量'), filters persist through assignRole (index.html:646-653), and the UI gives explicit receipt via the carryover pill + flash ('上下文保持：N 项过滤 · M 条选中（切换维度不重置）', index.html:228-231, 797-805). The success criterion is literally rendered on screen in both screenshots."
+      },
+      "ui_surface_complexity": {
+        "score": 4,
+        "evidence": "Permanent surfaces: topbar (undo/redo/reset), 10 dim cards each with 3 slot buttons + sparkline/values, projection header with carryover pill + legend, hint footer, and ledger panel (index.html:207-257). For a 10-dimensional explore job this is justified, but there is redundancy — filter entry exists in both dim-card values and legend chips (index.html:574 vs 818) — and the same hint text is repeated on every numeric card."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Receipt: a11y.contrast=fail and a11y.target_size=fail, only a11y.focus_order=pass (measurement-summary.json). Corroborating source: 15×15px remove-filter button (index.html:178-181), 10px slot buttons min-width 22px (index.html:84-88), low-luminance #7d8798 text at 9.5-11px (index.html:16,92,99,197). Genuine scaffolding exists (focus-visible outline index.html:29, aria-labels index.html:552,573,817, aria-live status index.html:258), but the scatter itself is mouse-only — brush/hover bound to mousedown/mousemove with no keyboard path to points (index.html:716-756)."
+      },
+      "frontend_rework": {
+        "score": 2,
+        "evidence": "4 of 7 receipt checks failed (measurement-summary.json: layout.overflow, a11y.contrast, a11y.target_size, type.min_projected_size). The overflow failure is visible: in 1280x860.png the 地区 card is cut mid-row at the bottom edge and the ledger footer's second line ('毁后续快照，可再前进') is clipped, consistent with body overflow:hidden (index.html:26) silently clipping. Root cause of type failure is pervasive 9.5-10.5px type (index.html:77,99,121,190-195). No runtime/error failures and target_invalid=false; text.truncation and responsive_collision pass."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed '过滤/投影状态有归属且可回退' is addressed head-on: every filter carries source+timestamp (index.html:659-661, 670-671) surfaced in chip tooltips (index.html:630); every action commits a ledger snapshot with source component, icon, label, time (index.html:366-370); undo/redo (index.html:377-378, 779-780), reset-to-snapshot-#0 (index.html:849-852), and jump-to-any-entry that keeps forward entries (index.html:371-376; stated in ledger footer index.html:255). Initial screen already shows ledger entry #0 with attribution (both screenshots)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "layout.overflow=fail (check id): at 1280x860 the left rail's 地区 card is cut mid-row and the ledger footer's second line is clipped at the bottom edge; body overflow:hidden (index.html:26) clips rather than scrolls",
+      "a11y.contrast=fail (check id); consistent with #7d8798 text3 on dark panels at small sizes (index.html:16,99,197)",
+      "a11y.target_size=fail (check id); 15×15px ✕ button (index.html:178-181) and compact 10px slot buttons (index.html:84-88)",
+      "type.min_projected_size=fail (check id); 9.5-10.5px fonts used across chips, hints, ledger metadata (index.html:77,92,99,121,190-195,197)",
+      "Scatter interaction is mouse-only (brush/hover, index.html:716-756); no keyboard access to individual points despite keyboard shortcuts for select-all/undo",
+      "Legend wraps to two rows at 1280x860 (crowding the canvas head), though layout.responsive_collision passes"
+    ],
+    "missing_evidence": [],
+    "overall_note": "impl-02 is a single-file static app (index.html, no external dependencies, file://-openable per its header comment index.html:7-9) whose data is generated inline and synchronously at load (index.html:263-312), satisfying the no-loading-state constraint — both operator screenshots show the full 2,400-record scatter on first paint at 1280x860 and 1440x900. The representation matches the dimensional-space brief tightly: X/Y/color role slots over 10 dimensions, per-dimension distribution cards, and a state ledger. The success criterion (dimension switch preserves cognition) and the acceptance seed (filters/projection attributable and reversible) are both implemented structurally — record-id selection invariant (index.html:353-354), source+time stamped filters, and a full snapshot ledger with undo/redo/jump — and are visibly advertised on the initial screen via the carryover pill and ledger entry #0. The weaknesses are polish-level and measured: 4 of 7 receipt checks fail (layout.overflow, a11y.contrast, a11y.target_size, type.min_projected_size), with the overflow visibly clipping the rail and ledger footer at 1280x860, and pervasive 9.5-10.5px type plus a mouse-only canvas keep accessibility at a low score despite good focus order and aria scaffolding. Task completion time, retrieval accuracy, and human preference are not observable in this blind package; the model-judged time_to_understand proxy reflects a dense but well-labeled screen, and no human preference is implied."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 32448,
+      "outputTokens": 7736,
+      "cacheReadInputTokens": 55552,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.38341600000000003,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-10-23T17:16:36.131Z"
+}

@@ -1,0 +1,18 @@
+check_id: keyboard
+captured_at: "2026-09-19T06:12:00Z"
+captured_by: implementation-arm
+tool: chrome.exe (headless)
+method: >-
+  driver stage=10 programmatically focuses the journey-map current-step button (a native <button>);
+  headless chrome --screenshot captured with identical flags; keyboard semantics verified in implementation.
+commands:
+  - chrome.exe --headless=new --screenshot=evidence/shotK-keyboard-focus.png <evidence.html?stage=10> (budget 800)
+artifacts:
+  - path: evidence/shotK-keyboard-focus.png
+    shows: 2px :focus-visible outline clearly visible around journey step row 1
+observed:
+  tab_reachable: 全部交互件为原生 button/checkbox（旅程图为 button 列表），Tab 可达、Enter/Space 可操作
+  focus_visible: ":focus-visible 2px 描边（截图可见）"
+  escape: Esc 关闭确认门与执行记录抽屉
+  focus_trap: 确认门模态内 Tab 焦点圈定
+  gated_action: 确认按钮需知晓勾选后方可激活

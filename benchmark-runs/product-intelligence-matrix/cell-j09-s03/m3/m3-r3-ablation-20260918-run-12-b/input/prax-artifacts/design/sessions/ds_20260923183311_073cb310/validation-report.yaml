@@ -1,0 +1,206 @@
+plan_revision: 3
+evidence:
+  submitted_by: execution arm (Claude, cell-j09-s03-b)
+  collected_at: 2026-09-23T19:42:00Z
+  items:
+    - check_id: keyboard
+      outcome: pass
+      source: CDP Input.dispatchKeyEvent 键盘测试（node _ktest.mjs）
+      notes: node _ktest.mjs（receipt JSON 内含 Tab 焦点序与 9/9 断言明细）：真实 Tab 键序 = 4 图钉 → 4 列头按钮 → 6 滑杆 → 4 预设（禁用落定跳过）；Enter 于图钉 c3 → aria-pressed=true、面板待落定；matches(':focus-visible')===true
+      artifact_refs:
+        - evidence/07-keyboard-focus.png
+        - _ktest.mjs
+      measurement_receipt: validation-evidence/keyboard-receipt.json
+    - check_id: product_model_alignment
+      outcome: pass
+      source: CDP 交互测试（node _itest.mjs）
+      notes: node _itest.mjs → ALL INTERACTION TESTS PASSED（13/13，receipt JSON 内含明细）：located_on/ranks/selects 三条 frame 关系经真实 click/input 事件验证，重新比较可复位
+      artifact_refs:
+        - evidence/04-interact-selected-c3.png
+        - evidence/05-interact-weights.png
+        - evidence/06-interact-decided-c3.png
+        - _itest.mjs
+      measurement_receipt: validation-evidence/interaction-receipt.json
+    - check_id: hierarchy_review
+      outcome: pass
+      source: 截图对照 SDIR 0.2 regions importance/priority
+      notes: 视觉显著度遵循 SDIR 0.2 regions importance + priority：primary=map_rail/column_heads/score_row/core_dim_rows/decide_bar，contextual=secondary_dim_rows/weights_bar；控件降噪，每维最优色彩+徽标双编码
+      artifact_refs:
+        - evidence/01-ready.png
+        - evidence/02-selected.png
+        - evidence/03-decided.png
+    - check_id: requirement_alignment
+      outcome: pass
+      source: 对照确认版 restatement/boundaries + 截图
+      notes: 对照确认版 restatement/boundaries：根 index.html 静态直开 ✓；加载即 ready、数据内联无加载态 ✓；地理语境与决策项同屏 ✓；few=4、高密度=10 维 3 组、行对齐无翻页 ✓；本地零外部服务、不部署 ✓；主屏 1 个 ✓；n6 显式妥协
+      artifact_refs:
+        - evidence/01-ready.png
+        - evidence/03-decided.png
+        - README.md
+evaluation:
+  status: BLOCK
+  checks:
+    - id: semantic_conformance
+      label: Semantic conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR is valid, semantic, and aligned to the approved pattern.
+      evidence_required: false
+    - id: state_completeness
+      label: State completeness
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Required loading, empty, ready, and error states exist.
+      evidence_required: false
+    - id: product_model_alignment
+      label: Product model alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: User-facing structure and language preserve the Product Frame.
+      evidence_required: true
+    - id: keyboard
+      label: Keyboard operability
+      kind: empirical
+      profile: keyboard_accessibility
+      facet: behavioral
+      requirement: Primary work and selection are operable with keyboard and visible focus.
+      evidence_required: true
+    - id: hierarchy_review
+      label: Hierarchy review
+      kind: assistive
+      profile: semantic_integrity
+      facet: visual_hierarchy
+      requirement: Visual prominence follows SDIR importance rather than implementation convenience.
+      evidence_required: true
+    - id: representation_decided
+      label: Representation decided
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares representation.primary with a non-empty reason.
+      evidence_required: false
+    - id: state_ownership_declared
+      label: State ownership declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: Selection and preview states both have declared owners.
+      evidence_required: false
+    - id: acceptance_contract_present
+      label: Acceptance contract present
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 carries at least one acceptance criterion.
+      evidence_required: false
+    - id: complexity_budget_declared
+      label: Complexity budget declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      evidence_required: false
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+  findings:
+    - check_id: semantic_conformance
+      kind: deterministic
+      outcome: pass
+      message: SDIR is valid, semantic, and aligned to the approved pattern.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_completeness
+      kind: deterministic
+      outcome: pass
+      message: Required loading, empty, ready, and error states exist.
+      source: prax-validator
+      provenance: measured
+    - check_id: representation_decided
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares representation.primary with a non-empty reason.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_ownership_declared
+      kind: deterministic
+      outcome: pass
+      message: Selection and preview states both have declared owners.
+      source: prax-validator
+      provenance: measured
+    - check_id: acceptance_contract_present
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 carries at least one acceptance criterion.
+      source: prax-validator
+      provenance: measured
+    - check_id: complexity_budget_declared
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      source: prax-validator
+      provenance: measured
+    - check_id: product_model_alignment
+      kind: assistive
+      outcome: pass
+      message: node _itest.mjs → ALL INTERACTION TESTS PASSED（13/13，receipt JSON 内含明细）：located_on/ranks/selects 三条 frame 关系经真实 click/input 事件验证，重新比较可复位
+      source: CDP 交互测试（node _itest.mjs）
+      provenance: attested
+    - check_id: keyboard
+      kind: empirical
+      outcome: pass
+      message: node _ktest.mjs（receipt JSON 内含 Tab 焦点序与 9/9 断言明细）：真实 Tab 键序 = 4 图钉 → 4 列头按钮 → 6 滑杆 → 4 预设（禁用落定跳过）；Enter 于图钉 c3 → aria-pressed=true、面板待落定；matches(':focus-visible')===true
+      source: CDP Input.dispatchKeyEvent 键盘测试（node _ktest.mjs）
+      provenance: attested
+    - check_id: hierarchy_review
+      kind: assistive
+      outcome: pass
+      message: 视觉显著度遵循 SDIR 0.2 regions importance + priority：primary=map_rail/column_heads/score_row/core_dim_rows/decide_bar，contextual=secondary_dim_rows/weights_bar；控件降噪，每维最优色彩+徽标双编码
+      source: 截图对照 SDIR 0.2 regions importance/priority
+      provenance: attested
+    - check_id: requirement_alignment
+      kind: assistive
+      outcome: pass
+      message: 对照确认版 restatement/boundaries：根 index.html 静态直开 ✓；加载即 ready、数据内联无加载态 ✓；地理语境与决策项同屏 ✓；few=4、高密度=10 维 3 组、行对齐无翻页 ✓；本地零外部服务、不部署 ✓；主屏 1 个 ✓；n6 显式妥协
+      source: 对照确认版 restatement/boundaries + 截图
+      provenance: attested
+  missing_evidence:
+    - keyboard
+  warnings: []
+  codes:
+    - MEASUREMENT_RECEIPT_INVALID
+    - MEASUREMENT_RECEIPT_MISSING
+  readiness:
+    deterministic_passed: true
+    measurement:
+      receipt_ref: null
+      binding:
+        validation-evidence/keyboard-receipt.json: invalid
+        validation-evidence/interaction-receipt.json: invalid
+      error_failures_open: 0
+      warning_dispositions: []
+    convergence:
+      stalled: false
+      unresolved: []
+    evidence_current: false
+    claims:
+      measured:
+        - semantic_conformance
+        - state_completeness
+        - representation_decided
+        - state_ownership_declared
+        - acceptance_contract_present
+        - complexity_budget_declared
+      attested:
+        - product_model_alignment
+        - keyboard
+        - hierarchy_review
+        - requirement_alignment
+      skipped: []

@@ -1,0 +1,89 @@
+<!doctype html>
+<!-- 证据采集专用页面：与 index.html 相同的应用 + driver.js 自动驾驶。交付物本体是根路径 index.html，本文件仅用于无头浏览器取证。 -->
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>下线指挥台 · EVIDENCE</title>
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z"/><path d="M9 12l2 2 4-4"/></svg>
+    </span>
+    <div class="brand-text">
+      <div class="brand-name">下线指挥台</div>
+      <div class="brand-sub" id="brandSub"></div>
+    </div>
+  </div>
+  <div class="header-meta" id="headerMeta"></div>
+  <div class="header-actions">
+    <span id="deviationBadge" class="dev-badge is-ok" title="偏差 = 门禁未过即尝试执行、确认对话中被取消的次数">偏差 0</span>
+    <button id="btnRecord" class="btn ghost on-dark" type="button">执行记录</button>
+    <button id="btnReset" class="btn ghost on-dark danger-text" type="button">重置演练</button>
+  </div>
+</header>
+
+<div id="undoStrip"></div>
+
+<main class="layout">
+  <aside class="journey" id="journey" aria-label="流程旅程图"></aside>
+  <section class="focus-col" id="focusCol" aria-label="当前步骤执行区"></section>
+</main>
+
+<footer class="app-footer">
+  <span>零失误目标：门禁未过不放行 · 不可逆动作先确认后果、后留恢复路径</span>
+  <span id="footerMeta"></span>
+</footer>
+
+<div id="undoStripAnchor"></div>
+
+<aside class="drawer" id="drawer" role="dialog" aria-label="执行记录" hidden>
+  <div class="drawer-head">
+    <h2>执行记录</h2>
+    <span class="drawer-count" id="drawerCount"></span>
+    <button id="drawerClose" class="btn ghost sm" type="button">关闭</button>
+  </div>
+  <div class="drawer-empty" id="drawerEmpty">尚无记录——完成第一步后，此处将开始记录每一次执行、确认与偏差。</div>
+  <ol class="timeline" id="timeline"></ol>
+</aside>
+
+<div class="scrim" id="scrim" hidden></div>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
+  <div class="modal-card">
+    <div class="modal-head">
+      <span class="modal-kicker">不可逆动作 · 确认门</span>
+      <h2 id="modalTitle"></h2>
+    </div>
+    <div class="modal-body">
+      <div class="block consequence-block">
+        <div class="block-label is-danger">执行后果</div>
+        <p id="modalConsequence"></p>
+      </div>
+      <div class="block recovery-block">
+        <div class="block-label is-safe">恢复路径</div>
+        <p id="modalRecovery"></p>
+      </div>
+      <label class="ack-row">
+        <input type="checkbox" id="modalAck">
+        <span>我已知晓上述后果与恢复路径，确认执行本不可逆动作。</span>
+      </label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn ghost" id="modalCancel" type="button">取消，返回检查</button>
+      <button class="btn danger" id="modalConfirm" type="button" disabled>确认执行</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script src="../data.js"></script>
+<script src="../app.js"></script>
+<script src="driver.js"></script>
+</body>
+</html>

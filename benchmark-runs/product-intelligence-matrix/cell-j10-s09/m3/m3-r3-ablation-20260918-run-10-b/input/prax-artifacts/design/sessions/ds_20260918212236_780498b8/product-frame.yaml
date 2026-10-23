@@ -1,0 +1,93 @@
+version: "0.2"
+jtbd:
+  verb: complete
+  target: 一个高后果流程（高危运维变更类 runbook，如生产服务器下线），从第一阶段到最后收尾全程完成
+  success: 零失误走完全程：无跳步、无校验失败放行、无未经确认的不可逆动作，且每个不可逆动作都有可指认的恢复路径。
+primary_object:
+  type: workflow
+  label: 高后果流程（runbook）
+task_model:
+  frequency: low
+  reversibility: irreversible
+  consequence: high
+  expertise: mixed
+user:
+  primary_role: 高后果流程执行人（值班工程师/变更执行者），按 runbook 走完整条流程
+  expertise: mixed
+  familiarity: low
+goal:
+  primary: 让执行者第一次就走对一个不可逆代价高的流程：每个步骤按门禁完成，不可逆动作先确认后果、后留恢复路径，最终零失误通关并产出可核查的执行凭证。
+tasks:
+  primary: 按阶段逐步执行流程：阅读当前步骤→满足门禁校验→（不可逆步骤）查看后果并显式确认→执行并标记完成
+  secondary:
+    - 在冷静期内撤销刚执行的不可逆动作（恢复路径）
+    - 查看执行记录/偏差日志以核对零失误
+    - 走完全程后查看完成凭证与审计摘要
+product_objects:
+  - id: runbook
+    user_name: 下线流程（高后果流程）
+    purpose: 承载完整流程结构：阶段→步骤、门禁规则、不可逆标记，是唯一主对象
+  - id: phase
+    user_name: 阶段
+    purpose: 将流程分为有序阶段（如 准备→摘除→销毁→收尾），提供层级与进度感
+  - id: step
+    user_name: 步骤
+    purpose: 最小可执行单元：含操作说明、校验门禁、可选的不可逆属性
+  - id: irreversible_gate
+    user_name: 确认门
+    purpose: 不可逆步骤的确认路径：展示后果、要求显式确认（勾选+确认对话）后才可执行
+  - id: recovery_path
+    user_name: 恢复路径
+    purpose: 不可逆步骤的恢复路径：撤销窗口（冷静期 undo）、恢复点说明或回滚指引，确保'错了有路可退'
+  - id: execution_record
+    user_name: 执行记录
+    purpose: 零失误的凭证：步骤完成时间、确认记录、偏差（跳步/失败重试）日志、最终完成摘要
+relationships:
+  - id: rel-runbook-phase
+    source: runbook
+    target: phase
+    type: contains
+    direction: forward
+    meaning: 一个流程包含多个有序阶段
+    condition: 顺序推进，门禁通过才解锁
+    importance: primary
+  - id: rel-phase-step
+    source: phase
+    target: step
+    type: contains
+    direction: forward
+    meaning: 阶段包含按序执行的步骤
+    condition: 步骤状态受门禁约束
+    importance: primary
+  - id: rel-step-gate
+    source: step
+    target: irreversible_gate
+    type: gated_by
+    direction: forward
+    meaning: 不可逆步骤在执行前必须通过确认门（后果展示+显式确认）
+    condition: 仅 irreversible 步骤
+    importance: primary
+  - id: rel-gate-recovery
+    source: irreversible_gate
+    target: recovery_path
+    type: backed_by
+    direction: forward
+    meaning: 确认门背后提供恢复路径：冷静期撤销/恢复点/回滚指引
+    condition: 确认后进入撤销窗口或常驻回滚指引
+    importance: primary
+  - id: rel-step-record
+    source: step
+    target: execution_record
+    type: appends_to
+    direction: forward
+    meaning: 每一步执行、确认、偏差都写入执行记录
+    condition: 全程
+    importance: supporting
+mental_model_hypothesis:
+  summary: 执行者把高后果流程理解为一张'作战地图+检查单'：整体先看到全部阶段（先知晓终局与不可逆点在哪），再聚焦当前步骤照单执行；对不可逆动作，心智模型要求'先看到后果、再签字确认、且知道出错了怎么救回来'。这是航空检查单+变更审批+write-ahead log 的混合模型。
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: 执行者零失误走完全程：门禁校验全部通过、每个不可逆步骤都留下了显式确认与恢复路径记录、完成时生成含审计摘要的执行凭证。
+open_questions: []

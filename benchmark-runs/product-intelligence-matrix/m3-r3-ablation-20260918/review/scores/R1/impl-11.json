@@ -1,0 +1,83 @@
+{
+  "reviewer": "R1",
+  "package_id": "impl-11",
+  "session_id": "04c0634b-8cdb-481f-8782-8e773532216e",
+  "wall_clock_seconds": 196,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-11",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Primary representation is a single-document block editor: one data model {title, blocks[]} with typed blocks h2/h3/p/bullet/num/quote/callout (source/app.js:24-32,50-75) rendered in one persistent 3-pane workbench outline/editor/preview at both 1280x860 and 1440x900 (source/index.html:26-54); matches brief shape single-document/edit/success=structure preserved; no multi-doc, spatial, or comparison metaphors present."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "Editor is the dominant center pane, keyboard hints inline in its head (source/index.html:36-42), document content fully populated at load (screenshots 1280x860 and 1440x900; sample doc inline at source/app.js:50-75, init at 896-905); the entire first screen is the document being edited."
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "Labeled pane heads 大纲/编辑器/预览, green 已同步 badge with timestamp, and a checker verdict line stating 结构有效…编辑与预览一致 make what/where immediate (both screenshots); model-judged label proxy only."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Primary object (the document) is on screen at load with zero modes/routes/tabs (source/index.html); outline entries are buttons that jump the caret to the target block in one click (source/app.js:462-469)."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "All primary actions are in place: edits re-derive all views without navigation (source/app.js:675-685), rejected structural ops surface an in-situ toast instead of leaving the editor (source/app.js:146-166), undo/redo preserve block focus (source/app.js:221-241); only native confirm() on reset (source/app.js:750)."
+      },
+      "ui_surface_complexity": {
+        "score": 4,
+        "evidence": "Permanent surfaces are lean: 6-button topbar (source/index.html:16-23), three labeled panes, status bar (source/index.html:56-59); per-block toolbars (type select + 5 buttons) are hover/focus-revealed, not permanent (source/styles.css:372-379). Deducting one point: each focused block still exposes 6 controls plus a persistent checker panel — justified by the seed but a denser surface than the brief's low-density shape strictly needs."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Receipt: a11y.contrast=fail, a11y.focus_order=fail, a11y.target_size=pass, type.min_projected_size=fail (measurement-summary.json:13-16). Positive source evidence: region and live-region ARIA (source/index.html:28,32,45,51,61), aria-labels on dynamically built buttons/textareas (source/app.js:314,386). Corroborating failures: faint low-contrast token #9aa1b2 used for hints/gutter/meta (source/styles.css:10,151-160,316-325,456-462) and .block-text:focus removing the outline in favor of a parent border (source/styles.css:342)."
+      },
+      "frontend_rework": {
+        "score": 3,
+        "evidence": "No visible layout defects at either viewport; layout.overflow, layout.responsive_collision, text.truncation all pass (measurement-summary.json:11-13). But 3 of 7 checks fail (a11y.contrast, a11y.focus_order, type.min_projected_size), implying styling/typography/focus rework passes; receipt totals 4 pass / 3 fail / 1 warning (measurement-summary.json:3-8)."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed 结构化编辑与预览一致 is guaranteed by construction — a single model derives editor, outline, and preview (source/app.js:3-9,675-685) — enforced via clone-trial guards rejecting level jumps and structure-breaking deletes/moves (source/app.js:146-166, self-tests at 785-813), and made visible on-screen as 模型 19 节点 ↔ 预览 19 节点 一致 ✓ with hierarchy path (screenshots; source/app.js:609-661), plus a consistency self-test after random ops (source/app.js:834-838)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "a11y.contrast and a11y.focus_order fail (measurement-summary.json:14-15), corroborated in source by faint low-contrast text tokens and outline-suppressing textarea focus style (source/styles.css:10,342).",
+      "type.min_projected_size fail (measurement-summary.json:16) consistent with 11px hint/gutter/chip type (source/styles.css:157,323,213).",
+      "On-screen unit ambiguity: checker reports 模型 19 节点 while status bar shows 块 18 and preview meta 18 个内容块 (screenshots; title H1 counted as a node at source/app.js:611) — the difference is unexplained to the viewer.",
+      "Focus indication on block textareas relies on the container border after removing the native outline (source/styles.css:342), consistent with the focus_order failure."
+    ],
+    "missing_evidence": [
+      "Receipt summary reports 1 warning but does not identify which check emitted it (measurement-summary.json:7).",
+      "Sanitized checks provide no element-level detail for the contrast/focus-order failures, so their visual severity cannot be confirmed from screenshots alone.",
+      "No keyboard-only or screen-reader walkthrough artifact is included in the package; a11y scoring beyond the seven receipt checks is limited to source inspection."
+    ],
+    "overall_note": "impl-11 is a tightly scoped single-document structured editor whose representation matches the brief almost exactly: one inline data model derives outline, editor, and preview (source/app.js:3-9), the acceptance seed of editor/preview consistency is both enforced by trial-run guards (source/app.js:146-166) and displayed as a live audit with node counts and hierarchy path (screenshots; source/app.js:609-661), and the first screen is fully usable at load with inline sample content (source/app.js:896-905), satisfying the brief's ready-at-load and single-main-screen constraints. Navigation and context costs are minimal — everything occurs on one persistent screen with in-place rejection toasts and focus-preserving undo/redo. The weaknesses are measurable rather than structural: three of seven receipt checks fail (a11y.contrast, a11y.focus_order, type.min_projected_size), corroborated by faint low-contrast text tokens and outline-suppressing focus styles in styles.css, and the first screen shows an unexplained 19-nodes-vs-18-blocks unit mismatch that slightly muddies an otherwise self-verifying interface. Time-to-understand is a model-judged proxy and no human preference or task-time data exists in this package; no claims are made about either."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 35144,
+      "outputTokens": 7505,
+      "cacheReadInputTokens": 82432,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.40456099999999995,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-10-23T16:38:47.634Z"
+}

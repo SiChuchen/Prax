@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PRISM · 多维订单探查台</title>
+<style>
+/* ---------- 色板：dataviz 参考实例（dark 模式值） ---------- */
+:root{
+  color-scheme: dark;
+  --plane:#0d0d0d;        /* page plane */
+  --surface:#1a1a19;      /* chart surface / panel */
+  --surface2:#232322;     /* raised */
+  --ink:#ffffff;          /* primary ink */
+  --ink2:#c3c2b7;         /* secondary ink */
+  --mut:#898781;          /* muted */
+  --grid:#2c2c2a;         /* hairline grid */
+  --baseline:#383835;     /* baseline / axis */
+  --ring:rgba(255,255,255,0.10);
+  /* 分类色（固定顺序，不循环）：新客/会员/VIP/企业 */
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
+  /* 顺序量条：蓝 ramp step 500（dark 面 ≥2:1） */
+  --bar:#256abf;
+  --warn:#fab219;
+  --good:#0ca30c;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--plane);color:var(--ink2);
+  font:13px/1.5 system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;
+  overflow:hidden;
+}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:var(--baseline);border-radius:5px;border:2px solid var(--surface)}
+::-webkit-scrollbar-track{background:transparent}
+
+#app{display:grid;grid-template-columns:238px minmax(0,1fr) 316px;grid-template-rows:50px minmax(0,1fr);height:100vh}
+
+/* ---------- 顶栏 ---------- */
+#topbar{grid-column:1/4;display:flex;align-items:center;gap:14px;padding:0 14px;background:var(--surface);border-bottom:1px solid var(--grid)}
+#topbar .logo{font-weight:700;letter-spacing:.14em;color:var(--ink);font-size:14px}
+#topbar .logo em{font-style:normal;color:var(--s1)}
+#topbar .meta{color:var(--mut);font-size:12px}
+#topbar .spacer{flex:1}
+#topbar .hint{color:var(--mut);font-size:11px}
+.tbtn{border:1px solid var(--ring);border-radius:6px;padding:4px 10px;color:var(--ink2);background:var(--surface2)}
+.tbtn:hover:not(:disabled){color:var(--ink);border-color:var(--s1)}
+.tbtn:disabled{opacity:.35;cursor:default}
+
+/* ---------- 维度轨 ---------- */
+#rail{background:var(--surface);border-right:1px solid var(--grid);overflow-y:auto;padding:10px 0 14px}
+#rail .grp{padding:8px 14px 2px;color:var(--mut);font-size:11px;letter-spacing:.12em}
+.dim{display:flex;align-items:center;gap:8px;width:100%;text-align:left;padding:6px 14px;color:var(--ink2)}
+.dim:hover{background:var(--surface2)}
+.dim.active{background:var(--surface2);box-shadow:inset 3px 0 0 var(--s1);color:var(--ink)}
+.dim .nm{flex:1}
+.dim .ty{font-size:10px;color:var(--mut);border:1px solid var(--grid);border-radius:3px;padding:0 4px}
+.dim .fb{font-size:11px;color:var(--s4);background:rgba(201,133,0,.12);border-radius:8px;padding:0 6px}
+.dim .fo{width:6px;height:6px;border-radius:50%;background:var(--s3);flex:none}
+#rail .foot{padding:12px 14px 0;color:var(--mut);font-size:11px;line-height:1.7;border-top:1px solid var(--grid);margin-top:10px}
+
+/* ---------- 中央投影台 ---------- */
+#stage{display:flex;flex-direction:column;min-width:0;overflow:hidden}
+#projhead{display:flex;align-items:flex-end;gap:16px;padding:12px 16px 10px;border-bottom:1px solid var(--grid);flex-wrap:wrap}
+#projhead .ph-k{color:var(--mut);font-size:11px;letter-spacing:.12em}
+#projhead h2{color:var(--ink);font-size:17px;font-weight:650;line-height:1.2}
+#projhead h2 small{color:var(--mut);font-size:11px;font-weight:400;margin-left:8px}
+#projhead .grow{flex:1}
+.seg{display:inline-flex;border:1px solid var(--ring);border-radius:6px;overflow:hidden}
+.seg button{padding:3px 9px;color:var(--ink2);font-size:12px;border-right:1px solid var(--grid)}
+.seg button:last-child{border-right:none}
+.seg button.on{background:var(--s1);color:#fff}
+.legend{display:inline-flex;gap:10px;align-items:center;font-size:11px;color:var(--mut)}
+.legend i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.pill{font-size:11px;color:var(--ink2);border:1px dashed var(--baseline);border-radius:10px;padding:2px 9px}
+#cogbar{padding:6px 16px;color:var(--mut);font-size:12px;border-bottom:1px solid var(--grid);background:rgba(57,135,229,.05)}
+#cogbar b{color:var(--ink);font-weight:600}
+#cogbar .warn{color:var(--warn)}
+#tilesWrap{overflow-y:auto;padding:12px 16px 4px;flex:0 1 auto;max-height:46%}
+#tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(206px,1fr));gap:8px}
+.tile{background:var(--surface);border:1px solid var(--grid);border-radius:8px;padding:8px 10px 9px;cursor:pointer;position:relative}
+.tile:hover{border-color:var(--baseline)}
+.tile.in{border-color:var(--s1);box-shadow:inset 0 0 0 1px var(--s1)}
+.tile.out{opacity:.42}
+.tile.out .tnm{text-decoration:line-through}
+.tile .trow{display:flex;align-items:baseline;gap:6px}
+.tile .tnm{color:var(--ink);font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .tshare{color:var(--mut);font-size:11px;font-variant-numeric:tabular-nums}
+.tile .tbar{height:4px;background:var(--grid);border-radius:0 4px 4px 0;margin:6px 0 5px}
+.tile .tbar i{display:block;height:100%;background:var(--bar);border-radius:0 4px 4px 0}
+.tile .tmeta{color:var(--mut);font-size:11px;font-variant-numeric:tabular-nums}
+.tile .tstrip{display:flex;gap:2px;height:6px;margin-top:6px}
+.tile .tstrip i{border-radius:1px;min-width:2px}
+.tile .drill{position:absolute;right:8px;bottom:8px;font-size:10px;color:var(--s1);border:1px solid var(--ring);border-radius:4px;padding:1px 5px;background:var(--surface2)}
+.tile .drill:hover{border-color:var(--s1)}
+.tile.flash{animation:flash 1.1s ease 2}
+@keyframes flash{0%,100%{box-shadow:inset 0 0 0 1px var(--s1)}50%{box-shadow:inset 0 0 0 3px var(--s1)}}
+#tilesEmpty{color:var(--mut);padding:18px 4px}
+
+/* ---------- 明细表 ---------- */
+#tablewrap{overflow:auto;border-top:1px solid var(--grid);padding:0 16px 14px}
+#tablewrap .tnote{color:var(--mut);font-size:11px;padding:7px 2px 5px;position:sticky;top:0;background:var(--plane)}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+thead th{position:sticky;top:22px;background:var(--surface);color:var(--mut);font-weight:500;text-align:left;padding:4px 8px;border-bottom:1px solid var(--baseline);white-space:nowrap;font-size:11px}
+tbody td{padding:3px 8px;border-bottom:1px solid var(--grid);white-space:nowrap;font-size:12px;color:var(--ink2)}
+tbody tr{cursor:pointer}
+tbody tr:hover td{background:var(--surface2)}
+tbody tr.sel td{background:rgba(57,135,229,.14)}
+tbody tr.sel td:first-child{box-shadow:inset 3px 0 0 var(--s1);color:var(--ink)}
+td.num,th.num{text-align:right}
+.dot{display:inline-block;width:7px;height:7px;border-radius:2px;margin-right:5px}
+
+/* ---------- 状态账本 ---------- */
+#ledger{background:var(--surface);border-left:1px solid var(--grid);overflow-y:auto}
+.sec{border-bottom:1px solid var(--grid);padding:9px 13px 11px}
+.sec h3{color:var(--mut);font-size:11px;font-weight:600;letter-spacing:.12em;display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.sec h3 .n{color:var(--ink);background:var(--surface2);border:1px solid var(--grid);border-radius:8px;padding:0 6px;font-size:11px}
+.sec h3 .act{margin-left:auto;color:var(--s1);font-size:11px;letter-spacing:0}
+.sec h3 .act:hover{text-decoration:underline}
+.prov{color:var(--mut);font-size:11px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--ring);background:var(--surface2);border-radius:5px;padding:2px 4px 2px 7px;font-size:12px;color:var(--ink2)}
+.chip b{color:var(--ink);font-weight:600}
+.chip .x{color:var(--mut);border-radius:3px;padding:0 3px;font-size:12px;line-height:1.2}
+.chip .x:hover{color:var(--warn);background:rgba(250,178,25,.12)}
+.fdim{margin-bottom:8px}
+.fdim:last-child{margin-bottom:0}
+.fdim .fh{display:flex;align-items:center;gap:7px;margin-bottom:4px;font-size:11px;color:var(--mut)}
+.fdim .fh .clr{margin-left:auto;color:var(--s1);font-size:11px}
+.fdim .fh .clr:hover{text-decoration:underline}
+#selNote{color:var(--mut);font-size:11px;margin-top:6px}
+#selNote .warn{color:var(--warn)}
+.snap{display:flex;gap:7px;align-items:baseline;padding:3px 6px;border-radius:5px;font-size:12px;color:var(--ink2);width:100%;text-align:left}
+.snap:hover{background:var(--surface2)}
+.snap.cur{background:rgba(57,135,229,.14);color:var(--ink)}
+.snap .k{color:var(--mut);font-variant-numeric:tabular-nums;flex:none;font-size:11px}
+.snap .src{margin-left:auto;color:var(--mut);font-size:10px;flex:none}
+.snap.cur .k,.snap.cur .src{color:var(--s1)}
+#snaplist{max-height:220px;overflow-y:auto}
+
+/* ---------- toast ---------- */
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:var(--surface2);border:1px solid var(--s1);color:var(--ink);border-radius:8px;padding:8px 16px;font-size:12.5px;opacity:0;pointer-events:none;transition:.25s;box-shadow:0 6px 24px rgba(0,0,0,.5);max-width:70vw;z-index:9}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast b{color:var(--s1)}
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="topbar">
+    <span class="logo">PRISM<em>◆</em>多维订单探查台</span>
+    <span class="meta" id="dsMeta"></span>
+    <span class="spacer"></span>
+    <span class="hint">Ctrl+Z 撤销 · Ctrl+Shift+Z 重做</span>
+    <button class="tbtn" data-act="undo" id="btnUndo" title="撤销上一步状态">↶ 撤销</button>
+    <button class="tbtn" data-act="redo" id="btnRedo" title="重做">↷ 重做</button>
+    <button class="tbtn" data-act="reset" title="回到初始状态（记入快照，可再撤销）">重置全部</button>
+  </header>
+
+  <aside id="rail" aria-label="维度轨"></aside>
+
+  <main id="stage">
+    <div id="projhead"></div>
+    <div id="cogbar"></div>
+    <div id="tilesWrap"><div id="tiles"></div><div id="tilesEmpty" hidden></div></div>
+    <div id="tablewrap"><div class="tnote" id="tnote"></div><table>
+      <thead><tr>
+        <th>订单号</th><th>部门 · 品类</th><th>渠道</th><th>客户段</th><th>月份</th>
+        <th class="num">金额</th><th class="num">件数</th><th class="num">利润率</th><th class="num">评分</th>
+      </tr></thead>
+      <tbody id="tbody"></tbody>
+    </table></div>
+  </main>
+
+  <aside id="ledger" aria-label="状态账本"></aside>
+</div>
+<div id="toast" role="status"></div>
+
+<script>
+'use strict';
+/* =====================================================================
+   PRISM · 多维订单探查台  — cell-j13-s10（explore × dimensional-space）
+   成功标准：维度切换不重置认知（选择集/过滤/焦点跨投影保留）
+   验收种子：过滤/投影状态有归属（来源+时间）且可回退（单删/撤销/重做/时间旅行）
+   ===================================================================== */
+
+/* ---------- 确定性数据生成（同步，首屏即就绪，无加载态） ---------- */
+function mulberry32(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const rand=mulberry32(20260902);
+function pickW(pairs){let t=0;for(const p of pairs)t+=p[1];let r=rand()*t;for(const p of pairs){r-=p[1];if(r<0)return p[0];}return pairs[pairs.length-1][0];}
+const pick=a=>a[Math.floor(rand()*a.length)];
+
+const DEPTS=[
+  {id:'d1',name:'技术图书'},{id:'d2',name:'家居生活'},{id:'d3',name:'美妆个护'},
+  {id:'d4',name:'户外运动'},{id:'d5',name:'食品饮料'},{id:'d6',name:'玩具母婴'}];
+const CATS=[
+  {id:'c1',name:'计算机科学',dept:'d1'},{id:'c2',name:'编程语言',dept:'d1'},{id:'c3',name:'人工智能',dept:'d1'},{id:'c4',name:'科技史',dept:'d1'},
+  {id:'c5',name:'厨具',dept:'d2'},{id:'c6',name:'家纺',dept:'d2'},{id:'c7',name:'收纳清洁',dept:'d2'},{id:'c8',name:'灯饰照明',dept:'d2'},
+  {id:'c9',name:'护肤',dept:'d3'},{id:'c10',name:'彩妆',dept:'d3'},{id:'c11',name:'洗护发',dept:'d3'},{id:'c12',name:'香水',dept:'d3'},
+  {id:'c13',name:'露营装备',dept:'d4'},{id:'c14',name:'骑行',dept:'d4'},{id:'c15',name:'球类',dept:'d4'},{id:'c16',name:'健身器材',dept:'d4'},
+  {id:'c17',name:'咖啡茶饮',dept:'d5'},{id:'c18',name:'休闲零食',dept:'d5'},{id:'c19',name:'生鲜冷冻',dept:'d5'},{id:'c20',name:'粮油调味',dept:'d5'},
+  {id:'c21',name:'婴儿用品',dept:'d6'},{id:'c22',name:'玩具积木',dept:'d6'},{id:'c23',name:'童车童床',dept:'d6'},{id:'c24',name:'孕产用品',dept:'d6'}];
+const CATBASE={c1:120,c2:95,c3:210,c4:60,c5:180,c6:150,c7:45,c8:260,c9:190,c10:140,c11:60,c12:420,c13:380,c14:900,c15:120,c16:300,c17:80,c18:35,c19:55,c20:70,c21:150,c22:130,c23:650,c24:110};
+const REGIONS=['华东','华南','华北','西南','华中','东北','西北'];
+const TIERS=['一线城市','新一线','二线','三线及以下'];
+const CHANNELS=['直营电商','平台电商','线下门店','企业批发'];
+const SEGMENTS=['新客','会员','VIP','企业'];
+const MONTHS=['2025-09','2025-10','2025-11','2025-12','2026-01','2026-02','2026-03','2026-04','2026-05','2026-06','2026-07','2026-08'];
+const PRICE_BANDS=['¥0-50','¥50-150','¥150-400','¥400-1000','¥1000+'];
+const QTY_BINS=['1件','2-3件','4-9件','10件+'];
+const MARGIN_TIERS=['<10%','10-20%','20-35%','≥35%'];
+const FULFILL=['当日达','次日达','2-3天','4天+'];
+const RATING_BINS=['5星','4星','3星','≤2星'];
+const SEG_COLOR=['var(--s1)','var(--s2)','var(--s3)','var(--s4)'];
+
+/* 维度注册表：id → 名称/类型/取值域/序数保持自然序 */
+const DIMS={
+  dept:{name:'部门',type:'层级',grp:'层级维',values:DEPTS.map(d=>d.id),label:v=>(DEPTS.find(d=>d.id===v)||{}).name||v},
+  cat:{name:'品类',type:'层级',grp:'层级维',parent:'dept',values:CATS.map(c=>c.id),label:v=>(CATS.find(c=>c.id===v)||{}).name||v},
+  region:{name:'大区',type:'分类',grp:'分类维',values:REGIONS},
+  channel:{name:'渠道',type:'分类',grp:'分类维',values:CHANNELS},
+  segment:{name:'客户段',type:'分类',grp:'分类维',values:SEGMENTS},
+  tier:{name:'城市层级',type:'序数',grp:'序数·分箱维',values:TIERS,ordered:true},
+  month:{name:'月份',type:'序数',grp:'序数·分箱维',values:MONTHS,ordered:true},
+  priceBand:{name:'价格带',type:'序数',grp:'序数·分箱维',values:PRICE_BANDS,ordered:true},
+  qtyBin:{name:'单笔件数',type:'序数',grp:'序数·分箱维',values:QTY_BINS,ordered:true},
+  marginTier:{name:'利润率档',type:'序数',grp:'序数·分箱维',values:MARGIN_TIERS,ordered:true},
+  fulfill:{name:'履约时效',type:'序数',grp:'序数·分箱维',values:FULFILL,ordered:true},
+  ratingBin:{name:'评分档',type:'序数',grp:'序数·分箱维',values:RATING_BINS,ordered:true},
+};
+for(const[id,d]of Object.entries(DIMS)) if(!d.label) d.label=v=>v;
+
+function bandOf(r){return r<50?0:r<150?1:r<400?2:r<1000?3:4;}
+function binQty(q){return q===1?0:q<=3?1:q<=9?2:3;}
+function binMargin(m){return m<10?0:m<20?1:m<35?2:3;}
+function binRating(r){return r>=4.5?0:r>=3.5?1:r>=2.5?2:3;}
+const CH_MARGIN={'直营电商':30,'平台电商':21,'线下门店':35,'企业批发':12};
+const SEG_ADJ={'新客':2,'会员':3,'VIP':5,'企业':-6};
+const CH_FULFILL={
+  '直营电商':[['当日达',1],['次日达',6],['2-3天',3],['4天+',0.5]],
+  '平台电商':[['当日达',0.5],['次日达',3],['2-3天',6],['4天+',1.5]],
+  '线下门店':[['当日达',7],['次日达',2],['2-3天',0.5],['4天+',0.1]],
+  '企业批发':[['当日达',0.3],['次日达',1],['2-3天',5],['4天+',3]]};
+const FULFILL_PENALTY={'当日达':0,'次日达':0.15,'2-3天':0.35,'4天+':0.7};
+
+const ORDERS=[];
+(function genOrders(){
+  const deptW=DEPTS.map((d,i)=>[d.id,[14,20,18,14,22,12][i]]);
+  const chW=[[ '直营电商',30],['平台电商',34],['线下门店',22],['企业批发',14]];
+  const segW=SEGMENTS.map((s,i)=>[s,[26,38,18,18][i]]);
+  const rgW=REGIONS.map((r,i)=>[r,[26,18,20,12,11,7,6][i]]);
+  const trW=TIERS.map((t,i)=>[t,[22,30,26,22][i]]);
+  const moW=MONTHS.map((m,i)=>[m,[7,8,12,14,8,7,9,9,9,8,8,8][i]]);
+  const qtyW=[[1,42],[2,20],[3,14],[4,9],[5,6],[6,4],[8,2.5],[10,1.5],[12,0.7],[15,0.25],[20,0.05]];
+  for(let i=0;i<2400;i++){
+    const dept=pickW(deptW);
+    const cat=pick(CATS.filter(c=>c.dept===dept)).id;
+    const channel=pickW(chW);
+    const segment=pickW(segW);
+    const region=pickW(rgW);
+    const tier=pickW(trW);
+    const month=pickW(moW);
+    const qty=pickW(qtyW);
+    const revenue=Math.round(CATBASE[cat]*qty*(0.55+rand()*1.0)*100)/100;
+    const margin=Math.min(55,Math.max(2,CH_MARGIN[channel]+SEG_ADJ[segment]+(rand()-0.5)*18));
+    const fulfill=pickW(CH_FULFILL[channel]);
+    const rating=Math.min(5,Math.max(1,4.35+(margin-24)/22-FULFILL_PENALTY[fulfill]+(rand()-0.5)*1.1));
+    ORDERS.push({id:'ORD-'+(10001+i),dept,cat,region,tier,channel,segment,month,qty,
+      priceBand:PRICE_BANDS[bandOf(revenue)],qtyBin:QTY_BINS[binQty(qty)],
+      marginTier:MARGIN_TIERS[binMargin(margin)],fulfill,ratingBin:RATING_BINS[binRating(rating)],
+      revenue,margin,rating});
+  }
+})();
+
+/* ---------- 度量 ---------- */
+const MEASURES={
+  revenue:{name:'销售额',agg:'sum',acc:r=>r.revenue,fmt:fmtMoney},
+  qty:{name:'件数',agg:'sum',acc:r=>r.qty,fmt:v=>fmtInt(v)},
+  orders:{name:'订单数',agg:'sum',acc:()=>1,fmt:fmtInt},
+  margin:{name:'利润率',agg:'avg',acc:r=>r.margin,fmt:v=>v.toFixed(1)+'%'},
+  rating:{name:'评分',agg:'avg',acc:r=>r.rating,fmt:v=>v.toFixed(2)},
+};
+
+/* ---------- 状态（全部变更走快照账本，有归属、可回退） ---------- */
+const INIT={projection:'cat',measure:'revenue'};
+const state={
+  projection:INIT.projection,
+  measure:INIT.measure,
+  filters:{},        // dimId -> Set(value)   保留值集合（空=不过滤）
+  selection:new Set(), // 订单 id，跨维度/过滤保留
+  focus:{},          // dimId -> 最近查看值（跨投影的焦点记忆）
+};
+let snapshots=[],cur=-1;
+
+const now=()=>new Date().toTimeString().slice(0,8);
+function serializeState(){
+  const f={};for(const[d,s]of Object.entries(state.filters))f[d]=[...s];
+  return{projection:state.projection,measure:state.measure,filters:f,selection:[...state.selection],focus:{...state.focus}};
+}
+function applyState(st){
+  state.projection=st.projection;state.measure=st.measure;
+  state.filters={};for(const[d,vs]of Object.entries(st.filters))state.filters[d]=new Set(vs);
+  state.selection=new Set(st.selection);state.focus={...(st.focus||{})};
+}
+function commit(label,source){
+  snapshots=snapshots.slice(0,cur+1);
+  snapshots.push({label,source,time:now(),st:serializeState()});
+  cur=snapshots.length-1;
+  console.log('[prism] 快照#'+(cur+1),label,'('+source+')');
+  renderAll();
+}
+function undo(){if(cur<=0)return;cur--;applyState(snapshots[cur].st);renderAll();toast('已撤销 → 回到 <b>#'+(cur+1)+' '+esc(snapshots[cur].label)+'</b>');}
+function redo(){if(cur>=snapshots.length-1)return;cur++;applyState(snapshots[cur].st);renderAll();toast('已重做 → <b>#'+(cur+1)+' '+esc(snapshots[cur].label)+'</b>');}
+function restore(k){
+  if(k<0||k>=snapshots.length||k===cur)return;
+  applyState(snapshots[k].st);
+  commit('回退至 #'+(k+1),'时间旅行');
+  toast('已回退至快照 <b>#'+(k+1)+'</b>（已记为新快照，可继续撤销）');
+}
+function resetAll(){
+  state.projection=INIT.projection;state.measure=INIT.measure;
+  state.filters={};state.selection=new Set();state.focus={};
+  commit('重置全部','账本');toast('已重置全部状态（可撤销恢复）');
+}
+
+/* ---------- 派生 ---------- */
+function passes(o){for(const[d,s]of Object.entries(state.filters))if(!s.has(o[d]))return false;return true;}
+function filteredRows(){return ORDERS.filter(passes);}
+function aggBy(rows,dimId,m){
+  const res=new Map();for(const v of DIMS[dimId].values)res.set(v,{sum:0,n:0,segs:[0,0,0,0]});
+  for(const r of rows){const e=res.get(r[dimId]);if(!e)continue;e.sum+=m.acc(r);e.n++;e.segs[SEGMENTS.indexOf(r.segment)]++;}
+  for(const e of res.values())e.val=e.n?(m.agg==='avg'?e.sum/e.n:e.sum):0;
+  return res;
+}
+
+/* ---------- 格式化 ---------- */
+function fmtInt(n){return n.toLocaleString('zh-CN');}
+function fmtMoney(v){return v<1e4?'¥'+Math.round(v):v<1e8?'¥'+(v/1e4).toFixed(1)+'万':'¥'+(v/1e8).toFixed(2)+'亿';}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function vlabel(d,v){return DIMS[d].label(v);}
+
+/* ---------- 动作 ---------- */
+function setProjection(dim,source){
+  if(state.projection===dim)return;
+  state.projection=dim;
+  commit('投影 → 「'+DIMS[dim].name+'」',source);
+  const f=state.focus[dim];
+  if(f)requestAnimationFrame(()=>{const el=document.querySelector('.tile[data-val="'+CSS.escape(f)+'"]');
+    if(el){el.scrollIntoView({block:'nearest'});el.classList.add('flash');}});
+  toast('已切换投影 → <b>「'+DIMS[dim].name+'」</b> · 认知已保留：选中 '+state.selection.size+' 项 · 过滤 '+Object.keys(state.filters).length+' 维');
+}
+function toggleFilter(dim,val,source){
+  const f=state.filters[dim]||new Set();
+  if(f.has(val))f.delete(val);else f.add(val);
+  state.focus[dim]=val;
+  if(f.size===0)delete state.filters[dim];else state.filters[dim]=f;
+  const on=state.filters[dim]&&state.filters[dim].has(val);
+  commit((on?'过滤 ':'取消 ')+DIMS[dim].name+'='+vlabel(dim,val),source);
+}
+function removeFilterValue(dim,val){
+  const f=state.filters[dim];if(!f)return;
+  f.delete(val);if(f.size===0)delete state.filters[dim];
+  commit('移除过滤值 '+DIMS[dim].name+'='+vlabel(dim,val),'账本');
+}
+function clearDim(dim){if(!state.filters[dim])return;delete state.filters[dim];commit('清空过滤 '+DIMS[dim].name,'账本');}
+function drill(deptVal){
+  state.filters.dept=new Set([deptVal]);state.projection='cat';state.focus.dept=deptVal;
+  commit('下钻 「'+vlabel('dept',deptVal)+'」 → 品类','下钻');
+  toast('已下钻至<b>品类</b>（范围=该部门，记入过滤账本，可回退）');
+}
+function setMeasure(mk){
+  if(state.measure===mk)return;state.measure=mk;
+  commit('度量 → '+MEASURES[mk].name,'度量切换');
+}
+function toggleSelect(id){
+  if(state.selection.has(id))state.selection.delete(id);else state.selection.add(id);
+  commit((state.selection.has(id)?'选中 ':'取消 ')+id,'明细行点击');
+}
+
+/* ---------- 渲染 ---------- */
+const $=s=>document.querySelector(s);
+function renderAll(){
+  const rows=filteredRows(),m=MEASURES[state.measure];
+  renderRail();renderProjHead();renderCogbar(rows);renderTiles(rows,m);renderTable(rows);
+  renderLedger(rows);
+  $('#btnUndo').disabled=cur<=0;$('#btnRedo').disabled=cur>=snapshots.length-1;
+}
+
+function renderRail(){
+  const grps=['层级维','分类维','序数·分箱维'];
+  let html='';
+  for(const g of grps){
+    html+='<div class="grp">'+g+'</div>';
+    for(const[id,d]of Object.entries(DIMS)){
+      if(d.grp!==g)continue;
+      const fb=state.filters[id]?'<span class="fb">'+state.filters[id].size+'/'+d.values.length+'</span>':'';
+      const fo=state.focus[id]?'<span class="fo" title="焦点记忆：'+esc(vlabel(id,state.focus[id]))+'"></span>':'';
+      html+='<button class="dim'+(state.projection===id?' active':'')+'" data-act="project" data-dim="'+id+'" title="投影到 '+esc(d.name)+'（认知状态保留）">'
+        +'<span class="nm">'+esc(d.name)+'</span><span class="ty">'+d.type+'</span>'+fb+fo+'</button>';
+    }
+  }
+  html+='<div class="foot">数据集：零售订单快照<br>'+fmtInt(ORDERS.length)+' 单 × 12 维 · 种子 20260902<br>点击维度 = 切换投影<br>选择/过滤/焦点均保留</div>';
+  $('#rail').innerHTML=html;
+}
+
+function renderProjHead(){
+  const d=DIMS[state.projection];
+  const hier=d.parent?'部门 ▸ 品类 · 下钻可达':(state.projection==='dept'?'可下钻至品类':'');
+  const segBtns=Object.entries(MEASURES).map(([k,m])=>'<button data-act="measure" data-m="'+k+'" class="'+(state.measure===k?'on':'')+'">'+m.name+'</button>').join('');
+  const legend='<span class="legend">客户段 '+SEGMENTS.map((s,i)=>'<span><i style="background:'+SEG_COLOR[i]+'"></i>'+s+'</span>').join('')+'</span>';
+  const pill='<span class="pill">⟲ 跨维保留：选中 '+state.selection.size+' · 过滤 '+Object.keys(state.filters).length+' 维</span>';
+  $('#projhead').innerHTML='<div><span class="ph-k">当前投影</span><h2>'+esc(d.name)
+    +'<small>'+d.values.length+' 值'+(hier?' · '+hier:'')+'</small></h2></div>'
+    +'<div class="grow"></div>'+pill+legend+'<span class="seg">'+segBtns+'</span>';
+}
+
+function renderCogbar(rows){
+  let out=0;if(state.selection.size){const ids=new Set(rows.map(r=>r.id));for(const id of state.selection)if(!ids.has(id))out++;}
+  $('#cogbar').innerHTML='范围 <b>'+fmtInt(rows.length)+'</b> / '+fmtInt(ORDERS.length)+' 单 · 过滤 <b>'
+    +Object.keys(state.filters).length+'</b> 维 · 选中 <b>'+state.selection.size+'</b> 项'
+    +(out?'<span class="warn">（'+out+' 项在范围外，仍保留）</span>':'')
+    +' · 快照 <b>'+(cur+1)+'</b>/'+snapshots.length;
+}
+
+function renderTiles(rows,m){
+  const dim=state.projection,d=DIMS[dim];
+  const agg=aggBy(rows,dim,m);
+  let entries=[...agg.entries()];
+  const total=entries.reduce((t,[,e])=>t+e.val,0)||1;
+  const max=Math.max(...entries.map(([,e])=>e.val),1);
+  const focus=state.filters[dim];
+  if(!d.ordered)entries.sort((a,b)=>b[1].val-a[1].val);
+  let html='';
+  for(const[v,e]of entries){
+    const cls=focus?(focus.has(v)?'in':'out'):'';
+    const segTot=e.n||1;
+    const strip=e.segs.map((n,i)=>n?'<i style="width:'+(n/segTot*100).toFixed(1)+'%;background:'+SEG_COLOR[i]+'" title="'+SEGMENTS[i]+' '+n+'"></i>':'').join('');
+    const main=m.agg==='avg'?m.name+'均值 '+m.fmt(e.val):m.fmt(e.val);
+    html+='<div class="tile '+cls+'" role="button" tabindex="0" data-act="tile" data-dim="'+dim+'" data-val="'+esc(v)+'" '
+      +'title="点击=过滤切换 · '+esc(vlabel(dim,v))+'：'+e.n+' 单 · '+main+' · 占比 '+(e.val/total*100).toFixed(1)+'%">'
+      +'<div class="trow"><span class="tnm">'+esc(vlabel(dim,v))+'</span><span class="tshare">'+(e.val/total*100).toFixed(1)+'%</span></div>'
+      +'<div class="tbar"><i style="width:'+(e.val/max*100).toFixed(1)+'%"></i></div>'
+      +'<div class="tmeta">'+fmtInt(e.n)+' 单 · '+main+'</div>'
+      +'<div class="tstrip">'+strip+'</div>'
+      +(dim==='dept'?'<button class="drill" data-act="drill" data-val="'+esc(v)+'" title="范围=该部门，投影切至品类（记入账本）">下钻品类 ▸</button>':'')
+      +'</div>';
+  }
+  $('#tiles').innerHTML=html;
+  const empty=$('#tilesEmpty');
+  if(rows.length===0){empty.hidden=false;empty.textContent='范围内没有订单——调整或移除过滤（账本中可单条回退）。';}
+  else empty.hidden=true;
+}
+
+function renderTable(rows){
+  const sorted=[...rows].sort((a,b)=>b.revenue-a.revenue).slice(0,200);
+  $('#tnote').textContent='明细（按金额降序，显示前 '+sorted.length+' / '+fmtInt(rows.length)+' 行；点击行=选中，跨维度保留）';
+  let html='';
+  for(const r of sorted){
+    const sel=state.selection.has(r.id);
+    const si=SEGMENTS.indexOf(r.segment);
+    html+='<tr data-act="row" data-id="'+r.id+'" class="'+(sel?'sel':'')+'">'
+      +'<td>'+r.id+'</td>'
+      +'<td>'+esc(vlabel('dept',r.dept))+' · '+esc(vlabel('cat',r.cat))+'</td>'
+      +'<td>'+esc(r.channel)+'</td>'
+      +'<td><span class="dot" style="background:'+SEG_COLOR[si]+'"></span>'+esc(r.segment)+'</td>'
+      +'<td>'+r.month+'</td>'
+      +'<td class="num">'+fmtMoney(r.revenue)+'</td>'
+      +'<td class="num">'+r.qty+'</td>'
+      +'<td class="num">'+r.margin.toFixed(1)+'%</td>'
+      +'<td class="num">'+r.rating.toFixed(1)+'</td>'
+      +'</tr>';
+  }
+  $('#tbody').innerHTML=html||'<tr><td colspan="9" style="color:var(--mut)">（空范围）</td></tr>';
+}
+
+function renderLedger(rows){
+  const d=DIMS[state.projection];
+  /* 投影归属 */
+  let html='<div class="sec"><h3>当前投影</h3><div style="color:var(--ink)">「'+esc(d.name)+'」 · '+d.values.length+' 值</div>'
+    +'<div class="prov">来源：'+esc(snapshots[cur]?.source||'系统')+' · '+esc(snapshots[cur]?.time||'')+'</div></div>';
+  /* 过滤账本（有归属，单条可回退） */
+  html+='<div class="sec"><h3>过滤账本<span class="n">'+Object.keys(state.filters).length+'</span><span class="prov">每条含来源+时间</span></h3>';
+  if(Object.keys(state.filters).length===0)html+='<div class="prov">无过滤——点击值卡或下钻即可添加。</div>';
+  for(const[dim,vs]of Object.entries(state.filters)){
+    html+='<div class="fdim"><div class="fh"><b style="color:var(--ink2)">'+esc(DIMS[dim].name)+'</b> 保留 '+vs.size+'/'+DIMS[dim].values.length+' 值'
+      +'<button class="clr" data-act="clearDim" data-dim="'+dim+'">清空该维</button></div><div class="chips">';
+    for(const v of vs)html+='<span class="chip"><b>'+esc(vlabel(dim,v))+'</b><button class="x" data-act="unval" data-dim="'+dim+'" data-val="'+esc(v)+'" title="移除该过滤值（回退单条）">✕</button></span>';
+    html+='</div></div>';
+  }
+  html+='</div>';
+  /* 选择集 */
+  const ids=[...state.selection];
+  const idsSet=new Set(rows.map(r=>r.id));
+  const out=ids.filter(id=>!idsSet.has(id)).length;
+  html+='<div class="sec"><h3>选择集<span class="n">'+ids.length+'</span><button class="act" data-act="clearSel">清除全部</button></h3>';
+  if(ids.length===0)html+='<div class="prov">点击明细行选中订单——切换维度不丢失。</div>';
+  else{
+    html+='<div class="chips">'+ids.slice(0,10).map(id=>'<span class="chip"><b>'+id+'</b><button class="x" data-act="unsel" data-id="'+id+'" title="取消选中">✕</button></span>').join('')
+      +(ids.length>10?'<span class="chip">+'+(ids.length-10)+'</span>':'')+'</div>'
+      +'<div id="selNote">跨维度 · 跨过滤保留'+(out?'<span class="warn"> · '+out+' 项当前在范围外</span>':'')+'</div>';
+  }
+  html+='</div>';
+  /* 快照历史（时间旅行） */
+  html+='<div class="sec"><h3>快照历史<span class="n">'+snapshots.length+'</span><span class="prov">点击任意条=回退到该状态</span></h3><div id="snaplist">';
+  for(let i=snapshots.length-1;i>=0;i--){
+    const s=snapshots[i];
+    html+='<button class="snap'+(i===cur?' cur':'')+'" data-act="restore" data-k="'+i+'" title="回退到 #'+(i+1)+'">'
+      +'<span class="k">#'+(i+1)+'</span><span>'+esc(s.label)+'</span><span class="src">'+esc(s.source)+' '+s.time+'</span></button>';
+  }
+  html+='</div></div>';
+  $('#ledger').innerHTML=html;
+}
+
+/* ---------- toast ---------- */
+let toastTimer=null,scenarioMode=false;
+function toast(html,pin){
+  const el=$('#toast');el.innerHTML=html;el.classList.add('show');
+  clearTimeout(toastTimer);
+  if(!pin&&!scenarioMode)toastTimer=setTimeout(()=>el.classList.remove('show'),2800);
+}
+
+/* ---------- 事件 ---------- */
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-act]');if(!el)return;
+  switch(el.dataset.act){
+    case 'project':setProjection(el.dataset.dim,'维度轨');break;
+    case 'tile':toggleFilter(el.dataset.dim,el.dataset.val,'值卡点击');break;
+    case 'drill':drill(el.dataset.val);break;
+    case 'measure':setMeasure(el.dataset.m);break;
+    case 'row':toggleSelect(el.dataset.id);break;
+    case 'unval':removeFilterValue(el.dataset.dim,el.dataset.val);break;
+    case 'clearDim':clearDim(el.dataset.dim);break;
+    case 'unsel':state.selection.delete(el.dataset.id);commit('移除选中 '+el.dataset.id,'账本');break;
+    case 'clearSel':state.selection.clear();commit('清除选择集','账本');break;
+    case 'undo':undo();break;
+    case 'redo':redo();break;
+    case 'reset':resetAll();break;
+    case 'restore':restore(+el.dataset.k);break;
+  }
+});
+/* 值卡键盘可达 */
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&e.key.toLowerCase()==='z'){e.preventDefault();undo();return;}
+  if((e.ctrlKey||e.metaKey)&&(e.key.toLowerCase()==='y'||(e.shiftKey&&e.key.toLowerCase()==='z'))){e.preventDefault();redo();return;}
+  if(e.key==='Enter'){const el=document.activeElement;if(el&&el.matches('.tile'))el.click();}
+});
+
+/* ---------- 测试钩子 + 证据场景（真实 DOM 点击路径） ---------- */
+function logState(tag){
+  const r=filteredRows();
+  const f=Object.entries(state.filters).map(([d,s])=>d+':'+[...s].join('+')).join('|')||'-';
+  console.log('[evidence:'+tag+'] projection='+state.projection+' filters='+f+' selection='+state.selection.size+' rows='+r.length+' snapshot='+(cur+1)+'/'+snapshots.length);
+}
+window.__prism={
+  state:()=>({projection:state.projection,measure:state.measure,
+    filters:Object.fromEntries(Object.entries(state.filters).map(([d,s])=>[d,[...s]])),
+    selection:state.selection.size,rows:filteredRows().length,snapshots:snapshots.length,cursor:cur}),
+  logState,
+};
+function qClick(sel){const el=document.querySelector(sel);if(el)el.click();else console.warn('[evidence] 元素缺失:',sel);}
+function rowClick(i){const el=document.querySelectorAll('#tbody tr[data-act]')[i];if(el)el.click();else console.warn('[evidence] 行缺失:',i);}
+(function evidenceScenario(){
+  const m=location.hash.match(/evidence=(s\d)/);if(!m)return;
+  const tag=m[1];scenarioMode=true; // 虚拟时间预算下 toast 保持显示，便于截图核对
+  const steps=[];
+  if(tag==='s2'||tag==='s3'||tag==='s4'){
+    steps.push(()=>qClick('.tile[data-dim="cat"][data-val="c9"]'));   // 过滤：品类=护肤
+    steps.push(()=>rowClick(0));steps.push(()=>rowClick(1));          // 选中前两行
+  }
+  if(tag==='s3'||tag==='s4'){
+    steps.push(()=>qClick('[data-act="project"][data-dim="channel"]'));// 切换投影 → 渠道
+  }
+  if(tag==='s4'){
+    steps.push(()=>qClick('[data-act="restore"][data-k="3"]'));        // 时间旅行回 #4
+  }
+  // 首屏渲染（脚本末尾的初始 commit）同步完成后才开始场景，避免点击落空
+  setTimeout(()=>{let i=0;(function next(){if(i<steps.length){steps[i++]();setTimeout(next,140);}else{logState(tag);}})();},30);
+})();
+
+/* ---------- 启动（同步完成，首屏即可用） ---------- */
+$('#dsMeta').textContent='数据集：零售订单快照 · '+fmtInt(ORDERS.length)+' 单 × 12 维 · 本地静态 · 无后端';
+commit('初始状态','系统');
+console.log('[prism] ready:',ORDERS.length,'orders,',Object.keys(DIMS).length,'dims, snapshots='+snapshots.length);
+</script>
+</body>
+</html>

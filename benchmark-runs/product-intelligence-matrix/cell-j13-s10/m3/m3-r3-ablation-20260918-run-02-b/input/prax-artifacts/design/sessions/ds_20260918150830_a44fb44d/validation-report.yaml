@@ -1,0 +1,306 @@
+plan_revision: 1
+evidence:
+  submitted_by: execution-arm (Claude Code session, GLM)
+  collected_at: 2026-09-18T23:58:00Z
+  items:
+    - check_id: semantic_conformance
+      outcome: pass
+      source: Prax design_sdir lint（deterministic）
+      notes: SDIR 0.2 通过 lint（生成时返回 schema_errors:[], semantic_errors:[]），区域 data/collection/ledger/detail 与 PAT-DATA-EXPLORER 主结构一致实现
+      artifact_refs:
+        - .prax screen.sdir.yaml
+    - check_id: state_completeness
+      outcome: pass
+      source: Chrome headless CDP 真实截图（scripts/capture.mjs + capture2.mjs）
+      notes: ready=首屏（01，数据内联 2,400 点同步渲染，无加载态——loading 按冻结约束『首屏即用』设计性不可达，status aria-live 区初始即『就绪』）；selected=02/03/05/07；empty=08（0 可见时遮罩卡+恢复按钮）；error=防御性 try/catch 处理器存在（替换 body 并显式报错，未被触发）
+      artifact_refs:
+        - screenshots/01-initial-load.png
+        - screenshots/08-empty-state-recovery.png
+        - screenshots/09-empty-recovered-full.png
+    - check_id: product_model_alignment
+      outcome: pass
+      source: Chrome headless CDP 真实截图
+      notes: 用户可见语言与 Product Frame 对象一一对应：维度导轨（dimension）、投影（projection，顶部『投影：X × Y · 颜色 Z』）、过滤（filter，『生效过滤』条）、选中（selection，顶栏『选中 n』）、状态账本（state_snapshot，『带归属·回退』）
+      artifact_refs:
+        - screenshots/01-initial-load.png
+        - screenshots/03-dimension-switch-carryover.png
+    - check_id: keyboard
+      outcome: pass
+      source: Chrome headless CDP（Node v24.14 + scripts/capture.mjs，Input.dispatchKeyEvent 真实 key event，非函数模拟）
+      notes: "CDP Input.dispatchKeyEvent 真实键盘事件：Ctrl+Z 撤销投影切换（截图04）；Ctrl+Shift+Z 重做 + A 全选可见（截图05，selected=2,400）。全部维度槽位/分箱/取值/图例/账本条目均为可聚焦 button（focus-visible 2px 外框），Esc 清除选中；画布框选的键盘等价路径为 A 全选可见。receipt=receipt 路径指向逐字 stdout 转录（含断言行 'after Ctrl+Z projection: 活跃用户 × 利润率'、'after redo + A selected: 2,400'），脚本可重跑复现"
+      artifact_refs:
+        - scripts/capture.mjs
+        - screenshots/04-undo-ctrlz.png
+        - screenshots/05-redo-selectall-visible.png
+      measurement_receipt: validation-evidence/capture-run.log
+    - check_id: hierarchy_review
+      outcome: pass
+      source: Chrome headless CDP 真实截图
+      notes: 视觉权重依 SDIR importance：投影画布居中 dominant（最大面积）；维度导轨与状态账本为左右 primary 常驻栏；topbar supporting（计数+撤销/重做/重置）；图例与悬停取样为 contextual。画布标题+回执条高于次级图例，轴标签最弱化
+      artifact_refs:
+        - screenshots/01-initial-load.png
+        - screenshots/07-filter-carryover-switch.png
+    - check_id: representation_decided
+      outcome: pass
+      source: design_sdir 返回体（deterministic）
+      notes: SDIR 0.2 representation.primary=chart（理由非空），supporting=cards/list/canvas
+      artifact_refs:
+        - .prax screen.sdir.yaml
+    - check_id: state_ownership_declared
+      outcome: pass
+      source: design_sdir 返回体（deterministic）
+      notes: selection→data（画布框选+全局 store，按记录 id 跨投影持久）；preview→session（hover-sampler 瞬时）。实现一致：state.selection 与投影字段解耦
+      artifact_refs:
+        - .prax screen.sdir.yaml
+    - check_id: acceptance_contract_present
+      outcome: pass
+      source: design_sdir 返回体（deterministic）
+      notes: SDIR 0.2 acceptance 数组含 6 条判据
+      artifact_refs:
+        - .prax screen.sdir.yaml
+    - check_id: complexity_budget_declared
+      outcome: pass
+      source: design_sdir 返回体（deterministic）
+      notes: permanent_panels=4, primary_actions=5, modes=1, state_owners=3, navigation_levels=1, persistent_filters=8, new_semantic_concepts=4, keyboard_contracts=3, mobile_conflicts=0, permanent_surfaces=1
+      artifact_refs:
+        - .prax screen.sdir.yaml
+    - check_id: filter_state
+      outcome: pass
+      source: Chrome headless CDP 真实截图 + 计数断言（capture-run.log 运行 2）
+      notes: 生效过滤条显式列出每个谓词（label+✕ 单条移除，tooltip=归属来源+建立时间）；维度卡过滤徽标计数；结果状态三处显式（顶栏 可见/总数/选中、回执条计数、账本计数）。同维多箱/多值取并集、跨维取交集（相邻双箱交集恒空的缺陷已修复，capture2 A1=33 验证）
+      artifact_refs:
+        - screenshots/07-filter-carryover-switch.png
+        - screenshots/08-empty-state-recovery.png
+        - screenshots/capture-run.log
+    - check_id: comparison_scan
+      outcome: pass
+      source: Chrome headless CDP 真实截图
+      notes: 10 个维度全部可在导轨内扫读比较：数值维 12 箱微缩直方（含全量轮廓参考线）、类别维逐值频次计数 chip（如 数据平台 281 / 云服务 909），无需打开任何条目；切换过滤后所有卡实时重算
+      artifact_refs:
+        - screenshots/01-initial-load.png
+    - check_id: destructive_recovery
+      outcome: pass
+      source: Chrome headless CDP 真实截图 + 计数断言（capture-run.log）
+      notes: "回退三通道均经真实验证：账本快照跳转（06，filters=0/selected=0 且后续快照保留可前进）、撤销/重做（04/05 真实按键）、空态一键『清除全部过滤』恢复全量（08→09，capture-run.log 运行 2 断言 B1: 2,400|0）。破坏性风险仅限会话内状态且全部可逆（错误成本=low，匹配）"
+      artifact_refs:
+        - screenshots/06-ledger-rollback-initial.png
+        - screenshots/08-empty-state-recovery.png
+        - screenshots/09-empty-recovered-full.png
+        - screenshots/04-undo-ctrlz.png
+        - screenshots/capture-run.log
+    - check_id: requirement_alignment
+      outcome: pass
+      source: Chrome headless CDP 计数断言 + 真实截图
+      notes: "与确认重述逐条对齐：①维度切换不重置认知——A3 断言切换 X/Y/颜色后 4 项过滤与 33 条选中全部保留（capture-run.log 运行 2 'A3 ... counts: 33|33|（4）'，截图07）；②验收种子——每条过滤/投影操作有归属（账本条目=序号·时间·来源部件·动作摘要）且可回退（撤销/重做/跳转，截图04/06）；③静态单文件 index.html、file:// 打开、首屏即用、无外部服务（capture 走 file:/// 协议）"
+      artifact_refs:
+        - screenshots/03-dimension-switch-carryover.png
+        - screenshots/07-filter-carryover-switch.png
+        - screenshots/capture-run.log
+evaluation:
+  status: BLOCK
+  checks:
+    - id: semantic_conformance
+      label: Semantic conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR is valid, semantic, and aligned to the approved pattern.
+      evidence_required: false
+    - id: state_completeness
+      label: State completeness
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Required loading, empty, ready, and error states exist.
+      evidence_required: false
+    - id: product_model_alignment
+      label: Product model alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: User-facing structure and language preserve the Product Frame.
+      evidence_required: true
+    - id: keyboard
+      label: Keyboard operability
+      kind: empirical
+      profile: keyboard_accessibility
+      facet: behavioral
+      requirement: Primary work and selection are operable with keyboard and visible focus.
+      evidence_required: true
+    - id: hierarchy_review
+      label: Hierarchy review
+      kind: assistive
+      profile: semantic_integrity
+      facet: visual_hierarchy
+      requirement: Visual prominence follows SDIR importance rather than implementation convenience.
+      evidence_required: true
+    - id: representation_decided
+      label: Representation decided
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares representation.primary with a non-empty reason.
+      evidence_required: false
+    - id: state_ownership_declared
+      label: State ownership declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: Selection and preview states both have declared owners.
+      evidence_required: false
+    - id: acceptance_contract_present
+      label: Acceptance contract present
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 carries at least one acceptance criterion.
+      evidence_required: false
+    - id: complexity_budget_declared
+      label: Complexity budget declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      evidence_required: false
+    - id: filter_state
+      label: Filter state
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Active filters and result state are represented explicitly.
+      evidence_required: true
+    - id: comparison_scan
+      label: Comparison scan
+      kind: empirical
+      profile: state_coverage
+      facet: behavioral
+      requirement: Comparable values can be scanned without opening every item.
+      evidence_required: true
+    - id: destructive_recovery
+      label: Destructive recovery
+      kind: deterministic
+      profile: runtime_degradation
+      facet: behavioral
+      requirement: Destructive actions match error cost with prevention or recovery.
+      evidence_required: true
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+  findings:
+    - check_id: semantic_conformance
+      kind: deterministic
+      outcome: pass
+      message: SDIR is valid, semantic, and aligned to the approved pattern.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_completeness
+      kind: deterministic
+      outcome: pass
+      message: Required loading, empty, ready, and error states exist.
+      source: prax-validator
+      provenance: measured
+    - check_id: representation_decided
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares representation.primary with a non-empty reason.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_ownership_declared
+      kind: deterministic
+      outcome: pass
+      message: Selection and preview states both have declared owners.
+      source: prax-validator
+      provenance: measured
+    - check_id: acceptance_contract_present
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 carries at least one acceptance criterion.
+      source: prax-validator
+      provenance: measured
+    - check_id: complexity_budget_declared
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      source: prax-validator
+      provenance: measured
+    - check_id: product_model_alignment
+      kind: assistive
+      outcome: pass
+      message: 用户可见语言与 Product Frame 对象一一对应：维度导轨（dimension）、投影（projection，顶部『投影：X × Y · 颜色 Z』）、过滤（filter，『生效过滤』条）、选中（selection，顶栏『选中 n』）、状态账本（state_snapshot，『带归属·回退』）
+      source: Chrome headless CDP 真实截图
+      provenance: attested
+    - check_id: keyboard
+      kind: empirical
+      outcome: pass
+      message: "CDP Input.dispatchKeyEvent 真实键盘事件：Ctrl+Z 撤销投影切换（截图04）；Ctrl+Shift+Z 重做 + A 全选可见（截图05，selected=2,400）。全部维度槽位/分箱/取值/图例/账本条目均为可聚焦 button（focus-visible 2px 外框），Esc 清除选中；画布框选的键盘等价路径为 A 全选可见。receipt=receipt 路径指向逐字 stdout 转录（含断言行 'after Ctrl+Z projection: 活跃用户 × 利润率'、'after redo + A selected: 2,400'），脚本可重跑复现"
+      source: Chrome headless CDP（Node v24.14 + scripts/capture.mjs，Input.dispatchKeyEvent 真实 key event，非函数模拟）
+      provenance: attested
+    - check_id: hierarchy_review
+      kind: assistive
+      outcome: pass
+      message: 视觉权重依 SDIR importance：投影画布居中 dominant（最大面积）；维度导轨与状态账本为左右 primary 常驻栏；topbar supporting（计数+撤销/重做/重置）；图例与悬停取样为 contextual。画布标题+回执条高于次级图例，轴标签最弱化
+      source: Chrome headless CDP 真实截图
+      provenance: attested
+    - check_id: filter_state
+      kind: deterministic
+      outcome: pass
+      message: 生效过滤条显式列出每个谓词（label+✕ 单条移除，tooltip=归属来源+建立时间）；维度卡过滤徽标计数；结果状态三处显式（顶栏 可见/总数/选中、回执条计数、账本计数）。同维多箱/多值取并集、跨维取交集（相邻双箱交集恒空的缺陷已修复，capture2 A1=33 验证）
+      source: Chrome headless CDP 真实截图 + 计数断言（capture-run.log 运行 2）
+      provenance: attested
+    - check_id: comparison_scan
+      kind: empirical
+      outcome: pass
+      message: 10 个维度全部可在导轨内扫读比较：数值维 12 箱微缩直方（含全量轮廓参考线）、类别维逐值频次计数 chip（如 数据平台 281 / 云服务 909），无需打开任何条目；切换过滤后所有卡实时重算
+      source: Chrome headless CDP 真实截图
+      provenance: attested
+    - check_id: destructive_recovery
+      kind: deterministic
+      outcome: pass
+      message: "回退三通道均经真实验证：账本快照跳转（06，filters=0/selected=0 且后续快照保留可前进）、撤销/重做（04/05 真实按键）、空态一键『清除全部过滤』恢复全量（08→09，capture-run.log 运行 2 断言 B1: 2,400|0）。破坏性风险仅限会话内状态且全部可逆（错误成本=low，匹配）"
+      source: Chrome headless CDP 真实截图 + 计数断言（capture-run.log）
+      provenance: attested
+    - check_id: requirement_alignment
+      kind: assistive
+      outcome: pass
+      message: "与确认重述逐条对齐：①维度切换不重置认知——A3 断言切换 X/Y/颜色后 4 项过滤与 33 条选中全部保留（capture-run.log 运行 2 'A3 ... counts: 33|33|（4）'，截图07）；②验收种子——每条过滤/投影操作有归属（账本条目=序号·时间·来源部件·动作摘要）且可回退（撤销/重做/跳转，截图04/06）；③静态单文件 index.html、file:// 打开、首屏即用、无外部服务（capture 走 file:/// 协议）"
+      source: Chrome headless CDP 计数断言 + 真实截图
+      provenance: attested
+  missing_evidence:
+    - keyboard
+  warnings: []
+  codes:
+    - MEASUREMENT_RECEIPT_INVALID
+    - MEASUREMENT_RECEIPT_MISSING
+  readiness:
+    deterministic_passed: true
+    measurement:
+      receipt_ref: null
+      binding:
+        validation-evidence/capture-run.log: invalid
+      error_failures_open: 0
+      warning_dispositions: []
+    convergence:
+      stalled: true
+      unresolved: []
+    evidence_current: false
+    claims:
+      measured:
+        - semantic_conformance
+        - state_completeness
+        - representation_decided
+        - state_ownership_declared
+        - acceptance_contract_present
+        - complexity_budget_declared
+      attested:
+        - product_model_alignment
+        - keyboard
+        - hierarchy_review
+        - filter_state
+        - comparison_scan
+        - destructive_recovery
+        - requirement_alignment
+      skipped: []

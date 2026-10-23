@@ -1,0 +1,112 @@
+session_id: ds_20260923191201_1b62cf32
+information_shape:
+  cardinality: unbounded
+  relationality: low
+  hierarchy: medium
+  temporality: low
+  density: medium
+  dimensionality: medium
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: search_results
+    reason: Locate job = query→narrow→scan matches; an always-visible filtered list with live counts is the shortest path and keeps context
+  supporting:
+    - type: tree
+      reason: Category→family narrowing rail expresses the medium hierarchy as a scoping control with live counts
+    - type: list
+      reason: Facet chip values let users narrow on attributes (package, value class) at a glance
+  rejected:
+    - option: tree
+      reason: Hierarchy is only medium scaffolding; a full tree presentation overweights structure
+    - option: cards
+      reason: Medium density is better served by dense rows than cards
+    - option: table
+      reason: Full table implies column comparison work; comparison_need is none
+  justification_vs_shape: "Unbounded weakly-related items with medium hierarchy make search_results the primary representation: the cognitive burden is the locate path, and a synchronously filtered list with facet rail is the shortest path. Supporting tree/facets supply the medium hierarchy as narrowing scaffolding without turning the screen into structure presentation."
+primary_structure:
+  pattern: PAT-LIST-DETAIL
+  rationale:
+    - Collection browsing dominates the locate job, so the routed List Detail pattern anchors the screen
+    - "Composition: List Detail instantiated as search + facet rail over grouped results (list region), with the adjacent detail region acting as a contextual inspector for the selected part"
+    - "Adjacent inspector preserves orientation: selecting a part never navigates away from the results"
+    - "Overview-Filter-Detail maps directly: overview = grouped list, filter = rail, detail = inspector"
+  confidence: high
+information_hierarchy:
+  primary:
+    - Search field (dominant entry point, auto-focused)
+    - "Filter rail: category → family narrowing with live counts"
+    - Results list (dominant region)
+    - Detail inspector reflecting current selection
+  secondary:
+    - Breadcrumb context strip (category › family path)
+    - "Status bar: match count, active narrowing, keyboard hints"
+density:
+  intent: regular
+  strategy:
+    - Compact result rows (two-line max) so ~20 matches stay visible
+    - Group results by family with sticky group headers + live per-group counts
+    - Consistent 8px spacing rhythm; type scale stays quiet next to data
+    - Facet values rendered as count-bearing toggle chips, one row per value
+  avoid:
+    - decorative illustration
+    - card grid with large thumbnails
+    - modal dialogs for detail
+major_choices:
+  - id: instant_search
+    choice: All 2,000 parts inlined as a JS array; every keystroke recomputes synchronously
+    rationale: 2k rows × substring match is trivially fast; guarantees zero-latency feedback and satisfies 'no loading state'
+    confidence: high
+    references:
+      - part
+  - id: context_rule
+    choice: Search and filters compose (AND) and NEVER reset each other or the breadcrumb; changing narrowing keeps the selection visible and re-annotates its path
+    rationale: Direct implementation of the acceptance seed 'search/filter support without losing context'
+    confidence: high
+    references:
+      - facet
+      - part
+  - id: inspector_pinning
+    choice: Selecting a row fills the adjacent inspector; detail never opens in a modal or new page
+    rationale: "List-Detail contract: adjacent detail reduces navigation while preserving collection context"
+    confidence: high
+    references:
+      - part
+  - id: grouped_results
+    choice: Results grouped by family with sticky headers showing category › family paths
+    rationale: Medium hierarchy is scaffolding, not structure to study — groups give place-sense without a drill-down requirement
+    confidence: high
+    references:
+      - family
+      - category
+  - id: initial_focus
+    choice: Entering the screen focus goes to search; arrow keys move selection within family groups so narrowing works without pointer
+    rationale: Locate is the primary job; pointer-and-keyboard parity per web desktop profile
+    confidence: medium
+    references:
+      - part
+      - family
+rejected:
+  - option: PAT-WORKSPACE
+    reason: Built for iterative multi-object work with higher initial complexity; the job is a single locate
+  - option: Card grid results
+    reason: Lower density hurts scanning long match lists; rows carry more comparable scan signal
+  - option: Modal detail page
+    reason: Breaks context preservation — detail must sit beside results
+  - option: Tree-drill-only navigation
+    reason: Three-interaction budget fails on an unbounded collection without search
+unresolved: []
+complexity_budget:
+  permanent_panels: 3
+  permanent_primary_actions: 1
+  modes: 1
+  state_owners: 3
+  navigation_levels: 2
+  persistent_filters: 3
+  new_semantic_concepts: 1
+  keyboard_contracts: 1
+  mobile_conflicts: 0
+  permanent_surfaces: 4

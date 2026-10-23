@@ -1,0 +1,200 @@
+version: "0.2"
+screen:
+  id: workspace_screen
+  intent:
+    primary_task: 并排比较候选地点：在同一屏内对照地理语境与高密度属性逐维权衡，得出加权排序
+    secondary_tasks:
+      - 调整偏好权重观察排名与推荐变化
+      - 在地图上核对单个候选的位置、通勤与周边
+      - 落定最终选择并记录理由
+  archetype:
+    pattern_ref: PAT-WORKSPACE
+  density_intent: compact
+  primary_object:
+    label: 候选地点
+    type: location
+  user_job:
+    verb: decide
+    target: 位置敏感的候选地点
+    success: 决策输入（地理语境 + 属性对比 + 权重结果）同屏可得，用户当场落定选择
+  information_shape:
+    cardinality: few
+    relationality: medium
+    hierarchy: low
+    temporality: low
+    density: high
+    dimensionality: medium
+    spatiality: none
+    volatility: medium
+    uncertainty: low
+    comparison_need: required
+  priority:
+    primary:
+      - map_rail
+      - column_heads
+      - score_row
+      - core_dim_rows
+      - decide_bar
+    contextual:
+      - secondary_dim_rows
+      - weights_bar
+  representation:
+    primary:
+      type: table
+      reason: few 候选 × 高密度维度、行对齐比较即任务本身，表格是唯一能同时保证同维对齐与全维度同屏的表示
+    supporting:
+      - type: map
+        reason: 自绘 SVG 街区图提供地理语境与候选相对位置，满足验收种子；无外部瓦片依赖
+      - type: chart
+        reason: 行内迷你条形与总分条用长度编码同维差异与综合得分
+  regions:
+    - id: map_rail
+      role: experimental:持久地图语境栏（自绘 SVG 街区图 + 候选图钉 + 通勤锚点线路）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:常驻不可折叠
+        - experimental:候选图钉与列头双向联动
+        - experimental:选中或落定候选时通勤线路与时长标签高亮
+    - id: column_heads
+      role: experimental:候选身份列头（名称、区位、图钉色、选定按钮）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:列头与地图图钉双向联动
+        - experimental:落定后徽标替换选定按钮
+    - id: score_row
+      role: experimental:加权总分行（分数、排名徽章、推荐徽标、得分条）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:权重调整实时重算
+        - experimental:第一名加推荐徽标
+    - id: core_dim_rows
+      role: experimental:核心比较维度行（月租/通勤/面积/噪音/采光）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:行对齐承载比较
+        - experimental:每维最优着色徽标
+    - id: secondary_dim_rows
+      role: experimental:次要维度行（户型/押付/楼龄/楼层/周边）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:同密度下行不隐藏
+    - id: weights_bar
+      role: experimental:偏好权重控件（6 滑杆 + 预设 + 均衡重置）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:调整即时重渲染
+        - experimental:预设匹配高亮
+    - id: decide_bar
+      role: experimental:落定条（唯一常驻主操作 + 决策摘要驻留）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:状态三段（未选定/待落定/已落定）
+        - experimental:重选回到待落定
+  relationships:
+    - id: rel-sdir-cand-map
+      source: column_heads
+      target: map_rail
+      type: located_on
+    - id: rel-sdir-dim-cand
+      source: core_dim_rows
+      target: column_heads
+      type: has_value
+    - id: rel-sdir-weights-rank
+      source: weights_bar
+      target: score_row
+      type: ranks
+    - id: rel-sdir-decision
+      source: decide_bar
+      target: column_heads
+      type: selects
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+    - experimental:select_then_decide
+    - experimental:column_pin_linkage
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  state_ownership:
+    - state: selection
+      owner: column_heads
+    - state: preview
+      owner: session
+  complexity_budget:
+    permanent_panels: 3
+    permanent_primary_actions: 1
+    modes: 0
+    state_owners: 2
+    navigation_levels: 1
+    persistent_filters: 0
+    new_semantic_concepts: 3
+    keyboard_contracts: 1
+    mobile_conflicts: 0
+    permanent_surfaces: 1
+  acceptance:
+    - 地理语境与决策项同屏：左地图语境栏与比较矩阵同屏驻留，任何交互状态下均可见（冻结简报 acceptance seed）
+    - 加载完成即 ready：候选数据内联随首屏就绪，无加载态可测
+    - 落定决策驻留同屏：顶栏徽章 + 列高亮 + 通勤线路高亮 + 理由摘要持续可见，可一键重选
+    - few×高密度并排比较：4 候选 × 10 维 3 组行对齐同屏，无翻页、无 Tab 切换
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+    - id: dp-weight-ui
+      question: 权重控件的视觉形式（滑杆 vs 步进器）如何实现而不改变实时重排契约？
+      adapter_may_choose:
+        - 滑杆样式
+        - 徽标形状
+        - 行高分隔线样式
+    - id: dp-map-fidelity
+      question: 自绘 SVG 地图的示意保真度与标注密度
+      adapter_may_choose:
+        - 图钉形状
+        - 配色微调
+        - 注记密度
+  unresolved:
+    - id: u-gap-domain
+      question: site_selection 域不在知识库规范域覆盖内，按通用指导（PAT-WORKSPACE/H-13/P-22/H-23）继续
+      impact: low
+      affects:
+        - primary_structure
+        - map_rail
+    - id: u1
+      question: 实际用户权重分布未知，提供 4 档预设并以均衡为默认
+      impact: low
+      affects:
+        - weights_bar
+    - id: u2
+      question: 地图为示意街区（非真实城市数据），标注密度为决策语境服务
+      impact: low
+      affects:
+        - map_rail
+  rejected_alternatives:
+    - option: card 网格（每候选一卡）
+      reason: 竖向堆叠破坏行对齐，跨候选比较退化为记忆任务
+    - option: 候选 Tab/分页切换
+      reason: 比较拆成时间序列，比较状态无法驻留同屏
+    - option: 外部地图瓦片
+      reason: 网络依赖违反本地静态与加载即 ready
+    - option: 悬停才显示关键差异
+      reason: 驻留优先：比较状态必须持续可见

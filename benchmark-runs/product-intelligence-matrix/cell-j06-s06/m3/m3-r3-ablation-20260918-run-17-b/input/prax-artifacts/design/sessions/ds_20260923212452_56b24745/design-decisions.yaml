@@ -1,0 +1,118 @@
+session_id: ds_20260923212452_56b24745
+version: "0.2"
+information_shape:
+  cardinality: many
+  relationality: medium
+  hierarchy: medium
+  temporality: high
+  density: medium
+  dimensionality: medium
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: timeline
+    reason: 时间性 high 且判别要求因果与时间结构互相一致：垂直时间轴让『顺序』成为主结构，因果连线沿轴呈现即时间-因果同构；change_set 的天然投影
+  supporting:
+    - type: list
+      reason: 时间轴条目为按天分组的事件列表（List-Detail 的列表侧），顺序严格单调，行内承载徽标/时间/标题/组件/chips
+    - type: table
+      reason: 状态快照面板用表格式字段清单呈现组件×字段×当前值，支持变更字段高亮
+    - type: diagram
+      reason: 时间轴左轨因果连线以小型链路图元表达因果链方向（始终指向时间下游）
+  rejected:
+    - option: card grid / 仪表盘磁贴（cards 作为主表征）
+      reason: 等权磁贴抹平时间序与因果方向，属于被反驳的卡片网格默认（myth-card-grid-default）：cardinality=many 且 temporality=high 时，平铺布局丢失时间结构与因果参照
+    - option: graph（独立力导向因果图）
+      reason: relationality 仅 medium；脱离时间轴后因果方向失去时间参照，违背时间-因果一致性判别
+    - option: calendar
+      reason: 事件粒度为分钟级序列，日历格弱化顺序与因果链语义
+    - option: feed
+      reason: feed 弱游标语义：无法承载『任一时刻状态快照』的折叠投影与游标交互
+  justification_vs_shape: 针对 shape 束逐一论证：temporality=high ⇒ 主呈现必须以时间为骨架，取 timeline 使顺序即结构、因果连线沿轴同构；cardinality=many ⇒ 时间轴行条目按天分组保持可扫读，不采用等权磁贴（cardinality 平铺会抹平时间序，正是 myth-card-grid-default 针对的默认，且 comparison_need=none 时磁贴无对比价值）；relationality=medium ⇒ 因果用行内 chips+左轨连线即可，不升格为独立图视图；density=medium ⇒ regular 意图、检查器双列布局；comparison_need=none ⇒ 不设并排对比视图。cards 不作为独立表征出现：时间轴条目是 list 行，不是卡片网格
+primary_structure:
+  pattern: PAT-WORKSPACE
+  rationale:
+    - "组合方式：持久工作区 = 垂直因果时间轴（dominant，事件按时间正序、按天分组）+ 事件检查器（primary，字段前值→后值 diff 与因果上下文）+ 游标绑定状态快照面板（primary）+ 顶部过滤/图例工具条（contextual）；时间轴区域内部即 List-Detail 的有序列表（PAT-LIST-DETAIL applies_when: collection order matters）"
+    - 时间性 high：垂直时间轴让顺序成为主结构，因果沿轴呈现即时间-因果同构
+    - Inspect/trace 需保持方位（P-19/H-21）：选中与游标状态常驻，跳转不清空上下文
+    - "单工作区：不引入 Application Shell 多区导航（PAT-APPLICATION-SHELL does_not_apply_when: single workspace）"
+    - Signal over Chrome（P-22）：工具条弱化，信息本体（事件/变更/因果）占视觉主导
+  confidence: high
+information_hierarchy:
+  primary:
+    - 变更事件序列：按时间正序排列的时间轴（顺序即因果上限）
+    - 选中事件的详情：字段级前值→后值变更明细 + 起因/导致因果上下文
+  secondary:
+    - 时间游标下的组件状态快照（游标前事件折叠投影）
+    - 类型/组件过滤与事件类型图例
+    - 系统元信息（名称、观察窗口）
+density:
+  intent: regular
+  strategy:
+    - 事件为时间轴上的紧凑行条目：类型徽标+时间+标题+影响组件+因果 chips 同行可见，按天分组头分段
+    - 状态快照用双列字段表（组件/字段/值），选中事件的改写字段高亮前值→后值
+    - 过滤与图例常驻但不抢焦点，弱化为顶栏工具条
+    - regular 意图：行距与分组间距可控，中密度可扫读
+  avoid:
+    - 卡片网格平铺（被反驳的默认 shell：无时间结构的等权磁贴）
+    - 与因果无关的仪表盘装饰卡片
+    - 双列冗余状态展示（快照面板唯一投影源）
+    - 力导向图的视觉噪音
+major_choices:
+  - id: time-forward-causality
+    choice: 垂直时间轴只向时间正方向延伸；因果连线（左轨连线与行内 chips）只允许从上游事件指向下游事件，渲染前校验 source.ts < target.ts
+    rationale: 验收种子『时间结构与变更语义一致』的直接落实：因果箭头永不逆时间
+    confidence: high
+    references:
+      - change_event
+      - causal_chain
+  - id: fold-snapshot
+    choice: 状态快照 = 时间游标之前全部事件按时间序折叠（后者覆盖同字段），选中事件时其改写字段高亮前值→后值
+    rationale: 使时间结构与状态语义可验证一致：任意游标处快照可由事件序列机械推导
+    confidence: high
+    references:
+      - state_snapshot
+      - change_event
+      - component
+  - id: causal-chips-and-rails
+    choice: 因果呈现 = 行内『起因/导致』chips + 时间轴左轨节点间连线；点击 chip 跳转事件并高亮整条因果链
+    rationale: 关系性 medium 无需独立图视图；链路贴时间轴呈现保证因果方向与时间轴视觉同构
+    confidence: high
+    references:
+      - causal_chain
+      - change_event
+  - id: inline-data-first-paint
+    choice: 初始数据内联于 data.js，无网络请求，DOMContentLoaded 即渲染完成
+    rationale: 交付约束：首屏即用，不得以加载态作为可测状态
+    confidence: high
+    references:
+      - state_snapshot
+      - component
+rejected:
+  - option: PAT-APPLICATION-SHELL（全局导航壳）
+    reason: 已路由并检视至 L2：pattern contract 明示 does_not_apply_when『the product is a single workspace』；本产品只有这一个工作区，持久 chrome 只会挤占时间轴与检查器空间
+  - option: PAT-LIST-DETAIL 纯列表-详情（不带持久游标面板）
+    reason: 已路由并检视至 L2：能覆盖事件选中检视，但无法承载时间游标下的状态快照常驻；游标方位（H-21 Orientation Invariants）需要 workspace 持久面板
+  - option: 独立力导向因果图作为主视图
+    reason: relationality 仅 medium；脱离时间轴后因果方向失去时间参照，违背时间-因果一致性判别
+  - option: card grid / 日历 / feed 作为主表征
+    reason: 等权磁贴抹平时间序（myth-card-grid-default 针对的默认）；日历弱化分钟级顺序；feed 无游标语义无法承载快照折叠投影
+unresolved:
+  - id: demo_dataset_provenance
+    impact: low
+    affects:
+      - realize
+complexity_budget:
+  permanent_panels: 3
+  permanent_primary_actions: 2
+  modes: 0
+  state_owners: 1
+  navigation_levels: 1
+  persistent_filters: 2
+  new_semantic_concepts: 4
+  keyboard_contracts: 1
+  mobile_conflicts: 0
+  permanent_surfaces: 1

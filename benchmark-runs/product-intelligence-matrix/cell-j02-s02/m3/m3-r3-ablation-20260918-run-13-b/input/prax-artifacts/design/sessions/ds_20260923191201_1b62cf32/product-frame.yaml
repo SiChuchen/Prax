@@ -1,0 +1,67 @@
+version: "0.2"
+jtbd:
+  verb: locate
+  target: a specific component in a large, weakly-related catalog
+  success: Target part located within three interactions, with its category/family path still visible — search/filter never discards context.
+primary_object:
+  type: item
+  label: Part
+task_model:
+  frequency: high
+  reversibility: reversible
+  consequence: low
+  expertise: mixed
+user:
+  primary_role: Engineer/maker looking up a specific part in a large electronics-component catalog
+  expertise: mixed
+  familiarity: medium
+goal:
+  primary: Land on the exact target component inside a huge, weakly-related catalog within three interactions, without losing the sense of where they are.
+tasks:
+  primary: "Locate a target part: type a search fragment and/or apply 1–2 facet filters, then select the part from results."
+  secondary:
+    - Narrow by category → family hierarchy when the target is not precisely named
+    - Return to the surrounding collection after inspecting a located part (context preserved)
+    - "Count-verify: know how many parts match the current narrowing"
+product_objects:
+  - id: part
+    user_name: Part
+    purpose: The located target — one component in the catalog with identity, spec attributes, and stock info
+  - id: family
+    user_name: Family
+    purpose: Mid-level grouping of similar parts (e.g. 'Ceramic Capacitors') inside a category; the narrowing scaffold
+  - id: category
+    user_name: Category
+    purpose: Top-level grouping of families (e.g. 'Capacitors'); anchors the user's sense of place
+  - id: facet
+    user_name: Filter
+    purpose: Reusable attribute dimension (package, value, voltage…) used to narrow toward the target
+relationships:
+  - source: part
+    target: family
+    type: belongs_to
+    direction: forward
+    meaning: Each part lives in exactly one family
+    importance: primary
+    id: rel_part_family
+  - source: family
+    target: category
+    type: belongs_to
+    direction: forward
+    meaning: Each family rolls up to one category
+    importance: primary
+    id: rel_family_category
+  - source: part
+    target: facet
+    type: has_attribute
+    direction: forward
+    meaning: Parts expose attribute values usable as facet filters
+    importance: supporting
+    id: rel_part_facet
+mental_model_hypothesis:
+  summary: Users treat the catalog as one giant pile reached by search first, with category/family as narrowing scaffolding rather than a structure to study. They expect search and facet filters to compose instantly and to never lose their breadcrumb/place while narrowing.
+  confidence: high
+  evidence:
+    - user_requirement
+primary_success_definition: From page load, a user reaches a chosen target part within three interactions (e.g. type-to-search, one facet click, click result), and at that moment the screen still shows the part's category/family context path — search/filter never discards context.
+open_questions: []

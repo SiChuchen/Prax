@@ -1,0 +1,56 @@
+needs:
+  - id: instant_search_filter
+    product_action: Type-to-search across 2,000 inlined parts with live match counts per facet value
+    required_experience:
+      - First keystroke visibly filters results with zero perceptible latency
+      - Every facet value shows how many currently-matching parts it would yield
+    capabilities:
+      - synchronous in-memory substring search
+      - facet aggregation with live counts
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: "Static greenfield SPA: the catalog ships inlined in the page; a single pure filter function recomputes results + counts per keystroke. No backend needed."
+  - id: context_preserving_narrowing
+    product_action: Search + facet narrowing that never resets each other, the breadcrumb, or the current selection
+    required_experience:
+      - Changing a filter keeps the search text and vice versa
+      - A selected part stays pinned in the inspector; if it falls outside the narrowing it is visibly annotated, never silently dropped
+    capabilities:
+      - independent query/filter/selection state owners
+      - derived breadcrumb context
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Three independent state owners (query, filters, selection); breadcrumb is derived, never cleared by narrowing.
+  - id: detail_without_navigation
+    product_action: Selecting a result shows its full detail without leaving the results context
+    required_experience:
+      - Detail fills an adjacent region; results remain visible and scroll position is retained
+    capabilities:
+      - persistent layout region bound to selection
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: "List-Detail layout: detail is a persistent adjacent region bound to selection state."
+  - id: keyboard_locate
+    product_action: Locate fully operable by keyboard ('/' focuses search, arrows move selection, Enter pins detail)
+    required_experience:
+      - Keyboard path finds a target in the same three interactions as pointer
+    capabilities:
+      - global hotkey
+      - roving selection with keyboard
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Standard DOM keydown handling on the static page.
+  - id: snapshot_freshness
+    product_action: Catalog reflects a meaningful real-world snapshot without any backend
+    required_experience:
+      - Page loads with the full collection already present — no loading state
+    capabilities:
+      - inlined static dataset
+    status: supported
+    resolution:
+      type: explicit_compromise
+      notes: Per brief, no persistence service is required; a generated static snapshot (~2,000 SKUs, realistic distribution) is inlined with the first screen. Volatility=medium is served by 'snapshot date' labeling rather than live sync.

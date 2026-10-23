@@ -1,0 +1,118 @@
+session_id: ds_20260918185228_83959c3b
+information_shape:
+  cardinality: many
+  relationality: medium
+  hierarchy: high
+  temporality: low
+  density: high
+  dimensionality: medium
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: table
+    reason: 高密度 many 实体的标准承载：单行一实体，列固定（选择框/编号/名称/状态徽标/归属路径），支持紧凑行高与键盘范围选择
+  supporting:
+    - type: tree
+      reason: 高层级性的直接表示：可展开/折叠的组织树，节点计数徽标 + 节点级显式全选
+    - type: list
+      reason: 底部选中集托盘：紧凑列表式摘要（按状态×节点分组计数）+ 批量操作按钮
+  rejected:
+    - option: cards
+      reason: 高密度要求下卡片每屏容纳实体数过少，违背 high density
+    - option: canvas
+      reason: spatiality=none，无空间布局需求
+    - option: graph
+      reason: 关系性仅 medium 且为严格树形归属，图表示引入不必要的复杂度
+    - option: kanban/按状态分栏
+      reason: 破坏层级归属的主轴地位，状态筛选已足够
+  justification_vs_shape: entity-hierarchy 束（many×high hierarchy×high density×no spatiality）：tree 承载 high hierarchy，table 承载 many×high density 且行内可容纳状态徽标+路径双显式信息，list 型托盘承载 selection；spatiality=none 排除 canvas/map，comparison_need=none 排除 compare 类表示
+primary_structure:
+  pattern: PAT-WORKSPACE
+  rationale:
+    - PAT-WORKSPACE 契约：任务高频迭代（定位→选中→执行→核对循环），需要持久对象空间保持上下文；单工作区，无多区域导航
+    - 组合 PAT-RESOURCE-MANAGEMENT（已 L2 检视）：peer object 生命周期与状态主导，需要状态丰富的实体清单 + 作用域受限的批量生命周期动作；其反模式 database-admin-clone 靠产品语言（设备资产/选中集/批量操作）规避
+    - 实现形态：单一持久工作区 = 左侧层级树（组织归属导航 + 节点级显式选择）+ 右侧高密度实体清单表（状态徽标 + 归属路径）+ 常驻底部选中集托盘（批量操作栏，作用范围唯一来源）
+    - 层级树承载 entity-hierarchy 束的高层级性；清单表承载 many×high density；选中集托盘使批量操作的作用范围在任何时刻显式可见（零误伤的核心界面保障）
+  confidence: high
+information_hierarchy:
+  primary:
+    - 选中集（批量操作的作用范围，永远最显眼）
+    - 实体清单（每行：状态徽标 + 归属路径 + 关键属性）
+    - 层级树（归属容器导航与节点级显式选择）
+  secondary:
+    - 操作回执/撤销条
+    - 状态筛选与搜索
+density:
+  intent: compact
+  strategy:
+    - 紧凑行高（~32px）的单行表格行，信息一字排开：选择框/编号/名称/状态徽标/归属路径/操作
+    - 状态用彩色徽标承载，不用整行着色，保持信号高于装饰（P-22）
+    - 层级树紧凑节点，计数徽标显示直接实体数
+    - 选中集托盘常驻底部，紧凑摘要行内展示按状态×节点分组的计数
+  avoid:
+    - 装饰性图表/插画
+    - 大留白卡片式布局
+    - 每行多行折叠详情（牺牲密度）
+major_choices:
+  - id: selection_model
+    choice: 选中集为显式实体 ID 集合，独立于视图状态：折叠、过滤只改变可见性，绝不增删选中成员；行复选框直接增删成员，Shift+点击范围选择
+    rationale: 零误伤的根基：视图状态与选中集解耦，被折叠/被筛掉的已选实体仍留在选中集中且计数可见，不会遗漏，也不会误伤
+    confidence: high
+    references:
+      - selection
+      - entity
+      - hierarchy_node
+  - id: batch_snapshot_binding
+    choice: 批量操作执行前弹出确认对话框，逐项列出操作类型、选中数、按节点/状态的分组摘要；执行后回执展示『影响 N 项 = 确认 N 项』并绑定该次选中集快照
+    rationale: 确认时的选中集快照即为操作唯一作用域，回执计数与确认计数强一致校验，实现『零误伤』的可验证性
+    confidence: high
+    references:
+      - batch_operation
+      - selection
+  - id: undo_inverse
+    choice: 每次批量操作生成可整体撤销的变更记录，撤销按同一 ID 集合逆向恢复状态与归属
+    rationale: P-28 Recoverable Action：高后果批量操作必须可逆，撤销作用于与原操作完全相同的实体集合
+    confidence: high
+    references:
+      - batch_operation
+      - entity
+  - id: node_select_explicit
+    choice: 层级树节点提供显式『选本科室全部实体』动作（按钮 + 数量预览），点击节点本体只做视图定位/过滤，不隐式选中
+    rationale: 节点含隐藏后代时，隐式全选是最大误伤源；将『选中』与『定位』分离为两个显式动作
+    confidence: high
+    references:
+      - hierarchy_node
+      - selection
+  - id: explicit_status_attribution
+    choice: 每行永久显示状态彩色徽标与完整归属路径（中心/科室），移动归属后路径即时更新
+    rationale: 验收种子『状态归属显式』：状态与归属不进详情页、不悬停才可见，而在清单行上直接可读
+    confidence: high
+    references:
+      - entity
+      - hierarchy_node
+rejected:
+  - option: PAT-APPLICATION-SHELL
+    reason: "其契约明确 does_not_apply_when: the product is a single workspace；本产品单主屏无多区域导航，持久 chrome 只会浪费高密度空间"
+  - option: PAT-DATA-EXPLORER
+    reason: 其任务域为 compare/filter/inspect；本任务 comparison_need=none，核心是批量生命周期操作而非探索比较（路由亦已排除）
+  - option: PAT-LIST-DETAIL-INSPECTOR
+    reason: 任务域 inspect/trace 与 manage 不符；状态与归属已显式呈现在行内，无需详情检视器
+unresolved:
+  - id: no_visual_spec
+    impact: low
+    affects:
+      - visual_design
+complexity_budget:
+  permanent_panels: 3
+  permanent_primary_actions: 4
+  modes: 1
+  state_owners: 4
+  navigation_levels: 1
+  persistent_filters: 2
+  new_semantic_concepts: 4
+  keyboard_contracts: 2
+  mobile_conflicts: 0
+  permanent_surfaces: 3

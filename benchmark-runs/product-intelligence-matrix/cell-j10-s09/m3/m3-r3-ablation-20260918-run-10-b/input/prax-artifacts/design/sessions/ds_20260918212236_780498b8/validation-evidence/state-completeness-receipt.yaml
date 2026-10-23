@@ -1,0 +1,34 @@
+check_id: state_completeness
+captured_at: "2026-09-19T06:12:00Z"
+captured_by: implementation-arm
+tool: chrome.exe (headless)
+method: >-
+  chrome.exe --headless=new --disable-gpu --hide-scrollbars --window-size=1440,900
+  --user-data-dir=<temp> --virtual-time-budget=<ms> --screenshot=<png>
+  over file:///E:/codex-prj/ab-worktrees/pi-matrix-r3/cell-j10-s09-b/evidence/evidence.html?stage=N;
+  plus --dump-dom piped through Select-String for text-state verification.
+commands:
+  - chrome.exe --headless=new --screenshot=evidence/shotA-firstscreen.png <evidence.html> (budget 800)
+  - chrome.exe --headless=new --screenshot=evidence/shotB-gate-error.png <evidence.html?stage=2> (budget 1200)
+  - chrome.exe --headless=new --screenshot=evidence/shotL-empty-drawer.png <evidence.html?stage=11> (budget 800)
+  - chrome.exe --headless=new --screenshot=evidence/shotK-keyboard-focus.png <evidence.html?stage=10> (budget 800)
+artifacts:
+  - path: evidence/shotA-firstscreen.png
+    state: ready
+  - path: evidence/shotB-gate-error.png
+    state: error
+  - path: evidence/shotL-empty-drawer.png
+    state: empty
+  - path: evidence/shotK-keyboard-focus.png
+    state: selected
+observed:
+  ready: 首屏同步渲染即步骤 1 可执行，无任何加载指示（偏差 0 / 步骤 1 / 门禁校验块均在 DOM dump 中命中）
+  error: 门禁未过点击执行 → 内联错误块列出未过项 + 偏差 +1（DOM 命中 门禁校验未通过 / 已记录 1 次偏差）
+  empty: 执行记录抽屉空态文案可见（尚无记录——…）
+  selected: 旅程图当前步骤按钮聚焦态与选中态可见
+  loading: 结构性不存在——应用无异步路径（数据内联、无构建链）；冻结简报禁止以加载态作为可测状态；SDIR 0.2 在 unresolved u3-loading-absent 记录该立场
+text_verification:
+  "偏差 0": 1
+  "步骤 1": 1
+  "门禁校验未通过": 1
+  "已记录 1 次偏差": 2

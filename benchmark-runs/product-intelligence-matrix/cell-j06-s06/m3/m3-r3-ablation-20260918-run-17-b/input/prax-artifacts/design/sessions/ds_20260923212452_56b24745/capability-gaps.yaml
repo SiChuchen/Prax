@@ -1,0 +1,79 @@
+needs:
+  - id: render-causal-timeline
+    product_action: 按时间正序渲染变更事件时间轴，左轨呈现因果连线（仅指时间下游）
+    required_experience:
+      - 事件按 ts 单调排列并按天分组
+      - 因果连线方向可视化
+      - 游标前全亮/游标后淡显
+    capabilities:
+      - 静态 DOM/SVG 渲染
+      - 数据内联
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端 DOM/CSS/SVG 合成；连线索引在渲染前校验 source.ts < target.ts
+  - id: fold-state-snapshot
+    product_action: 时间游标处的系统状态快照（游标前全部事件按序折叠，同字段后者覆盖）
+    required_experience:
+      - 任一时刻全量字段值
+      - 随游标即时重算
+    capabilities:
+      - 纯函数 fold
+      - 确定性推导
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯函数 fold(events, cursor) 实现于前端；无后端依赖
+  - id: field-diff-inspect
+    product_action: 选中事件的字段级前值→后值变更明细与因果上下文
+    required_experience:
+      - diff 表
+      - 起因/导致 chips
+    capabilities:
+      - 显式 from/to 变更记录
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 数据模型显式记录每条变更的 component/field/from/to，无需 diff 算法
+  - id: causal-chain-jump
+    product_action: 点击起因/导致 chips 跳转事件并高亮整条因果链
+    required_experience:
+      - 跨天跳转
+      - 链路高亮保持方位
+    capabilities:
+      - 显式 causes 数据
+      - DOM 滚动定位
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 显式 causes/led_to 边 + scrollIntoView；高亮整链（P-19 保持上下文）
+  - id: filter-events
+    product_action: 按事件类型/组件过滤时间轴
+    required_experience:
+      - 过滤后保持时间序与因果连线一致
+    capabilities:
+      - 前端谓词过滤
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 过滤只影响可见性不影响折叠语义：快照折叠恒用全量事件序，避免过滤破坏时间-因果一致性
+  - id: inline-first-paint
+    product_action: 首屏就绪：初始数据内联，加载完成即可用
+    required_experience:
+      - 无网络请求
+      - DOMContentLoaded 即完成渲染
+    capabilities:
+      - 同步脚本执行
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 经典 script（非 ES module）按序加载，兼容 file:// 直接双击打开；无 fetch、无构建期依赖
+  - id: no-backend-persistence
+    product_action: 不要求后端、账号或持久化
+    required_experience:
+      - 纯静态交付
+    capabilities: []
+    status: supported
+    resolution:
+      type: explicit_compromise
+      notes: 交付为纯静态文件；无状态外溢

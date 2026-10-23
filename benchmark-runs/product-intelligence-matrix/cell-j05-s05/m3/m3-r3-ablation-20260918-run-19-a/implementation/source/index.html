@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>脉络 · 依赖关系网 — 理解关系结构</title>
+<meta name="description" content="关系跟随不丢失全局上下文：依赖与影响，可跟随的关系网浏览器（纯静态、零依赖、离线可用）">
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%233987e5'/><circle cx='10' cy='11' r='3' fill='white'/><circle cx='23' cy='9' r='2.4' fill='white'/><circle cx='20' cy='23' r='3' fill='white'/><path d='M10 11 L23 9 M10 11 L20 23 M23 9 L20 23' stroke='white' stroke-width='1.6' fill='none'/></svg>">
+</head>
+<body>
+  <header id="topbar">
+    <div class="brand">
+      <div class="logo">络</div>
+      <div class="brand-txt">
+        <h1>脉络 <span>· 关系网</span></h1>
+        <p>理解关系结构：依赖与影响，可跟随、不丢失全局</p>
+      </div>
+    </div>
+    <div class="search-wrap">
+      <input id="search" type="text" placeholder="搜索节点：订单、库存、消息总线…" autocomplete="off" aria-label="搜索节点">
+      <div id="search-drop" class="search-drop" hidden></div>
+    </div>
+    <div class="topstats" id="topstats"></div>
+    <button id="btn-reset" class="btn" title="清除聚焦与跟随路径（Esc）">重置视图</button>
+  </header>
+
+  <main>
+    <section id="stage" aria-label="关系图主视图">
+      <svg id="graph" role="img" aria-label="系统依赖关系图（全图常驻，聚焦时其余节点降暗但不隐藏）">
+        <defs id="defs"></defs>
+        <g id="g-lanes"></g>
+        <g id="g-edges"></g>
+        <g id="g-trace"></g>
+        <g id="g-nodes"></g>
+      </svg>
+
+      <div id="tracebar" class="tracebar" hidden aria-label="跟随路径"></div>
+
+      <div class="modes" role="group" aria-label="高亮模式">
+        <button data-mode="adj" class="on" title="只加亮相邻一跳">相邻</button>
+        <button data-mode="deps" title="加亮它传递依赖的一切">依赖闭包</button>
+        <button data-mode="impact" title="加亮传递依赖它的一切（影响面）">影响闭包</button>
+      </div>
+
+      <div class="viewctl">
+        <button id="btn-zin" title="放大" aria-label="放大">+</button>
+        <button id="btn-zout" title="缩小" aria-label="缩小">−</button>
+        <button id="btn-fit" title="适应视图（F）" aria-label="适应视图">⤢</button>
+      </div>
+
+      <div id="legend" class="legend">
+        <div class="lg-title">图例 · 关系类型</div>
+        <div class="lg-row"><span class="lg-line" style="--c:#3987e5"></span>同步调用 <span style="color:var(--ink-3)">（实线）</span></div>
+        <div class="lg-row"><span class="lg-line dashed" style="--c:#d95926"></span>事件 · 异步 <span style="color:var(--ink-3)">（虚线）</span></div>
+        <div class="lg-row"><span class="lg-line thin" style="--c:#199e70"></span>数据读写 <span style="color:var(--ink-3)">（细线）</span></div>
+        <div class="lg-row lg-chips"><span class="crit p0">P0</span><span class="crit p1">P1</span><span class="crit p2">P2</span><span style="color:var(--ink-3)">关键性</span></div>
+        <div class="lg-hint">虚线边框节点 = 外部服务 · 跟随时其余节点只降暗，不隐藏</div>
+      </div>
+
+      <div id="tooltip" class="tooltip" hidden></div>
+    </section>
+
+    <aside id="panel" aria-label="上下文面板">
+      <div id="panel-body"></div>
+    </aside>
+  </main>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

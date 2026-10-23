@@ -1,0 +1,72 @@
+needs:
+  - id: n1
+    product_action: 并排比较：候选为列、维度为行、行内迷你条形与行优胜高亮
+    required_experience:
+      - 同维取值水平对齐、可扫读
+      - 每维最优值可见徽标
+      - 比较矩阵始终完整同屏
+    capabilities:
+      - CSS Grid 表格布局
+      - 原生 JS 渲染与状态更新
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端组合即可满足，无后端依赖
+  - id: n2
+    product_action: 持久地理语境：自绘 SVG 街区图、候选图钉、通勤锚点与线路高亮联动
+    required_experience:
+      - 地理语境与决策项同屏
+      - 选中/落定候选时地图图钉与通勤线路联动高亮
+      - 离线可用
+    capabilities:
+      - 内联 SVG 静态图形
+      - 事件驱动 class 切换高亮
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 无外部瓦片；SVG 数据（街道/公园/地铁/坐标）内联，零网络
+  - id: n3
+    product_action: 实时加权评分：0-5 滑杆、总分实时重排、推荐徽标、预设与重置
+    required_experience:
+      - 权重调整后总分与排名即时更新
+      - 推荐候选可见标识
+    capabilities:
+      - 纯 JS 加权算术
+      - input[type=range] + 立即重渲染
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 本地算术，无服务
+  - id: n4
+    product_action: 落定选择驻留同屏：确认条+列与图钉高亮+理由摘要+可重选
+    required_experience:
+      - 决策状态持续可见不消失
+      - 可一键重选
+    capabilities:
+      - DOM 状态类切换
+      - 单屏内状态条
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 会话内存状态；简报明确不要求持久化服务，不作 localStorage 承诺
+  - id: n5
+    product_action: 加载即 ready：初始数据随首屏内联，无任何加载态/网络请求
+    required_experience:
+      - DOMContentLoaded 即完整可用
+      - file:// 或静态服务器均可打开
+    capabilities:
+      - 单文件内联数据与样式
+      - 无构建产物直接打开
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 数据以内联 const 写死于页面脚本；无外部字体/脚本/样式
+  - id: n6
+    product_action: 跨会话记住用户权重与决定（持久化）
+    required_experience:
+      - 下次打开恢复上次权重
+    capabilities: []
+    status: gap
+    resolution:
+      type: explicit_compromise
+      notes: 交付约束明示『不要求持久化服务』且须无外部服务；状态限会话内。显式妥协：不做跨会话持久化

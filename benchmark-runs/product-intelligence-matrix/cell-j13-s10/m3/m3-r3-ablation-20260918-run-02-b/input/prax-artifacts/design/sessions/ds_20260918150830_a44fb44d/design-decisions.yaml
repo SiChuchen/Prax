@@ -1,0 +1,110 @@
+session_id: ds_20260918150830_a44fb44d
+version: "0.2"
+information_shape:
+  cardinality: unbounded
+  relationality: medium
+  hierarchy: medium
+  temporality: low
+  density: high
+  dimensionality: high
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: chart
+    reason: 主对象 dataset 的投影是连续坐标散点（数值轴）或分带条带（类别轴），属图表型投影视图；Canvas 2D 渲染承载高密度叠渲与框选直接操纵
+  supporting:
+    - type: cards
+      reason: 维度导轨以卡片呈现每个维度（名称、类型、微缩分布、轴角色、过滤态徽标）
+    - type: list
+      reason: 状态账本以紧凑列表呈现带归属的操作流水与回退锚点
+    - type: canvas
+      reason: 画布本体是交互 canvas：框选/悬停取样直接作用于点层
+  rejected: []
+  justification_vs_shape: dimensional-space 束（unbounded/medium relationality/medium hierarchy/low temporality/high density/high dimensionality）判别维度是主要认知负担：单一可换轴投影画布把『维度』变成一等可切换对象（维度导轨），而非把用户锁死在单一视图；chart+canvas 组合同时满足高密度叠渲与直接操纵框选
+primary_structure:
+  pattern: PAT-DATA-EXPLORER
+  rationale:
+    - PAT-DATA-EXPLORER（Data Explorer）为主体：三区单屏——维度导轨（可过滤的 dimension 卡）+ 投影画布（当前 X×Y 散点投影）+ 状态账本（带归属的过滤/投影流水与回退）
+    - 选中集以 Contextual Inspector（PAT-LIST-DETAIL-INSPECTOR）方式支撑：账本与悬停取样卡绑定显式选中反馈
+    - "单一投影画布承载全部维度切换，符合高维度/高密度 shape（applies_when: shared fields support comparison）"
+    - 过滤是持久窄化（H-22 Overview-Filter-Detail 路由命中），画布即 overview，账本+取样卡即 detail-on-demand
+    - Orientation Invariants（路由命中）直接支撑成功标准：选中与过滤作为跨投影的不变量
+  confidence: high
+information_hierarchy:
+  primary:
+    - data
+    - collection
+    - ledger
+  secondary:
+    - data 投影画布：当前 X×Y 散点投影，承载主任务 explore——高密度叠渲 + 框选/悬停取样 + 顶部『认知保持』回执条（过滤数/选中数跨切换保留的显式回执）
+    - collection 维度导轨：维度卡列表，点击分配 X/Y/颜色，直方分箱点击即过滤，微缩分布随当前过滤实时反馈
+    - ledger 状态账本：带归属（来源动作+时间）的过滤/投影操作流水，支持单条移除、撤销/重做、跳转到任意快照
+    - 画布底部：当前投影坐标轴标签与图例（颜色编码维度取值）
+    - 悬停取样卡：最近点记录摘要，不遮挡画布主体
+density:
+  intent: compact
+  strategy:
+    - data 主面：投影画布占据最大面积，~2400 点 Canvas 半透明叠渲表达密度，被过滤点淡灰背景层
+    - collection 主面：维度导轨紧凑卡——名称+类型+微缩分布图（12 箱直方/类别频次条）+当前轴角色标记+过滤态徽标
+    - ledger 辅面：每条一行——归属来源图标+动作摘要+时间+单条移除/跳转回退
+    - 顶部条只放计数（可见/选中）、撤销/重做、重置三类信息；无加载骨架屏（首屏即用）
+  avoid:
+    - 装饰性 chrome 与渐变
+    - 加载态骨架屏（首屏即用是硬约束）
+    - 无归属的隐式状态变化
+major_choices:
+  - id: carry_over_on_dimension_switch
+    choice: 维度切换（更换 X/Y/颜色编码维度）时过滤谓词与选中集（按记录 id）原样保留；画布顶部显式回执条（『已保留 n 项过滤 · m 条选中』）告知上下文延续，新投影中立即可见旧上下文
+    rationale: 直接实现成功标准『维度切换不重置认知』：projection 可替换而 filter 与 selection 作为不变量跨投影存活
+    confidence: medium
+    references:
+      - projection
+      - filter
+      - selection
+  - id: state_ledger_with_attribution
+    choice: 每次改变过滤/投影/选中的动作都写入带归属快照（来源 UI 部件+动作摘要+时间），支持撤销/重做与点击任意快照跳转回退；单条过滤可在账本中单独移除
+    rationale: 实现验收种子『过滤/投影状态有归属且可回退』：state_snapshot 捕获全量状态并记录归属来源
+    confidence: medium
+    references:
+      - state_snapshot
+      - filter
+      - projection
+  - id: mixed_axis_projection
+    choice: X/Y 为数值维度→连续轴；为类别维度→分带抖动条带；维度卡直方分箱点击即过滤，所有维度卡的微缩分布随当前过滤实时反馈
+    rationale: 高维度数据集同时含数值与类别维度，统一投影语义让 dimension 成为单一画布上可任意切换的一等对象，避免多视图割裂
+    confidence: medium
+    references:
+      - dimension
+      - projection
+      - dataset
+  - id: canvas2d_dense_scatter
+    choice: Canvas 2D 半透明叠渲渲染 ~2400 点，被过滤点淡灰作背景参考层，选中点描边高亮
+    rationale: dataset 高密度下 SVG 每帧重排开销大；Canvas 重绘毫秒级，支撑流畅框选与维度切换即时反馈
+    confidence: medium
+    references:
+      - dataset
+      - projection
+rejected:
+  - option: PAT-LIST-DETAIL 作为主结构
+    reason: L1 检查确认 does_not_apply_when:『relationships among items are the primary object』——维度探索的主对象正是维度/记录间关系，故仅作 ledger/inspector 支撑结构
+  - option: PAT-CANVAS-WORKSPACE
+    reason: 路由已排除：spatiality=none，空间拓扑不占主导
+  - option: table 主视图
+    reason: 表格无法表达维度间分布关系；维度切换退化为改列，认知连续性更差
+  - option: 卡片栅格（card-grid）
+    reason: 路由标注的反模式 card-grid-for-dense-comparison，不适应高密度比较
+unresolved: []
+complexity_budget:
+  permanent_panels: 4
+  permanent_primary_actions: 5
+  modes: 1
+  state_owners: 3
+  navigation_levels: 1
+  persistent_filters: 8
+  new_semantic_concepts: 4
+  keyboard_contracts: 3
+  mobile_conflicts: 0
+  permanent_surfaces: 1

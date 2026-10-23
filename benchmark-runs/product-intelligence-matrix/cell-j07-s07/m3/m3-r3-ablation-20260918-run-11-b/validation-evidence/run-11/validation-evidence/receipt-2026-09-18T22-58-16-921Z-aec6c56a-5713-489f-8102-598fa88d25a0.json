@@ -1,0 +1,337 @@
+{
+  "receipt_version": "0.2",
+  "tool": {
+    "name": "prax-measure",
+    "version": "0.2.0"
+  },
+  "target": {
+    "app_root": "E:\\codex-prj\\Prax\\Prax\\benchmark-runs\\product-intelligence-matrix\\cell-j07-s07\\m3\\m3-r3-ablation-20260918-run-11-b\\measurement-root",
+    "base_url": "http://127.0.0.1:11106/",
+    "build_ref": null
+  },
+  "run_at": "2026-09-18T22:58:16.921Z",
+  "viewport_matrix": [
+    {
+      "width": 1280,
+      "height": 860
+    },
+    {
+      "width": 1440,
+      "height": 900
+    }
+  ],
+  "checks": [
+    {
+      "id": "layout.overflow",
+      "status": "fail",
+      "severity": "error",
+      "subject": "document.documentElement",
+      "measured": {
+        "scroll_width": 1280,
+        "inner_width": 1280,
+        "overflow_px": 0,
+        "element_overflows": 13,
+        "flagged_elements": [
+          "div",
+          "div",
+          "div",
+          "div",
+          "div",
+          "div",
+          "div",
+          "div",
+          "div",
+          "div",
+          "div",
+          "div",
+          "div"
+        ],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "max_overflow_px": 0,
+        "element_overflow_tolerance_px": 1
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/3ae78dec-f88b-4bf4-b2c8-724c63e89b3a/viewport-0/layout.overflow/overflow-1280x860.png",
+          "sha256": "6bc6b487fda34939cad8fc28f6e39a3a70926ba15ee6e4a8248535d475b44010"
+        },
+        {
+          "ref": "validation-evidence/3ae78dec-f88b-4bf4-b2c8-724c63e89b3a/viewport-1/layout.overflow/overflow-1440x900.png",
+          "sha256": "9a4a6e8fc6f316d7b034207d4aa4a6e6d90f4ce5ede35647b449ac3ec48d5c6c"
+        }
+      ],
+      "supported_fixes": [
+        "find the widest row via the flagged elements and remove the fixed-width cause"
+      ]
+    },
+    {
+      "id": "layout.responsive_collision",
+      "status": "pass",
+      "severity": "error",
+      "measured": {
+        "collisions": 0,
+        "pairs": [],
+        "interactive_elements": 31,
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "pass"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "pass"
+          }
+        ]
+      },
+      "threshold": {
+        "max_collisions": 0
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "text.truncation",
+      "status": "pass",
+      "severity": "error",
+      "measured": {
+        "truncated": 0,
+        "elements": [],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "pass"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "pass"
+          }
+        ]
+      },
+      "threshold": {
+        "max_truncated": 0
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "a11y.contrast",
+      "status": "pass",
+      "severity": "error",
+      "measured": {
+        "failing": 0,
+        "pairs": [],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "pass"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "pass"
+          }
+        ]
+      },
+      "threshold": {
+        "normal_min_ratio": 4.5,
+        "large_min_ratio": 3
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "a11y.focus_order",
+      "status": "skipped",
+      "severity": "error",
+      "subject": "document focus traversal",
+      "measured": {
+        "stops": 0,
+        "sequence": [],
+        "missing_indicators": [],
+        "inversions": [],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "skipped"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "skipped"
+          }
+        ]
+      },
+      "threshold": {
+        "max_missing_focus_indicators": 0,
+        "max_order_inversions": 0
+      },
+      "evidence_refs": [],
+      "supported_fixes": [],
+      "reason": "incomplete focus traversal: focus remains on the document body"
+    },
+    {
+      "id": "a11y.target_size",
+      "status": "fail",
+      "severity": "error",
+      "subject": "button; button; button; button",
+      "measured": {
+        "undersized": 4,
+        "elements": [
+          {
+            "selector": "button",
+            "width": 61.59,
+            "height": 10.94
+          },
+          {
+            "selector": "button",
+            "width": 59.96,
+            "height": 10.94
+          },
+          {
+            "selector": "button",
+            "width": 57.98,
+            "height": 10.94
+          },
+          {
+            "selector": "button",
+            "width": 46.49,
+            "height": 10.94
+          }
+        ],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "min_target_px": 24
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/3ae78dec-f88b-4bf4-b2c8-724c63e89b3a/viewport-0/a11y.target_size/target-size-1280x860.png",
+          "sha256": "6bc6b487fda34939cad8fc28f6e39a3a70926ba15ee6e4a8248535d475b44010"
+        },
+        {
+          "ref": "validation-evidence/3ae78dec-f88b-4bf4-b2c8-724c63e89b3a/viewport-1/a11y.target_size/target-size-1440x900.png",
+          "sha256": "9a4a6e8fc6f316d7b034207d4aa4a6e6d90f4ce5ede35647b449ac3ec48d5c6c"
+        }
+      ],
+      "supported_fixes": [
+        "raise the listed targets to at least 24×24 CSS px, or declare an equivalent alternative control via data-target-alternative"
+      ]
+    },
+    {
+      "id": "type.min_projected_size",
+      "status": "fail",
+      "severity": "warning",
+      "subject": "h2; kbd; kbd; kbd; kbd; kbd; kbd; span; kbd; span; kbd; span; kbd; span; kbd; kbd; kbd; kbd; h2; div; kbd; kbd; kbd; kbd; kbd",
+      "measured": {
+        "min_font_px": 10,
+        "undersized": 25,
+        "elements": [
+          "h2",
+          "kbd",
+          "kbd",
+          "kbd",
+          "kbd",
+          "kbd",
+          "kbd",
+          "span",
+          "kbd",
+          "span",
+          "kbd",
+          "span",
+          "kbd",
+          "span",
+          "kbd",
+          "kbd",
+          "kbd",
+          "kbd",
+          "h2",
+          "div",
+          "kbd",
+          "kbd",
+          "kbd",
+          "kbd",
+          "kbd"
+        ],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "min_projected_px": 12
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/3ae78dec-f88b-4bf4-b2c8-724c63e89b3a/viewport-0/type.min_projected_size/min-projected-size-1280x860.png",
+          "sha256": "6bc6b487fda34939cad8fc28f6e39a3a70926ba15ee6e4a8248535d475b44010"
+        },
+        {
+          "ref": "validation-evidence/3ae78dec-f88b-4bf4-b2c8-724c63e89b3a/viewport-1/type.min_projected_size/min-projected-size-1440x900.png",
+          "sha256": "9a4a6e8fc6f316d7b034207d4aa4a6e6d90f4ce5ede35647b449ac3ec48d5c6c"
+        }
+      ],
+      "supported_fixes": [
+        "raise the listed primary-content text to at least 12px, or declare a density intent that justifies the smaller projection"
+      ]
+    }
+  ],
+  "summary": {
+    "pass": 3,
+    "fail": 3,
+    "skipped": 1,
+    "warnings": 1
+  },
+  "binding": {
+    "run_id": "3ae78dec-f88b-4bf4-b2c8-724c63e89b3a",
+    "entry": "/",
+    "scenario": "entry",
+    "implementation": {
+      "root": "E:\\codex-prj\\Prax\\Prax\\benchmark-runs\\product-intelligence-matrix\\cell-j07-s07\\m3\\m3-r3-ablation-20260918-run-11-b\\measurement-root",
+      "digest": "d74faed470b78639c66f135ef3d821f98b26851f2ee3ab11b6408dd7e2930623",
+      "kind": "static_tree"
+    },
+    "session_id": null,
+    "contract_digests": {
+      "screen.sdir.yaml": null,
+      "sdir-delta.yaml": null,
+      "implementation-brief.yaml": null
+    }
+  },
+  "target_validation": {
+    "status": "valid",
+    "issues": [],
+    "readiness": "document",
+    "ready_selector": null
+  }
+}

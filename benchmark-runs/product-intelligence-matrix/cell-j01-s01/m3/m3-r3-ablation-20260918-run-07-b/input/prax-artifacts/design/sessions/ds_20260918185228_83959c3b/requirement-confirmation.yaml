@@ -1,0 +1,30 @@
+version: "0.1"
+user_quote:
+  - 动词：manage；对象：结构化实体集合；成功标准：批量操作无误完成
+  - 大量有层级归属的结构化实体集合，成败在批量操作零误伤与状态归属显式
+  - 批量选择与操作零误伤，状态归属显式
+  - 交付物必须能直接静态打开（根路径 index.html，或构建产物 dist/）；应用在页面加载完成时即处于可用状态
+restatement: 构建一个单页 Web 应用，用于管理一个大型、有层级归属的结构化实体集合（many cardinality, high hierarchy, high density）。核心成功标准：批量选择与批量操作（状态变更、移动、删除等）做到零误伤——操作只精确作用于用户显式选中的实体，不波及未选中实体（含被过滤隐藏、折叠收起的实体）；且每个实体的状态及其归属（属于哪个层级节点/分组）始终显式可见。交付为可静态打开的 index.html（或 dist/），首屏即带初始数据可用，无后端、无部署。
+boundaries:
+  in_scope:
+    - 单个主屏：层级化实体集合的管理界面（树/分组 + 实体列表）
+    - 批量选择（含范围选择、按状态筛选、按层级节点选择）与批量操作（状态变更、批量移动归属、批量清除/删除）
+    - 操作前确认与操作结果回执（affected count 与选中集精确一致）
+    - 实体状态与层级归属的显式呈现（状态徽标、归属路径、选择摘要面板）
+    - 初始数据随首屏内联就绪，纯前端本地运行
+  out_of_scope:
+    - 后端服务、账号体系、持久化服务
+    - 多屏/多页面导航
+    - 外部部署
+    - 实体间比较视图（comparison_need = none）
+    - 时间线/历史视图（temporality = low）
+  scope_complete: true
+open_questions: []
+confirmation:
+  status: explicit_user_confirmation
+  evidence:
+    - type: task_brief
+      ref: brief.md (cell-j01-s01 product brief, frozen by benchmark M2, provided verbatim in conversation)
+    - type: conversation_message
+      ref: "User instruction: 'Read REQUIREMENT below and build the product it describes, from scratch, in this directory' with the full cell-j01-s01 brief"
+  confirmed_at: 2026-09-19T00:00:00Z

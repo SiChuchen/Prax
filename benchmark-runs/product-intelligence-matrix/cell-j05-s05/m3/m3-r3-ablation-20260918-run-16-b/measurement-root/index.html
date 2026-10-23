@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>凌云电商 · 依赖关系网 — 关系网探索器</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header id="topbar">
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true">RW</div>
+    <div class="brand-text">
+      <h1>凌云电商 · 依赖关系网</h1>
+      <p class="sub">关系跟随不丢失全局上下文 · <span id="stat-nodes">–</span> 节点 · <span id="stat-edges">–</span> 关系 · 箭头指向被依赖方</p>
+    </div>
+  </div>
+  <div class="search" id="searchbar">
+    <input id="search-input" type="text" placeholder="搜索节点名称或 ID…（↑↓ 选择，Enter 定位）" autocomplete="off" aria-label="搜索节点" aria-expanded="false" aria-controls="search-results">
+    <ul id="search-results" role="listbox" hidden></ul>
+  </div>
+  <div class="viewtools" id="viewtools" role="group" aria-label="画布工具">
+    <button id="btn-zoom-out" title="缩小" aria-label="缩小">−</button>
+    <button id="btn-fit" title="适应全图（快捷键 F）">适应全图</button>
+    <button id="btn-zoom-in" title="放大" aria-label="放大">＋</button>
+  </div>
+</header>
+
+<div id="breadcrumb-bar">
+  <span class="bc-label">跟随</span>
+  <nav id="breadcrumb" aria-label="跟随路径面包屑"></nav>
+  <div id="trace-status" aria-live="polite"></div>
+</div>
+
+<main>
+  <section id="canvas-region" aria-label="全图关系画布">
+    <svg id="canvas-svg" role="application" aria-label="依赖关系图画布。箭头方向为依赖方向，指向被依赖方。全图始终可见。">
+      <g id="viewport">
+        <g id="edge-layer"></g>
+        <g id="node-layer"></g>
+      </g>
+    </svg>
+
+    <div id="legend" aria-label="图例与统计">
+      <div class="legend-title">图例</div>
+      <ul id="legend-types"></ul>
+      <div class="legend-note">A → B 表示 <b>A 依赖 B</b>；顺向跟随＝上游依赖，逆向跟随＝下游影响。粗线＝强依赖。</div>
+    </div>
+
+    <div id="minimap-wrap" aria-label="全局小地图">
+      <div class="mm-title">全局 <span>· 全图始终可见</span></div>
+      <svg id="minimap" width="216" height="132"></svg>
+    </div>
+  </section>
+
+  <aside id="inspector" aria-label="检查器">
+    <div id="inspector-guide">
+      <h2>未选中节点</h2>
+      <p class="guide-lead">在左侧画布中<b>单击任意节点</b>开始。跟随关系的过程中，全图与小地图始终保持可见。</p>
+      <ol class="guide-steps">
+        <li><b>选中</b>：单击节点，查看属性与直接上 / 下游。</li>
+        <li><b>跟随</b>：选择「追踪上游依赖」（我依赖什么）或「追踪下游影响」（谁依赖我），可逐步展开或一键到底。</li>
+        <li><b>不迷路</b>：面包屑记录每一跳，可回溯；小地图实时标出追踪范围与当前视口。</li>
+      </ol>
+      <p class="guide-meta" id="guide-meta"></p>
+    </div>
+    <div id="inspector-body" hidden></div>
+  </aside>
+</main>
+
+<script src="js/data.js"></script>
+<script src="js/graph.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

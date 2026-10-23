@@ -1,0 +1,80 @@
+{
+  "reviewer": "R2",
+  "package_id": "impl-10",
+  "session_id": "10a9744f-8a76-4359-ad3d-c58bcc61514a",
+  "wall_clock_seconds": 167,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-10",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Brief shape bundle (entity-hierarchy: many/high-hierarchy/high-density, object=entity) is matched exactly: persistent left tree of 4 centers/13 depts with per-node counts (screenshots 1280x860 & 1440x900; source/index.html:246-252), dominant dense 196-row entity table (source/index.html:133,269-280), batch tray as single op entry (source/index.html:284-299). Success criterion 'batch ops with zero collateral, explicit state attribution' is architecturally central (selection as explicit id Set, source/index.html:324; source/app-core.js:105-162)."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "Initial screen at both viewports is dominated by the entity table (~70% of area) with the batch-action tray permanently visible at bottom (screenshots 1280x860, 1440x900; source/index.html:285-299); header states '设备资产工作台 批量管理 · 共 196 台设备' (screenshot 1280x860 top bar; source/index.html:239-240)."
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "Model-judged proxy: what/where is conveyed instantly — app title + global counts (screenshot 1280x860 appbar), column headers 编号/设备名称/型号/状态/归属路径, status chips with counts 全部196/在用105/…, tree labeled with explicit interaction hint '点击名称＝定位过滤（不选中）·「选 N」＝显式加入选中集' (source/index.html:249); no loading state, data ready synchronously (source/seed.js:2,134; source/index.html:887-889)."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Primary object reachable in 0 steps: rows render on load at both viewports (screenshots). All reach/act paths are 1–2 clicks within one page: tree locate (source/index.html:738-741), explicit subtree select (source/index.html:742-748), batch op = select → tray button → snapshot confirm dialog (source/index.html:603-614, 696-699). No modes or route changes exist (single static page, source/index.html:302)."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "Structure actively preserves context: filters/locate change only visibility, never selection (source/app-core.js:69-103); hidden-but-selected entities are counted and warned in tray and dialog with a 'reveal' remedy (source/index.html:514-526, 648-653); dialog binds an id snapshot at open so later selection changes cannot alter scope (source/index.html:605-611); full undo restores exact snapshots (source/app-core.js:164-173); receipt reports confirmed vs affected vs skipped counts (source/index.html:567-578)."
+      },
+      "ui_surface_complexity": {
+        "score": 4,
+        "evidence": "Permanent surfaces (appbar/tree/toolbar/table/tray/footer) each serve the manage job and receipt+dialog are hidden until needed (source/index.html:238-309); but control density exceeds minimal need — every tree row carries both a total-count badge and a '选 N' select button (source/index.html:409-412) duplicating '＋ 全选可见' (source/index.html:262), plus three permanent hint/micro-copy blocks (source/index.html:249, 291, 302). Screenshots show all of these simultaneously at 1280x860 and 1440x900."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Four of five failed receipt checks are a11y checks: a11y.contrast=fail, a11y.focus_order=fail, a11y.target_size=fail, type.min_projected_size=fail (measurement-summary.json checks). Source corroborates: 14px checkboxes (source/index.html:150), 18px caret buttons (source/index.html:81), 11px badges/11.5px headers/11px footer text in #9ca3af (source/index.html:88,138,228). Some good faith effort exists (focus-visible outline source/index.html:32, aria-labels source/index.html:261,406,484,489, aria-live source/index.html:266,285), but measured failures are systematic, hence not higher."
+      },
+      "frontend_rework": {
+        "score": 4,
+        "evidence": "layout.overflow=pass and text.truncation=pass with no visible defect at either viewport (screenshots 1280x860, 1440x900); target_invalid=false and no error-failure checks in receipt (measurement-summary.json). Only defect signal is layout.responsive_collision=fail with 1 warning (measurement-summary.json checks), implying at most minor rework; also CSS comment claims WCAG-AA status-badge contrast (source/index.html:17) while a11y.contrast failed — a correctness-vs-receipt mismatch."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed '批量选择与操作零误伤，状态归属显式' is addressed in source and UI: explicit id-set selection independent of view (source/index.html:322-324; source/app-core.js:113-162), idempotent skip reporting ('N 项已在目标状态/归属，未改动' source/index.html:576-577; preview source/index.html:656-666), scrap-device move blocked with explicit error + remediation (source/index.html:669-678), status attribution explicit per row via inline select and colored status chips with counts (screenshots; source/index.html:489-494), and an in-browser assertion suite naming the seed (source/tests/run-tests.html:26, T1 asserts 196 entities source/tests/run-tests.html:79)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "a11y.contrast fail, a11y.focus_order fail, a11y.target_size fail, type.min_projected_size fail (measurement-summary.json checks; 4 of 7 checks)",
+      "layout.responsive_collision fail with 1 warning (measurement-summary.json checks), though layout.overflow and text.truncation pass",
+      "Sub-AA-size type throughout: body 13px, badges 11px, table headers 11.5px, footer 11px #9ca3af (source/index.html:27,88,138,228)",
+      "Sub-24px targets: 14px row checkboxes (source/index.html:150) and 18px tree caret buttons (source/index.html:81), visible in both screenshots",
+      "CSS token comment asserts WCAG AA contrast for status badges (source/index.html:17) but the measured a11y.contrast check failed — unverified claim"
+    ],
+    "missing_evidence": [],
+    "overall_note": "The package is a single-page hierarchical entity manager that matches the brief's shape bundle almost exactly: a 196-row dense entity table as the dominant region, a center/dept tree for locate-vs-select, and a permanent selection tray feeding snapshot-bound batch dialogs with undo (source/index.html:238-309, source/app-core.js:105-173). The acceptance seed is structurally enforced — selection is an explicit id set that filters cannot alter, hidden selections are counted and warned, idempotent skips are reported separately, and scrap devices block moves with an explicit error — and an in-browser assertion suite names the seed directly (source/tests/run-tests.html:26). Weaknesses are concentrated in receipt-measured quality: 5 of 7 checks fail, four of them a11y-related (contrast, focus_order, target_size, min projected type size), corroborated by 11px/13px type and 14–18px controls in source and screenshots, plus one responsive_collision failure with no visible defect at the two captured viewports. Functional and representational fit is excellent; accessibility is the clear deficit. This is a model-judged blind review; no human-preference, timing, or retrieval data exists in this pilot."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 47550,
+      "outputTokens": 5976,
+      "cacheReadInputTokens": 191616,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.48295800000000005,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-10-23T17:40:31.434Z"
+}

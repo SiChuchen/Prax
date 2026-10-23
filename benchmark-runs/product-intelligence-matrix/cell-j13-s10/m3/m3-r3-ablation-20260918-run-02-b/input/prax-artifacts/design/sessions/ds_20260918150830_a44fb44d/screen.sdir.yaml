@@ -1,0 +1,165 @@
+version: "0.2"
+screen:
+  id: data_explorer_screen
+  intent:
+    primary_task: 在多维数据集上切换投影维度（X/Y 轴、颜色编码、维度过滤），沿不同维度视角探索记录分布
+    secondary_tasks:
+      - 对任意维度建立过滤（数值分箱、类别勾选）并观察其他维度的分布反馈
+      - 框选/点选记录形成选中集，跨投影追踪同一批记录
+      - 查看每个过滤/投影状态的来源归属，并单独移除或整体回退到历史状态
+  archetype:
+    pattern_ref: PAT-DATA-EXPLORER
+  density_intent: compact
+  regions:
+    - id: data
+      role: collection
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - comparison_group
+        - filter_then_inspect
+    - id: collection
+      role: experimental:collection
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: ledger
+      role: experimental:ledger
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: data 投影画布：当前 X×Y 散点投影，承载主任务 explore——高密度叠渲 + 框选/悬停取样 + 顶部『认知保持』回执条（过滤数/选中数跨切换保留的显式回执）
+      role: experimental:data 投影画布：当前 X×Y 散点投影，承载主任务 explore——高密度叠渲 + 框选/悬停取样 + 顶部『认知保持』回执条（过滤数/选中数跨切换保留的显式回执）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: collection 维度导轨：维度卡列表，点击分配 X/Y/颜色，直方分箱点击即过滤，微缩分布随当前过滤实时反馈
+      role: experimental:collection 维度导轨：维度卡列表，点击分配 X/Y/颜色，直方分箱点击即过滤，微缩分布随当前过滤实时反馈
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: ledger 状态账本：带归属（来源动作+时间）的过滤/投影操作流水，支持单条移除、撤销/重做、跳转到任意快照
+      role: experimental:ledger 状态账本：带归属（来源动作+时间）的过滤/投影操作流水，支持单条移除、撤销/重做、跳转到任意快照
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 画布底部：当前投影坐标轴标签与图例（颜色编码维度取值）
+      role: experimental:画布底部：当前投影坐标轴标签与图例（颜色编码维度取值）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 悬停取样卡：最近点记录摘要，不遮挡画布主体
+      role: experimental:悬停取样卡：最近点记录摘要，不遮挡画布主体
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: detail
+      role: contextual_inspector
+      importance: contextual
+      visibility:
+        condition: selection_driven
+      behavior_intent:
+        - selection_driven
+  relationships:
+    - id: region_rel_data_detail
+      source: data
+      target: detail
+      type: selection_drives_contextual_detail
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved: []
+  rejected_alternatives:
+    - option: PAT-LIST-DETAIL 作为主结构
+      reason: L1 检查确认 does_not_apply_when:『relationships among items are the primary object』——维度探索的主对象正是维度/记录间关系，故仅作 ledger/inspector 支撑结构
+    - option: PAT-CANVAS-WORKSPACE
+      reason: 路由已排除：spatiality=none，空间拓扑不占主导
+    - option: table 主视图
+      reason: 表格无法表达维度间分布关系；维度切换退化为改列，认知连续性更差
+    - option: 卡片栅格（card-grid）
+      reason: 路由标注的反模式 card-grid-for-dense-comparison，不适应高密度比较
+  user_job:
+    verb: explore
+    target: 多维数据（无界基数、高维度、高密度的记录集）
+    success: 维度切换不重置认知：切换投影维度后，已建立的过滤、选中集与关注焦点跨维度保留，用户能立刻在新视角中找回旧上下文
+  primary_object:
+    type: dataset
+    label: 多维数据集（只读，内联，约 2400 条记录 × 10 维度）
+  information_shape:
+    cardinality: unbounded
+    relationality: medium
+    hierarchy: medium
+    temporality: low
+    density: high
+    dimensionality: high
+    spatiality: none
+    volatility: medium
+    uncertainty: low
+    comparison_need: none
+  representation:
+    primary:
+      type: chart
+      reason: 主对象 dataset 的投影是连续坐标散点（数值轴）或分带条带（类别轴），属图表型投影视图；Canvas 2D 渲染承载高密度叠渲与框选直接操纵
+    supporting:
+      - type: cards
+        reason: 维度导轨以卡片呈现每个维度（名称、类型、微缩分布、轴角色、过滤态徽标）
+      - type: list
+        reason: 状态账本以紧凑列表呈现带归属的操作流水与回退锚点
+      - type: canvas
+        reason: 画布本体是交互 canvas：框选/悬停取样直接作用于点层
+  priority:
+    primary:
+      - data
+      - collection
+      - ledger
+    contextual:
+      - data 投影画布：当前 X×Y 散点投影，承载主任务 explore——高密度叠渲 + 框选/悬停取样 + 顶部『认知保持』回执条（过滤数/选中数跨切换保留的显式回执）
+      - collection 维度导轨：维度卡列表，点击分配 X/Y/颜色，直方分箱点击即过滤，微缩分布随当前过滤实时反馈
+      - ledger 状态账本：带归属（来源动作+时间）的过滤/投影操作流水，支持单条移除、撤销/重做、跳转到任意快照
+      - 画布底部：当前投影坐标轴标签与图例（颜色编码维度取值）
+      - 悬停取样卡：最近点记录摘要，不遮挡画布主体
+      - detail
+  interaction:
+    preview: none
+    inspect: select
+    navigate: none
+    locate: none
+  state_ownership:
+    - state: selection
+      owner: data
+    - state: preview
+      owner: session
+  complexity_budget:
+    permanent_panels: 4
+    permanent_primary_actions: 5
+    modes: 1
+    state_owners: 3
+    navigation_levels: 1
+    persistent_filters: 8
+    new_semantic_concepts: 4
+    keyboard_contracts: 3
+    mobile_conflicts: 0
+    permanent_surfaces: 1
+  acceptance:
+    - 维度切换不重置认知：任何投影/维度切换后，过滤谓词、选中记录集、颜色编码上下文全部保留且在新画布立即可见；每个过滤/投影状态显示其来源归属，且可撤销/回退到任意历史快照（验收种子：过滤/投影状态有归属且可回退）。

@@ -1,0 +1,113 @@
+version: "0.1"
+revision: 1
+session_id: ds_20260918221722_0377b4fb
+derived_from:
+  artifact_digests:
+    product_frame: d0b3154fc2274e3654b97c7267aa547094ecc67e3f5965fa107e11ad1c5279b1
+    design_context: 064ada2fa3b051ef438446970f6d074c834f2bdb95ce33652a014d4f2244d4ed
+    design_decisions: 854b9d68cd0e045779b3d139879a12da0eda679987d418e689986eb99a1b0ef5
+    sdir: af8690d4e49b6606e3dd5716e72c7c8675955c1b4fa9f0dcbcf0b0ca6f182e3f
+    realization_decision: f45e758f9fd8978a67b8f479c00ce4aa3c92ba44791b0ea3289afa6c850f0cad
+plan:
+  version: "0.1"
+  pattern_ref: PAT-CANVAS-WORKSPACE
+  checks:
+    - id: semantic_conformance
+      label: Semantic conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR is valid, semantic, and aligned to the approved pattern.
+      evidence_required: false
+    - id: state_completeness
+      label: State completeness
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Required loading, empty, ready, and error states exist.
+      evidence_required: false
+    - id: product_model_alignment
+      label: Product model alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: User-facing structure and language preserve the Product Frame.
+      evidence_required: true
+    - id: keyboard
+      label: Keyboard operability
+      kind: empirical
+      profile: keyboard_accessibility
+      facet: behavioral
+      requirement: Primary work and selection are operable with keyboard and visible focus.
+      evidence_required: true
+    - id: hierarchy_review
+      label: Hierarchy review
+      kind: assistive
+      profile: semantic_integrity
+      facet: visual_hierarchy
+      requirement: Visual prominence follows SDIR importance rather than implementation convenience.
+      evidence_required: true
+    - id: representation_decided
+      label: Representation decided
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares representation.primary with a non-empty reason.
+      evidence_required: false
+    - id: state_ownership_declared
+      label: State ownership declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: Selection and preview states both have declared owners.
+      evidence_required: false
+    - id: acceptance_contract_present
+      label: Acceptance contract present
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 carries at least one acceptance criterion.
+      evidence_required: false
+    - id: complexity_budget_declared
+      label: Complexity budget declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      evidence_required: false
+    - id: relationship_trace
+      label: Relationship trace
+      kind: empirical
+      profile: relationship_integrity
+      facet: behavioral
+      requirement: A user can locate and follow a relationship without losing global context.
+      evidence_required: true
+    - id: context_preservation
+      label: Context preservation
+      kind: empirical
+      profile: relationship_integrity
+      facet: behavioral
+      requirement: Selection-driven detail preserves canvas position and visible selection.
+      evidence_required: true
+    - id: canvas_signal_hierarchy
+      label: Canvas signal hierarchy
+      kind: assistive
+      profile: semantic_integrity
+      facet: visual_hierarchy
+      requirement: Architecture content dominates toolbar, navigation, and inspector chrome.
+      evidence_required: true
+    - id: destructive_recovery
+      label: Destructive recovery
+      kind: deterministic
+      profile: runtime_degradation
+      facet: behavioral
+      requirement: Destructive actions match error cost with prevention or recovery.
+      evidence_required: true
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+history: []

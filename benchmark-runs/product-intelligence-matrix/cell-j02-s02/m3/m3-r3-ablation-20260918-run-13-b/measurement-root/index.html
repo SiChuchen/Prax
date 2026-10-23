@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PartAtlas — locate a component</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%230f62fe'/%3E%3Ccircle cx='6.5' cy='6.5' r='3' fill='none' stroke='white' stroke-width='1.6'/%3E%3Cpath d='M9 9l3.5 3.5' stroke='white' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app" class="app" data-phase="loading">
+
+  <!-- ═ Region: app header — brand + primary search (search_bar) ═ -->
+  <header class="app-header">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="4" fill="var(--accent)"/><circle cx="8.5" cy="8.5" r="3.6" fill="none" stroke="#fff" stroke-width="1.8"/><path d="M11.5 11.5L15.5 15.5" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+      <div class="brand-text">
+        <span class="brand-name">PartAtlas</span>
+        <span class="brand-sub">component locator</span>
+      </div>
+    </div>
+
+    <div class="searchbar" role="search">
+      <svg class="search-glyph" viewBox="0 0 16 16" aria-hidden="true"><circle cx="6.8" cy="6.8" r="4.2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10.2 10.2L14 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <input id="q" type="text" autocomplete="off" spellcheck="false"
+             placeholder="Search parts — mpn, value, description…"
+             aria-label="Search parts by part number, value or description">
+      <button id="q-clear" class="q-clear" type="button" aria-label="Clear search" hidden>&times;</button>
+      <kbd class="kbd-hint" title="Press / to focus search">/</kbd>
+    </div>
+
+    <div class="snapshot" id="snapshot-label" title="Catalog snapshot date">snapshot —</div>
+  </header>
+
+  <!-- ═ Region: breadcrumb context strip (breadcrumb_strip) ═ -->
+  <nav class="crumbs" id="crumbs" aria-label="Current narrowing context"></nav>
+
+  <!-- ═ Main layout: rail | results | inspector ═ -->
+  <main class="layout">
+
+    <!-- Region: filter rail (filter_rail) -->
+    <aside class="rail" id="rail" aria-label="Collection and filters"></aside>
+
+    <!-- Region: results list (results_list) — loading / ready / empty / error states -->
+    <section class="results" aria-label="Matching parts">
+      <div class="state-panel" id="state-loading" role="status">
+        <p class="state-title">Loading catalog…</p>
+        <p class="state-note">The inlined snapshot is evaluated before first paint — this state is not normally observable.</p>
+      </div>
+      <div class="state-panel" id="state-error" role="alert" hidden>
+        <p class="state-title">Catalog failed to load</p>
+        <p class="state-note">The inline data source is missing or malformed.</p>
+        <button class="btn" type="button" onclick="location.reload()">Reload</button>
+      </div>
+      <div class="state-panel" id="state-empty" hidden>
+        <p class="state-title">No parts match the current narrowing</p>
+        <p class="state-note">Loosen the search text, remove a filter chip, or clear everything below. Your context is kept — nothing was lost.</p>
+        <button class="btn" type="button" id="empty-clear">Clear all narrowing</button>
+      </div>
+      <ol class="list" id="list" role="listbox" aria-label="Matching parts" tabindex="0"
+          aria-activedescendant="" hidden></ol>
+      <div class="list-sentinel" id="sentinel" hidden></div>
+    </section>
+
+    <!-- Region: detail inspector (detail_inspector) -->
+    <aside class="inspector" id="inspector" aria-label="Inspector"></aside>
+  </main>
+
+  <!-- ═ Region: status bar (status_bar) ═ -->
+  <footer class="statusbar">
+    <span class="status-count" id="status-count" aria-live="polite">—</span>
+    <span class="status-keys">
+      <kbd>/</kbd> search&nbsp;&nbsp;<kbd>↑</kbd><kbd>↓</kbd> move&nbsp;&nbsp;<kbd>↵</kbd> inspect&nbsp;&nbsp;<kbd>Esc</kbd> clear
+    </span>
+  </footer>
+
+  <noscript><div class="noscript">PartAtlas needs JavaScript to run its in-memory search.</div></noscript>
+</div>
+
+<!-- Inlined data first, then app — classic scripts so file:// open works. -->
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

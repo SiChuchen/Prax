@@ -1,0 +1,82 @@
+{
+  "reviewer": "R2",
+  "package_id": "impl-08",
+  "session_id": "ed62d1ab-6b10-4c3b-8da3-1c09b2495219",
+  "wall_clock_seconds": 202,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-08",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Primary object is exactly the brief's change_set: header 'orders-service · 变更集 CS-0922' with 42 变更 / 33 因果边 (1280x860.png top bar; data.js:28-76). Representation is a causal swimlane timeline over a 36h window with phase bands (常规发布/延迟回归/缓存连锁/结算灰度/维护窗口, data.js:19-25), causal edges drawn early→late (app.js:150-167), a playback cursor, a state-at-time card and per-change detail — directly matching understand × temporal-sequence with high temporality (brief.md shape facet 时间性:高)."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "Timeline occupies the central ~60% of both viewports and is the only main screen (index.html:44); causal edges and the pre-selected root-cause chain are visible at load (1280x860.png center + right panel C05 'api v2.14.0 · 误配连接池 pool.max=5' with 因/果 sections); app.js:416-422 renders synchronously at startup, so the primary task dominates from first paint."
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "Within the initial screen: h1 names object (index.html:14), header stats give 42 变更 / 33 因果边 and a '时序校验 33/33 通过 ✓' badge (app.js:22-24), sidebar note states the reading rule '因果边恒由「早」指向「晚」——时间结构与变更语义一致' (index.html:40-41), and the right panel already shows a fully interpreted change with diff, cause chain and effect. No loading state (data.js:1 comment '随首屏就绪，无加载态')."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Primary object is on screen at load with zero navigation; single screen (index.html:34-60, body grid style.css:23). All secondary objects are one click from permanent surfaces: phase list focuses the window (app.js:87), legend toggles type filters (app.js:77), nodes/details/alerts select in place (app.js:182,219,276). The default view shows only day 1 (app.js:31), but day-2 phases remain one click away via the always-visible phase list or ⤢ 全窗 (index.html:30)."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "All actions mutate in place on one screen — selection persists through zoom/playback (S.sel and curChain survive drawAll, app.js:206-210,355-371), phase focus and wheel zoom only change the time window and are reversible via ⤢ 全窗 (app.js:372); no routes, modals or page loads exist in source; scrubbing updates cursor, state card and metric charts together (update(), app.js:414)."
+      },
+      "ui_surface_complexity": {
+        "score": 5,
+        "evidence": "Permanent surfaces map 1:1 to job facets: legend=filters (5 types, counts shown), phase list=temporal structure, 时刻状态 card=state-at-time (the understand object), 变更详情=causality, 3 metric sparklines=consequences; topbar holds only play/speed/clock/fit (index.html:11-60). No decorative widgets; density matches the brief's medium density (brief.md 密度:中)."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Receipt: a11y.contrast=fail and type.min_projected_size=fail vs a11y.focus_order=pass and a11y.target_size=pass (measurement-summary.json checks). Consistent in source: many 9.5-11px labels and --muted #66738a on dark surfaces (style.css:9,55,66,125-126,132,138). Plus points for shape+color dual encoding (data.js:6-13, applied app.js:54-65,68). But interactive SVG nodes and legend/phase/alert rows are divs/SVG groups with click handlers only — no tabindex/role/aria (app.js:69-79,174-186,271-277); keyboard support covers just Space/Arrow playback stepping (app.js:397-406), so node selection is unreachable by keyboard."
+      },
+      "frontend_rework": {
+        "score": 4,
+        "evidence": "No visible layout defects: layout.overflow=pass, layout.responsive_collision=pass, text.truncation=pass (measurement-summary.json); both viewports render cleanly with no clipped or colliding text (1280x860.png, 1440x900.png). Rework implied only by the two failed a11y/type checks (contrast, projected type size), which require styling passes rather than structural fixes."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed '时间结构与变更语义一致' is explicitly engineered and verified: app.js:14-24 implements a runtime consistency check that every causal edge points from an earlier to a later change, surfaced as the '时序校验 33/33 通过' badge (visible 1280x860.png top bar); data.js:27 documents the data constraint, index.html:40 states the invariant to the user, and data.js:30-75 cause links are time-monotonic (e.g. c05 09:12 → c06 09:31)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "a11y.contrast fail (measurement-summary.json) — muted grays (#66738a, style.css:9) and low-opacity labels/edges on dark background",
+      "type.min_projected_size fail (measurement-summary.json) — 9.5-11px text for phase times, tick labels, chain timestamps (style.css:66,125,126,138; app.js tick-l/lane-label)",
+      "Interactive timeline nodes, legend, phase list and alert rows lack keyboard/ARIA access (app.js:69-79,174-186; only Space/Arrow playback in app.js:397-406)",
+      "Initial view window limited to 09-22 08:00–22:00 (app.js:31) hides day-2 phases (结算灰度 tail, 维护窗口) until a phase click or 全窗/zoom-out"
+    ],
+    "missing_evidence": [
+      "Quantitative contrast ratios and projected type sizes behind the two failed checks (sanitized summary provides pass/fail only)",
+      "Skipped/other checks not present; seven-check receipt covers initial page only, so interaction-state surfaces (playback running, zoomed views) are unverifiable"
+    ],
+    "overall_note": "This package is a strongly on-brief implementation of understand × temporal-sequence: the change_set is rendered as a causal swimlane timeline whose time structure and change semantics are not just consistent but continuously verified in the UI (时序校验 33/33 通过, app.js:14-24), directly satisfying the acceptance seed. Causality is readable three ways at load — drawn edges early→late, a pre-selected root cause with 因/果 chains and diff in the detail card, and per-node 因果度 — while playback, scrubbing, phase focus and type filters all operate in place with no context loss and zero navigation to reach the primary object. Surface complexity is proportionate: every permanent panel serves the understand job. The main weaknesses are accessibility (contrast and projected type size fail in the receipt, small 9.5-11px labels, click-only interaction on nodes/lists with no ARIA or keyboard selection) though focus order and target size pass and color is backed by shape encoding; layout checks all pass with no visible defects at either viewport, implying remediation would be confined to styling rather than rework. Model-judged on the initial screen and source only; no claims about task time, retrieval accuracy, or human preference are made, and model judgment here is not human preference."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 36559,
+      "outputTokens": 5691,
+      "cacheReadInputTokens": 146624,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.398382,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-10-23T17:34:48.425Z"
+}

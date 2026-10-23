@@ -1,0 +1,57 @@
+version: "0.1"
+session_id: ds_20260918185228_83959c3b
+task:
+  surfaces: []
+  primary: 在层级树中定位目标实体，精确圈定选中集（含跨节点、跨筛选条件的多选），核对选择摘要后执行批量操作，并核验回执计数与选中集一致
+product_relationships:
+  - id: rel_entity_node
+    source: entity
+    target: hierarchy_node
+    type: belongs_to
+    direction: forward
+    meaning: 每个实体恰好归属一个层级节点；归属必须显式呈现（路径面包屑）
+    importance: primary
+  - id: rel_selection_entity
+    source: selection
+    target: entity
+    type: selects
+    direction: forward
+    meaning: 选中集是实体的显式子集；批量操作绝不触及选中集之外的实体
+    importance: primary
+  - id: rel_op_selection
+    source: batch_operation
+    target: selection
+    type: acts_on
+    direction: forward
+    meaning: 批量操作以确认回执绑定当时的选中集快照，操作可整体撤销
+    importance: primary
+region_relationships: []
+decisions:
+  primary_structure: PAT-WORKSPACE
+  density_intent: compact
+  major_choice_ids:
+    - selection_model
+    - batch_snapshot_binding
+    - undo_inverse
+    - node_select_explicit
+    - explicit_status_attribution
+must_preserve: []
+regression_points: []
+unresolved:
+  - no_visual_spec
+corrections: []
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - destructive_recovery
+    - requirement_alignment
+  regression_check_ids: []

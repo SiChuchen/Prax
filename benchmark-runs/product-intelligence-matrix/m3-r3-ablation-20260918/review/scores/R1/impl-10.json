@@ -1,0 +1,78 @@
+{
+  "reviewer": "R1",
+  "package_id": "impl-10",
+  "session_id": "e7f13d10-b871-4231-aa6d-7479ae270190",
+  "wall_clock_seconds": 197,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-10",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Brief shape = many/high-hierarchy/high-density entities managed via batch ops; implementation is exactly that shape: hierarchy tree (4 centers/13 depts with subtree counts) + dense 196-row table + persistent batch tray, visible in screenshots/1280x860.png and 1440x900.png; structure at source/index.html:245-299 (.tree-panel/.entity-table/.tray)."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "1280x860 screenshot: entity table is the dominant region (~80% width, 21+ rows visible) and the batch-selection affordances are primary: per-row checkboxes, per-node '选 N' explicit-select buttons in tree, '＋ 全选可见 (196)' toolbar button, permanent bottom tray with 变更状态/移动归属/删除 (source/index.html:262,284-299; comment 'dominant region' index.html:133)."
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "1280x860 screenshot header states job in one line: '设备资产工作台 批量管理 · 共 196 台设备 · 4 个中心 / 13 个科室'; tree panel hint disambiguates the two interactions ('点击名称＝定位过滤（不选中）·「选 N」＝显式加入选中集', source/index.html:249); status chips carry live counts (全部 196/在用 105/维修中 28/库存备用 28/停用 21/待报废 14, sums to 196)."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Single static page; primary object (entity list) is fully rendered at load with no mode switch — data inlined synchronously at parse time (source/seed.js:2,134; index.html:887-889 '数据随首屏就绪（同步装配，无加载态）'). Any batch op is ≤3 steps from initial screen (select via checkbox/选 N/全选可见 → tray button → confirm dialog). Both screenshots show all controls simultaneously with zero navigation chrome."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "Selection is an explicit id Set decoupled from view filters — filtering/locating never mutates it (source/app-core.js:69 '筛选（只影响可见性，绝不影响选中集）', index.html:322; test T10 source/tests/run-tests.html:222-231). Hidden selected items are counted and warned in tray and dialog (index.html:513-526,648-653) with a 'reveal' remedy; dialogs bind to a sorted snapshot (index.html:605-612 'ids: sortedIds(state.selection)') and show dept×status summary before execute; full undo stack restores exact snapshots (app-core.js:164-173)."
+      },
+      "ui_surface_complexity": {
+        "score": 4,
+        "evidence": "Permanent surfaces at 1280x860: appbar, tree panel, toolbar (breadcrumb + 6 status chips + search + select-visible), table, tray, footer note — more than minimal, but each maps to a brief facet (hierarchy nav, status filter, high-density list, batch scope). Redundancy is bounded: three selection paths serve distinct scopes and are explained in-panel (index.html:249,273,291). Minor extra surface: footer link to self-test page (index.html:303)."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Receipt fails all three a11y checks plus minimum type size: measurement-summary.json a11y.contrast=fail, a11y.focus_order=fail, a11y.target_size=fail, type.min_projected_size=fail. Source corroborates: 18px tree carets (index.html:82), 14px checkboxes (index.html:150), 'btn.mini' padding 1px 7px (index.html:59), 11px badges/footer (index.html:88,228), low-contrast footer #9ca3af on #f5f6f8 (index.html:228) and 0.75-opacity chip counts (index.html:112) — despite the in-code AA claim at index.html:17. Some genuine effort exists: focus-visible outlines (index.html:32), aria-label/aria-expanded/aria-live (index.html:240,259,266,285,406,485,489), native <dialog> Esc handling (index.html:876)."
+      },
+      "frontend_rework": {
+        "score": 3,
+        "evidence": "Neither screenshot shows a visible layout defect: layout.overflow=pass and text.truncation=pass (measurement-summary.json checks), rows/toolbar/tray align cleanly at both 1280x860 and 1440x900. However layout.responsive_collision=fail indicates a layout defect outside the two captured viewports that would require rework; the five failing checks overall (2 pass / 5 fail) imply rework pressure concentrated in a11y/type rather than gross layout."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed '批量选择与操作零误伤，状态归属显式' is addressed structurally and by verification: batch ops touch only the passed snapshot ids with skipped/affected reconciliation (app-core.js:113-162; receipt renders '计数一致 ✓' or explicit skipped count, index.html:567-578); scrap-status move is blocked with explicit error + remedy (index.html:668-678); per-row status selects and an 归属路径 column make status/ownership explicit on every row (visible in both screenshots; index.html:489-496); dedicated in-browser assertion suite T1-T12 named after the seed covers zero-collateral (T4: '其余 191 项逐字段比对不变'), idempotent skip (T5), undo exactness (T7/T8), and view/selection decoupling (T10) — source/tests/run-tests.html:26,117-136."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "a11y.contrast, a11y.focus_order, a11y.target_size and type.min_projected_size all fail in the sanitized receipt (measurement-summary.json), corroborated in source by 11-13px type, 14-18px targets, and sub-AA footer/chip-count colors (source/index.html:82,88,112,150,228)",
+      "layout.responsive_collision=fail in the receipt though no collision is visible at the two captured viewports (1280x860, 1440x900)",
+      "in-code comment claims status-badge pairs meet WCAG AA (source/index.html:17) while the measured contrast check fails — claim not held by measurement"
+    ],
+    "missing_evidence": [],
+    "overall_note": "impl-10 is a tightly scoped single-page batch-management workbench whose representation matches the brief's entity-hierarchy shape almost point for point: a two-level center/dept tree with explicit per-node '选 N' selection, a dense 196-row entity table with inline per-row status selects and explicit ownership-path columns, status-filter chips with live counts, and a persistent selection tray as the sole batch-operation entry. The acceptance seed (zero-collateral batch selection, explicit status/ownership) is implemented as a structural invariant — an explicit id-set selection decoupled from view filters, snapshot-bound confirmation dialogs, receipts that reconcile confirmed vs affected vs skipped counts, exact-snapshot undo — and is backed by an in-browser 12-assertion suite (T1-T12) targeting exactly those invariants; screenshots and header stats are internally consistent (status chip counts sum to 196). The clear weakness is measured accessibility: all three a11y checks plus minimum projected type size fail, consistent with 11-13px body text, 14px checkboxes and 18px carets in the source, and one responsive-collision failure is recorded though not visible at either captured viewport. Model-judged proxies only; no human preference, task time, or retrieval accuracy is observable from this package, and the sanitized receipt provides pass/fail but no per-check failure detail."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 50814,
+      "outputTokens": 7034,
+      "cacheReadInputTokens": 177536,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.518688,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-10-23T16:35:31.895Z"
+}

@@ -1,0 +1,29 @@
+version: "0.1"
+user_quote:
+  - 动词：edit；对象：文档；成功标准：编辑不破坏结构
+  - 验收种子：结构化编辑与预览一致
+  - 交付物必须能直接静态打开（根路径 index.html，或构建产物 dist/）
+  - 应用在页面加载完成时即处于可用状态（初始数据随首屏就绪，不得以加载态作为可测状态）
+restatement: Build, from scratch, a single-page web app for editing ONE structured document. All edits happen through structure-preserving controls so the document's structure can never be broken, and a live preview rendered from the same document model stays exactly consistent with the editor. The app must open statically (index.html or dist/), be fully usable at page load with inlined initial data (no loading state), and run locally with no backend, accounts, or external services. One main screen.
+boundaries:
+  in_scope:
+    - Structured editor for a single document (title, metadata, ordered sections)
+    - Structure-preserving edit operations (edit fields, add/remove/reorder sections, edit list items) with live structural validation
+    - Live preview rendered from the same in-memory document model, with editor↔preview structural sync
+    - Undo of recent edits; unsaved-changes indication
+    - Initial document inlined in the page so the first screen is immediately usable
+    - "Static delivery: root index.html or dist/ build output; no backend"
+  out_of_scope:
+    - Multi-document management, document list, or file system browsing
+    - Backend, accounts, persistence services, external network calls
+    - Deployment to any external service
+    - Markdown/plain-text source editing as the primary editing mode
+    - Collaboration, comments, or real-time multi-user
+  scope_complete: true
+open_questions: []
+confirmation:
+  status: requirement_is_sufficient
+  evidence:
+    - type: task_brief
+      ref: brief.md (cell-j08-s08 product brief, frozen by M2, 2026-09-03)
+  confirmed_at: 2026-09-24T00:00:00Z

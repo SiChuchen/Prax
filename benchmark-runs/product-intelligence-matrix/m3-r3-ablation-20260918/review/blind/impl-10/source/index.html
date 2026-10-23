@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>设备资产工作台 — 批量管理</title>
+<style>
+  /* ============ 设计 token（克制专业工具视觉，P-22 Signal over Chrome） ============ */
+  :root {
+    color-scheme: light;
+    --bg: #f5f6f8; --panel: #ffffff; --line: #e5e7eb; --line-soft: #f0f1f3;
+    --ink: #111827; --ink-2: #374151; --muted: #6b7280;
+    --accent: #1d4ed8; --accent-soft: #eff6ff; --accent-line: #bfdbfe;
+    --danger: #b91c1c; --danger-soft: #fee2e2;
+    --warn-ink: #854d0e; --warn-soft: #fef3c7;
+    --focus: #1d4ed8;
+    /* 状态徽标（文字/底色均满足 WCAG AA 对比） */
+    --st-active-ink: #166534;   --st-active-bg: #dcfce7;
+    --st-repair-ink: #854d0e;   --st-repair-bg: #fef3c7;
+    --st-stock-ink: #1e40af;    --st-stock-bg: #dbeafe;
+    --st-suspended-ink: #374151;--st-suspended-bg: #e5e7eb;
+    --st-scrap-ink: #991b1b;    --st-scrap-bg: #fee2e2;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; font: 13px/1.45 "Segoe UI", system-ui, "Microsoft YaHei", sans-serif;
+    color: var(--ink); background: var(--bg);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  button { font: inherit; color: inherit; }
+  :is(button, input, select, [tabindex]):focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+  .mono { font-family: Consolas, "Courier New", monospace; }
+
+  /* ============ 顶栏 ============ */
+  .appbar {
+    display: flex; align-items: center; gap: 16px; padding: 8px 14px;
+    background: var(--panel); border-bottom: 1px solid var(--line); flex: none;
+  }
+  .brand { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .brand .logo { color: var(--accent); font-size: 17px; }
+  .brand .sub { font-size: 12px; font-weight: 400; color: var(--muted); }
+  .app-stats { color: var(--muted); font-size: 12px; }
+  .appbar .spacer { flex: 1; }
+
+  /* ============ 按钮 ============ */
+  .btn {
+    border: 1px solid var(--line); background: var(--panel); border-radius: 6px;
+    padding: 4px 12px; cursor: pointer; font-size: 13px; color: var(--ink-2);
+  }
+  .btn:hover:not(:disabled) { background: #f9fafb; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.primary:hover:not(:disabled) { background: #1e40af; }
+  .btn.danger { background: var(--danger); border-color: var(--danger); color: #fff; }
+  .btn.danger:hover:not(:disabled) { background: #991b1b; }
+  .btn.ghost { border-color: transparent; background: transparent; color: var(--muted); }
+  .btn.ghost:hover:not(:disabled) { background: var(--line-soft); color: var(--ink-2); }
+  .btn.mini { padding: 1px 7px; font-size: 12px; border-radius: 5px; }
+  .btn b { font-weight: 700; }
+
+  /* ============ 主布局：树 | 内容（PAT-WORKSPACE 单一持久工作区） ============ */
+  .layout { flex: 1; display: flex; min-height: 0; }
+  .tree-panel {
+    width: 272px; flex: none; background: var(--panel);
+    border-right: 1px solid var(--line); overflow: auto; padding: 10px 8px 16px;
+  }
+  .panel-title { font-size: 12px; font-weight: 700; color: var(--ink-2); padding: 2px 6px 8px; }
+  .panel-title .hint { display: block; font-weight: 400; color: var(--muted); }
+
+  .tree-row {
+    display: flex; align-items: center; gap: 5px; padding: 3px 6px;
+    border-radius: 6px; min-height: 28px;
+  }
+  .tree-row:hover { background: var(--line-soft); }
+  .tree-row .tree-name { cursor: pointer; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tree-row.dept .tree-name { padding-left: 22px; }
+  .tree-row.located { background: var(--accent-soft); }
+  .tree-row.located .tree-name { font-weight: 700; color: var(--accent); }
+  .caret {
+    border: 0; background: none; cursor: pointer; width: 18px; height: 18px; flex: none;
+    color: var(--muted); border-radius: 4px; padding: 0; line-height: 1;
+  }
+  .caret .tri { display: inline-block; transition: transform .12s; font-size: 10px; }
+  .caret.open .tri { transform: rotate(90deg); }
+  .caret.leaf { visibility: hidden; }
+  .badge {
+    flex: none; font-size: 11px; color: var(--muted); background: var(--line-soft);
+    border-radius: 9px; padding: 0 7px; line-height: 17px;
+  }
+  .badge.selbadge { background: var(--accent-soft); color: var(--accent); font-weight: 700; }
+
+  /* ============ 内容区 ============ */
+  .content { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .toolbar {
+    display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+    background: var(--panel); border-bottom: 1px solid var(--line); flex: none; flex-wrap: wrap;
+  }
+  .loc-crumb { font-size: 12px; color: var(--ink-2); display: flex; align-items: center; gap: 6px; }
+  .loc-crumb .path { background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-line);
+    border-radius: 5px; padding: 2px 8px; font-weight: 600; }
+  .loc-crumb button { border: 0; background: none; cursor: pointer; color: var(--muted); padding: 2px 4px; }
+  .loc-crumb button:hover { color: var(--danger); }
+
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip {
+    border: 1px solid var(--line); background: var(--panel); border-radius: 14px;
+    padding: 2px 10px; font-size: 12px; cursor: pointer; color: var(--ink-2);
+  }
+  .chip:hover { background: var(--line-soft); }
+  .chip.on { background: var(--ink); border-color: var(--ink); color: #fff; font-weight: 600; }
+  .chip .n { opacity: .75; margin-left: 3px; }
+
+  #search {
+    border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px;
+    font: inherit; width: 210px; color: var(--ink); background: var(--panel);
+  }
+
+  /* ============ 回执条（影响 N = 确认 N · 可撤销） ============ */
+  .receipt {
+    display: flex; align-items: center; gap: 10px; padding: 6px 12px; flex: none;
+    border-bottom: 1px solid var(--line); font-size: 12.5px;
+  }
+  .receipt.ok { background: #f0fdf4; color: #14532d; }
+  .receipt.info { background: var(--accent-soft); color: #1e3a8a; }
+  .receipt.warn { background: var(--warn-soft); color: var(--warn-ink); }
+  .receipt .msg { flex: 1; }
+  .receipt .undo-inline { border: 1px solid currentColor; background: transparent; border-radius: 5px;
+    padding: 1px 9px; cursor: pointer; color: inherit; font-weight: 600; }
+  .receipt .dismiss { border: 0; background: none; cursor: pointer; color: inherit; opacity: .7; font-size: 14px; }
+  .receipt .dismiss:hover { opacity: 1; }
+
+  /* ============ 实体清单（高密度表格，dominant region） ============ */
+  .tablewrap { flex: 1; overflow: auto; background: var(--panel); }
+  table.entity-table { border-collapse: collapse; width: 100%; }
+  .entity-table th {
+    position: sticky; top: 0; z-index: 2; background: #f9fafb; color: var(--muted);
+    font-size: 11.5px; font-weight: 600; text-align: left; padding: 5px 10px;
+    border-bottom: 1px solid var(--line); white-space: nowrap;
+  }
+  .entity-table td {
+    padding: 4px 10px; border-bottom: 1px solid var(--line-soft); white-space: nowrap;
+    height: 30px; vertical-align: middle;
+  }
+  .entity-table tr.row:hover { background: #fafbfc; }
+  .entity-table tr.row.selected { background: var(--accent-soft); }
+  .entity-table tr.row.selected td { border-bottom-color: #dbeafe; }
+  .col-sel { width: 34px; text-align: center; }
+  .entity-table td.col-sel { text-align: center; }
+  .entity-table input[type="checkbox"] { width: 14px; height: 14px; accent-color: var(--accent); cursor: pointer; }
+  #sel-indicator { display: inline-block; width: 14px; color: var(--accent); font-weight: 700; text-align: center; }
+  td.col-id { color: var(--ink-2); width: 96px; }
+  td.col-model { color: var(--muted); width: 170px; }
+  td.col-path { color: var(--muted); width: 230px; font-size: 12px; overflow: hidden; text-overflow: ellipsis; }
+  td.col-status { width: 118px; }
+
+  select.row-status {
+    border: 1px solid transparent; border-radius: 10px; padding: 1px 6px; font-size: 12px;
+    cursor: pointer; appearance: auto; font-weight: 600; max-width: 110px;
+  }
+  select.row-status.st-active    { background: var(--st-active-bg);    color: var(--st-active-ink); }
+  select.row-status.st-repair    { background: var(--st-repair-bg);    color: var(--st-repair-ink); }
+  select.row-status.st-stock     { background: var(--st-stock-bg);     color: var(--st-stock-ink); }
+  select.row-status.st-suspended { background: var(--st-suspended-bg); color: var(--st-suspended-ink); }
+  select.row-status.st-scrap     { background: var(--st-scrap-bg);     color: var(--st-scrap-ink); }
+
+  .empty { padding: 60px 20px; text-align: center; color: var(--muted); }
+  .empty .big { font-size: 15px; color: var(--ink-2); margin-bottom: 8px; }
+  .empty .actions { margin-top: 12px; display: flex; gap: 8px; justify-content: center; }
+
+  /* ============ 选中集托盘（常驻，批量操作唯一入口） ============ */
+  .tray {
+    flex: none; display: flex; align-items: center; gap: 14px; padding: 8px 14px;
+    background: var(--panel); border-top: 2px solid var(--accent); min-height: 52px;
+  }
+  .sel-count { font-size: 13px; color: var(--ink); white-space: nowrap; }
+  .sel-count b { font-size: 17px; color: var(--accent); }
+  .warn-chip {
+    display: inline-flex; align-items: center; gap: 6px; margin-left: 10px;
+    background: var(--warn-soft); color: var(--warn-ink);
+    border-radius: 5px; padding: 2px 8px; font-size: 12px;
+  }
+  .warn-chip button { border: 1px solid currentColor; background: none; border-radius: 4px;
+    cursor: pointer; color: inherit; padding: 0 6px; font-size: 11.5px; }
+  .tray-summary { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+  .tray-summary .schip { border-radius: 9px; padding: 0 8px; line-height: 18px; font-size: 11.5px; font-weight: 600; }
+  .schip.st-active    { background: var(--st-active-bg);    color: var(--st-active-ink); }
+  .schip.st-repair    { background: var(--st-repair-bg);    color: var(--st-repair-ink); }
+  .schip.st-stock     { background: var(--st-stock-bg);     color: var(--st-stock-ink); }
+  .schip.st-suspended { background: var(--st-suspended-bg); color: var(--st-suspended-ink); }
+  .schip.st-scrap     { background: var(--st-scrap-bg);     color: var(--st-scrap-ink); }
+  .tray-summary .dept-chip { color: var(--ink-2); }
+  .tray .spacer { flex: 1; }
+  .tray-actions { display: flex; gap: 8px; align-items: center; }
+  .tray-hint { font-size: 11.5px; color: var(--muted); max-width: 300px; }
+
+  /* ============ 确认对话框（快照绑定模式） ============ */
+  dialog.op-dialog {
+    border: 1px solid var(--line); border-radius: 10px; padding: 0;
+    width: 560px; max-width: 92vw; max-height: 84vh; box-shadow: 0 18px 50px rgba(0,0,0,.22);
+  }
+  dialog.op-dialog::backdrop { background: rgba(15, 23, 42, .45); }
+  .dlg-body { padding: 16px 18px; }
+  .dlg-body h3 { margin: 0 0 12px; font-size: 15px; }
+  .dlg-target { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .dlg-target select {
+    font: inherit; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px;
+    background: var(--panel); color: var(--ink); min-width: 240px;
+  }
+  .dlg-count { margin: 10px 0; font-size: 13px; }
+  .dlg-count b { font-size: 16px; color: var(--accent); }
+  .dlg-note { border-radius: 6px; padding: 6px 10px; font-size: 12.5px; margin: 8px 0; }
+  .dlg-note.warn { background: var(--warn-soft); color: var(--warn-ink); }
+  .dlg-note.error { background: var(--danger-soft); color: var(--danger); }
+  .dlg-note.error b { font-weight: 700; }
+  .dlg-note .mono { font-size: 11.5px; }
+  .dlg-note button { margin-left: 8px; border: 1px solid currentColor; background: transparent;
+    border-radius: 5px; cursor: pointer; color: inherit; padding: 1px 8px; font-size: 12px; font-weight: 600; }
+  table.dlg-summary { border-collapse: collapse; width: 100%; margin-top: 10px; background: #fafbfc;
+    border: 1px solid var(--line-soft); border-radius: 6px; }
+  .dlg-summary th, .dlg-summary td { text-align: left; font-size: 12px; padding: 4px 10px; border-bottom: 1px solid var(--line-soft); }
+  .dlg-summary th { color: var(--muted); font-weight: 600; background: #f5f6f8; }
+  .dlg-summary td.num, .dlg-summary th.num { text-align: right; width: 60px; }
+  .dlg-summary .st-mini { font-size: 11px; opacity: .85; color: var(--muted); }
+  .dlg-delete-warning { background: var(--danger-soft); color: var(--danger); border-radius: 6px;
+    padding: 8px 10px; font-size: 12.5px; margin-top: 10px; }
+  .dlg-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+  .footer-note { padding: 4px 14px 8px; font-size: 11px; color: #9ca3af; background: var(--bg);
+    border-top: 1px solid var(--line-soft); display: flex; gap: 14px; align-items: center; }
+  .footer-note a { color: #6b7280; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<noscript>本应用需要启用 JavaScript。</noscript>
+
+<!-- 顶栏 -->
+<header class="appbar">
+  <div class="brand"><span class="logo">⚕</span>设备资产工作台 <span class="sub">批量管理</span></div>
+  <div class="app-stats" id="app-stats" aria-label="全局统计"></div>
+  <div class="spacer"></div>
+  <button id="btn-reset" class="btn ghost" title="恢复初始种子数据，清空全部变更与撤销记录">重置演示数据</button>
+</header>
+
+<div class="layout">
+  <!-- 层级树（tree_nav）：定位/过滤 + 节点级显式全选 -->
+  <aside class="tree-panel" aria-label="组织层级">
+    <div class="panel-title">组织层级
+      <span class="hint">点击名称＝定位过滤（不选中）·「选 N」＝显式加入选中集</span>
+    </div>
+    <div id="tree"></div>
+  </aside>
+
+  <!-- 内容区 -->
+  <main class="content">
+    <!-- 工具栏（toolbar）：状态筛选与搜索，只改可见性 -->
+    <div class="toolbar">
+      <div class="loc-crumb" id="loc-crumb"></div>
+      <div class="chips" id="status-chips" role="group" aria-label="状态筛选"></div>
+      <div style="flex:1"></div>
+      <input id="search" type="search" placeholder="搜索 编号 / 名称 / 型号" aria-label="搜索编号、名称或型号">
+      <button id="btn-select-visible" class="btn" title="将当前可见（已过滤）的实体加入选中集；不改变已有选中">＋ 全选可见 <span id="select-visible-n"></span></button>
+    </div>
+
+    <!-- 回执条（receipt_bar）：操作结果 + 撤销入口 -->
+    <div class="receipt" id="receipt" aria-live="polite" hidden></div>
+
+    <!-- 实体清单（entity_table）：dominant -->
+    <div class="tablewrap">
+      <table class="entity-table" id="entity-table">
+        <thead>
+          <tr>
+            <th class="col-sel"><span id="sel-indicator" title="信息性指示：当前可见实体被选中情况（不会代替你执行全选）"></span></th>
+            <th>编号</th><th>设备名称</th><th>型号</th><th>状态（可单台修改）</th><th>归属路径</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="empty" id="empty-state" hidden></div>
+    </div>
+  </main>
+</div>
+
+<!-- 选中集托盘（selection_tray）：批量操作唯一入口与作用范围唯一来源 -->
+<footer class="tray" aria-live="polite">
+  <div>
+    <div class="sel-count">已选 <b id="tray-n">0</b> 项<span class="warn-chip" id="tray-hidden" hidden></span></div>
+    <div class="tray-summary" id="tray-summary"></div>
+  </div>
+  <div class="spacer"></div>
+  <div class="tray-hint">折叠与筛选不会改变选中集；隐藏的已选设备仍会包含在批量操作中，并始终以计数显式提示。</div>
+  <div class="tray-actions">
+    <button id="btn-op-status" class="btn primary" title="对选中集批量变更状态">变更状态</button>
+    <button id="btn-op-move" class="btn primary" title="对选中集批量移动归属科室">移动归属</button>
+    <button id="btn-op-delete" class="btn danger" title="对选中集批量删除（可撤销）">删除</button>
+    <button id="btn-clear-sel" class="btn" title="清空选中集（不影响数据）">清空</button>
+    <button id="btn-undo" class="btn ghost" title="撤销最近一次批量操作（逆序，可多次）">↩ 撤销<span id="undo-n"></span></button>
+  </div>
+</footer>
+
+<div class="footer-note">
+  <span>静态单页 · 数据内联 · 零网络请求</span>
+  <a href="tests/run-tests.html">打开功能自检（浏览器内断言套件）</a>
+</div>
+
+<!-- 确认对话框（confirm_dialog）：执行前快照绑定 -->
+<dialog id="op-dialog" class="op-dialog" aria-modal="true">
+  <div class="dlg-body" id="op-dialog-body"></div>
+</dialog>
+
+<script src="seed.js"></script>
+<script src="app-core.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  // ---------------- 状态（state_ownership：selection 归托盘、query 归工具栏、mode 归对话框） ----------------
+  var index = Core.buildTreeIndex(window.SEED.tree);
+  var STATUS_KEYS = window.SEED.statuses;
+  var state = {
+    entities: new Map(),          // id -> entity（权威数据）
+    selection: new Set(),         // 选中集：显式 id 集合，独立于视图（零误伤根基）
+    anchorId: null,               // Shift 范围选择锚点
+    expanded: {},                 // centerId -> bool
+    view: { locatedNode: null, status: null, query: "" },
+    receipt: null,                // { tone:"ok"|"info"|"warn", text }
+    undoStack: []                 // [{ label, record }]，逆序撤销
+  };
+  var currentVisible = [];        // 本次渲染的可见集（派生缓存）
+  var dialog = null;              // { type, ids, value, deptId, blockedIds } | null
+
+  // ---------------- 工具 ----------------
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function stMeta(k) { return Core.STATUS_META[k]; }
+  function sortedIds(entMap) {
+    var out = [];
+    entMap.forEach(function (_, id) { out.push(id); });
+    out.sort();
+    return out;
+  }
+
+  function loadSeed() {
+    state.entities = new Map();
+    window.SEED.entities.forEach(function (e) {
+      state.entities.set(e.id, { id: e.id, name: e.name, model: e.model, status: e.status, deptId: e.deptId });
+    });
+    state.selection = new Set();
+    state.anchorId = null;
+    state.view = { locatedNode: null, status: null, query: "" };
+    state.receipt = null;
+    state.undoStack = [];
+    state.expanded = {};
+    index.centerIds.forEach(function (c) { state.expanded[c] = true; });
+    $("search").value = "";
+  }
+
+  // ---------------- 渲染管线 ----------------
+  function refresh() {
+    currentVisible = Core.visibleIds(state.entities, index, state.view);
+    renderAppStats();
+    renderTree();
+    renderToolbar();
+    renderTable();
+    renderTray();
+    renderReceipt();
+  }
+
+  function renderAppStats() {
+    $("app-stats").textContent =
+      "共 " + state.entities.size + " 台设备 · " + index.centerIds.length + " 个中心 / " +
+      index.deptIds.length + " 个科室";
+  }
+
+  function renderTree() {
+    var html = [];
+
+    function countOfSubtree(nodeId) {
+      var depts = index.subtreeDeptIds[nodeId];
+      var n = 0;
+      state.entities.forEach(function (e) {
+        if (depts.indexOf(e.deptId) !== -1) n += 1;
+      });
+      return n;
+    }
+    function selCountOfSubtree(nodeId) {
+      var depts = index.subtreeDeptIds[nodeId];
+      var n = 0;
+      state.selection.forEach(function (id) {
+        var e = state.entities.get(id);
+        if (e && depts.indexOf(e.deptId) !== -1) n += 1;
+      });
+      return n;
+    }
+    function treeRowHtml(nodeId, isDept) {
+      var total = countOfSubtree(nodeId);
+      var sel = selCountOfSubtree(nodeId);
+      var isOpen = !isDept && !!state.expanded[nodeId];
+      var cls = "tree-row" + (isDept ? " dept" : "") + (state.view.locatedNode === nodeId ? " located" : "");
+      return '<div class="' + cls + '" data-node="' + esc(nodeId) + '">' +
+        '<button class="caret' + (isDept ? " leaf" : (isOpen ? " open" : "")) + '" data-act="toggle" ' +
+          'aria-label="' + (isOpen ? "折叠" : "展开") + '" aria-expanded="' + isOpen + '"><span class="tri">▶</span></button>' +
+        '<span class="tree-name" data-act="locate" title="定位到「' + esc(index.nameOf[nodeId]) + '」（仅过滤视图，不选中）">' +
+          esc(index.nameOf[nodeId]) + "</span>" +
+        (sel > 0 ? '<span class="badge selbadge" title="该子树内已选数量">选 ' + sel + "</span>" : "") +
+        '<span class="badge" title="该子树内设备总数">' + total + "</span>" +
+        '<button class="btn mini" data-act="select" title="将「' + esc(index.pathOf[nodeId].join(" / ")) +
+          '」的 ' + total + ' 台设备加入选中集（显式操作）">选 ' + total + "</button>" +
+        "</div>";
+    }
+
+    index.centerIds.forEach(function (cid) {
+      html.push('<div class="tree-node">');
+      html.push(treeRowHtml(cid, false));
+      if (state.expanded[cid]) {
+        html.push('<div class="tree-children">');
+        index.subtreeNodeIds[cid].forEach(function (nid) {
+          if (nid === cid) return;
+          html.push(treeRowHtml(nid, true));
+        });
+        html.push("</div>");
+      }
+      html.push("</div>");
+    });
+    $("tree").innerHTML = html.join("");
+  }
+
+  function renderToolbar() {
+    // 定位面包屑
+    var crumb = $("loc-crumb");
+    if (state.view.locatedNode) {
+      crumb.innerHTML = '定位：<span class="path">' +
+        esc(index.pathOf[state.view.locatedNode].join(" / ")) + "</span>" +
+        '<button id="btn-clear-loc" title="清除定位，显示全部">✕</button>';
+    } else {
+      crumb.innerHTML = '<span style="color:var(--muted)">定位：全部设备</span>';
+    }
+    // 状态计数（在定位+搜索范围内统计，剔除状态筛选自身）
+    var counts = Core.statusCounts(state.entities, index, state.view);
+    var total = 0;
+    Object.keys(counts).forEach(function (k) { total += counts[k]; });
+    var chips = ['<button class="chip' + (state.view.status ? "" : " on") + '" data-status="">全部<span class="n">' + total + "</span></button>"];
+    STATUS_KEYS.forEach(function (k) {
+      chips.push('<button class="chip' + (state.view.status === k ? " on" : "") + '" data-status="' + k + '">' +
+        esc(stMeta(k).label) + '<span class="n">' + (counts[k] || 0) + "</span></button>");
+    });
+    $("status-chips").innerHTML = chips.join("");
+    // 搜索框不打断输入焦点
+    var search = $("search");
+    if (document.activeElement !== search) search.value = state.view.query;
+    // 全选可见
+    $("select-visible-n").textContent = "(" + currentVisible.length + ")";
+    $("btn-select-visible").disabled = currentVisible.length === 0;
+  }
+
+  function renderTable() {
+    var tbody = $("tbody");
+    var empty = $("empty-state");
+    var table = $("entity-table");
+    if (currentVisible.length === 0) {
+      table.hidden = true;
+      empty.hidden = false;
+      var hasFilter = state.view.locatedNode || state.view.status || state.view.query;
+      empty.innerHTML = hasFilter
+        ? '<div class="big">当前筛选与定位范围内没有设备</div><div>可见范围由定位 / 状态 / 搜索决定，选中集不受影响。</div>' +
+          '<div class="actions"><button class="btn" id="btn-empty-clear">清除筛选与定位</button></div>'
+        : '<div class="big">当前没有任何设备</div><div>可撤销最近的操作，或重置演示数据。</div>' +
+          '<div class="actions"><button class="btn ghost" id="btn-empty-undo">↩ 撤销最近操作</button>' +
+          '<button class="btn ghost" id="btn-empty-reset">重置演示数据</button></div>';
+      return;
+    }
+    table.hidden = false;
+    empty.hidden = true;
+    var rows = [];
+    currentVisible.forEach(function (id) {
+      var e = state.entities.get(id);
+      var m = stMeta(e.status);
+      var selected = state.selection.has(id);
+      rows.push('<tr class="row' + (selected ? " selected" : "") + '" data-id="' + esc(id) + '">' +
+        '<td class="col-sel"><input type="checkbox" class="row-sel"' + (selected ? " checked" : "") +
+          ' aria-label="选中 ' + esc(id) + '"></td>' +
+        '<td class="col-id mono">' + esc(id) + "</td>" +
+        "<td>" + esc(e.name) + "</td>" +
+        '<td class="col-model">' + esc(e.model) + "</td>" +
+        '<td class="col-status"><select class="row-status ' + m.cls + '" data-id="' + esc(id) +
+          '" aria-label="修改 ' + esc(id) + ' 的状态">' +
+          STATUS_KEYS.map(function (k) {
+            return '<option value="' + k + '"' + (k === e.status ? " selected" : "") + ">" + esc(stMeta(k).label) + "</option>";
+          }).join("") +
+        "</select></td>" +
+        '<td class="col-path" title="' + esc(Core.entityPathString(index, e)) + '">' +
+          esc(Core.entityPathString(index, e)) + "</td>" +
+        "</tr>");
+    });
+    tbody.innerHTML = rows.join("");
+    // 信息性指示：可见实体的选中覆盖情况（绝不代替用户执行全选）
+    var selVisible = 0;
+    currentVisible.forEach(function (id) { if (state.selection.has(id)) selVisible += 1; });
+    var ind = $("sel-indicator");
+    ind.textContent = selVisible === 0 ? "" : (selVisible === currentVisible.length ? "✓" : "−");
+    ind.title = selVisible === 0
+      ? "当前可见实体均未选中"
+      : "可见 " + currentVisible.length + " 项中已选 " + selVisible + " 项（信息性指示）";
+  }
+
+  function renderTray() {
+    var n = state.selection.size;
+    $("tray-n").textContent = n;
+    // 隐藏的已选实体：在选中集但不在可见范围（仍会包含在批量操作中）
+    var hidden = 0;
+    state.selection.forEach(function (id) {
+      if (currentVisible.indexOf(id) === -1) hidden += 1;
+    });
+    var warn = $("tray-hidden");
+    if (n > 0 && hidden > 0) {
+      warn.hidden = false;
+      warn.innerHTML = "⚠ " + hidden + " 项已选设备不在当前可见范围（批量操作仍包含）" +
+        '<button data-act="reveal" title="清除筛选与定位，使全部已选设备可见">显示</button>';
+    } else {
+      warn.hidden = true;
+      warn.innerHTML = "";
+    }
+    // 分组摘要：状态 × 跨科室
+    var sumEl = $("tray-summary");
+    if (n === 0) {
+      sumEl.innerHTML = "<span>在列表勾选、Shift 范围选或用「选 N / 全选可见」构建选中集</span>";
+    } else {
+      var s = Core.summarize(state.entities, index, Array.from(state.selection));
+      var chips = [];
+      STATUS_KEYS.forEach(function (k) {
+        if (s.byStatus[k]) chips.push('<span class="schip ' + stMeta(k).cls + '">' + esc(stMeta(k).label) + " " + s.byStatus[k] + "</span>");
+      });
+      chips.push('<span class="dept-chip">跨 ' + s.deptCount + " 个科室</span>");
+      sumEl.innerHTML = chips.join("");
+    }
+    // 动作可用性
+    ["btn-op-status", "btn-op-move", "btn-op-delete", "btn-clear-sel"].forEach(function (bid) {
+      $(bid).disabled = n === 0;
+    });
+    $("btn-undo").disabled = state.undoStack.length === 0;
+    $("undo-n").textContent = state.undoStack.length ? "(" + state.undoStack.length + ")" : "";
+  }
+
+  function renderReceipt() {
+    var el = $("receipt");
+    if (!state.receipt) { el.hidden = true; el.innerHTML = ""; return; }
+    el.hidden = false;
+    el.className = "receipt " + state.receipt.tone;
+    el.innerHTML = '<span class="msg">' + state.receipt.text + "</span>" +
+      (state.undoStack.length
+        ? '<button class="undo-inline" data-act="undo">↩ 撤销（' + state.undoStack.length + "）</button>"
+        : "") +
+      '<button class="dismiss" data-act="dismiss" aria-label="关闭回执">✕</button>';
+  }
+
+  // ---------------- 批量操作与回执 ----------------
+  var OP_LABEL = { status: "批量变更状态", move: "批量移动归属", delete: "批量删除" };
+
+  function pushUndo(label, result) {
+    state.undoStack.push({ label: label, record: result.record });
+  }
+
+  function buildOpReceipt(label, result, targetText) {
+    var confirmed = result.confirmedCount;
+    var affected = result.affectedIds.length;
+    var skipped = result.skippedIds.length;
+    var text = "<b>" + esc(label) + "</b>" + (targetText ? " " + esc(targetText) : "") +
+      " · 确认 " + confirmed + " 项";
+    if (affected === confirmed) {
+      return { tone: "ok", text: text + " · 影响 " + affected + " 项 · <b>计数一致 ✓</b>" };
+    }
+    return { tone: "warn", text: text + " · 实际变更 " + affected + " 项 · " +
+      skipped + " 项已在目标状态/归属，未改动（未计入影响数）" };
+  }
+
+  function executeOp(op, label, targetText) {
+    var result = Core.applyBatch(state.entities, op);
+    state.entities = result.entities;
+    if (op.type === "delete") {
+      op.ids.forEach(function (id) { state.selection.delete(id); });
+    }
+    pushUndo(label, result);
+    state.receipt = buildOpReceipt(label, result, targetText);
+    dialog = null;
+    $("op-dialog").close();
+    refresh();
+  }
+
+  function doUndo() {
+    var entry = state.undoStack.pop();
+    if (!entry) return;
+    var count = entry.record.op.ids.length;
+    state.entities = Core.undoBatch(state.entities, entry.record);
+    state.receipt = { tone: "info", text: "<b>↩ 已撤销</b>：" + esc(entry.label) + "（" + count + " 项已按快照精确恢复）" };
+    refresh();
+  }
+
+  // ---------------- 确认对话框 ----------------
+  function openDialog(type) {
+    if (state.selection.size === 0) return;
+    dialog = {
+      type: type,
+      ids: sortedIds(state.selection),
+      value: type === "status" ? "repair" : null,
+      deptId: null,
+      blockedIds: []
+    };
+    renderDialog();
+    $("op-dialog").showModal();
+  }
+
+  function renderDialog() {
+    var body = $("op-dialog-body");
+    var ids = dialog.ids;
+    var n = ids.length;
+    var html = [];
+    html.push("<h3>" + OP_LABEL[dialog.type] + "</h3>");
+
+    // 目标控件
+    if (dialog.type === "status") {
+      html.push('<div class="dlg-target"><span>目标状态：</span><select id="dlg-status" aria-label="目标状态">' +
+        STATUS_KEYS.map(function (k) {
+          return '<option value="' + k + '"' + (k === dialog.value ? " selected" : "") + ">" + esc(stMeta(k).label) + "</option>";
+        }).join("") + "</select></div>");
+    } else if (dialog.type === "move") {
+      var opts = ['<option value="" disabled' + (dialog.deptId ? "" : " selected") + ">选择目标科室…</option>"];
+      index.centerIds.forEach(function (cid) {
+        opts.push('<optgroup label="' + esc(index.nameOf[cid]) + '">');
+        index.subtreeNodeIds[cid].forEach(function (did) {
+          if (did === cid) return;
+          opts.push('<option value="' + did + '"' + (dialog.deptId === did ? " selected" : "") + ">" +
+            esc(index.nameOf[did]) + "</option>");
+        });
+        opts.push("</optgroup>");
+      });
+      html.push('<div class="dlg-target"><span>目标科室：</span><select id="dlg-dept" aria-label="目标科室">' + opts.join("") + "</select></div>");
+    } else {
+      html.push('<div class="dlg-target"><span>操作对象：</span><b>选中集快照（' + n + " 台设备，分组明细见下）</b></div>");
+    }
+
+    html.push('<div class="dlg-count">确认影响 <b>' + n + "</b> 项（执行范围 = 此快照，操作可整体撤销）</div>");
+
+    // 隐藏已选提示
+    var hiddenIds = ids.filter(function (id) { return currentVisible.indexOf(id) === -1; });
+    if (hiddenIds.length > 0) {
+      html.push('<div class="dlg-note warn">⚠ 其中 <b>' + hiddenIds.length + "</b> 项当前不在可见范围（被筛选或定位隐藏），" +
+        "仍将包含在本次操作中：" +
+        '<span class="mono">' + esc(hiddenIds.slice(0, 6).join("、")) + (hiddenIds.length > 6 ? " …" : "") + "</span></div>");
+    }
+
+    // 幂等预览：已处目标状态/归属的数量（回执将如实区分「变更」与「未改动」）
+    if (dialog.type === "status" || (dialog.type === "move" && dialog.deptId)) {
+      var already = 0;
+      ids.forEach(function (id) {
+        var e = state.entities.get(id);
+        if (dialog.type === "status" ? e.status === dialog.value : e.deptId === dialog.deptId) already += 1;
+      });
+      if (already > 0) {
+        html.push('<div class="dlg-note warn">其中 ' + already + " 项已处于目标" + (dialog.type === "status" ? "状态" : "科室") +
+          "，执行后不会变化</div>");
+      }
+    }
+
+    // 移动规则：待报废阻止（显式报错 + 补救动作，而不是静默部分成功）
+    if (dialog.type === "move") {
+      var v = Core.validateMove(state.entities, ids);
+      dialog.blockedIds = v.blockedIds;
+      if (!v.ok) {
+        html.push('<div class="dlg-note error"><b>无法执行：</b>选中集中包含 <b>' + v.blockedIds.length +
+          "</b> 台「待报废」设备（" + '<span class="mono">' + esc(v.blockedIds.slice(0, 6).join("、")) +
+          (v.blockedIds.length > 6 ? " …" : "") + "</span>），报废设备需先走报废流程，不可移动归属。" +
+          '<button data-act="exclude-blocked">从选中集排除这 ' + v.blockedIds.length + " 项</button></div>");
+      }
+    }
+
+    // 分组摘要（科室 × 状态）
+    var s = Core.summarize(state.entities, index, ids);
+    html.push('<table class="dlg-summary"><thead><tr><th>归属科室（路径）</th><th class="num">数量</th><th>状态分布</th></tr></thead><tbody>');
+    s.deptRows.forEach(function (r) {
+      var stParts = STATUS_KEYS.filter(function (k) { return r.statuses[k]; })
+        .map(function (k) { return esc(stMeta(k).label) + " " + r.statuses[k]; }).join(" · ");
+      html.push("<tr><td>" + esc(r.path) + '</td><td class="num"><b>' + r.total + "</b></td>" +
+        '<td class="st-mini">' + stParts + "</td></tr>");
+    });
+    html.push("</tbody></table>");
+
+    if (dialog.type === "delete") {
+      html.push('<div class="dlg-delete-warning">删除后可通过「撤销」在本会话内完整恢复（' + n + " 项按快照原样还原）。</div>");
+    }
+
+    var confirmDisabled = (dialog.type === "move" && (!dialog.deptId || dialog.blockedIds.length > 0));
+    html.push('<div class="dlg-actions">' +
+      '<button class="btn" data-act="cancel">取消</button>' +
+      '<button class="btn ' + (dialog.type === "delete" ? "danger" : "primary") + '" data-act="confirm"' +
+      (confirmDisabled ? " disabled" : "") + ">执行（" + n + " 项）</button></div>");
+
+    body.innerHTML = html.join("");
+  }
+
+  function confirmDialog() {
+    if (!dialog) return;
+    var ids = dialog.ids;
+    if (dialog.type === "status") {
+      executeOp({ type: "status", ids: ids, value: dialog.value }, OP_LABEL.status, "→ " + stMeta(dialog.value).label);
+    } else if (dialog.type === "move") {
+      if (!dialog.deptId || dialog.blockedIds.length > 0) return;
+      executeOp({ type: "move", ids: ids, deptId: dialog.deptId }, OP_LABEL.move,
+        "→ " + index.pathOf[dialog.deptId].join(" / "));
+    } else if (dialog.type === "delete") {
+      executeOp({ type: "delete", ids: ids }, OP_LABEL.delete, "");
+    }
+  }
+
+  // ---------------- 事件 ----------------
+  function revealSelection() {
+    state.view = { locatedNode: null, status: null, query: "" };
+    refresh();
+  }
+
+  function isDeptNode(nodeId) {
+    return index.subtreeDeptIds[nodeId].length === 1 && index.subtreeNodeIds[nodeId].length === 1;
+  }
+
+  // 层级树
+  $("tree").addEventListener("click", function (e) {
+    var actEl = e.target.closest("[data-act]");
+    if (!actEl) return;
+    var nodeRow = actEl.closest("[data-node]");
+    var nodeId = nodeRow && nodeRow.getAttribute("data-node");
+    var act = actEl.getAttribute("data-act");
+    if (act === "toggle") {
+      state.expanded[nodeId] = !state.expanded[nodeId];
+      refresh();
+    } else if (act === "locate") {
+      state.view.locatedNode = state.view.locatedNode === nodeId ? null : nodeId;
+      if (state.view.locatedNode && !isDeptNode(state.view.locatedNode)) state.expanded[state.view.locatedNode] = true;
+      refresh();
+    } else if (act === "select") {
+      var ids = Core.entityIdsInSubtree(state.entities, index, nodeId);
+      ids.forEach(function (id) { state.selection.add(id); });
+      state.receipt = { tone: "info", text: "已将「" + esc(index.pathOf[nodeId].join(" / ")) + "」的 <b>" +
+        ids.length + "</b> 项显式加入选中集（现共 " + state.selection.size + " 项）" };
+      refresh();
+    }
+  });
+
+  // 表格：勾选 / Shift 范围 / 行内状态修正
+  $("tbody").addEventListener("click", function (e) {
+    var checkbox = e.target.closest("input.row-sel");
+    if (!checkbox) return;
+    e.preventDefault(); // 选中状态由本处理器的重渲染统一落账，避免视觉与状态脱 sync
+    var tr = checkbox.closest("tr[data-id]");
+    var id = tr.getAttribute("data-id");
+    if (e.shiftKey && state.anchorId) {
+      var i1 = currentVisible.indexOf(state.anchorId);
+      var i2 = currentVisible.indexOf(id);
+      if (i1 !== -1 && i2 !== -1) {
+        var turnOn = !state.selection.has(id);
+        var lo = Math.min(i1, i2), hi = Math.max(i1, i2);
+        for (var i = lo; i <= hi; i++) {
+          if (turnOn) state.selection.add(currentVisible[i]);
+          else state.selection.delete(currentVisible[i]);
+        }
+      } else {
+        toggleSel(id);
+      }
+    } else {
+      toggleSel(id);
+    }
+    state.anchorId = id;
+    refresh();
+  });
+  function toggleSel(id) {
+    if (state.selection.has(id)) state.selection.delete(id);
+    else state.selection.add(id);
+  }
+
+  $("tbody").addEventListener("change", function (e) {
+    var select = e.target.closest("select.row-status");
+    if (!select) return;
+    var id = select.getAttribute("data-id");
+    var value = select.value;
+    var result = Core.applyBatch(state.entities, { type: "status", ids: [id], value: value });
+    if (result.affectedIds.length === 0) {
+      state.receipt = { tone: "info", text: "<span class='mono'>" + esc(id) + "</span> 已是「" +
+        esc(stMeta(value).label) + "」，未改动" };
+    } else {
+      state.entities = result.entities;
+      pushUndo("变更状态", result);
+      state.receipt = { tone: "ok", text: "状态变更：<span class='mono'>" + esc(id) + "</span> → <b>" +
+        esc(stMeta(value).label) + "</b> · 影响 1 项 · 计数一致 ✓" };
+    }
+    refresh();
+  });
+
+  // 工具栏
+  $("status-chips").addEventListener("click", function (e) {
+    var chip = e.target.closest("[data-status]");
+    if (!chip) return;
+    var k = chip.getAttribute("data-status");
+    state.view.status = k === "" ? null : k;
+    refresh();
+  });
+  $("loc-crumb").addEventListener("click", function (e) {
+    if (e.target.closest("#btn-clear-loc")) { state.view.locatedNode = null; refresh(); }
+  });
+  $("search").addEventListener("input", function () {
+    state.view.query = this.value.trim();
+    refresh();
+  });
+  $("btn-select-visible").addEventListener("click", function () {
+    var before = state.selection.size;
+    currentVisible.forEach(function (id) { state.selection.add(id); });
+    var added = state.selection.size - before;
+    state.receipt = { tone: "info", text: "已将当前可见的 <b>" + currentVisible.length + "</b> 项加入选中集（新增 " +
+      added + " 项，现共 " + state.selection.size + " 项）" };
+    refresh();
+  });
+
+  // 空态动作（事件委托，因按钮按渲染出现）
+  $("empty-state").addEventListener("click", function (e) {
+    if (e.target.closest("#btn-empty-clear")) revealSelection();
+    else if (e.target.closest("#btn-empty-undo")) doUndo();
+    else if (e.target.closest("#btn-empty-reset")) resetAll();
+  });
+
+  // 托盘与回执
+  $("tray-hidden").addEventListener("click", function (e) {
+    if (e.target.closest('[data-act="reveal"]')) revealSelection();
+  });
+  $("receipt").addEventListener("click", function (e) {
+    var actEl = e.target.closest("[data-act]");
+    if (!actEl) return;
+    if (actEl.getAttribute("data-act") === "undo") doUndo();
+    else if (actEl.getAttribute("data-act") === "dismiss") { state.receipt = null; renderReceipt(); }
+  });
+  ["btn-op-status", "btn-op-move", "btn-op-delete"].forEach(function (bid) {
+    $(bid).addEventListener("click", function () {
+      openDialog(bid === "btn-op-status" ? "status" : bid === "btn-op-move" ? "move" : "delete");
+    });
+  });
+  $("btn-clear-sel").addEventListener("click", function () {
+    state.selection.clear();
+    state.receipt = { tone: "info", text: "已清空选中集（不影响任何数据）" };
+    refresh();
+  });
+  $("btn-undo").addEventListener("click", doUndo);
+
+  // 对话框
+  var dlg = $("op-dialog");
+  dlg.addEventListener("click", function (e) {
+    if (e.target === dlg) { dlg.close(); return; } // 点击遮罩关闭
+    var actEl = e.target.closest("[data-act]");
+    if (!actEl) return;
+    var act = actEl.getAttribute("data-act");
+    if (act === "cancel") dlg.close();
+    else if (act === "confirm") confirmDialog();
+    else if (act === "exclude-blocked") {
+      dialog.blockedIds.forEach(function (id) { state.selection.delete(id); });
+      dialog.ids = sortedIds(state.selection);
+      state.receipt = { tone: "warn", text: "已从选中集排除 <b>" + dialog.blockedIds.length + "</b> 项待报废设备" };
+      if (dialog.ids.length === 0) { dlg.close(); refresh(); return; }
+      renderDialog();
+      refresh();
+    }
+  });
+  dlg.addEventListener("change", function (e) {
+    if (e.target.id === "dlg-status") { dialog.value = e.target.value; renderDialog(); }
+    else if (e.target.id === "dlg-dept") { dialog.deptId = e.target.value || null; renderDialog(); }
+  });
+  dlg.addEventListener("close", function () { dialog = null; });
+  dlg.addEventListener("cancel", function () { dialog = null; }); // Esc（键盘契约）
+
+  // 重置
+  function resetAll() {
+    if (!window.confirm("重置演示数据？将丢弃全部变更与撤销记录。")) return;
+    loadSeed();
+    state.receipt = { tone: "info", text: "演示数据已重置为初始种子" };
+    refresh();
+  }
+  $("btn-reset").addEventListener("click", resetAll);
+
+  // ---------------- 启动：数据随首屏就绪（同步装配，无加载态） ----------------
+  loadSeed();
+  refresh();
+})();
+</script>
+</body>
+</html>

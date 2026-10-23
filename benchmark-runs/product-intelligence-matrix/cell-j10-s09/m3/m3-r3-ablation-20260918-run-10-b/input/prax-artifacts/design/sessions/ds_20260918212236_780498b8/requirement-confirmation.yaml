@@ -1,0 +1,31 @@
+version: "0.1"
+user_quote:
+  - 动词：complete；对象：高后果流程；成功标准：零失误走完全程
+  - 判别：单一高后果流程，零失误走完全程、不可逆步骤有恢复/确认路径
+  - 验收种子：不可逆步骤有恢复/确认路径
+  - 交付物必须能直接静态打开（根路径 index.html，或构建产物 dist/）
+  - 应用在页面加载完成时即处于可用状态（初始数据随首屏就绪，不得以加载态作为可测状态）
+restatement: 构建一个单页静态 Web 应用：引导用户零失误地走完一个高后果流程（单一 workflow 对象，层级为 阶段→步骤）。应用在加载完成时即以首屏可用（流程初始数据内联随 HTML/JS 就绪，无加载态）。每个不可逆步骤必须同时具备确认路径（显式确认门，展示后果）与恢复路径（冷静期撤销/恢复点/回滚指引）。流程推进受门禁校验约束，记录偏差以保证零失误可验证；走完全程后给出完成凭证与审计摘要。主屏 1 个，无后端/账号/持久化，不部署。
+boundaries:
+  in_scope:
+    - 单页静态 Web 应用（根路径 index.html，纯静态可打开）
+    - 单一高后果流程的执行引导：阶段→步骤两级结构
+    - 不可逆步骤的确认路径（后果展示+显式确认）与恢复路径（撤销窗口/恢复点/回滚指引）
+    - 步骤门禁校验与零失误进度记录（偏差日志）
+    - 完成凭证与全程审计摘要
+    - 首屏即可用（数据内联，无加载态）
+  out_of_scope:
+    - 后端服务、账号体系、持久化服务
+    - 部署到外部服务
+    - 多屏/多流程/多对象比较
+    - 实时协作
+  scope_complete: true
+open_questions: []
+confirmation:
+  status: requirement_is_sufficient
+  evidence:
+    - type: task_brief
+      ref: brief.md (cell-j10-s09, frozen by M2)
+    - type: conversation_message
+      ref: user task message REQUIREMENT section, 2026-09-19
+  confirmed_at: 2026-09-19T08:00:00Z

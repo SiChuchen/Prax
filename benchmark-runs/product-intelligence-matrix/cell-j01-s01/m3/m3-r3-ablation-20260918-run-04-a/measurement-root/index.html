@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TreeLedger · 设备资产批量管理台</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo"></span>
+      <b>TreeLedger</b>
+      <span class="sub">设备资产批量管理台</span>
+      <span class="cell-tag">cell-j01-s01 · manage × entity-hierarchy</span>
+    </div>
+    <div class="stats" id="stats"></div>
+    <button class="btn" id="btn-log">操作记录 <span class="badge" id="op-count">0</span></button>
+  </header>
+
+  <main>
+    <aside class="tree-pane">
+      <div class="pane-head">资产层级
+        <button class="btn btn-sm" id="btn-expand">全展开</button>
+        <button class="btn btn-sm" id="btn-collapse">全折叠</button>
+      </div>
+      <div class="tree" id="tree"></div>
+      <div class="tree-foot">已选 <b id="tree-sel-count">0</b> 项
+        <button class="btn btn-sm" id="btn-clearsel">清空选择</button>
+      </div>
+    </aside>
+
+    <section class="table-pane">
+      <div class="toolbar">
+        <input type="text" id="inp-search" placeholder="搜索名称 / 编码…">
+        <select id="sel-status">
+          <option value="all">全部状态</option>
+          <option value="running">运行</option>
+          <option value="maintenance">维护</option>
+          <option value="stopped">停用</option>
+          <option value="scrapping">待报废</option>
+        </select>
+        <label><input type="checkbox" id="cb-systems"> 显示系统节点</label>
+        <button class="btn" id="btn-selectvisible">全选可见</button>
+        <span class="range-chip" id="focus-chip" hidden></span>
+        <span class="muted" id="row-count"></span>
+      </div>
+      <div class="table-wrap">
+        <table class="tbl">
+          <thead><tr>
+            <th class="w-check"></th><th>编码</th><th>名称</th><th>归属路径</th><th class="w-status">状态</th>
+          </tr></thead>
+          <tbody id="tbl-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div id="batchbar" hidden>
+    <div class="bb-info" id="bb-info"></div>
+    <div class="bb-actions">
+      <div class="dd">
+        <button class="btn" id="btn-status">修改状态 ▾</button>
+        <div class="dd-menu" id="dd-status" hidden>
+          <button data-status="running"><i class="dot dot-running"></i>改为「运行」</button>
+          <button data-status="maintenance"><i class="dot dot-maintenance"></i>改为「维护」</button>
+          <button data-status="stopped"><i class="dot dot-stopped"></i>改为「停用」</button>
+          <button data-status="scrapping"><i class="dot dot-scrapping"></i>改为「待报废」</button>
+        </div>
+      </div>
+      <button class="btn btn-danger" id="btn-delete">删除…</button>
+      <button class="btn" id="btn-export">导出 CSV</button>
+      <button class="btn" id="btn-clear">清空选择</button>
+    </div>
+  </div>
+
+  <aside class="drawer" id="oplog">
+    <div class="drawer-head">操作记录<button class="btn btn-sm" id="btn-log-close">关闭</button></div>
+    <div id="op-list"></div>
+  </aside>
+
+  <div class="overlay" id="modal" hidden><div class="modal-card" id="modal-card"></div></div>
+  <div id="toasts"></div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

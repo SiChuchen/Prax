@@ -1,0 +1,62 @@
+user:
+  expertise: intermediate
+  familiarity: medium
+task:
+  primary: Edit one structured document via structure-preserving controls with a live, always-consistent preview
+  modes:
+    - in-place field editing
+    - structure operations
+    - preview verification
+    - undo
+  frequency: medium
+domain:
+  type: document editing
+  entities:
+    - document
+    - section
+    - field
+    - list item
+    - preview block
+information:
+  volume: low
+  relationship_complexity: low
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: low
+  error_cost: medium
+priorities:
+  - Structure integrity is invariant under every edit operation
+  - Editor and preview are two views of one model and stay consistent
+  - Content ready at first paint (inlined initial document)
+  - Calm low-density single main screen
+density_intent: spacious
+confidence:
+  overall: high
+unknowns: []
+classification:
+  version: "1"
+  task_type: unknown
+  domain_id: unknown
+  interaction_mode: sections_with_navigation
+  product_type: unknown
+  primary_object_type: document
+  secondary_object_types:
+    - section
+    - preview
+    - structure_check
+  confidence: low
+  evidence:
+    - interaction_mode=sections_with_navigation ← token 'sections' in context.task, frame.tasks, and context.priorities
+    - primary_object_type=document ← most referenced product object in the Product Frame
+  open_questions:
+    - task_type could not be classified from the provided context; refine the context fields or record a custom classification
+    - domain_id could not be classified from the provided context; refine the context fields or record a custom classification
+    - product_type could not be derived; record the intended audience and product kind

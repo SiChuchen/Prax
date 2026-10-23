@@ -1,0 +1,23 @@
+  PASS  节点数 = 28
+  PASS  关系数 = 55
+  PASS  邻接表：order-svc 出边含 payment-svc（我依赖它）
+  PASS  邻接表：order-svc 入边含 api-gw（它依赖我）
+  PASS  order-svc 上游第 1 跳（期望 [mysql-order, inventory-svc, promo-svc, payment-svc, risk-svc, kafka]，实际 [mysql-order, inventory-svc, promo-svc, payment-svc, risk-svc, kafka]）
+  PASS  order-svc 上游第 2 跳含 pay-channel（经 payment-svc）
+  PASS  上游闭包不含 web-store（它是下游）
+  PASS  闭包含起点且距离为 0
+  PASS  mysql-main 下游第 1 跳（期望 [user-svc, product-svc, inventory-svc, payment-svc, promo-svc, logistics-svc, ledger-svc]，实际 [user-svc, product-svc, inventory-svc, payment-svc, promo-svc, logistics-svc, ledger-svc]）
+  PASS  mysql-main 下游：auth-svc 与 api-gw 均在第 2 跳（都直接依赖 user-svc）
+  PASS  mysql-main 下游：web-store 第 3 跳
+  PASS  mysql-main 下游可跟随 ≥3 跳（max=3）
+  PASS  闭包随跳数单调扩大（7≤12≤12）
+  PASS  上游具体路径：order-svc→payment-svc→pay-channel
+  PASS  下游具体路径节点序（影响链）（期望 [mysql-main, user-svc, api-gw, web-store]，实际 [mysql-main, user-svc, api-gw, web-store]）
+  PASS  布局确定性：两次计算结果完全一致
+  PASS  布局覆盖全部节点
+  PASS  每条依赖边：依赖者层号大（画在上）、被依赖方层号小（画在下），箭头向下
+  PASS  同层节点同行对齐
+  PASS  回路图 BFS 覆盖全部节点且终止
+  PASS  回路图布局终止且覆盖全部节点
+
+21 passed, 0 failed

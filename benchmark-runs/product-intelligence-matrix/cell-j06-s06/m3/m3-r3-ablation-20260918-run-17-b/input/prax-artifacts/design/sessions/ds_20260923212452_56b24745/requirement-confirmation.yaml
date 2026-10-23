@@ -1,0 +1,30 @@
+version: "0.1"
+user_quote:
+  - 动词：understand；对象：随时间演化的状态；成功标准：变更因果可读
+  - 判别：随时间演化的多元素序列，变更因果与时间结构必须互相一致。
+  - 验收种子：时间结构与变更语义一致
+  - 主对象建议：object_type=change_set（备选 change_set、dataset）
+  - 交付约束：单页 Web 应用，静态打开（根路径 index.html 或 dist/），首屏初始数据就绪，本地可运行，不部署外部服务
+restatement: 构建一个从零开始的静态单页 Web 应用，帮助用户理解一个随时间演化的系统状态：以 change_set（带时间戳的变更事件序列）为主对象，界面上的时间结构（排序、分组、游标）必须与变更语义（原因→结果的因果链、变更前→变更后的状态推导）严格一致，用户能顺着时间轴读懂每次变更的因果。
+boundaries:
+  in_scope:
+    - 静态可开的单页应用（根路径 index.html 或 dist/ 构建产物）
+    - 首屏内联初始数据，页面加载完成即可用，无加载态
+    - change_set 主对象：带时间戳、因果链接、变更明细的变更事件序列
+    - 时间游标下的状态快照推导（事件折叠/回放）与变更前后 diff 呈现
+    - 因果链与时间轴一致性：因果指向必须沿时间正向
+  out_of_scope:
+    - 后端、账号体系、持久化服务
+    - 部署到外部服务
+    - 修改冻结的验收标准或验收种子
+    - 多屏/移动端（规模上限：单页应用，主屏 1 个）
+  scope_complete: true
+open_questions: []
+confirmation:
+  status: requirement_is_sufficient
+  evidence:
+    - type: task_brief
+      ref: brief.md (Product Brief — cell-j06-s06, M2 冻结)
+    - type: task_brief
+      ref: product-intelligence-matrix plan 2026-09-02 · cell-j06-s06
+  confirmed_at: 2026-09-24T00:00:00Z

@@ -1,0 +1,28 @@
+version: "0.1"
+user_quote:
+  - locate × 大型集合中的目标：三次交互内定位
+  - 定位路径有搜索/过滤支撑且不丢上下文
+  - 交付物必须能直接静态打开（根路径 index.html，或构建产物 dist/）；页面加载完成时即处于可用状态（初始数据随首屏就绪）
+restatement: "Build a single-page web app whose core job is LOCATE: helping a user find a target item inside a large, open-ended, weakly-related collection (unbounded cardinality, low relationality, medium hierarchy/density/dimensionality, no comparison need). The main cognitive burden is the locate path, not structure presentation. Success = locating the target within three interactions; the locate path must be supported by instant search/filtering and must never lose context. Deliverable opens statically at index.html, all data inlined so the first screen is immediately usable, runs locally with no external services, no deployment."
+boundaries:
+  in_scope:
+    - Single-page web app, one main screen
+    - Static open from index.html (no build step required to serve)
+    - Initial collection data inlined with the first screen — no loading state
+    - Instant search (type-to-filter) plus faceted filters over the collection
+    - Hierarchy-aware navigation (collection > group > item) with context preservation during locate
+    - Local run only; no external services, no deployment
+  out_of_scope:
+    - Backend services, accounts, or persistence
+    - Deployment to any external host
+    - Mobile layout beyond graceful degradation
+    - Comparison/analysis features (comparison_need = none)
+    - Real backend data volatility (static snapshot is acceptable)
+  scope_complete: true
+open_questions: []
+confirmation:
+  status: requirement_is_sufficient
+  evidence:
+    - type: task_brief
+      ref: brief.md — cell-j02-s02 (locate × open-collection), frozen by benchmark program M2
+  confirmed_at: 2026-09-24T00:00:00Z

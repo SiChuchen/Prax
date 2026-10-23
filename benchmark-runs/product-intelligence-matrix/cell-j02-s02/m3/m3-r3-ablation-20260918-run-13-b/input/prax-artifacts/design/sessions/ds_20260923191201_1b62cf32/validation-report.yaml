@@ -1,0 +1,241 @@
+plan_revision: 2
+evidence:
+  submitted_by: Claude (glm-5.3-flash) implementation arm, session ds_20260923191201_1b62cf32
+  collected_at: 2026-09-24T04:00:00Z
+  items:
+    - check_id: semantic_conformance
+      outcome: pass
+      source: machine validation (design_sdir validate) + static code inspection of index.html region markup
+      notes: "SDIR 0.2 passed the Prax semantic linter (roles/behaviors marked experimental:, no render-level fields). index.html regions implement exactly the SDIR regions: search_bar, filter_rail, results_list, detail_inspector, breadcrumb_strip, status_bar + task-driven empty/error/loading panels."
+      artifact_refs:
+        - sdir.screen (SDIR 0.2, validated PASS by design_sdir machine lint)
+        - index.html
+    - check_id: state_completeness
+      outcome: pass
+      source: static code inspection with file:line artifacts
+      notes: "All five required states exist: loading (markup panel, hidden synchronously before first paint — not measurable at load), ready (grouped list + counts), selected (roving selection + inspector), empty (no-match panel with clear-narrowing recovery), error (defensive panel when inlined catalog missing). app dataset-phase exposes ready/empty/error for programmatic verification."
+      artifact_refs:
+        - index.html:43-56 (state panels)
+        - app.js:19-24 (error phase)
+        - app.js:322-332 (empty state wiring)
+        - app.js:447 (loading hidden at init)
+        - app.js:442-443 (phase dataset)
+    - check_id: product_model_alignment
+      outcome: pass
+      source: static code inspection against product frame + compiled context
+      notes: "Product frame objects are the user-facing structure: Part (mpn, specs), Category and Family (Collection tree + breadcrumb path 'All parts › Category › Family'), Filter (4 facet dimensions with live counts). belongs_to relations part→family→category drive grouping and the inspector path buttons. No backend-record leakage: UI language is Part/Family/Category/Filter only."
+      artifact_refs:
+        - "data.js (CATS: 8 categories; F: 30 families; facets pkgGroup/mount/tol/avail)"
+        - app.js:27-31 (Part/Category/Family indexes)
+        - app.js:44-49 (facet dimensions)
+    - check_id: keyboard
+      outcome: inconclusive
+      source: static code inspection; interactive browser verification unavailable in this harness (documented attempts)
+      notes: "IMPLEMENTATION present and complete (global / focus, roving arrow selection over filtered rows, Enter inspects by moving focus to the inspector region, Esc clears contextually; visible focus per H-23). INTERACTIVE EXECUTION EVIDENCE NOT OBTAINABLE IN THIS HARNESS: no shell/browser-automation tool exists here (ToolSearch select: sweeps for bash/shell/browser/CDP tools returned empty; webReader rejects file:// URLs). Marked inconclusive rather than fabricating a browser transcript; a human opening index.html can verify the three-interaction keyboard path directly."
+      artifact_refs:
+        - "app.js:412-434 (keyboard handler: / focus, ↑↓ roving selection with scrollIntoView, ↵ inspect focus hand-off, Esc clear)"
+        - index.html:51 (list tabindex=0, aria-activedescendant)
+        - app.js:381-394 (select with aria-selected updates)
+        - styles.css:27-30 (visible :focus-visible ring)
+    - check_id: hierarchy_review
+      outcome: pass
+      source: static code inspection of layout CSS vs SDIR region importance
+      notes: "Prominence follows SDIR priority: search field is the dominant header element and auto-focused; results list is the widest region with dominant-density rows; rail and inspector are fixed supporting columns; breadcrumbs/status are thin supporting strips. Signal-over-chrome: no decorative elements; type scale quiet next to data. Rendered-pixel confirmation unavailable in harness (same limitation as keyboard check) — visual claims are restricted to the implemented CSS/structure, not screenshots."
+      artifact_refs:
+        - styles.css (region grid 288px/1fr/336px — results dominant center)
+        - "styles.css: search_bar emphasis, quiet chip/rail typography, sticky group headers"
+        - index.html (region order + importance)
+    - check_id: representation_decided
+      outcome: pass
+      source: machine validation (design_sdir validate)
+      notes: "Validated by design_sdir machine lint: representation.primary.type=search_results carries a non-empty reason; supporting tree (collection rail) and list (facet chips) declared."
+      artifact_refs:
+        - SDIR 0.2 representation.primary = search_results with reason
+    - check_id: state_ownership_declared
+      outcome: pass
+      source: machine validation (design_sdir validate)
+      notes: Both selection and preview have declared owners (results_list and detail_inspector respectively); owners are valid region ids per the linter. The app's three state owners match exactly.
+      artifact_refs:
+        - "SDIR 0.2 state_ownership: selection→results_list, preview/inspector→detail_inspector, query→search_bar, viewport→results_list, mode→session"
+    - check_id: acceptance_contract_present
+      outcome: pass
+      source: machine validation (design_sdir validate) + code mapping
+      notes: SDIR 0.2 carries four acceptance criteria, each mapped to an implemented mechanism in app.js (compose-AND narrowing with no resets; pinned selection with outside-narrowing annotation; synchronous inline data; live counts in status bar, families, and facet chips).
+      artifact_refs:
+        - "SDIR 0.2 acceptance: 4 criteria (three-interaction locate; narrowing never discards context; full catalog at first paint; live counts)"
+    - check_id: complexity_budget_declared
+      outcome: pass
+      source: machine validation (design_sdir validate)
+      notes: Complexity budget block present and machine-validated in SDIR 0.2; implementation stays within it (one screen, one mode, three state owners, one keyboard contract).
+      artifact_refs:
+        - "SDIR 0.2 complexity_budget: panels 3, primary actions 1, modes 1, state owners 3, nav levels 2, persistent filters 3, new concepts 1, keyboard contracts 1, mobile conflicts 0, surfaces 4"
+    - check_id: requirement_alignment
+      outcome: pass
+      source: static code inspection against the frozen brief
+      notes: "Confirmed restatement satisfied: single-page app deliverable opens statically at root index.html (classic scripts → file:// safe, no build); full 2,000-part collection present at first paint (data.js evaluates before app.js and before paint; loading panel hidden synchronously — no measurable loading state); locate via instant search + facets within three interactions with context preserved (acceptance seed); no backend, accounts, persistence, deployment, or external services; one main screen."
+      artifact_refs:
+        - index.html (root deliverable, static, classic scripts)
+        - data.js (inlined catalog, synchronous, before first paint)
+        - app.js (no fetch, no external calls)
+        - README.md (open instructions)
+evaluation:
+  status: WARN
+  checks:
+    - id: semantic_conformance
+      label: Semantic conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR is valid, semantic, and aligned to the approved pattern.
+      evidence_required: false
+    - id: state_completeness
+      label: State completeness
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Required loading, empty, ready, and error states exist.
+      evidence_required: false
+    - id: product_model_alignment
+      label: Product model alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: User-facing structure and language preserve the Product Frame.
+      evidence_required: true
+    - id: keyboard
+      label: Keyboard operability
+      kind: empirical
+      profile: keyboard_accessibility
+      facet: behavioral
+      requirement: Primary work and selection are operable with keyboard and visible focus.
+      evidence_required: true
+    - id: hierarchy_review
+      label: Hierarchy review
+      kind: assistive
+      profile: semantic_integrity
+      facet: visual_hierarchy
+      requirement: Visual prominence follows SDIR importance rather than implementation convenience.
+      evidence_required: true
+    - id: representation_decided
+      label: Representation decided
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares representation.primary with a non-empty reason.
+      evidence_required: false
+    - id: state_ownership_declared
+      label: State ownership declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: Selection and preview states both have declared owners.
+      evidence_required: false
+    - id: acceptance_contract_present
+      label: Acceptance contract present
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 carries at least one acceptance criterion.
+      evidence_required: false
+    - id: complexity_budget_declared
+      label: Complexity budget declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      evidence_required: false
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+  findings:
+    - check_id: semantic_conformance
+      kind: deterministic
+      outcome: pass
+      message: SDIR is valid, semantic, and aligned to the approved pattern.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_completeness
+      kind: deterministic
+      outcome: pass
+      message: Required loading, empty, ready, and error states exist.
+      source: prax-validator
+      provenance: measured
+    - check_id: representation_decided
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares representation.primary with a non-empty reason.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_ownership_declared
+      kind: deterministic
+      outcome: pass
+      message: Selection and preview states both have declared owners.
+      source: prax-validator
+      provenance: measured
+    - check_id: acceptance_contract_present
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 carries at least one acceptance criterion.
+      source: prax-validator
+      provenance: measured
+    - check_id: complexity_budget_declared
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      source: prax-validator
+      provenance: measured
+    - check_id: product_model_alignment
+      kind: assistive
+      outcome: pass
+      message: "Product frame objects are the user-facing structure: Part (mpn, specs), Category and Family (Collection tree + breadcrumb path 'All parts › Category › Family'), Filter (4 facet dimensions with live counts). belongs_to relations part→family→category drive grouping and the inspector path buttons. No backend-record leakage: UI language is Part/Family/Category/Filter only."
+      source: static code inspection against product frame + compiled context
+      provenance: attested
+    - check_id: keyboard
+      kind: empirical
+      outcome: inconclusive
+      message: "IMPLEMENTATION present and complete (global / focus, roving arrow selection over filtered rows, Enter inspects by moving focus to the inspector region, Esc clears contextually; visible focus per H-23). INTERACTIVE EXECUTION EVIDENCE NOT OBTAINABLE IN THIS HARNESS: no shell/browser-automation tool exists here (ToolSearch select: sweeps for bash/shell/browser/CDP tools returned empty; webReader rejects file:// URLs). Marked inconclusive rather than fabricating a browser transcript; a human opening index.html can verify the three-interaction keyboard path directly."
+      source: static code inspection; interactive browser verification unavailable in this harness (documented attempts)
+      provenance: attested
+    - check_id: hierarchy_review
+      kind: assistive
+      outcome: pass
+      message: "Prominence follows SDIR priority: search field is the dominant header element and auto-focused; results list is the widest region with dominant-density rows; rail and inspector are fixed supporting columns; breadcrumbs/status are thin supporting strips. Signal-over-chrome: no decorative elements; type scale quiet next to data. Rendered-pixel confirmation unavailable in harness (same limitation as keyboard check) — visual claims are restricted to the implemented CSS/structure, not screenshots."
+      source: static code inspection of layout CSS vs SDIR region importance
+      provenance: attested
+    - check_id: requirement_alignment
+      kind: assistive
+      outcome: pass
+      message: "Confirmed restatement satisfied: single-page app deliverable opens statically at root index.html (classic scripts → file:// safe, no build); full 2,000-part collection present at first paint (data.js evaluates before app.js and before paint; loading panel hidden synchronously — no measurable loading state); locate via instant search + facets within three interactions with context preserved (acceptance seed); no backend, accounts, persistence, deployment, or external services; one main screen."
+      source: static code inspection against the frozen brief
+      provenance: attested
+  missing_evidence: []
+  warnings: []
+  readiness:
+    deterministic_passed: true
+    measurement:
+      receipt_ref: null
+      binding: {}
+      error_failures_open: 0
+      warning_dispositions: []
+    convergence:
+      stalled: false
+      unresolved: []
+    evidence_current: true
+    claims:
+      measured:
+        - semantic_conformance
+        - state_completeness
+        - representation_decided
+        - state_ownership_declared
+        - acceptance_contract_present
+        - complexity_budget_declared
+      attested:
+        - product_model_alignment
+        - keyboard
+        - hierarchy_review
+        - requirement_alignment
+      skipped: []

@@ -1,0 +1,69 @@
+version: "0.2"
+jtbd:
+  verb: understand
+  target: 随时间演化的系统状态（change_set：带时间戳与因果链接的变更事件序列）
+  success: 变更因果可读：任一时刻的状态可追溯到产生它的变更事件，任一事件的起因与后果可沿时间正向追踪，时间排序与因果方向永远一致
+primary_object:
+  type: change_set
+  label: 变更事件序列（时间轴）
+task_model:
+  frequency: medium
+  reversibility: reversible
+  consequence: low
+  expertise: expert
+user:
+  primary_role: 负责线上系统稳定性与演进的工程师（on-call / 技术负责人），以观察者身份阅读系统历史
+  expertise: expert
+  familiarity: medium
+goal:
+  primary: 让用户沿一条因果一致的时间轴读懂系统状态如何一步步演化：每次变更改了什么、由何引起、又引发了什么，以及任一时刻系统处于什么状态
+tasks:
+  primary: 在时间轴上浏览并选中一个变更事件，理解它改变了哪些组件的哪些字段、由哪个事件引起、又导致了哪些后续事件
+  secondary:
+    - 用时间游标检查任一时刻的系统状态快照（游标前全部变更折叠后的结果）
+    - 按组件或事件类型过滤时间轴，聚焦关心的变更子集
+    - 沿因果链在相关事件之间跳转，向前追根因、向后看影响面
+product_objects:
+  - id: change_event
+    user_name: 变更事件
+    purpose: 一次对系统的原子改动（发版 / 配置变更 / 扩缩容 / 故障 / 回滚 / 修复），带时间戳、操作者、影响组件、字段级变更明细；明细记录被改字段的前值与后值
+  - id: component
+    user_name: 系统组件
+    purpose: 被变更影响的服务或模块，持有可观测的状态字段（版本、副本数、配置项、健康度、特性开关）
+  - id: state_snapshot
+    user_name: 状态快照
+    purpose: 时间游标处所有组件字段取值的投影，由游标之前的全部变更按时间序折叠而成
+  - id: causal_chain
+    user_name: 因果链
+    purpose: 把多个变更事件按『导致』语义串成的有向链条；链条方向恒与时间正向一致，用于追根因与影响面
+relationships:
+  - source: causal_chain
+    target: change_event
+    type: links
+    direction: forward
+    meaning: 因果链按『导致』语义串联变更事件；每个环的因在时间上游、果在时间下游
+    condition: 链条上相邻事件，且因事件的 ts 严格早于果事件
+    importance: primary
+    id: rel_causal_chain_change_event
+  - source: change_event
+    target: component
+    type: affects
+    direction: forward
+    meaning: 事件通过字段级变更明细（前值→后值）作用于组件状态
+    importance: primary
+    id: rel_change_event_component
+  - source: change_event
+    target: state_snapshot
+    type: composes
+    direction: forward
+    meaning: 游标之前的全部事件按时间序折叠出该时刻快照
+    importance: supporting
+    id: rel_change_event_state_snapshot
+mental_model_hypothesis:
+  summary: 系统历史像一本带时间索引的变更账本：时间轴上每一格是一次变更（发生了什么），选中任一格即看到它改动的字段前后值（怎么改的）与该时刻的整体状态（现在是什么样），因果连线永远指向时间下游（为什么）。用户按『事件 → 改动明细 → 前后状态 → 因果上下文』的顺序完成理解。
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: 用户任选一个时间点，能看到该时刻完整且由因果一致的事件序列折叠出的系统状态；任选一个事件，能看到它改了什么字段（前值→后值）、由哪个事件引起、又引发了哪些事件；时间轴排序与因果方向处处一致，用户无需自行比对时间戳判断先后。
+open_questions: []

@@ -1,0 +1,106 @@
+session_id: ds_20260923222844_0bc27502
+version: "0.2"
+information_shape:
+  cardinality: one
+  relationality: low
+  hierarchy: medium
+  temporality: medium
+  density: low
+  dimensionality: medium
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: form
+    reason: Editing happens in typed fields per section block; a form representation with in-place inputs is the safest structure-preserving surface (no syntax to corrupt).
+  supporting:
+    - type: document
+      reason: Preview is the rendered document itself (paper-like), giving the 'what it looks like' truth that must stay identical to the editor.
+    - type: list
+      reason: Ordered section cards read as a list; ordering is the hierarchy backbone and supports move up/down operations.
+  rejected:
+    - option: code_editor (raw Markdown/JSON source)
+      reason: Raw source editing is exactly what breaks structure; rejected by the user job itself.
+    - option: wizard
+      reason: Single continuous editing task, no prescribed step sequence.
+    - option: canvas
+      reason: Spatiality is none; free placement adds structure risk with no benefit.
+  justification_vs_shape: "cardinality one → one document, one screen, no collection or comparison surfaces. relationality low → only composition (document has sections) and derivation (preview renders document); no link graph UI. hierarchy medium → document→sections→blocks expressed as ordered editor cards and mirrored heading levels in the preview. density low → spacious reading column and calm chrome. temporality medium → undo/redo plus last-edited time. volatility medium → every keystroke re-renders the preview instantly; explicit reset/export. uncertainty low and comparison none → no speculative-state or diff UI; spatiality none → no canvas. dimensionality medium → four typed section kinds. The form-primary/document-supporting pairing encodes the acceptance seed: fields are the only mutation surface, the document view is derived truth, so structured editing and preview stay consistent by construction."
+primary_structure:
+  pattern: PAT-APPLICATION-SHELL
+  rationale:
+    - Routed and L1-inspected; its does_not_apply_when ('one focused task dominates the entire product') is satisfied, so the shell reduces to a slim document header (identity + structure status + recoverable actions) around ONE work region — structure-editor pane (ordered typed-section cards) | live preview pane (derived rendering, bidirectional selection sync) — with zero navigation chrome
+    - Structure-preserving edits need section order and types always visible → ordered typed cards (perceptual grouping)
+    - Consistency must be verifiable, not promised → preview derives from the same model and mirrors sections one-to-one; selection highlights the counterpart (ready and selected states first-class)
+    - Density low → two calm panes, generous whitespace, operations revealed on hover/focus rather than persistent button rows
+  confidence: high
+information_hierarchy:
+  primary:
+    - Document title + structure status (header strip)
+    - Ordered sections with typed editable fields (editor pane)
+    - Live preview rendering the same document (preview pane)
+  secondary:
+    - Section operations (move/add/delete) on hover/focus
+    - Undo/redo/reset/export in header
+density:
+  intent: spacious
+  strategy:
+    - generous line-height and measure in the preview reading column
+    - section operations appear on hover/focus so the editor stays calm
+    - single slim header row; no secondary navigation
+    - "no loading state: initial document inlined, first paint is ready state"
+  avoid:
+    - dense multi-panel dashboards
+    - persistent icon toolbars on every card
+    - gray-on-light low-contrast text
+major_choices:
+  - id: MC-1
+    choice: "Structure-preserving operation API: all mutations are guarded operations (typed section templates on add, cardinality guards on remove, pure reorder) — never free-form source editing"
+    rationale: "Makes the user job success (edits never break structure) true by construction: no operation exists that can produce a broken skeleton; text-level emptiness stays legal but is continuously validated and surfaced on both editor and preview."
+    confidence: high
+    references:
+      - document
+      - section
+  - id: MC-2
+    choice: "Single model, two derived views: editor and preview render one state object; each preview block mirrors its section one-to-one with bidirectional selection highlight"
+    rationale: Consistency of structured editing and preview is guaranteed architecturally rather than via two-way sync logic; the selection mirror makes the acceptance seed inspectable at any moment.
+    confidence: high
+    references:
+      - preview
+      - section
+  - id: MC-3
+    choice: "Hybrid guarding: hard guards on structure cardinality (cannot delete the last section or a section's last content block), soft live validation for text emptiness surfaced inline and in a header structure-status pill"
+    rationale: Hard-blocking typing would be hostile; the structure check reports content-level issues honestly in both panes while the section skeleton remains unbreakable.
+    confidence: high
+    references:
+      - structure_check
+      - section
+  - id: MC-4
+    choice: React 18 + Vite built to a self-contained static dist/index.html (assets inlined), initial document inlined in the bundle
+    rationale: Satisfies the frozen delivery constraints (static open, usable at load, no external services, no backend) and gives the single-model two-view derivation for free.
+    confidence: high
+    references:
+      - document
+      - preview
+  - id: MC-5
+    choice: Undo/redo history over the operation API (Ctrl+Z / Ctrl+Y) plus reset-to-sample
+    rationale: "Medium temporality and the recoverable-action principle: every operation is reversible; the cheap safety net complements the cardinality guards."
+    confidence: high
+    references:
+      - document
+      - section
+rejected: []
+unresolved: []
+complexity_budget:
+  permanent_panels: 3
+  permanent_primary_actions: 4
+  modes: 1
+  state_owners: 2
+  navigation_levels: 1
+  persistent_filters: 0
+  new_semantic_concepts: 2
+  keyboard_contracts: 1
+  mobile_conflicts: 0
+  permanent_surfaces: 3

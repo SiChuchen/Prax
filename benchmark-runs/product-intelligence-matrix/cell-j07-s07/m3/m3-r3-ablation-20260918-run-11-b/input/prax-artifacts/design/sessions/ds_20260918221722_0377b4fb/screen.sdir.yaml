@@ -1,0 +1,166 @@
+version: "0.2"
+screen:
+  id: canvas_workspace_screen
+  intent:
+    primary_task: Create canvas objects and land them in zones; re-place them as intent changes (drag, arrows, send-to-zone keys)
+    secondary_tasks:
+      - "Inspect derived facts for a selection: zone membership, position, nearest neighbor + distance"
+      - "Keep the view oriented: pan, zoom, fit-to-content, focus selection"
+      - Create/rename/delete zones; keep zone occupancy counts readable
+  archetype:
+    pattern_ref: PAT-CANVAS-WORKSPACE
+  density_intent: regular
+  regions:
+    - id: architecture
+      role: dominant_workspace
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - spatial_overview
+        - direct_selection
+        - pan_zoom
+    - id: "Selection-driven inspector over derived_relation facts: zone (derived from position), coordinates, nearest neighbor + distance"
+      role: "experimental:Selection-driven inspector over derived_relation facts: zone (derived from position), coordinates, nearest neighbor + distance"
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: "Zone rail: named regions with live occupancy counts and send-to hotkeys 1..n"
+      role: "experimental:Zone rail: named regions with live occupancy counts and send-to hotkeys 1..n"
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: "dominant_workspace carries: zones + placed canvas objects on an endless physical grid (the floor canvas)"
+      role: "experimental:dominant_workspace carries: zones + placed canvas objects on an endless physical grid (the floor canvas)"
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: "Status bar: landing hint during placement/drag, cursor coords, zoom, snap state"
+      role: "experimental:Status bar: landing hint during placement/drag, cursor coords, zoom, snap state"
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: Keyboard help overlay on demand (?), closed by default
+      role: experimental:Keyboard help overlay on demand (?), closed by default
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: navigation
+      role: primary_navigation
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent:
+        - preserve_context
+    - id: toolbar
+      role: supporting_toolbar
+      importance: supporting
+      visibility:
+        condition: task_driven
+      behavior_intent:
+        - keyboard_equivalent
+    - id: inspector
+      role: contextual_inspector
+      importance: contextual
+      visibility:
+        condition: selection_driven
+      behavior_intent:
+        - selection_driven
+        - progressive_inspection
+  relationships:
+    - id: region_rel_architecture_inspector
+      source: architecture
+      target: inspector
+      type: selection_drives_contextual_detail
+  interaction_intents:
+    - spatial_overview
+    - direct_selection
+    - pan_zoom
+    - progressive_inspection
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved: []
+  rejected_alternatives:
+    - option: PAT-LIST-DETAIL as primary structure
+      reason: does_not_apply_when spatial relationships dominate; collection order is meaningless here
+    - option: PAT-WORKSPACE alone (no canvas)
+      reason: Persistence without spatial continuity loses the physical placement semantics
+  user_job:
+    verb: create
+    target: spatial objects on a physical floor canvas
+    success: 落位即意图 — where it lands is what it means; every spatial operation has a keyboard equivalent
+  primary_object:
+    type: canvas_object
+    label: Placed object (tile)
+  information_shape:
+    cardinality: many
+    relationality: medium
+    hierarchy: low
+    temporality: low
+    density: medium
+    dimensionality: medium
+    spatiality: physical
+    volatility: medium
+    uncertainty: low
+    comparison_need: none
+  representation:
+    primary:
+      type: canvas
+      reason: Spatial continuity on a physical floor is the product object itself; canvas is the only representation where position carries meaning natively
+    supporting:
+      - type: list
+        reason: Zone rail listing zones with occupancy counts and send-to hotkeys keeps the many-object population legible
+      - type: cards
+        reason: Inspector presents the selection's derived facts as one compact fact card
+  priority:
+    primary:
+      - architecture
+      - "Selection-driven inspector over derived_relation facts: zone (derived from position), coordinates, nearest neighbor + distance"
+      - "Zone rail: named regions with live occupancy counts and send-to hotkeys 1..n"
+    contextual:
+      - "dominant_workspace carries: zones + placed canvas objects on an endless physical grid (the floor canvas)"
+      - "Status bar: landing hint during placement/drag, cursor coords, zoom, snap state"
+      - Keyboard help overlay on demand (?), closed by default
+      - navigation
+      - toolbar
+      - inspector
+  interaction:
+    preview: none
+    inspect: select
+    navigate: none
+    locate: none
+  state_ownership:
+    - state: selection
+      owner: architecture
+    - state: preview
+      owner: session
+  complexity_budget:
+    permanent_panels: 4
+    permanent_primary_actions: 8
+    modes: 2
+    state_owners: 5
+    navigation_levels: 1
+    persistent_filters: 0
+    new_semantic_concepts: 3
+    keyboard_contracts: 20
+    mobile_conflicts: 0
+    permanent_surfaces: 4
+  acceptance:
+    - A user can create a new object and land it in the intended zone using only the keyboard (N → arrows → Enter, or select + 1..n send-to-zone), and the board's derived state (zone membership, nearest neighbor, zone counts) updates immediately to match the landing position; every spatial operation has a documented keyboard equivalent.

@@ -1,0 +1,40 @@
+version: "0.1"
+platform_profile: WEB-DESKTOP
+framework: react
+measurement_target:
+  app_root: .
+  entry: /index.html
+  scenario: "understand-evolving-state-timeline (cell-j06-s06: 选中变更事件读因果 + 时间游标下快照折叠，时间结构与变更语义一致)"
+sdir_ref: screen.sdir.yaml
+decision_ref: design-decisions.yaml
+approved_patterns:
+  - PAT-WORKSPACE
+approved_component_contracts:
+  - WORKSPACE
+  - STATE-FEEDBACK
+states_required:
+  - loading
+  - empty
+  - ready
+  - selected
+  - error
+capability_gaps: []
+validation_plan_ref:
+  artifact: validation-plan.yaml
+  revision: 1
+validation_requirements:
+  - semantic_conformance
+  - state_completeness
+  - product_model_alignment
+  - keyboard
+  - hierarchy_review
+  - representation_decided
+  - state_ownership_declared
+  - acceptance_contract_present
+  - complexity_budget_declared
+  - requirement_alignment
+representation_portfolio_ref: compiled-context.yaml#representation_portfolio
+state_ownership_ref: compiled-context.yaml#state_ownership
+acceptance_ref: compiled-context.yaml#acceptance
+realization:
+  mode: direct_code

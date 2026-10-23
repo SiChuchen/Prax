@@ -1,0 +1,104 @@
+session_id: ds_20260918203052_d84d46f1
+information_shape:
+  cardinality: many
+  relationality: low
+  hierarchy: medium
+  temporality: high
+  density: high
+  dimensionality: medium
+  spatiality: none
+  volatility: high
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: grid
+    reason: many 个高频更新 metric 需要恒定位置的紧凑瓦片：颜色/徽标承载 anomaly 显著性（扫视可见），sparkline 承载近期轨迹（时间性），位置恒定承载无闪烁
+  supporting:
+    - type: chart
+      reason: inspector 内选中 metric 的 90 点大轨迹图 + 逐点变化表
+    - type: feed
+      reason: 时间戳化 anomaly 事件流，跨 metric 的变化追溯线索
+    - type: list
+      reason: inspector 内逐点变化明细列表
+  rejected:
+    - option: table
+      reason: comparison=none，表格对齐优势失效；行内异常显著性弱
+    - option: feed
+      reason: 位置不稳定，易变流下异常滚出视口
+    - option: chart
+      reason: 24+ 指标 × 大图不可同屏；仅 inspector 内作 supporting
+  justification_vs_shape: many（瓦片网格承载）+ 高密度（紧凑瓦片）+ 高时间性（sparkline + 环形缓冲 + feed）+ 高易变性（就地静默更新）+ 低关系性（无连线/无图布局）+ 无比较（不做并排对照列）完全对齐 shape 束
+primary_structure:
+  pattern: PAT-LIST-DETAIL-INSPECTOR
+  rationale:
+    - 实体化为恒定位置指标瓦片墙 Monitor Wall：顶部状态条（流心跳/严重度计数/过滤器）→ 按 metric_group 分区的紧凑瓦片墙（每 metric 瓦片：名称、当前值、Δ、sparkline、状态色/徽标）→ 右侧 contextual inspector（选中 metric 轨迹图 + 带时间戳变化列表）+ 底部 anomaly 事件 feed
+    - collection 面借 PAT-DATA-EXPLORER 的过滤收窄思想（严重度/分组过滤器），但不走表格式比较主面（comparison_need=none）
+    - 高易变性 → 瓦片位置与 DOM 恒定，更新就地替换，无闪烁无重排（H-21 Orientation Invariants / P-19 Preserve Context）
+    - 变化可追溯 → 选择驱动 inspector + 每 metric 时间戳化环形缓冲（H-19 / H-22）
+    - 紧凑 chrome，信号优先（P-22 / H-13 Structured Density）
+    - comparison_need=none 规避 card-grid-for-dense-comparison 反模式的适用前提
+  confidence: high
+information_hierarchy:
+  primary:
+    - 异常显著性（critical > warning > healthy 的颜色/徽标编码）
+    - 分组分区（4 组恒定顺序的分区标题）
+    - 每指标当前值 + 环比变化 + 状态
+  secondary:
+    - 最近采样时间 / 流心跳
+    - 异常事件流（最近 N 条）
+    - 指标历史明细（inspector 内）
+density:
+  intent: compact
+  strategy:
+    - 紧凑瓦片网格（每瓦片 2 行：名称+值/Δ+sparkline），24+ 指标同屏
+    - 等宽数字字体保证数字跳动不移位
+    - chrome 最小化：单行头部（流状态+严重度计数+过滤）
+    - 异常用留白与颜色跳出，不用弹窗打断
+  avoid:
+    - 入场/闪烁动画
+    - 大图表装饰
+    - 每指标多行卡片
+    - 滚动式主列表
+major_choices:
+  - id: C1-update-model
+    choice: 每个 metric 维护 90 点环形缓冲 change_history（带时间戳），流每 1.2s 推进一次；初始内联预生成 ~5 分钟历史
+    rationale: 变化可追溯的验收种子要求逐点历史；内联初始数据满足首屏 ready 约束
+    confidence: high
+    references:
+      - change_history
+      - metric
+  - id: C2-stable-wall
+    choice: metric 瓦片的数值/状态/徽标就地替换更新，DOM 节点与位置恒定（metric_group 分区内恒序），流可暂停（空格键）
+    rationale: 无闪烁噪声要求恒定布局与静默更新；暂停键让扫视者定格读数
+    confidence: high
+    references:
+      - metric
+      - metric_group
+  - id: C3-sparkline-in-tile
+    choice: metric 瓦片内嵌 1 行高 sparkline（90 点，change_history 驱动），anomaly 区间高亮
+    rationale: 高时间性要求每个 metric 自带轨迹；扫视时趋势与异常点一眼可辨
+    confidence: high
+    references:
+      - metric
+      - change_history
+      - anomaly
+rejected:
+  - option: PAT-DATA-EXPLORER 纯表格式主面
+    reason: comparison_need=none，表格的对齐比较优势无处发挥；异常颜色显著性在行内弱于瓦片；sparkline 列会挤压密度
+  - option: 全屏 feed / 事件流做主面
+    reason: 滚动 feed 位置不稳定，异常会滚出视口，违反 Orientation Invariants；仅作 supporting 区域
+  - option: 每指标大图时间线墙（多 chart 主面）
+    reason: many × 高密度下大图数量爆炸，同屏容纳不下；降级为瓦片内 sparkline + inspector 内大图
+unresolved: []
+complexity_budget:
+  permanent_panels: 3
+  permanent_primary_actions: 2
+  modes: 0
+  state_owners: 2
+  navigation_levels: 1
+  persistent_filters: 2
+  new_semantic_concepts: 2
+  keyboard_contracts: 1
+  mobile_conflicts: 0
+  permanent_surfaces: 1

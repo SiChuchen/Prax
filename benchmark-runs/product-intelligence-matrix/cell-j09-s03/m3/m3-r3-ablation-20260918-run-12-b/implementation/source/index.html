@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>落点 · 选址对比台 — 4 个候选公寓同屏比较</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+
+  <header id="topbar">
+    <div class="brand">
+      <h1>落点<span class="brand-sub">选址对比台</span></h1>
+      <p class="sub">4 个候选公寓 · 地理语境与决策输入同屏 · 比较后就地落定</p>
+    </div>
+    <div id="hdr-status" class="hdr-status" aria-live="polite"></div>
+  </header>
+
+  <main id="main">
+    <aside id="map-pane" aria-label="街区地图语境">
+      <div class="pane-title">街区语境<span class="pane-title-sub">候选位置 · 通勤线路 · 周边锚点</span></div>
+      <div class="map-wrap">
+        <svg id="map" viewBox="0 0 420 560" preserveAspectRatio="xMidYMin meet" role="img"
+             aria-label="街区示意图：公司锚点、地铁七号线、榕树公园与 4 个候选公寓的相对位置及通勤线路">
+          <!-- 水系：望江 -->
+          <rect class="water" x="380" y="0" width="40" height="560"/>
+          <text class="water-label" x="400" y="280" writing-mode="tb" letter-spacing="6">望　江</text>
+
+          <!-- 街区地块（间隙即街道） -->
+          <rect class="block" x="16"  y="16"  width="180" height="100"/>
+          <rect class="block" x="214" y="16"  width="71"  height="100"/>
+          <rect class="block" x="299" y="16"  width="71"  height="100"/>
+          <rect class="block" x="16"  y="132" width="180" height="146"/>
+          <rect class="block" x="214" y="132" width="71"  height="146"/>
+          <rect class="block" x="299" y="132" width="71"  height="146"/>
+          <rect class="block" x="110" y="294" width="86"  height="130"/>
+          <rect class="block" x="214" y="294" width="71"  height="130"/>
+          <rect class="block" x="299" y="294" width="71"  height="130"/>
+          <rect class="block" x="16"  y="440" width="354" height="104"/>
+
+          <!-- 榕树公园 -->
+          <rect class="park" x="16" y="294" width="86" height="130" rx="10"/>
+          <circle class="tree" cx="38" cy="322" r="6"/><circle class="tree" cx="66" cy="314" r="5"/>
+          <circle class="tree" cx="88" cy="338" r="6"/><circle class="tree" cx="42" cy="368" r="5"/>
+          <circle class="tree" cx="72" cy="386" r="6"/><circle class="tree" cx="90" cy="406" r="4"/>
+          <text class="map-label park-label" x="59" y="348" text-anchor="middle">榕树公园</text>
+
+          <!-- 地铁七号线 -->
+          <path class="metro" d="M0,440 L288,440 L288,0"/>
+          <circle class="metro-stn" cx="100" cy="440" r="5"/>
+          <text class="map-label stn-label" x="100" y="460" text-anchor="middle">望江站</text>
+          <circle class="metro-stn" cx="288" cy="440" r="5"/>
+          <text class="map-label stn-label" x="264" y="460" text-anchor="middle">科苑站</text>
+          <circle class="metro-stn" cx="288" cy="150" r="5"/>
+          <text class="map-label stn-label" x="264" y="146" text-anchor="middle">鼓楼站</text>
+          <text class="metro-badge" x="8" y="428">7</text>
+
+          <!-- 街道名 -->
+          <text class="street-label" x="205" y="70" writing-mode="tb">科苑大道</text>
+          <text class="street-label" x="106" y="126">榕荫路</text>
+          <text class="street-label" x="106" y="282">永安街</text>
+          <text class="street-label" x="330" y="434">滨河路</text>
+
+          <!-- 周边锚点 POI -->
+          <g class="poi">
+            <rect class="poi-office" x="243" y="200" width="15" height="12" rx="2"/>
+            <text class="map-label office-label" x="251" y="192" text-anchor="middle">公司 · 科苑大厦</text>
+          </g>
+          <g class="poi"><circle class="poi-dot" cx="56" cy="240" r="4"/><text class="map-label" x="56" y="232" text-anchor="middle">望江菜场</text></g>
+          <g class="poi"><circle class="poi-dot" cx="332" cy="60" r="4"/><text class="map-label" x="332" y="52" text-anchor="middle">全时超市</text></g>
+          <g class="poi"><circle class="poi-dot" cx="332" cy="358" r="4"/><text class="map-label" x="332" y="350" text-anchor="middle">力航健身</text></g>
+          <g class="poi"><circle class="poi-dot" cx="60" cy="506" r="4"/><text class="map-label" x="60" y="498" text-anchor="middle">仁和医院</text></g>
+
+          <!-- 动态：通勤线路与候选图钉（JS 注入） -->
+          <g id="routes"></g>
+          <g id="pins"></g>
+
+          <!-- 指北 -->
+          <g class="north" transform="translate(400,28)">
+            <path d="M0,10 L5,-8 L10,10 L5,5 Z" class="north-arrow"/>
+            <text x="5" y="22" text-anchor="middle" class="north-n">N</text>
+          </g>
+        </svg>
+        <div class="map-note">示意图 · 非真实比例 · 门到门通勤时长见右侧对比表</div>
+      </div>
+      <div id="legend" aria-hidden="true"></div>
+    </aside>
+
+    <section id="table-pane" aria-label="候选比较矩阵">
+      <table id="cmp">
+        <caption class="sr-only">候选公寓比较矩阵：行为比较维度（按主题分组），列为候选地点；每维最优值标记「优」，加权总分与排名随偏好权重实时更新</caption>
+        <thead>
+          <tr id="head-row">
+            <th class="dim-h" scope="col">比较维度</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer id="weighbar">
+    <div class="weights">
+      <span class="w-title">偏好权重</span>
+      <div id="sliders" class="sliders"></div>
+      <div id="presets" class="presets" role="group" aria-label="权重预设"></div>
+    </div>
+    <div id="decide-panel" class="decide-panel" aria-live="polite"></div>
+  </footer>
+
+</div>
+
+<div id="fatal" class="fatal" hidden role="alert"></div>
+<noscript>
+  <div class="fatal">本页需要启用 JavaScript。所有数据已内联，无任何网络请求。</div>
+</noscript>
+
+<script src="app.js" defer></script>
+</body>
+</html>

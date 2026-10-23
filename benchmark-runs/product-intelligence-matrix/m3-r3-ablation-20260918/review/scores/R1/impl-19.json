@@ -1,0 +1,80 @@
+{
+  "reviewer": "R1",
+  "package_id": "impl-19",
+  "session_id": "301119d8-7254-47c2-8738-314b5eed02e4",
+  "wall_clock_seconds": 191,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-19",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Brief shape is dimensional-space (high dimensionality/density, dataset object, explore verb). source/index.html:218-231 registers 12 typed dimensions (层级/分类/序数) with ordered value domains; index.html:286-293 state holds projection+filters+selection+per-dimension focus memory; index.html:344-352 switches projection while retaining all cognitive state and re-flash/scrolling to the last-viewed value — directly implementing '维度切换不重置认知'. Both screenshots show a value-tile projection (品类 24值) over a 2,400-order dataset with a detail table."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "Initial screen is dominated by the explore loop: 238px dimension rail with all 12 projection targets (screenshot 1280x860 left; index.html:390-405), center projection tiles of the active dimension with measure switcher (index.html:407-416, 426-453), detail table below. No competing task; drill affordance on dept tiles (index.html:446) is secondary and one-click."
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "Model-judged proxy: header states '数据集：零售订单快照 · 2,400 单 × 12 维 · 本地静态 · 无后端' (index.html:582, both screenshots); cogbar explains scope in one line '范围 2,400/2,400 单 · 过滤 0 维 · 选中 0 项 · 快照 1/1' (index.html:418-424); rail footer instructs '点击维度 = 切换投影 · 选择/过滤/焦点均保留' (index.html:403). What/where is conveyed without interaction."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Single static page, no routes or modes (index.html:39 grid shell; app renders synchronously at load, index.html:581-584). Primary object (dataset projection) is on screen at t=0; any of 12 dimension projections is 1 click on the rail (index.html:399, data-act='project'); dept→品类 drill is 1 click (index.html:367-371). Zero navigation steps to reach the primary object."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "Structurally none: selection is order-id based and survives projection/filter changes with an out-of-scope warning instead of dropping (index.html:419-423, 493-502); filters persist across projection switches (state.filters independent of state.projection, index.html:287-293); focus memory restores scroll+flash on return to a dimension (index.html:348-351); every mutation is snapshotted so even 'lossy' actions are reversible (index.html:306-325). Toast on switch reports retained counts (index.html:351)."
+      },
+      "ui_surface_complexity": {
+        "score": 4,
+        "evidence": "Three permanent panes + topbar (index.html:39, 150-177); ledger always shows 4 sections (投影/过滤/选择/快照, index.html:477-513). Each surface maps to a brief requirement, but counts are redundantly displayed in 3 places (pill index.html:412, cogbar index.html:421, ledger index.html:496) and snapshot count twice (index.html:423, 505). Purposeful for high-density exploration, slightly heavier than the minimal core loop; no overflow at either viewport (layout.overflow pass, screenshots 1280x860 and 1440x900)."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Receipt: a11y.contrast=fail, a11y.focus_order=fail, a11y.target_size=fail (measurement-summary.json). Corroborated in source: pervasive 10-11px muted type (#898781 on raised #232322 badges, index.html:16, 59; 11px actions index.html:131); every commit re-renders rail/ledger via innerHTML, destroying focus (index.html:383-405, 512); table rows are click-only with no tabindex (index.html:462, 531); sub-24px targets like chip ✕ padding 0 3px (index.html:126) and 3px-padded snapshot rows (index.html:135). Mitigations exist — tiles have role=button/tabindex/Enter (index.html:440, 546), landmarks and toast role=status (index.html:161, 176, 178) — but 3 of 3 a11y checks failed."
+      },
+      "frontend_rework": {
+        "score": 4,
+        "evidence": "No visible layout defects at either viewport: layout.overflow=pass, layout.responsive_collision=pass, text.truncation=pass, target_invalid=false (measurement-summary.json); tile grid reflows 3→4 columns between 1280x860 and 1440x900 (index.html:82 auto-fill). Remaining receipt failures (a11y.* plus type.min_projected_size fail) are defect classes a rework pass would need to address, and 10-11px type floors are visible in source (index.html:59-60, 96, 104, 118)."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed '过滤/投影状态有归属且可回退' is covered at three granularities: every mutation commits a snapshot with label+source+timestamp (index.html:306-312); ledger shows per-projection provenance 来源+time (index.html:480-481) and per-filter chips with single-value removal ✕ and per-dimension clear (index.html:485-490); undo/redo/reset (index.html:313-325, 543-545 keyboard) plus time-travel restore to any snapshot that itself is recorded (index.html:315-320, 505-511). Screenshot right panel shows the populated ledger with '#1 初始状态 · 系统 02:32:29'."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "a11y.contrast=fail (receipt): muted #898781 10-11px text on raised surfaces, e.g. index.html:59 type badges and index.html:131 secondary action links",
+      "a11y.focus_order=fail (receipt): wholesale innerHTML re-render of rail and ledger on every commit drops focused element (index.html:383-405, 512); detail-table rows not keyboard-focusable (index.html:462)",
+      "a11y.target_size=fail (receipt): chip ✕ (index.html:126), 清空该维 (index.html:131), snapshot rows (index.html:135), toolbar buttons 4px/10px padding (index.html:48)",
+      "type.min_projected_size=fail (receipt): pervasive 10px/11px font sizes across rail badges, tile drill labels, table headers, ledger (index.html:59-60, 96, 104-106, 118-120)",
+      "Selection affordance is mouse-only for the detail table (data-act=row without tabindex/Enter path, index.html:462, 531), unlike tiles which have a keyboard path"
+    ],
+    "missing_evidence": [],
+    "overall_note": "The package is a coherent single-file dimensional explorer that matches the brief's shape precisely: 12 registered dimensions, a projection stage with value tiles and measure switcher, a detail table, and a state ledger whose entire design realizes the acceptance seed — every filter/projection/selection change is snapshotted with label, source, and time, revertible per-value, per-dimension, via undo/redo, and via time-travel (index.html:306-325, 477-513). Context preservation on dimension switching is engineered explicitly, including focus memory with scroll/flash and out-of-scope selection retention with warnings (index.html:344-352, 419-423). Layout is clean at both reviewed viewports (layout checks pass) with data ready synchronously at load. The clear weakness is accessibility: three a11y checks fail (contrast, focus order, target size) plus a typography floor failure, corroborated by 10-11px muted text, sub-24px controls, and focus-destroying full re-renders in source. Scores reflect what is visible in the blind package only; model-judged time-to-understand is a proxy, and no human preference, task timing, or retrieval accuracy is observable here."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 28991,
+      "outputTokens": 7289,
+      "cacheReadInputTokens": 56512,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.355436,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-10-23T17:06:03.444Z"
+}

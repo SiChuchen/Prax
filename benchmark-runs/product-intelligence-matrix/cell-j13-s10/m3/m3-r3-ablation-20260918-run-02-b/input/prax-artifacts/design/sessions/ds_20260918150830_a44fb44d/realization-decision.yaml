@@ -1,0 +1,17 @@
+version: "0.1"
+realization_mode: direct_code
+conditions:
+  - id: defect_fix_fit
+    holds: false
+    basis: 本项目为 greenfield 新建探索器，不含缺陷修复工作；该条件不适用（不影响代码直实现的适配性）
+  - id: visual_polish_fit
+    holds: true
+    basis: 视觉呈现由 CSS 设计 token 直接承载（紧凑专业工具风格，无复杂插画/品牌视觉），代码内可直接达到目标质量
+  - id: small_modification
+    holds: true
+    basis: 单屏、零后端、单静态入口、无构建链，代码量与复杂度可控，代码直实现风险低
+  - id: mature_design_system
+    holds: false
+    basis: 无既有设计系统可依赖；tokens 在本项目内联定义（不构成对 direct_code 的阻碍，但如实记录该条件不成立）
+proposed_at: 2026-09-18T15:19:44.918Z
+overridden: false

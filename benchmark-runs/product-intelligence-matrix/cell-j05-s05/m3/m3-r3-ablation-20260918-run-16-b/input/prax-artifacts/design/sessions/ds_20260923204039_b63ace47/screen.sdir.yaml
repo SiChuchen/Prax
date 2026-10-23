@@ -1,0 +1,183 @@
+# SDIR 0.2 — relational_web_explorer
+# 注：本文件内容由 design_sdir mode=validate 两次校验通过（PASS，0 schema_errors，
+# 0 semantic_errors）；因会话已进入 validate 门禁（design_sdir 被gate拒绝），将同一
+# 已校验对象落盘持久化，未做任何语义改动。原 0.1 内容由 generate_from_decisions 生成。
+version: "0.2"
+screen:
+  id: relational_web_explorer
+  intent:
+    primary_task: 选中一个节点后逐步追踪其上游依赖或下游影响，同时保持全图可见、能定位自身与已走路径
+    secondary_tasks:
+      - 按名称搜索并定位节点
+      - 查看节点属性与其直接上/下游关系明细
+      - 在小地图上确认视口与追踪范围在全局中的位置
+      - 平移/缩放画布以观察局部与整体
+  archetype:
+    pattern_ref: PAT-WORKSPACE
+  density_intent: regular
+  user_job:
+    verb: understand
+    target: 关系结构（依赖/影响网络）
+    success: 依赖与影响可跟随，且跟随中不丢失全局上下文
+  primary_object:
+    type: relationship
+    label: 依赖关系（有向边：A 依赖 B）
+  information_shape:
+    cardinality: many
+    relationality: high
+    hierarchy: medium
+    temporality: low
+    density: medium
+    dimensionality: medium
+    spatiality: none
+    volatility: medium
+    uncertainty: low
+    comparison_need: none
+  interaction:
+    preview: hover
+    inspect: select
+    navigate: none
+    locate: search
+  regions:
+    - id: canvas
+      role: "experimental:全图关系画布：分层有向依赖网，常驻主对象空间，承载选中与追踪着色"
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - "experimental:点击/键盘选中节点→更新检查器与小地图"
+        - "experimental:BFS 距离着色；非追踪内容 opacity 降但不隐藏"
+        - "experimental:滚轮缩放+拖拽平移；交互不改变节点坐标"
+    - id: inspector
+      role: "experimental:检查器：选中节点属性卡+直接上/下游分组明细+追踪控制"
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - "experimental:无选中时显示操作引导"
+        - "experimental:追踪控制：追踪上游/追踪下游/下一步/自动到底/清除"
+        - "experimental:上/下游明细项可点击以继续跟随"
+    - id: breadcrumb
+      role: "experimental:面包屑：已跟随跳序链，可点击回溯任一跳"
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - "experimental:每跳即时追加"
+        - "experimental:点击任一链节回到该跳"
+    - id: minimap
+      role: "experimental:小地图：全局轮廓点阵+视口框+追踪范围高亮"
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent:
+        - "experimental:追踪集合与视口矩形叠加显示"
+        - "experimental:随追踪/视口即时同步"
+    - id: legend
+      role: "experimental:图例与统计：节点类型色标、边语义、计数"
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent:
+        - "experimental:类型图例"
+        - "experimental:节点/关系计数"
+    - id: searchbar
+      role: "experimental:搜索定位：按名称筛选节点"
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent:
+        - "experimental:输入即时联想"
+        - "experimental:回车选中并居中"
+    - id: viewtools
+      role: "experimental:画布工具：放大/缩小/适应全图"
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent:
+        - "experimental:不改变节点坐标，仅变换视口"
+  relationships: []
+  interaction_intents:
+    - preserve_context
+    - "experimental:select_inspect"
+    - "experimental:trace_follow_stepwise"
+    - "experimental:keyboard_operable"
+  required_states:
+    - ready
+    - selected
+    - empty
+    - loading
+    - error
+  decision_points:
+    - id: visual_language
+      question: 视觉语言如何落地（语义层不约束具体色板/字体）？
+      adapter_may_choose:
+        - 色板/字体族
+        - 节点形状与圆角
+        - 边线样式与箭头形状
+        - 间距与留白节奏
+  priority:
+    primary:
+      - canvas
+      - inspector
+      - breadcrumb
+    contextual:
+      - minimap
+      - legend
+      - searchbar
+      - viewtools
+  state_ownership:
+    - state: selection
+      owner: canvas
+    - state: preview
+      owner: canvas
+    - state: viewport
+      owner: canvas
+    - state: query
+      owner: searchbar
+    - state: inspector
+      owner: inspector
+    - state: mode
+      owner: session
+  complexity_budget:
+    permanent_panels: 3
+    permanent_primary_actions: 4
+    modes: 2
+    state_owners: 5
+    navigation_levels: 1
+    persistent_filters: 0
+    new_semantic_concepts: 3
+    keyboard_contracts: 1
+    mobile_conflicts: 0
+    permanent_surfaces: 1
+  acceptance:
+    - "AC1 关系跟随不丢失全局上下文：从任意节点沿任一方向逐跳追踪≥3跳后，全图画布仍完整可见（非追踪内容降不透明度但常驻），面包屑显示完整跳序链，小地图同步高亮追踪范围与视口框"
+    - "AC2 依赖与影响可跟随：任一节点的上游（我所依赖）与下游（依赖我者）均可逐跳展开、自动到底、清除或点击面包屑回溯任一跳"
+    - "AC3 首屏即用：数据内联，页面加载完成即为 ready——图已渲染、统计已就绪，不存在以加载态为可测状态"
+    - "AC4 键盘可达：节点可 Tab 聚焦、Enter 选中；追踪控制与搜索可键盘操作；焦点可见"
+  representation:
+    primary:
+      type: graph
+      reason: "relationality=high：关系本身是内容，有向依赖必须同时呈现方向与拓扑；全图常驻是验收种子“跟随不丢失全局上下文”的载体，graph 是唯一能同屏承载 cardinality=many+relationality=high 的表示"
+    supporting:
+      - type: cards
+        reason: 检查器内选中节点属性卡
+      - type: list
+        reason: 直接上/下游分组明细列表
+      - type: map
+        reason: 全局轮廓小地图（概念地图，非地理）
+    rejected:
+      - option: grid/dashboard 卡网格
+        reason: relationality=high 下边不可见、关系降为相邻性暗示
+      - option: tree 树形
+        reason: DAG 汇合节点需复制，破坏唯一位置锚定
+      - option: table 表格
+        reason: 拓扑不可感知，跟随需要空间化边
+  unresolved: []
+  rejected_alternatives:
+    - option: 聚焦/钻取（隐藏非追踪内容）
+      reason: 违反验收种子
+    - option: 力导向布局
+      reason: 位置不确定，破坏方向不变量
+    - option: List-Detail 主结构
+      reason: 关系主导场景下边不可见

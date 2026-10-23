@@ -1,0 +1,88 @@
+version: "0.1"
+session_id: ds_20260918221722_0377b4fb
+task:
+  surfaces: []
+  primary: Create canvas objects and land them in zones; re-place them as intent changes (drag, arrows, send-to-zone keys)
+product_relationships:
+  - id: contained_in
+    source: canvas_object
+    target: region
+    type: contained_in
+    direction: forward
+    meaning: zone assignment, derived from position only
+    importance: primary
+  - id: positioned_on
+    source: canvas_object
+    target: floor_canvas
+    type: positioned_on
+    direction: forward
+    meaning: coordinates locate the object on the floor canvas; pan/zoom are views, never moves
+    importance: supporting
+  - id: surfaced_by
+    source: derived_relation
+    target: canvas_object
+    type: surfaced_by
+    direction: forward
+    meaning: the inspector/status bar read derived_relation facts; they are never edited directly
+    importance: supporting
+region_relationships:
+  - id: region_rel_architecture_inspector
+    source: architecture
+    target: inspector
+    type: selection_drives_contextual_detail
+decisions:
+  primary_structure: PAT-CANVAS-WORKSPACE
+  density_intent: regular
+  major_choice_ids:
+    - mc1_ghost_placing
+    - mc2_derived_semantics
+    - mc3_send_to_zone
+    - mc4_landing_hint
+    - mc5_autosave
+must_preserve: []
+regression_points: []
+unresolved:
+  - Domain theme (gallery vs warehouse vs stage) is left neutral as 'floor & zones'; low impact on shape compliance
+  - domain_theme
+corrections: []
+representation_portfolio:
+  primary:
+    type: canvas
+    reason: Spatial continuity on a physical floor is the product object itself; canvas is the only representation where position carries meaning natively
+  supporting:
+    - type: list
+      reason: Zone rail listing zones with occupancy counts and send-to hotkeys keeps the many-object population legible
+    - type: cards
+      reason: Inspector presents the selection's derived facts as one compact fact card
+  rejected:
+    - option: table
+      reason: Position would live in sortable cells, destroying placement-is-intent
+    - option: map
+      reason: Georeferenced basemap is irrelevant to an abstract physical floor
+    - option: tree
+      reason: Hierarchy is explicitly low; nesting would over-structure flat zones
+state_ownership:
+  - state: selection
+    owner: architecture
+  - state: preview
+    owner: session
+acceptance:
+  - A user can create a new object and land it in the intended zone using only the keyboard (N → arrows → Enter, or select + 1..n send-to-zone), and the board's derived state (zone membership, nearest neighbor, zone counts) updates immediately to match the landing position; every spatial operation has a documented keyboard equivalent.
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - relationship_trace
+    - context_preservation
+    - canvas_signal_hierarchy
+    - destructive_recovery
+    - requirement_alignment
+  regression_check_ids: []

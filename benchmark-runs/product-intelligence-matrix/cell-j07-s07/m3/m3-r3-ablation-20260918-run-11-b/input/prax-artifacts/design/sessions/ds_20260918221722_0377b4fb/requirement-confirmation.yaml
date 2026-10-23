@@ -1,0 +1,27 @@
+version: "0.1"
+user_quote:
+  - 物理空间排布即意图，空间操作必须有键盘等价物。
+  - 成功标准：落位即意图
+  - 空间操作有键盘等价物
+  - 应用在页面加载完成时即处于可用状态（初始数据随首屏就绪，不得以加载态作为可测状态）
+restatement: Build a single-page spatial workspace where the user's core act is creating physical canvas objects and placing them on a floor/zone canvas; where an object lands IS its meaning (zone membership and neighbor relations derive from position alone, never from metadata), and every spatial operation (create, place, move, send-to-zone, pan/zoom, order) has a keyboard equivalent per the acceptance seed.
+boundaries:
+  in_scope:
+    - "Single-page web app, one main screen: a 2D physical floor canvas where labeled canvas objects (tiles) and named regions (zones) are created and placed"
+    - "Placement is intent: region membership and neighbor relations are derived purely from object position (containment / distance), never stored as separate metadata"
+    - "Full keyboard equivalence for every spatial operation: create (N/R + arrow-to-position + Enter), nudge (arrows), send-to-zone (1..9), pan (WASD), zoom (+/-/0), duplicate (Ctrl+D), z-order ([ ]), select cycle (Tab), toggle snap (G), help (?); pointer drag/pan/zoom provided in parallel"
+    - Initial demo scene inlined with first paint — usable immediately, no loading state
+    - "Static deliverable: root index.html, no backend, no build required to run locally"
+  out_of_scope:
+    - Backend, accounts, network services, deployment
+    - Rich persistence layer (light localStorage autosave only; not a required service)
+    - Multi-user collaboration, undo/redo history, resize handles, marquee selection
+    - Mobile/touch-first layout
+  scope_complete: true
+open_questions: []
+confirmation:
+  status: requirement_is_sufficient
+  evidence:
+    - type: task_brief
+      ref: brief.md / REQUIREMENT block (cell-j07-s07, M2-frozen 2026-09-03)
+  confirmed_at: 2026-09-19T09:00:00Z

@@ -1,0 +1,123 @@
+needs:
+  - id: n1_create_place_keyboard
+    product_action: Create a canvas object and land it via ghost-placing (N → arrows → Enter; double-click in place)
+    required_experience:
+      - ghost follows arrows with grid snap
+      - landing zone preview before commit
+      - Esc aborts cleanly
+    capabilities:
+      - DOM state store
+      - world<->screen coordinate transforms
+      - keyboard event routing
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Single-file vanilla JS over a local state store; all transforms are pure functions; no backend calls
+  - id: n2_zone_membership_derivation
+    product_action: Derive zone membership purely from object center containment, live
+    required_experience:
+      - no assignment metadata exists
+      - membership updates during drag/nudge/send-to-zone
+    capabilities:
+      - point-in-rect test on object center
+      - recompute on every position change
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Containment computed in render/status pipeline
+  - id: n3_neighbor_relation
+    product_action: Surface nearest-neighbor + distance for the selection, and link line on canvas
+    required_experience:
+      - updates live while moving
+    capabilities:
+      - center-distance scan over objects
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: O(n) scan per render, n is small
+  - id: n4_send_to_zone
+    product_action: Send selected object to zone n (first free grid slot)
+    required_experience:
+      - keyboard equivalent of dragging into a zone
+      - never overlaps an existing tile
+    capabilities:
+      - free-slot scan inside region rect
+      - collision check against placed objects
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Row-major slot scan with snap
+  - id: n5_reposition
+    product_action: Re-place objects by drag or arrow nudge with snap-to-grid
+    required_experience:
+      - identical semantics both inputs
+      - status landing hint during motion
+    capabilities:
+      - pointer drag with snap
+      - arrow nudge (fine/coarse)
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Shared move() path for pointer and keyboard
+  - id: n6_view_orientation
+    product_action: Pan (WASD/space-drag), zoom (wheel, +/-), fit (0), focus selection (F)
+    required_experience:
+      - never moves objects, only the view
+      - keyboard and pointer parity
+    capabilities:
+      - transform-based viewport
+      - fit-to-bbox computation
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: CSS transform on world container
+  - id: n7_zone_management
+    product_action: Create, rename, delete zones; live occupancy counts
+    required_experience:
+      - region creation via R ghost + Enter
+      - deleting a zone never deletes objects
+    capabilities:
+      - inline rename overlay
+      - safe delete leaving contents unassigned
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Same ghost-placing path as objects
+  - id: n8_scene_persistence
+    product_action: Autosave scene locally with visible Reset Scene
+    required_experience:
+      - reload restores last layout
+      - reset restores first-paint demo scene
+    capabilities:
+      - localStorage guarded by try/catch
+      - versioned scene key
+      - reset to inlined initial scene
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Courtesy persistence; not a required service and never a loading state
+  - id: n9_first_paint_ready
+    product_action: Page load lands on a usable, populated scene — no loading state
+    required_experience:
+      - initial data in source, rendered synchronously
+      - all interactions alive at first paint
+    capabilities:
+      - inlined initial scene object
+      - synchronous first render
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Static index.html renders scene synchronously on script parse
+  - id: n10_undo_history
+    product_action: Undo/redo history for moves and deletes
+    required_experience:
+      - out of scope per decide gate; destructive ops are low-consequence
+      - Reset Scene + re-place is the recovery path
+    capabilities:
+      - visible focus ring
+      - documented keyboard map overlay
+      - AA-contrast text
+    status: gap
+    resolution:
+      type: explicit_compromise
+      notes: "Explicit compromise recorded at decide gate (rejected: undo/redo stack)"

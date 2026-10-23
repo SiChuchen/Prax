@@ -1,0 +1,17 @@
+version: "0.1"
+realization_mode: direct_code
+conditions:
+  - id: defect_fix_fit
+    holds: true
+    basis: greenfield 新建，不存在既有缺陷面，该条件无约束对象，默认满足
+  - id: visual_polish_fit
+    holds: true
+    basis: 单屏新面，视觉复杂度低（低密度、无数据可视化），直接编码+设计 token 可达成打磨目标，无需设计工具先行
+  - id: small_modification
+    holds: true
+    basis: 主屏仅 1 个，4 区域结构、12 步骤规模，属小修改量级，直接代码可控
+  - id: mature_design_system
+    holds: true
+    basis: 单屏范围内以自带 CSS 设计 token（色彩/间距/字体三级变量）构成完备小型体系，无组件库依赖即可满足一致性
+proposed_at: 2026-09-18T21:29:55.321Z
+overridden: false

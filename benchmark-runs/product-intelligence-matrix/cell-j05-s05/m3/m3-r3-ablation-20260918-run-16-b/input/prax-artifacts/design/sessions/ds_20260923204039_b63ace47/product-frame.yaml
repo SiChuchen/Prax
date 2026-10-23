@@ -1,0 +1,51 @@
+version: "0.2"
+jtbd:
+  verb: understand
+  target: 关系结构（依赖/影响网络）
+  success: 依赖与影响可跟随，且跟随过程中全图、自身位置、已走路径始终可辨
+primary_object:
+  type: relationship
+  label: 依赖关系（有向边：A 依赖 B）
+task_model:
+  frequency: medium
+  reversibility: reversible
+  consequence: low
+  expertise: mixed
+user:
+  primary_role: 平台/应用工程师与架构师（需要理解系统依赖与影响面的技术角色）
+  expertise: expert
+  familiarity: medium
+goal:
+  primary: 让用户理解一个系统/领域的关系结构：能从任意节点跟随其上游依赖与下游影响，且跟随全程不丢失全局上下文
+tasks:
+  primary: 选中一个节点后逐步追踪其上游依赖或下游影响，同时保持全图可见、能定位自身与已走路径
+  secondary:
+    - 按名称搜索并定位节点
+    - 查看节点属性与其直接上/下游关系明细
+    - 在小地图上确认视口与追踪范围在全局中的位置
+    - 平移/缩放画布以观察局部与整体
+product_objects:
+  - id: node
+    user_name: 节点（系统组件）
+    purpose: 关系网中的实体：服务、数据存储、中间件、第三方等
+  - id: relation
+    user_name: 关系（依赖边）
+    purpose: 节点间的有向依赖，是内容本身；方向承载依赖与影响两种读法
+  - id: trace
+    user_name: 追踪（依赖/影响路径）
+    purpose: 从选中节点沿单一方向逐跳扩展的关系路径，支持逐步跟随
+  - id: minimap
+    user_name: 全局小地图
+    purpose: 任何跟随状态下都展示全图轮廓、视口框与追踪范围，保证全局上下文不丢失
+  - id: breadcrumb
+    user_name: 路径面包屑
+    purpose: 记录已跟随的跳序链，可点击回溯任一跳
+relationships: []
+mental_model_hypothesis:
+  summary: 用户把系统理解成一张分层依赖网：箭头指向被依赖方，上游=我要用什么，下游=谁受我影响；追踪时同时需要三重上下文——局部（当前节点与下一跳）、路径（从起点到这里的链）、全局（整网轮廓与自身位置）。跟随若以放大/钻取方式吞掉全局，用户就会迷路。
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: 验收种子达成：从任意节点出发逐跳追踪依赖/影响至少 3 跳后，用户仍能在同一屏内看到完整关系网、辨识自身位置与已走路径，并可随时换向或回溯——即“关系跟随不丢失全局上下文”。
+open_questions: []

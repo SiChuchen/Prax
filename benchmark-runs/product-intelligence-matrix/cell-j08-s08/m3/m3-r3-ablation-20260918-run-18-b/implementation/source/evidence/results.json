@@ -1,0 +1,73 @@
+[
+  {
+    "id": "static_file_open",
+    "pass": true,
+    "detail": "dist/index.html renders over file:// — h1 = \"Aurora 笔记 2.4 更新说明\"",
+    "artifacts": [
+      "evidence/00-file-open.png"
+    ]
+  },
+  {
+    "id": "ready_at_first_paint",
+    "pass": true,
+    "detail": "at load event: 5 preview sections, 5 editor cards, 0 loading nodes, pill=\"结构检查 · 通过\"",
+    "artifacts": [
+      "evidence/01-initial-ready.png"
+    ]
+  },
+  {
+    "id": "edit_preview_consistency",
+    "pass": true,
+    "detail": "typed list item text appears in preview immediately; old text gone",
+    "artifacts": [
+      "evidence/02-edit-preview-sync.png"
+    ]
+  },
+  {
+    "id": "bidirectional_selection_sync",
+    "pass": true,
+    "detail": "clicking preview block highlights both panes (card=true, preview=true)",
+    "artifacts": [
+      "evidence/03-selection-sync.png"
+    ]
+  },
+  {
+    "id": "destructive_recovery",
+    "pass": true,
+    "detail": "delete: 5→4 sections (old text gone=true); Ctrl+Z restores to 5",
+    "artifacts": [
+      "evidence/04-section-deleted.png",
+      "evidence/05-undo-restored.png"
+    ]
+  },
+  {
+    "id": "live_validation_consistent",
+    "pass": true,
+    "detail": "empty heading → pill=\"结构检查 · 1 项待处理\", preview flag=true, placeholder=true",
+    "artifacts": [
+      "evidence/06-content-validation.png"
+    ]
+  },
+  {
+    "id": "keyboard_operable",
+    "pass": true,
+    "detail": "Tab reaches interactive control (BUTTON \"删除第 1 行\") with solid 2px focus ring; Ctrl+Z/Ctrl+Y verified above",
+    "artifacts": [
+      "evidence/07-focus-ring.png"
+    ]
+  },
+  {
+    "id": "export_from_same_model",
+    "pass": true,
+    "detail": "clipboard Markdown derives from the model: starts with document H1 and section headings (got # Aurora 笔记 2.4 更新说明\r\n\r\n> 类型：更新说明 · 状态：评…)",
+    "artifacts": [
+      "evidence/results.json"
+    ]
+  },
+  {
+    "id": "reset_confirm_dialog",
+    "pass": true,
+    "detail": "confirm text: \"重置为示例文档？当前内容仍可通过撤销（Ctrl+Z）恢复。\"",
+    "artifacts": []
+  }
+]

@@ -1,0 +1,97 @@
+needs:
+  - id: N-1
+    product_action: Edit document content only through structure-preserving operations (typed templates, cardinality guards, reorder)
+    required_experience:
+      - No user action can produce an invalid document skeleton
+      - Every structural change is a first-class, reversible operation
+    capabilities:
+      - guarded operation API over document/section model
+      - typed section templates
+      - cardinality guards
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Pure reducer with a closed operation set; UI exposes only those operations. No raw-source surface exists.
+  - id: N-2
+    product_action: Keep preview exactly consistent with structured editing at all times
+    required_experience:
+      - Preview is rendered from the same in-memory model as the editor
+      - Every edit is visible in the preview immediately, with no refresh
+    capabilities:
+      - single state object
+      - derived preview render
+      - same-tick re-render
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Editor and preview are two pure views of one React state tree; derivation is total and synchronous.
+  - id: N-3
+    product_action: Show live structure-integrity status (checks for empty headings/items, minimum counts)
+    required_experience:
+      - Integrity is visible in both panes, not just promised
+      - Issues pinpoint the offending section
+    capabilities:
+      - pure validation functions over the model
+      - issue-to-section mapping
+      - header status pill + inline flags
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Validation is a pure function of the model; results surface in the header pill, the section card, and mirrored markers in the preview.
+  - id: N-4
+    product_action: Undo/redo any edit operation; reset to the initial document
+    required_experience:
+      - Every operation reversible; mistakes are cheap
+    capabilities:
+      - snapshot history stack
+      - Ctrl+Z / Ctrl+Y
+      - reset-to-sample
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Command-pattern history over the operation API; bounded stack.
+  - id: N-5
+    product_action: Verify editor↔preview correspondence via bidirectional section selection highlight
+    required_experience:
+      - Clicking a section highlights its preview block and vice versa
+    capabilities:
+      - shared selection state
+      - scrollIntoView sync
+      - hover affordances
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Single selection state owner; both panes subscribe; scroll sync on selection.
+  - id: N-6
+    product_action: First screen fully usable at page load (inlined initial document, no loading state)
+    required_experience:
+      - Ready state at first paint
+    capabilities:
+      - inlined initial document
+      - no fetch on critical path
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Initial document is a module-level constant bundled into the static HTML; no network on load.
+  - id: N-7
+    product_action: Open statically (dist/index.html) with no backend or external services
+    required_experience:
+      - Works from file:// or any static server
+    capabilities:
+      - inlined static bundle
+      - no runtime network dependencies
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Vite build with inlined assets produces one self-contained HTML file.
+  - id: N-8
+    product_action: Export/copy the resulting document (Markdown copy, JSON download)
+    required_experience:
+      - One-click copy; deterministic serialization of the model
+    capabilities:
+      - Clipboard API
+      - Blob download
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Serializers derive from the same model, so exports also cannot drift from the edited structure.

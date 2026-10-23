@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AURORA 变更时间轴 · 随时间演化的系统状态</title>
+  <meta name="description" content="理解随时间演化的系统状态：变更因果沿时间正方向可读，时间游标下可检查任一时刻的状态快照。">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='7' fill='%233987e5'/%3E%3Ccircle cx='8' cy='4.5' r='1.6' fill='%231a1a19'/%3E%3Ccircle cx='8' cy='11.5' r='1.6' fill='%231a1a19'/%3E%3Cpath d='M8 6v4' stroke='%231a1a19' stroke-width='1.6'/%3E%3C/svg%3E">
+</head>
+<body>
+  <!-- meta 区：系统标识 · 观察窗口 · 数据一致性自检 -->
+  <header class="app-header">
+    <div class="brand">
+      <span class="sys-dot" aria-hidden="true"></span>
+      AURORA 电商平台
+      <span class="env">生产环境</span>
+    </div>
+    <div class="win">观察窗口 2026-09-21 09:00 – 09-23 18:00</div>
+    <div class="integrity" id="integrity" role="status">自检中…</div>
+  </header>
+
+  <!-- toolbar 区：事件类型（图例兼过滤）· 组件过滤 -->
+  <div class="toolbar" aria-label="过滤与图例">
+    <div class="chip-group" id="typeChips" role="group" aria-label="事件类型过滤（兼图例）"></div>
+    <label class="comp-filter">组件
+      <select id="compSelect"></select>
+    </label>
+    <button id="resetFilters" class="ghost">重置过滤</button>
+    <div class="spacer"></div>
+    <div class="kbd-hint"><b>↑/↓</b> 选择事件 · <b>C</b> 游标对齐选中 · <b>Home/End</b> 游标起止 · <b>Esc</b> 取消选择</div>
+  </div>
+
+  <main class="columns">
+    <!-- primary 区：选中事件检查器（DOM 序先于时间轴，使 Tab 焦点顺序与视觉行带一致；方向键在 chips 间漫游） -->
+    <section class="panel inspector-panel" id="inspectorPanel" role="group" tabindex="0"
+             aria-label="事件检查器：方向键在因果跳转 chips 间移动，Enter 激活，Esc 取消选择">
+      <div class="panel-head"><h2>事件检查器</h2></div>
+      <div class="panel-body" id="inspectorBody" tabindex="-1"></div>
+    </section>
+
+    <!-- supporting 区：时间游标 + 状态快照 -->
+    <section class="panel snapshot-panel" aria-label="状态快照">
+      <div class="panel-head">
+        <h2>状态快照</h2>
+        <span class="muted" id="snapAt"></span>
+      </div>
+      <div class="cursor-box">
+        <div class="cursor-read">
+          <span id="cursorLabel"></span>
+          <span class="muted" id="foldCount"></span>
+        </div>
+        <input type="range" id="cursorRange" min="-1" max="0" step="1" value="-1" aria-label="时间游标：拖动以检查任一时刻的系统状态">
+        <div class="cursor-btns">
+          <button id="cursorStart" class="ghost">⏮ 窗口起点</button>
+          <button id="cursorToSel" class="ghost">对齐选中事件</button>
+          <button id="cursorEnd" class="ghost">最新 ⏭</button>
+        </div>
+      </div>
+      <div class="panel-body" id="snapshotBody" tabindex="-1"></div>
+    </section>
+
+    <!-- dominant 区：垂直因果时间轴 -->
+    <section class="panel timeline-panel" aria-label="变更时间轴">
+      <div class="panel-head">
+        <h2>变更时间轴</h2>
+        <span class="muted" id="tlCount"></span>
+        <span class="muted" id="tlShown"></span>
+      </div>
+      <div class="panel-body" id="timelineScroll" tabindex="-1">
+        <div class="tl-canvas" id="tlCanvas">
+          <svg id="edgeSvg" aria-hidden="true"></svg>
+          <!-- 按天分组的事件行由 app.js 注入（列表框模式：仅选中行可 Tab，↑/↓ 漫游） -->
+        </div>
+        <div class="empty hidden" id="tlEmpty">当前过滤条件下没有变更事件</div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 数据与逻辑：经典脚本按序加载，首屏同步渲染完成，无加载态 -->
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

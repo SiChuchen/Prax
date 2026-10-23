@@ -1,0 +1,27 @@
+version: "0.1"
+user_quote:
+  - 动词：monitor；对象：易变指标；成功标准：异常在扫视内发现
+  - 指标变化可追溯，无闪烁噪声
+  - 应用在页面加载完成时即处于可用状态（初始数据随首屏就绪，不得以加载态作为可测状态）
+restatement: 构建一个单页 Web 监控面板：主对象为 metric（易变指标流，many、高时间性、高密度、高易变性）。页面加载即呈现一批实时跳动的指标流，异常（超阈值/突跳）必须在一次扫视内可被肉眼发现；每个指标的近期变化历史可追溯（点开可见时间线/明细），且更新不得以闪烁噪声的方式干扰阅读。静态可打开（index.html 或 dist/），无后端、无账号、无外部服务；数据由内联模拟流驱动。
+boundaries:
+  in_scope:
+    - 单页监控主屏 1 个（metric 流 + 异常扫视 + 变化追溯）
+    - 内联初始数据 + 前端模拟实时流
+    - 静态交付（index.html / dist/），本地可运行可构建
+    - 异常状态在扫视内可见的视觉编码
+    - 单指标变化历史追溯视图
+  out_of_scope:
+    - 后端服务、账号体系、持久化存储
+    - 外部部署
+    - 多屏/多路由
+    - 真实数据源接入
+    - 告警通知推送（邮件/webhook 等）
+  scope_complete: true
+open_questions: []
+confirmation:
+  status: requirement_is_sufficient
+  evidence:
+    - type: task_brief
+      ref: brief.md — cell-j04-s04 product brief（冻结于 M2，2026-09-03）
+  confirmed_at: 2026-09-19T00:00:00Z

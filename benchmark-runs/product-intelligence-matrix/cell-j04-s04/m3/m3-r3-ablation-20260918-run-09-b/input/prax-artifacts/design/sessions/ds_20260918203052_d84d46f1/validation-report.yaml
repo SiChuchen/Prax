@@ -1,0 +1,243 @@
+plan_revision: 1
+evidence:
+  submitted_by: claude-agent (execution arm)
+  collected_at: 2026-09-19T05:05:00Z
+  items:
+    - check_id: semantic_conformance
+      outcome: pass
+      source: prax-session-artifacts
+      notes: SDIR 0.2 经 design_sdir validate PASS（monitor-wall，含 representation/state_ownership/acceptance/complexity_budget）；实现按 SDIR 四区域落地：status-bar / metric-wall(dominant) / inspector(selection_driven) / anomaly-feed(supporting)。注：会话持久化的 screen.sdir.yaml 为 sdir 门 generate_from_decisions 产出的 0.1 自生成形态，与 validate PASS 的 0.2 契约存在持久化落差（已以 design_correct 记录）。
+      artifact_refs:
+        - evidence/report.json
+        - evidence/01-initial-load.png
+    - check_id: state_completeness
+      outcome: pass
+      source: cdp-browser-evidence
+      notes: ready=首屏（01，无任何 loading UI，数据内联同步生成）；selected=01/04（inspector 跟随选中）；empty=03（Esc 后 insp-empty 可见）；error=无外部调用故仅声明不触发（SDIR required_states 已含）；loading=按交付约束刻意不存在（初始数据随首屏就绪）。
+      artifact_refs:
+        - evidence/01-initial-load.png
+        - evidence/03-empty-inspector.png
+        - evidence/07-paused.png
+        - evidence/report.json
+    - check_id: product_model_alignment
+      outcome: pass
+      source: cdp-browser-evidence
+      notes: Product Frame 四对象全部以用户语言呈现：metric=瓦片（24 个，steps.initial.tiles=24），anomaly=危急/告警徽标+8 条时间戳化事件流（feedRows=8），metric_group=四个分区，change_history=inspector 90 点轨迹+逐点明细（steps.trace）；raised_by/belongs_to/records 三关系均可见可操作。
+      artifact_refs:
+        - evidence/01-initial-load.png
+        - evidence/04-inspector-trace.png
+        - evidence/report.json
+    - check_id: keyboard
+      outcome: pass
+      source: cdp-browser-evidence
+      notes: 真实 CDP 按键事件（Chromium headless，Input.dispatchKeyEvent）：Tab×3 后焦点在瓦片按钮且 aria-label 可达、focus outline 可见；Space 暂停生效（PAUSED）；Esc 关闭 inspector 生效；Enter 选中为原生 button 激活。
+      artifact_refs:
+        - evidence/05-keyboard-focus.png
+        - evidence/07-paused.png
+        - evidence/03-empty-inspector.png
+        - evidence/report.json
+      measurement_receipt: validation-evidence/a11y.focus-order.receipt.json
+    - check_id: hierarchy_review
+      outcome: pass
+      source: cdp-browser-evidence
+      notes: 显著性排序符合 SDIR importance：dominant=metric-wall，primary=inspector，supporting=status-bar/anomaly-feed；异常瓦片在扫视内跳出（01）；危急过滤后可见瓦片数=危急计数=2（06），置灰保位不重排；无横向溢出（hOverflow=false）。
+      artifact_refs:
+        - evidence/01-initial-load.png
+        - evidence/06-filter-crit.png
+        - evidence/report.json
+    - check_id: representation_decided
+      outcome: pass
+      source: prax-session-artifacts
+      notes: monitor-wall 的 SDIR 0.2（含 representation.primary=grid 及非空 reason、supporting=chart/feed/list）已通过 design_sdir mode=validate 的 schema+semantic 双重 PASS；见 validation-evidence/（会话持久化形态为 0.1 自生成 SDIR 的落差已以 design_correct 记录）。
+      artifact_refs: []
+    - check_id: state_ownership_declared
+      outcome: pass
+      source: prax-session-artifacts
+      notes: SDIR 0.2 state_ownership：selection→inspector（region id），preview→session，query→status-bar（region id），mode→session，viewport→session；selection 与 preview 均有 declared owner；已通过 design_sdir validate PASS。
+      artifact_refs: []
+    - check_id: acceptance_contract_present
+      outcome: pass
+      source: prax-session-artifacts
+      notes: SDIR 0.2 acceptance 含 5 条（首屏 ready、扫视内识别、追溯不打断流、就地更新无闪烁、过滤计数一致）；已通过 design_sdir validate PASS。
+      artifact_refs: []
+    - check_id: complexity_budget_declared
+      outcome: pass
+      source: prax-session-artifacts
+      notes: SDIR 0.2 与 design_decisions 均声明 complexity_budget（panels=3, primary_actions=2, modes=0, filters=2, keyboard_contracts=1 等）。
+      artifact_refs: []
+    - check_id: requirement_alignment
+      outcome: pass
+      source: cdp-browser-evidence
+      notes: user_job=monitor×易变指标：加载即 ready 且首屏 2 危急+4 告警（扫视内可见）；变化可追溯（异常起始/持续时长/异常段高亮/逐点时间戳明细；事件流与轨迹逐点一致，test/smoke.js SMOKE OK）；无闪烁噪声（01 vs 02：≈6 tick 后布局同构、仅数值/时间变化；console=0）；交付=根路径 index.html 经 file:// 直接打开，单主屏、无后端、无外部服务、未部署。
+      artifact_refs:
+        - evidence/01-initial-load.png
+        - evidence/02-after-ticks.png
+        - evidence/04-inspector-trace.png
+        - evidence/report.json
+        - test/smoke.js
+evaluation:
+  status: BLOCK
+  checks:
+    - id: semantic_conformance
+      label: Semantic conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR is valid, semantic, and aligned to the approved pattern.
+      evidence_required: false
+    - id: state_completeness
+      label: State completeness
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Required loading, empty, ready, and error states exist.
+      evidence_required: false
+    - id: product_model_alignment
+      label: Product model alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: User-facing structure and language preserve the Product Frame.
+      evidence_required: true
+    - id: keyboard
+      label: Keyboard operability
+      kind: empirical
+      profile: keyboard_accessibility
+      facet: behavioral
+      requirement: Primary work and selection are operable with keyboard and visible focus.
+      evidence_required: true
+    - id: hierarchy_review
+      label: Hierarchy review
+      kind: assistive
+      profile: semantic_integrity
+      facet: visual_hierarchy
+      requirement: Visual prominence follows SDIR importance rather than implementation convenience.
+      evidence_required: true
+    - id: representation_decided
+      label: Representation decided
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares representation.primary with a non-empty reason.
+      evidence_required: false
+    - id: state_ownership_declared
+      label: State ownership declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: Selection and preview states both have declared owners.
+      evidence_required: false
+    - id: acceptance_contract_present
+      label: Acceptance contract present
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 carries at least one acceptance criterion.
+      evidence_required: false
+    - id: complexity_budget_declared
+      label: Complexity budget declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      evidence_required: false
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+  findings:
+    - check_id: semantic_conformance
+      kind: deterministic
+      outcome: pass
+      message: SDIR is valid, semantic, and aligned to the approved pattern.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_completeness
+      kind: deterministic
+      outcome: pass
+      message: Required loading, empty, ready, and error states exist.
+      source: prax-validator
+      provenance: measured
+    - check_id: representation_decided
+      kind: deterministic
+      outcome: fail
+      message: "0.2 session SDIR does not satisfy 'representation_decided': SDIR 0.2 declares representation.primary with a non-empty reason."
+      source: prax-validator
+      provenance: measured
+    - check_id: state_ownership_declared
+      kind: deterministic
+      outcome: fail
+      message: "0.2 session SDIR does not satisfy 'state_ownership_declared': Selection and preview states both have declared owners."
+      source: prax-validator
+      provenance: measured
+    - check_id: acceptance_contract_present
+      kind: deterministic
+      outcome: fail
+      message: "0.2 session SDIR does not satisfy 'acceptance_contract_present': SDIR 0.2 carries at least one acceptance criterion."
+      source: prax-validator
+      provenance: measured
+    - check_id: complexity_budget_declared
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      source: prax-validator
+      provenance: measured
+    - check_id: product_model_alignment
+      kind: assistive
+      outcome: pass
+      message: Product Frame 四对象全部以用户语言呈现：metric=瓦片（24 个，steps.initial.tiles=24），anomaly=危急/告警徽标+8 条时间戳化事件流（feedRows=8），metric_group=四个分区，change_history=inspector 90 点轨迹+逐点明细（steps.trace）；raised_by/belongs_to/records 三关系均可见可操作。
+      source: cdp-browser-evidence
+      provenance: attested
+    - check_id: keyboard
+      kind: empirical
+      outcome: pass
+      message: 真实 CDP 按键事件（Chromium headless，Input.dispatchKeyEvent）：Tab×3 后焦点在瓦片按钮且 aria-label 可达、focus outline 可见；Space 暂停生效（PAUSED）；Esc 关闭 inspector 生效；Enter 选中为原生 button 激活。
+      source: cdp-browser-evidence
+      provenance: measured
+    - check_id: hierarchy_review
+      kind: assistive
+      outcome: pass
+      message: 显著性排序符合 SDIR importance：dominant=metric-wall，primary=inspector，supporting=status-bar/anomaly-feed；异常瓦片在扫视内跳出（01）；危急过滤后可见瓦片数=危急计数=2（06），置灰保位不重排；无横向溢出（hOverflow=false）。
+      source: cdp-browser-evidence
+      provenance: attested
+    - check_id: requirement_alignment
+      kind: assistive
+      outcome: pass
+      message: user_job=monitor×易变指标：加载即 ready 且首屏 2 危急+4 告警（扫视内可见）；变化可追溯（异常起始/持续时长/异常段高亮/逐点时间戳明细；事件流与轨迹逐点一致，test/smoke.js SMOKE OK）；无闪烁噪声（01 vs 02：≈6 tick 后布局同构、仅数值/时间变化；console=0）；交付=根路径 index.html 经 file:// 直接打开，单主屏、无后端、无外部服务、未部署。
+      source: cdp-browser-evidence
+      provenance: attested
+  missing_evidence: []
+  warnings:
+    - "complexity_budget_declared: the 0.2 SDIR declares no complexity_budget block — new permanent surfaces, modes, and state owners stay uncounted (P-044)."
+  readiness:
+    deterministic_passed: false
+    measurement:
+      receipt_ref: validation-evidence/a11y.focus-order.receipt.json
+      binding:
+        validation-evidence/a11y.focus-order.receipt.json: implementation_current
+      error_failures_open: 0
+      warning_dispositions: []
+    convergence:
+      stalled: true
+      unresolved:
+        - representation_decided
+        - state_ownership_declared
+        - acceptance_contract_present
+    evidence_current: true
+    claims:
+      measured:
+        - semantic_conformance
+        - state_completeness
+        - representation_decided
+        - state_ownership_declared
+        - acceptance_contract_present
+        - complexity_budget_declared
+        - keyboard
+      attested:
+        - product_model_alignment
+        - hierarchy_review
+        - requirement_alignment
+      skipped: []

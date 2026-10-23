@@ -1,0 +1,59 @@
+user:
+  expertise: mixed
+  familiarity: medium
+task:
+  primary: Locate a target part in a large open collection via search + faceted narrowing
+  modes:
+    - search
+    - filter
+    - drill
+  frequency: high
+domain:
+  type: electronics component catalog (static snapshot, ~2,000 SKUs)
+  entities:
+    - part
+    - family
+    - category
+    - facet
+information:
+  volume: high
+  relationship_complexity: low
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: none
+  error_cost: low
+priorities:
+  - "Locate speed: three interactions from load to target"
+  - "Context preservation: category/family path stays visible through search/filter"
+  - "Instant feedback: results and match counts update synchronously as filters change"
+density_intent: regular
+confidence:
+  overall: high
+unknowns: []
+classification:
+  version: "1"
+  task_type: compare_filter_records
+  domain_id: data_exploration
+  interaction_mode: collection_with_contextual_detail
+  product_type: unknown
+  primary_object_type: part
+  secondary_object_types:
+    - family
+    - category
+    - facet
+  confidence: high
+  evidence:
+    - task_type=compare_filter_records ← token 'filter' in context.task and frame.tasks
+    - domain_id=data_exploration ← token 'log' in context.domain
+    - interaction_mode=collection_with_contextual_detail ← token 'filter' in context.task, frame.tasks, and context.priorities
+    - primary_object_type=part ← most referenced product object in the Product Frame
+  open_questions:
+    - product_type could not be derived; record the intended audience and product kind

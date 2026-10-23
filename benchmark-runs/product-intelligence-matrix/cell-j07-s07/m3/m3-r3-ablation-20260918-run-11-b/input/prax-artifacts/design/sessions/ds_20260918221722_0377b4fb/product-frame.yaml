@@ -1,0 +1,85 @@
+version: "0.2"
+jtbd:
+  verb: create
+  target: spatial objects on a physical floor canvas
+  success: 落位即意图 — where it lands is what it means; every spatial operation has a keyboard equivalent
+primary_object:
+  type: canvas_object
+  label: Placed object (tile)
+task_model:
+  frequency: medium
+  reversibility: reversible
+  consequence: low
+  expertise: mixed
+user:
+  primary_role: Layout planner — anyone arranging labeled items into zones of a physical floor (gallery/exhibit/shop-floor style)
+  expertise: mixed
+  familiarity: medium
+goal:
+  primary: Let the user create objects and land them on a physical floor canvas so that the landing position itself records the intent — no forms or dialogs mediate assignment
+tasks:
+  primary: Create canvas objects and land them in zones; re-place them as intent changes (drag, arrows, send-to-zone keys)
+  secondary:
+    - "Inspect derived facts for a selection: zone membership, position, nearest neighbor + distance"
+    - "Keep the view oriented: pan, zoom, fit-to-content, focus selection"
+    - Create/rename/delete zones; keep zone occupancy counts readable
+product_objects:
+  - id: canvas_object
+    user_name: Placed object (tile)
+    purpose: A labeled physical item on the floor; its x/y position is the record of intent
+  - id: region
+    user_name: Zone (region)
+    purpose: A named rectangular area that assigns meaning to whatever lands inside it
+  - id: floor_canvas
+    user_name: Floor canvas
+    purpose: The physical space being arranged; pan/zoom viewport onto an endless grid
+  - id: derived_relation
+    user_name: Derived relation
+    purpose: Zone membership and nearest-neighbor facts computed from positions and surfaced in inspector/status bar
+relationships:
+  - id: contained_in
+    source: canvas_object
+    target: region
+    type: contained_in
+    direction: forward
+    meaning: zone assignment, derived from position only
+    condition: object center lies inside region rectangle
+    importance: primary
+  - id: positioned_on
+    source: canvas_object
+    target: floor_canvas
+    type: positioned_on
+    direction: forward
+    meaning: coordinates locate the object on the floor canvas; pan/zoom are views, never moves
+    condition: every placed object always sits somewhere on the shared floor
+    importance: supporting
+  - id: surfaced_by
+    source: derived_relation
+    target: canvas_object
+    type: surfaced_by
+    direction: forward
+    meaning: the inspector/status bar read derived_relation facts; they are never edited directly
+    condition: selection's facts recomputed on every position change
+    importance: supporting
+mental_model_hypothesis:
+  summary: "Furniture-on-a-floorplan: objects are physical tokens, zones are named areas, and meaning is read off where things sit. Zone membership and neighbor relations are computed from position, never entered as data. The board is a direct-manipulation surface with a complete keyboard shadow."
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: A user can create a new object and land it in the intended zone using only the keyboard (N → arrows → Enter, or select + 1..n send-to-zone), and the board's derived state (zone membership, nearest neighbor, zone counts) updates immediately to match the landing position; every spatial operation has a documented keyboard equivalent.
+open_questions:
+  - Domain theme (gallery vs warehouse vs stage) is left neutral as 'floor & zones'; low impact on shape compliance
+existing_product:
+  stable_user_concepts:
+    - floor plan
+    - zone
+    - tile
+  stable_patterns:
+    - Direct-manipulation canvas editors (drag to move, wheel to zoom)
+    - Keyboard shortcut overlays in pro tools
+  current_user_pain_points:
+    - Canvas tools that hide placement semantics in dialogs instead of reading meaning off position
+  current_constraints:
+    - Static single page, no backend
+  legacy_debt: []

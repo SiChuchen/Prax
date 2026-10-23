@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Locus · 落位画布 — 空间即意图</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header id="topbar">
+    <div class="brand">
+      <span class="logo">◈</span>
+      <span class="name">Locus · 落位画布</span>
+      <span class="tagline">放进哪个区，就是什么状态 —— 所有空间操作都有键盘等价物</span>
+    </div>
+    <div class="tools">
+      <button id="btn-new" title="新建对象（N / 双击空白）">＋ 新建 <kbd>N</kbd></button>
+      <button id="btn-dup" title="复制所选（Ctrl+D）">复制 <kbd>Ctrl+D</kbd></button>
+      <button id="btn-del" title="删除所选（Delete）">删除 <kbd>Del</kbd></button>
+      <span class="sep"></span>
+      <button id="btn-undo" title="撤销（Ctrl+Z）">撤销</button>
+      <button id="btn-redo" title="重做（Ctrl+Y）">重做</button>
+      <span class="sep"></span>
+      <button id="btn-snap" class="toggle on" title="栅格吸附开关（S）">吸附 <kbd>S</kbd></button>
+      <span class="sep"></span>
+      <button id="btn-zout" title="缩小（-）">−</button>
+      <button id="btn-zin" title="放大（+）">＋</button>
+      <button id="btn-fit" title="适应全部（1）">适应 <kbd>1</kbd></button>
+      <button id="btn-zreset" title="缩放复位（0）">100%</button>
+      <span class="sep"></span>
+      <button id="btn-help" title="快捷键（?）">快捷键 <kbd>?</kbd></button>
+    </div>
+  </header>
+
+  <main id="viewport">
+    <div id="world">
+      <!-- zones & objects injected by core.js -->
+      <div id="band" hidden></div>
+    </div>
+  </main>
+
+  <footer id="statusbar">
+    <span id="st-zoom">100%</span>
+    <span class="dot-sep">·</span>
+    <span id="st-snap">吸附 开</span>
+    <span class="dot-sep">·</span>
+    <span id="st-sel">未选中</span>
+    <span class="dot-sep">·</span>
+    <span id="st-zone">指针不在任何区</span>
+    <span id="st-toast" role="status"></span>
+    <span id="st-hint">双击空白新建 · 拖拽移动 · 空格+拖拽平移 · 滚轮缩放 · <b>?</b> 全部快捷键</span>
+  </footer>
+
+  <div id="help" hidden>
+    <div class="help-card">
+      <div class="help-head">
+        <h2>空间操作 ⇄ 键盘等价物</h2>
+        <button id="help-close">关闭 <kbd>Esc</kbd></button>
+      </div>
+      <table>
+        <thead><tr><th>意图</th><th>鼠标 / 触控</th><th>键盘等价物</th></tr></thead>
+        <tbody>
+          <tr><td>新建对象</td><td>双击空白处</td><td><kbd>N</kbd>（在视口中心创建）</td></tr>
+          <tr><td>选择</td><td>点选 / 拖框选 / Shift+点选加选</td><td><kbd>Tab</kbd> 循环选择 · <kbd>Ctrl+A</kbd> 全选 · <kbd>Esc</kbd> 取消</td></tr>
+          <tr><td>移动对象</td><td>拖拽</td><td>方向键（栅格步进）· <kbd>Shift</kbd>+方向键（1px 微调）</td></tr>
+          <tr><td>平移画布</td><td>空格/中键/<kbd>Alt</kbd>+拖拽</td><td>未选中时按方向键平移画布</td></tr>
+          <tr><td>缩放</td><td>滚轮（指针为中心）</td><td><kbd>+</kbd> / <kbd>−</kbd> · <kbd>0</kbd> 复位 100% · <kbd>1</kbd> 适应全部</td></tr>
+          <tr><td>落位改区</td><td>拖入目标区</td><td><kbd>Ctrl</kbd>+<kbd>1/2/3</kbd> 移入第 1/2/3 区</td></tr>
+          <tr><td>层级调整</td><td>—</td><td><kbd>[</kbd> 后移一层 · <kbd>]</kbd> 前移一层</td></tr>
+          <tr><td>复制 / 删除</td><td>—</td><td><kbd>Ctrl+D</kbd> / <kbd>Delete</kbd></td></tr>
+          <tr><td>编辑标题</td><td>双击对象</td><td><kbd>Enter</kbd> / <kbd>F2</kbd> · <kbd>Enter</kbd> 提交 · <kbd>Esc</kbd> 取消</td></tr>
+          <tr><td>撤销 / 重做</td><td>—</td><td><kbd>Ctrl+Z</kbd> / <kbd>Ctrl+Y</kbd></td></tr>
+          <tr><td>栅格吸附</td><td>工具栏开关</td><td><kbd>S</kbd></td></tr>
+          <tr><td>本面板</td><td>工具栏按钮</td><td><kbd>?</kbd></td></tr>
+        </tbody>
+      </table>
+      <p class="help-foot">落位即意图：对象放进「待选池 / 就位区 / 定稿区」，区域即状态，无需点菜单。</p>
+    </div>
+  </div>
+
+  <script src="core.js"></script>
+  <script src="input.js"></script>
+</body>
+</html>

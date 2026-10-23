@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ledgerline · 变更集 CS-0922 · orders-service</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header id="topbar">
+  <div class="brand"><span class="mark">▤</span> Ledgerline</div>
+  <div class="cs-meta">
+    <h1>orders-service · 变更集 CS-0922</h1>
+    <span class="range" id="hdr-range"></span>
+  </div>
+  <div class="cs-stats">
+    <span><b id="st-n">–</b> 变更</span>
+    <span><b id="st-e">–</b> 因果边</span>
+    <span class="vbadge" id="st-valid">…</span>
+  </div>
+  <div class="playback">
+    <button id="btn-play" title="播放 / 暂停（空格）">▶</button>
+    <select id="speed" title="回放速度">
+      <option value="0.5">0.5×</option>
+      <option value="1" selected>1×</option>
+      <option value="3">3×</option>
+    </select>
+    <span id="clock" title="当前回放时刻">–</span>
+    <button id="btn-fit" title="缩放回完整时间窗">⤢ 全窗</button>
+  </div>
+</header>
+
+<main>
+  <aside id="sidebar">
+    <div class="side-h">变更类型</div>
+    <div id="legend"></div>
+    <div class="side-h">阶段 · 点击聚焦</div>
+    <div id="phase-list"></div>
+    <div class="note">因果边恒由「早」指向「晚」——时间结构与变更语义一致。<br><br>
+    拖动游标或按空格回放状态演化；点击节点查看其因果链；滚轮缩放时间轴。</div>
+  </aside>
+
+  <section id="timeline-wrap"><svg id="timeline"></svg></section>
+
+  <aside id="rightpanel">
+    <section class="card">
+      <div class="card-h"><span>时刻状态</span><span id="state-phase" class="phase-now">–</span></div>
+      <div id="state-kv"></div>
+      <div class="card-h" style="margin-top:12px"><span>激活告警</span><span id="alert-count" class="mono"></span></div>
+      <div id="state-alerts"></div>
+    </section>
+    <section class="card">
+      <div class="card-h"><span>变更详情</span><span id="d-id" class="mono dimtx"></span></div>
+      <div id="detail"></div>
+    </section>
+  </aside>
+</main>
+
+<section id="metrics"></section>
+
+<div id="tooltip"></div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

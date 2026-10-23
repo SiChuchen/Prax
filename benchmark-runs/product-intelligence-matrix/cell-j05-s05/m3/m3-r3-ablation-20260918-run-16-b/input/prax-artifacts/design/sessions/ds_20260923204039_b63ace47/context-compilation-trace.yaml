@@ -1,0 +1,32 @@
+version: "0.1"
+session_id: ds_20260923204039_b63ace47
+task_ref: 选中一个节点后逐步追踪其上游依赖或下游影响，同时保持全图可见、能定位自身与已走路径
+selected:
+  - ref: product_relationships
+    reason: []
+  - ref: region_relationships
+    reason: []
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-WORKSPACE
+  - ref: unresolved
+    reason: []
+  - ref: corrections
+    reason: []
+  - ref: validation-plan@1
+    reason:
+      - semantic_conformance
+      - state_completeness
+      - product_model_alignment
+      - keyboard
+      - hierarchy_review
+      - representation_decided
+      - state_ownership_declared
+      - acceptance_contract_present
+      - complexity_budget_declared
+      - requirement_alignment
+excluded:
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata

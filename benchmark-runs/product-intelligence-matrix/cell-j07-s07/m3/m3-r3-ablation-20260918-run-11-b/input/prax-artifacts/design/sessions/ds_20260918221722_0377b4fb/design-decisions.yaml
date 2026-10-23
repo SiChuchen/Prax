@@ -1,0 +1,115 @@
+session_id: ds_20260918221722_0377b4fb
+version: "0.2"
+information_shape:
+  cardinality: many
+  relationality: medium
+  hierarchy: low
+  temporality: low
+  density: medium
+  dimensionality: medium
+  spatiality: physical
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: canvas
+    reason: Spatial continuity on a physical floor is the product object itself; canvas is the only representation where position carries meaning natively
+  supporting:
+    - type: list
+      reason: Zone rail listing zones with occupancy counts and send-to hotkeys keeps the many-object population legible
+    - type: cards
+      reason: Inspector presents the selection's derived facts as one compact fact card
+  rejected:
+    - option: table
+      reason: Position would live in sortable cells, destroying placement-is-intent
+    - option: map
+      reason: Georeferenced basemap is irrelevant to an abstract physical floor
+    - option: tree
+      reason: Hierarchy is explicitly low; nesting would over-structure flat zones
+  justification_vs_shape: physical spatiality → canvas; many → token population; medium relationality → containment + nearest-neighbor surfaced, not edge spaghetti; low hierarchy → flat zones; medium density → regular chrome; none comparison → no compare chrome; keyboard equivalence → keyboard shadow per WEB-DESKTOP
+primary_structure:
+  pattern: PAT-CANVAS-WORKSPACE
+  rationale:
+    - "Dominant workspace surface = the floor canvas: zones and placed canvas objects on an endless physical grid; it carries the create-and-place primary task directly"
+    - "Routed and inspected at L2: dominant spatial canvas with selection-driven contextual detail and quiet supporting chrome (composed over PAT-WORKSPACE persistence)"
+    - Pattern contract's own tradeoff — 'pan and zoom can disorient; keyboard and list alternatives are needed' — is discharged by the complete keyboard shadow and the zone rail list
+    - PAT-LIST-DETAIL rejected as primary (spatial relationships dominate); its inspect idea survives as the H-19 inspector region
+    - H-22 overview→detail maps to fit-view/focus/zoom; H-13 structured density governs zone chips, counts, and quiet chrome
+  confidence: high
+information_hierarchy:
+  primary:
+    - dominant_workspace
+    - "Selection-driven inspector over derived_relation facts: zone (derived from position), coordinates, nearest neighbor + distance"
+    - "Zone rail: named regions with live occupancy counts and send-to hotkeys 1..n"
+  secondary:
+    - "dominant_workspace carries: zones + placed canvas objects on an endless physical grid (the floor canvas)"
+    - "Status bar: landing hint during placement/drag, cursor coords, zoom, snap state"
+    - Keyboard help overlay on demand (?), closed by default
+density:
+  intent: regular
+  strategy:
+    - canvas dominant, quiet chrome (P-22)
+    - zone tints + labeled chips carry grouping before detail is read (P-01)
+    - detail only on selection via contextual inspector (H-19)
+    - counts and status hints instead of extra panels (P-26)
+  avoid:
+    - dialogs or forms that mediate placement semantics
+    - decorative node-map aesthetics
+    - edge-per-relationship clutter; proximity shown only for the selection
+major_choices:
+  - id: mc1_ghost_placing
+    choice: "Keyboard-first creation via ghost-placing mode: N (object) / R (region) spawns a ghost that arrow-keys position (Shift = coarse), Enter commits, Esc cancels; double-click creates in place"
+    rationale: Makes the create verb keyboard-native on the dominant workspace surface, satisfying 落位即意图 without pointer dependency
+    confidence: medium
+    references:
+      - canvas_object
+      - region
+      - floor_canvas
+  - id: mc2_derived_semantics
+    choice: "Derived-only semantics: zone membership = object center containment; neighbor = nearest center distance; no assignment metadata exists to edit"
+    rationale: Position is the single source of truth, so any move re-derives meaning — placement is intent by construction
+    confidence: medium
+    references:
+      - canvas_object
+      - derived_relation
+      - region
+  - id: mc3_send_to_zone
+    choice: Send-to-zone hotkeys 1..n teleport the selected object into the first free grid slot of that zone
+    rationale: Keyboard equivalent of dragging a token into a zone; pairs with arrows for fine placement
+    confidence: medium
+    references:
+      - canvas_object
+      - region
+      - floor_canvas
+  - id: mc4_landing_hint
+    choice: "Landing hint: during placing/dragging, status bar names the zone under the object and the zone border highlights"
+    rationale: "Closes the action loop: the intent consequence is visible before commit"
+    confidence: medium
+    references:
+      - derived_relation
+      - canvas_object
+      - region
+  - id: mc5_autosave
+    choice: Light localStorage autosave with visible Reset Scene; persistence is a courtesy, not a service
+    rationale: Product feel without violating the no-persistence-service constraint
+    confidence: medium
+    references:
+      - floor_canvas
+rejected:
+  - option: PAT-LIST-DETAIL as primary structure
+    reason: does_not_apply_when spatial relationships dominate; collection order is meaningless here
+  - option: PAT-WORKSPACE alone (no canvas)
+    reason: Persistence without spatial continuity loses the physical placement semantics
+unresolved: []
+complexity_budget:
+  permanent_panels: 4
+  permanent_primary_actions: 8
+  modes: 2
+  state_owners: 5
+  navigation_levels: 1
+  persistent_filters: 0
+  new_semantic_concepts: 3
+  keyboard_contracts: 20
+  mobile_conflicts: 0
+  permanent_surfaces: 4

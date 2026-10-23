@@ -1,0 +1,119 @@
+session_id: ds_20260918212236_780498b8
+information_shape:
+  cardinality: one
+  relationality: low
+  hierarchy: high
+  temporality: low
+  density: low
+  dimensionality: medium
+  spatiality: none
+  volatility: medium
+  uncertainty: medium
+  comparison_need: none
+representation:
+  primary:
+    type: wizard
+    reason: complete×顺序门禁执行是向导式推进的本质；每个不可逆步骤是一站，向导保证不跳步
+  supporting:
+    - type: list
+      reason: 旅程图常驻：两级总览+状态灯+不可逆点预警，满足 hierarchy high 与方向感（PAT-LIST-DETAIL 的列表侧）
+    - type: document
+      reason: 执行记录/审计摘要以文档形态呈现于抽屉与完成凭证
+  rejected:
+    - option: table
+      reason: density low、cardinality one，表格是数据探索形态，会稀释安全信息
+    - option: canvas/graph
+      reason: spatiality none、relationality low，无空间或网络关系可画
+    - option: chat
+      reason: 与检查单心智模型不符，无法承载门禁校验
+  justification_vs_shape: 逐 facet 对照 information_shape：cardinality=one → 无集合浏览需求，list 只承担导航锚而非数据容器；hierarchy=high → 旅程图（list）承担'阶段→步骤'两级结构可见；density=low → 主区单步骤聚焦、spacious；temporality=low → 无时间轴；spatiality=none → 无画布地图；comparison_need=none → 拒绝并排卡片网格；relationality=low → 无关系图；volatility/uncertainty=medium → 步骤状态与条件分支实时联动旅程图。反证 myth-card-grid-default：卡片网格/dashboard 是'多对象并列浏览'的默认表征，其前提（多对象、可选进入顺序、需扫视比较）与本格（单一流程、强制顺序、无比较）相逆——用卡片网格承载流程步骤会把'必须按序完成的门禁'错演成'可任选进入的展示位'，破坏零失误门禁语义。故 primary=wizard（强制顺序推进），list 仅作常驻旅程图支撑，不用 cards/dashboard 作默认壳。
+primary_structure:
+  pattern: PAT-LIST-DETAIL
+  rationale:
+    - "即路由返回并已 L2 检视的 PAT-LIST-DETAIL：顺序性收集 + 相邻详情（applies_when: collection order matters，步骤强顺序成立）"
+    - 本实现变体：Guided Runbook Stepper——左侧持久旅程图（阶段→步骤两级总览与状态灯）+ 右侧当前步骤聚焦执行区（指令、门禁校验、确认门、恢复路径），执行记录为抽屉式辅助面板
+    - "单一工作区，PAT-APPLICATION-SHELL 契约明确 does_not_apply_when: single workspace，故弃用"
+    - 层级高→旅程图常驻把'阶段→步骤'结构可见在先（P-01 Perceptual Grouping / P-03 Visual Hierarchy）
+    - 高后果→确认门与恢复路径必须出现在执行动线内，不可藏进二级页面（P-28 Recoverable Action）
+    - 密度低→单步骤聚焦执行，拒绝一屏堆叠全部步骤
+  confidence: high
+information_hierarchy:
+  primary:
+    - 当前步骤：编号/标题/操作指令——聚焦执行的唯一主内容
+    - 全程进度：四阶段旅程图（锁定/进行中/已完成/已回滚），含不可逆点预警标记
+    - 安全区：门禁校验结果 + 确认门（后果陈述 + 显式确认）+ 恢复路径（撤销窗口倒计时/恢复点/回滚指引）
+    - 零失误状态：偏差计数与执行记录（抽屉式）
+  secondary:
+    - 流程元信息（变更单号、执行人、机器标识）
+    - 完成凭证（全程完成后的收束态）
+density:
+  intent: spacious
+  strategy:
+    - 每屏聚焦一个当前步骤，读-验-确认-执行一条动线
+    - 旅程图只做状态锚点（阶段折叠、步骤状态灯），不做第二信息源
+    - 确认门用全屏遮罩对话框承载后果与恢复路径，逐出主区干扰
+    - 执行记录用等宽字体的紧凑时间线，放在抽屉内按需查看
+  avoid:
+    - 并排比较视图（comparison_need none）
+    - 时间轴/甘特（temporality low）
+    - 地图/空间画布（spatiality none）
+    - 高密度表格（density low）
+major_choices:
+  - id: mc1-scenario
+    choice: 选定'生产服务器安全下线'作为代表性高后果流程场景（4 阶段 12 步骤，含 3 个不可逆步骤）
+    rationale: 简报冻结了形状不冻结领域（未知点 u1-domain-scenario）；运维下线流程天然含多类不可逆动作（摘流量可撤销/抹盘不可撤销），能完整展示确认门×恢复路径的两种形态
+    confidence: high
+    references:
+      - runbook
+      - phase
+      - step
+  - id: mc2-gate-mechanics
+    choice: 不可逆步骤 = 前置校验（checkbox 门禁）→ 确认门（后果陈述+恢复路径+显式确认对话）→ 执行；执行后进入恢复区
+    rationale: 把'确认路径'与'恢复路径'做成两个独立且都可见的机制，直接对应验收种子
+    confidence: high
+    references:
+      - irreversible_gate
+      - step
+      - recovery_path
+  - id: mc3-recovery-dual
+    choice: 恢复路径双形态：可逆类动作给 30 秒冷静期撤销（倒计时 undo）；不可逆类动作给常驻'恢复点/回滚指引'卡片（说明依赖的备份/恢复手段）
+    rationale: 诚实地区分'真能撤销'与'只能靠预案恢复'，避免虚假可逆感
+    confidence: high
+    references:
+      - recovery_path
+      - irreversible_gate
+      - execution_record
+  - id: mc4-deviation-ledger
+    choice: 零失误计量：门禁未过即点击执行、确认对话取消各记一次偏差（attempt 计数），写入执行记录；完成凭证显示偏差数
+    rationale: 让'零失误走完全程'成为可测状态而非口号；偏差不是惩罚而是审计线索
+    confidence: high
+    references:
+      - execution_record
+      - step
+      - irreversible_gate
+  - id: mc5-tech
+    choice: 纯前端无构建栈：原生 HTML/CSS/JS，流程数据以 JS 对象内联随脚本就绪，file:// 直接打开可用
+    rationale: 交付约束要求静态直开+首屏可用；无构建链消除 dist 依赖与加载态，runbook 数据内联于 data.js 随脚本同步就绪
+    confidence: high
+    references:
+      - runbook
+      - step
+rejected:
+  - option: PAT-APPLICATION-SHELL（全局导航框架）
+    reason: "L2 检视其契约明确 does_not_apply_when: the product is a single workspace；本产品恰好单工作区"
+  - option: 纯线性 wizard（隐藏全貌）
+    reason: hierarchy high 要求全程结构可见；执行者需预知前方不可逆点，纯线性会制造意外
+  - option: Dashboard/多面板监控（myth-card-grid-default 默认壳）
+    reason: temporality low、density low、comparison_need none；多面板并列把强制顺序门禁错演成可选浏览
+unresolved: []
+complexity_budget:
+  permanent_panels: 2
+  permanent_primary_actions: 2
+  modes: 1
+  state_owners: 2
+  navigation_levels: 1
+  persistent_filters: 0
+  new_semantic_concepts: 3
+  keyboard_contracts: 1
+  mobile_conflicts: 0
+  permanent_surfaces: 1

@@ -1,0 +1,35 @@
+version: "0.1"
+session_id: ds_20260918203052_d84d46f1
+task_ref: 扫视指标墙，即时发现新出现/仍在持续的异常
+selected:
+  - ref: product_relationships
+    reason:
+      - rel_anomaly_metric:anomaly->metric
+      - rel_metric_metric_group:metric->metric_group
+      - rel_change_history_metric:change_history->metric
+  - ref: region_relationships
+    reason: []
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-LIST-DETAIL-INSPECTOR
+  - ref: unresolved
+    reason: []
+  - ref: corrections
+    reason: []
+  - ref: validation-plan@1
+    reason:
+      - semantic_conformance
+      - state_completeness
+      - product_model_alignment
+      - keyboard
+      - hierarchy_review
+      - representation_decided
+      - state_ownership_declared
+      - acceptance_contract_present
+      - complexity_budget_declared
+      - requirement_alignment
+excluded:
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata

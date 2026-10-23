@@ -1,0 +1,129 @@
+version: "0.2"
+screen:
+  id: application_shell_screen
+  intent:
+    primary_task: Edit the content of one structured document via structure-preserving controls while the live preview stays exactly consistent.
+    secondary_tasks:
+      - Reorder, rename, add or remove sections without breaking the outline
+      - Check structure integrity (validation) and see it stay valid after every edit
+      - Undo an accidental edit
+      - Export/copy the resulting document
+  archetype:
+    pattern_ref: PAT-APPLICATION-SHELL
+  density_intent: spacious
+  regions:
+    - id: Document title + structure status (header strip)
+      role: experimental:Document title + structure status (header strip)
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: Ordered sections with typed editable fields (editor pane)
+      role: experimental:Ordered sections with typed editable fields (editor pane)
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: Live preview rendering the same document (preview pane)
+      role: experimental:Live preview rendering the same document (preview pane)
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: Section operations (move/add/delete) on hover/focus
+      role: experimental:Section operations (move/add/delete) on hover/focus
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: Undo/redo/reset/export in header
+      role: experimental:Undo/redo/reset/export in header
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: workspace
+      role: dominant_workspace
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - preserve_context
+  relationships: []
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved: []
+  rejected_alternatives: []
+  user_job:
+    verb: edit
+    target: a single structured document
+    success: Edits never break the document structure, and the preview is always consistent with the edited structure.
+  primary_object:
+    type: document
+    label: Document（单一结构化文档）
+  information_shape:
+    cardinality: one
+    relationality: low
+    hierarchy: medium
+    temporality: medium
+    density: low
+    dimensionality: medium
+    spatiality: none
+    volatility: medium
+    uncertainty: low
+    comparison_need: none
+  representation:
+    primary:
+      type: form
+      reason: Editing happens in typed fields per section block; a form representation with in-place inputs is the safest structure-preserving surface (no syntax to corrupt).
+    supporting:
+      - type: document
+        reason: Preview is the rendered document itself (paper-like), giving the 'what it looks like' truth that must stay identical to the editor.
+      - type: list
+        reason: Ordered section cards read as a list; ordering is the hierarchy backbone and supports move up/down operations.
+  priority:
+    primary:
+      - Document title + structure status (header strip)
+      - Ordered sections with typed editable fields (editor pane)
+      - Live preview rendering the same document (preview pane)
+      - workspace
+    contextual:
+      - Section operations (move/add/delete) on hover/focus
+      - Undo/redo/reset/export in header
+  interaction:
+    preview: none
+    inspect: select
+    navigate: none
+    locate: none
+  state_ownership:
+    - state: selection
+      owner: Document title + structure status (header strip)
+    - state: preview
+      owner: session
+  complexity_budget:
+    permanent_panels: 3
+    permanent_primary_actions: 4
+    modes: 1
+    state_owners: 2
+    navigation_levels: 1
+    persistent_filters: 0
+    new_semantic_concepts: 2
+    keyboard_contracts: 1
+    mobile_conflicts: 0
+    permanent_surfaces: 3
+  acceptance:
+    - Any sequence of edit operations (field edits, add/remove/reorder sections, list item edits) leaves the document structurally valid, and the live preview — rendered from the same in-memory model — exactly reflects the edited structure at all times, with the first screen fully usable at page load.

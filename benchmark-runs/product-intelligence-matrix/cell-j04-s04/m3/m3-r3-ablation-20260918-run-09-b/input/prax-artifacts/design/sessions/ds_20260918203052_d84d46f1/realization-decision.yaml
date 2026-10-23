@@ -1,0 +1,17 @@
+version: "0.1"
+realization_mode: direct_code
+conditions:
+  - id: defect_fix_fit
+    holds: true
+    basis: 本会话为 greenfield，非 defect_fix；该条件无额外约束
+  - id: visual_polish_fit
+    holds: true
+    basis: 视觉为全新实现，不依赖既有 polish 资产；SDIR 已定语义区域
+  - id: small_modification
+    holds: true
+    basis: 单主屏、零后端的小规模实现，直码成本显著低于设计工具先行
+  - id: mature_design_system
+    holds: true
+    basis: 采用自建轻量 CSS 变量 token 集，不依赖外部设计系统；SDIR+决策已完整约束样式语义
+proposed_at: 2026-09-18T20:37:35.968Z
+overridden: false

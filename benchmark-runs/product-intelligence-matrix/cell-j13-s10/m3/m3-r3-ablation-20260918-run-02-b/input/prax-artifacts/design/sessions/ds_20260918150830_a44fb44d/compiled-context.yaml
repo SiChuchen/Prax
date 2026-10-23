@@ -1,0 +1,88 @@
+version: "0.1"
+session_id: ds_20260918150830_a44fb44d
+task:
+  surfaces: []
+  primary: 在多维数据集上切换投影维度（X/Y 轴、颜色编码、维度过滤），沿不同维度视角探索记录分布
+product_relationships:
+  - id: rel_dim_proj
+    source: dimension
+    target: projection
+    type: composes
+    direction: forward
+    meaning: 投影由维度组合而成；维度是投影的可替换部件
+    importance: primary
+  - id: rel_filter_dataset
+    source: filter
+    target: dataset
+    type: constrains
+    direction: forward
+    meaning: 过滤收窄数据集的可见记录范围，并在所有维度卡上反馈分布变化
+    importance: primary
+  - id: rel_sel_records
+    source: selection
+    target: dataset
+    type: references
+    direction: bidirectional
+    meaning: 选中集按记录身份引用数据集成员，与投影维度无关
+    importance: primary
+  - id: rel_snap_state
+    source: state_snapshot
+    target: filter
+    type: captures
+    direction: forward
+    meaning: 快照捕获当时的过滤/投影/选中全量状态，是回退的锚点
+    importance: supporting
+region_relationships:
+  - id: region_rel_data_detail
+    source: data
+    target: detail
+    type: selection_drives_contextual_detail
+decisions:
+  primary_structure: PAT-DATA-EXPLORER
+  density_intent: compact
+  major_choice_ids:
+    - carry_over_on_dimension_switch
+    - state_ledger_with_attribution
+    - mixed_axis_projection
+    - canvas2d_dense_scatter
+must_preserve: []
+regression_points: []
+unresolved:
+  - dataset_source_not_given
+corrections: []
+representation_portfolio:
+  primary:
+    type: chart
+    reason: 主对象 dataset 的投影是连续坐标散点（数值轴）或分带条带（类别轴），属图表型投影视图；Canvas 2D 渲染承载高密度叠渲与框选直接操纵
+  supporting:
+    - type: cards
+      reason: 维度导轨以卡片呈现每个维度（名称、类型、微缩分布、轴角色、过滤态徽标）
+    - type: list
+      reason: 状态账本以紧凑列表呈现带归属的操作流水与回退锚点
+    - type: canvas
+      reason: 画布本体是交互 canvas：框选/悬停取样直接作用于点层
+  rejected: []
+state_ownership:
+  - state: selection
+    owner: data
+  - state: preview
+    owner: session
+acceptance:
+  - 维度切换不重置认知：任何投影/维度切换后，过滤谓词、选中记录集、颜色编码上下文全部保留且在新画布立即可见；每个过滤/投影状态显示其来源归属，且可撤销/回退到任意历史快照（验收种子：过滤/投影状态有归属且可回退）。
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - filter_state
+    - comparison_scan
+    - destructive_recovery
+    - requirement_alignment
+  regression_check_ids: []

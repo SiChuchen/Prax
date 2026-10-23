@@ -1,0 +1,72 @@
+user:
+  expertise: intermediate
+  familiarity: medium
+task:
+  primary: 在少数位置敏感候选地点之间完成选择决策：并排比较→调整偏好权重→落定选择
+  modes:
+    - compare
+    - decide
+    - locate
+  frequency: low
+domain:
+  type: residential_relocation_site_selection
+  entities:
+    - 候选地点
+    - 通勤锚点
+    - 比较维度
+    - 偏好权重
+    - 决定
+information:
+  volume: medium
+  relationship_complexity: medium
+  change_rate: medium
+  comparison_need: high
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: none
+  error_cost: medium
+priorities:
+  - 决策输入同屏可得
+  - 比较状态驻留同屏（不滚出视野）
+  - 地理语境与决策项同屏
+  - 高密度但行对齐、可扫读
+  - 首屏零加载、即时可用
+density_intent: compact
+confidence:
+  overall: high
+unknowns:
+  - id: u1
+    impact: low
+    affects:
+      - weight_profile
+      - decision
+  - id: u2
+    impact: low
+    affects:
+      - map_context
+classification:
+  version: "1"
+  task_type: configure_preferences
+  domain_id: preferences
+  interaction_mode: collection_with_contextual_detail
+  product_type: configuration_surface
+  primary_object_type: candidate
+  secondary_object_types:
+    - map_context
+    - comparison_dimension
+    - weight_profile
+    - decision
+  confidence: high
+  evidence:
+    - task_type=configure_preferences ← token '偏好' in context.task and frame.tasks
+    - domain_id=preferences ← token '偏好' in context.domain
+    - interaction_mode=collection_with_contextual_detail ← token 'compare' in context.task, frame.tasks, and context.priorities
+    - product_type=configuration_surface ← preferences domain
+    - primary_object_type=candidate ← most referenced product object in the Product Frame
+  open_questions: []

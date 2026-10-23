@@ -1,0 +1,81 @@
+version: "0.2"
+jtbd:
+  verb: explore
+  target: 多维数据（无界基数、高维度、高密度的记录集）
+  success: 维度切换不重置认知：切换投影维度后，已建立的过滤、选中集与关注焦点跨维度保留，用户能立刻在新视角中找回旧上下文
+primary_object:
+  type: dataset
+  label: 多维数据集（只读，内联，约 2400 条记录 × 10 维度）
+task_model:
+  frequency: high
+  reversibility: reversible
+  consequence: low
+  expertise: mixed
+user:
+  primary_role: 数据分析师（在本地只读数据集上做探索性分析的业务/运营分析者）
+  expertise: intermediate
+  familiarity: high
+goal:
+  primary: 在无界多维数据集中自由切换维度视角进行探索，认知不因切换而丢失
+tasks:
+  primary: 在多维数据集上切换投影维度（X/Y 轴、颜色编码、维度过滤），沿不同维度视角探索记录分布
+  secondary:
+    - 对任意维度建立过滤（数值分箱、类别勾选）并观察其他维度的分布反馈
+    - 框选/点选记录形成选中集，跨投影追踪同一批记录
+    - 查看每个过滤/投影状态的来源归属，并单独移除或整体回退到历史状态
+product_objects:
+  - id: dataset
+    user_name: 数据集
+    purpose: 探索的总对象：内联只读记录集，首屏即就绪
+  - id: dimension
+    user_name: 维度
+    purpose: 数据的一个可投影轴（数值/类别/层级），是切换与过滤的对象，也是主要认知负担所在
+  - id: projection
+    user_name: 投影
+    purpose: 当前 X×Y（+颜色编码）的维度组合，决定画布呈现；切换投影不销毁过滤与选中
+  - id: filter
+    user_name: 过滤
+    purpose: 限定参与记录范围的谓词；每条有来源归属，可单独移除
+  - id: selection
+    user_name: 选中集
+    purpose: 用户以记录身份框选的一批记录，跨投影维度保持并高亮
+  - id: state_snapshot
+    user_name: 状态快照
+    purpose: 探索轨迹上的有归属检查点，可回退（撤销/重做/跳转）
+relationships:
+  - id: rel_dim_proj
+    source: dimension
+    target: projection
+    type: composes
+    direction: forward
+    meaning: 投影由维度组合而成；维度是投影的可替换部件
+    importance: primary
+  - id: rel_filter_dataset
+    source: filter
+    target: dataset
+    type: constrains
+    direction: forward
+    meaning: 过滤收窄数据集的可见记录范围，并在所有维度卡上反馈分布变化
+    importance: primary
+  - id: rel_sel_records
+    source: selection
+    target: dataset
+    type: references
+    direction: bidirectional
+    meaning: 选中集按记录身份引用数据集成员，与投影维度无关
+    importance: primary
+  - id: rel_snap_state
+    source: state_snapshot
+    target: filter
+    type: captures
+    direction: forward
+    meaning: 快照捕获当时的过滤/投影/选中全量状态，是回退的锚点
+    importance: supporting
+mental_model_hypothesis:
+  summary: 用户把探索理解为『换镜头不换底片』：数据集是固定的底片，维度投影是可换的镜头，过滤与选中是叠加在底片上的标注——换镜头时标注必须原样保留。状态账本像照相簿，每一次操作留下一张有归属的底片，可随时翻回。
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: 维度切换不重置认知：任何投影/维度切换后，过滤谓词、选中记录集、颜色编码上下文全部保留且在新画布立即可见；每个过滤/投影状态显示其来源归属，且可撤销/回退到任意历史快照（验收种子：过滤/投影状态有归属且可回退）。
+open_questions: []

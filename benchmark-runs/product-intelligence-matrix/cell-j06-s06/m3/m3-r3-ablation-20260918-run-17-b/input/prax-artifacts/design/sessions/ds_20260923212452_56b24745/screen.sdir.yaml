@@ -1,0 +1,143 @@
+version: "0.2"
+screen:
+  id: workspace_screen
+  intent:
+    primary_task: 在时间轴上浏览并选中一个变更事件，理解它改变了哪些组件的哪些字段、由哪个事件引起、又导致了哪些后续事件
+    secondary_tasks:
+      - 用时间游标检查任一时刻的系统状态快照（游标前全部变更折叠后的结果）
+      - 按组件或事件类型过滤时间轴，聚焦关心的变更子集
+      - 沿因果链在相关事件之间跳转，向前追根因、向后看影响面
+  archetype:
+    pattern_ref: PAT-WORKSPACE
+  density_intent: regular
+  regions:
+    - id: 变更事件序列：按时间正序排列的时间轴（顺序即因果上限）
+      role: experimental:变更事件序列：按时间正序排列的时间轴（顺序即因果上限）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 选中事件的详情：字段级前值→后值变更明细 + 起因/导致因果上下文
+      role: experimental:选中事件的详情：字段级前值→后值变更明细 + 起因/导致因果上下文
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 时间游标下的组件状态快照（游标前事件折叠投影）
+      role: experimental:时间游标下的组件状态快照（游标前事件折叠投影）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 类型/组件过滤与事件类型图例
+      role: experimental:类型/组件过滤与事件类型图例
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 系统元信息（名称、观察窗口）
+      role: experimental:系统元信息（名称、观察窗口）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: workspace
+      role: dominant_workspace
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - preserve_context
+  relationships: []
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved:
+    - id: demo_dataset_provenance
+      question: demo_dataset_provenance
+      impact: low
+      affects:
+        - realize
+  rejected_alternatives:
+    - option: PAT-APPLICATION-SHELL（全局导航壳）
+      reason: 已路由并检视至 L2：pattern contract 明示 does_not_apply_when『the product is a single workspace』；本产品只有这一个工作区，持久 chrome 只会挤占时间轴与检查器空间
+    - option: PAT-LIST-DETAIL 纯列表-详情（不带持久游标面板）
+      reason: 已路由并检视至 L2：能覆盖事件选中检视，但无法承载时间游标下的状态快照常驻；游标方位（H-21 Orientation Invariants）需要 workspace 持久面板
+    - option: 独立力导向因果图作为主视图
+      reason: relationality 仅 medium；脱离时间轴后因果方向失去时间参照，违背时间-因果一致性判别
+    - option: card grid / 日历 / feed 作为主表征
+      reason: 等权磁贴抹平时间序（myth-card-grid-default 针对的默认）；日历弱化分钟级顺序；feed 无游标语义无法承载快照折叠投影
+  user_job:
+    verb: understand
+    target: 随时间演化的系统状态（change_set：带时间戳与因果链接的变更事件序列）
+    success: 变更因果可读：任一时刻的状态可追溯到产生它的变更事件，任一事件的起因与后果可沿时间正向追踪，时间排序与因果方向永远一致
+  primary_object:
+    type: change_set
+    label: 变更事件序列（时间轴）
+  information_shape:
+    cardinality: many
+    relationality: medium
+    hierarchy: medium
+    temporality: high
+    density: medium
+    dimensionality: medium
+    spatiality: none
+    volatility: medium
+    uncertainty: low
+    comparison_need: none
+  representation:
+    primary:
+      type: timeline
+      reason: 时间性 high 且判别要求因果与时间结构互相一致：垂直时间轴让『顺序』成为主结构，因果连线沿轴呈现即时间-因果同构；change_set 的天然投影
+    supporting:
+      - type: list
+        reason: 时间轴条目为按天分组的事件列表（List-Detail 的列表侧），顺序严格单调，行内承载徽标/时间/标题/组件/chips
+      - type: table
+        reason: 状态快照面板用表格式字段清单呈现组件×字段×当前值，支持变更字段高亮
+      - type: diagram
+        reason: 时间轴左轨因果连线以小型链路图元表达因果链方向（始终指向时间下游）
+  priority:
+    primary:
+      - 变更事件序列：按时间正序排列的时间轴（顺序即因果上限）
+      - 选中事件的详情：字段级前值→后值变更明细 + 起因/导致因果上下文
+      - workspace
+    contextual:
+      - 时间游标下的组件状态快照（游标前事件折叠投影）
+      - 类型/组件过滤与事件类型图例
+      - 系统元信息（名称、观察窗口）
+  interaction:
+    preview: none
+    inspect: select
+    navigate: none
+    locate: none
+  state_ownership:
+    - state: selection
+      owner: 变更事件序列：按时间正序排列的时间轴（顺序即因果上限）
+    - state: preview
+      owner: session
+  complexity_budget:
+    permanent_panels: 3
+    permanent_primary_actions: 2
+    modes: 0
+    state_owners: 1
+    navigation_levels: 1
+    persistent_filters: 2
+    new_semantic_concepts: 4
+    keyboard_contracts: 1
+    mobile_conflicts: 0
+    permanent_surfaces: 1
+  acceptance:
+    - 用户任选一个时间点，能看到该时刻完整且由因果一致的事件序列折叠出的系统状态；任选一个事件，能看到它改了什么字段（前值→后值）、由哪个事件引起、又引发了哪些事件；时间轴排序与因果方向处处一致，用户无需自行比对时间戳判断先后。

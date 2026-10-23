@@ -1,0 +1,83 @@
+{
+  "reviewer": "R2",
+  "package_id": "impl-05",
+  "session_id": "b5518dcb-0045-47ab-a04f-29c5d16bc230",
+  "wall_clock_seconds": 148,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-05",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Primary representation is a pannable/zoomable spatial canvas of draggable canvas objects ('tiles') inside zone rectangles, with all facts derived from position — screenshots/1280x860.png and 1440x900.png show 13 tiles in 4 labeled zones (Entrance Hall, Main Gallery, North Wing, Archive); app.js:74-100 derives zone membership by center-containment (zoneOf/zoneAt) and nearest-neighbor distance; index.html:7 meta description states 'land objects into zones' — exactly the brief's spatial-workspace/canvas_object shape and the 落位即意图 (placement is intent) success criterion, echoed in the title bar tagline."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "Create is the dominant verb on load: first two toolbar buttons are '＋ Object N' and '＋ Zone R' (index.html:19-20; visible top-center in both screenshots); the full first screen is the create-target canvas itself; status bar leads with 'N new object · R new zone' (screenshot 1280x860 bottom bar), and create flow (ghost → arrows → Enter, app.js:289-304, 774-785) is the most-rehearsed interaction in the keyboard map."
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "Model-judged proxy: the initial screen self-explains within seconds — title bar tagline '落位即意图 · placement is intent' (index.html:16), inspector placeholder literally instructs 'Click a tile or a zone chip to inspect' with the top-5 shortcuts listed (app.js:574-582, visible in both screenshots), rail hint 'Select a tile, then press 1–8 to send it to that zone' (index.html:38), and status bar 'Ready — Tab selects · N new object · R new zone · ? keyboard map'. What/where/how-to-act are all on the first paint."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Primary object is on-screen at load with zero navigation: single click selects (app.js:643-659), Tab cycles tiles without pointer (app.js:252-267, 789-793), and inspection is the adjacent right panel — no modes, tabs, routes, or drill-downs anywhere in index.html:33-54; creating an object is 2 keystrokes (N, Enter) or 1 click plus drop (app.js:289-296, 626-634)."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "Structurally context-preserving: single page, no navigation away is possible; rename is an in-place overlay positioned over the edited element (app.js:399-424); toolbar buttons hand focus back to the canvas so shortcuts keep working (app.js:942-955); the keyboard-map dialog returns focus to the viewport on close (app.js:864-869); destructive reset uses a two-step in-button confirm instead of a modal/native dialog (app.js:876-890)."
+      },
+      "ui_surface_complexity": {
+        "score": 5,
+        "evidence": "Permanent surfaces are exactly: title bar (9 controls), zone rail, contextual inspector, status bar (index.html:12-60), with the help map hidden until '?' (index.html:62). Every permanent control maps to a distinct needed capability (create ×2, snap, zoom −/+/label-reset/Fit, keys, reset); rail zone rows double as targets/legend for the 1–8 send-to-zone keys (app.js:506-523). No decorative or redundant permanent panels at either viewport."
+      },
+      "accessibility": {
+        "score": 3,
+        "evidence": "Strong keyboard parity and semantics: focus-visible outlines (styles.css:67-70), role=toolbar/aria-pressed/aria-live status (index.html:18, 22, 57), dialog aria-modal (index.html:62), per-tile aria-labels (app.js:469-471); a11y.contrast passes (measurement-summary.json check 'a11y.contrast': pass). But 'a11y.target_size': fail and 'type.min_projected_size': fail (measurement-summary.json) — consistent with source: button padding 5px 10px (styles.css:54-65), zone-chip padding 2px 8px 3px at 12px font (styles.css:177-194), 10-11px kbd/link-label text (styles.css:43, 194, 241); 'a11y.focus_order': skipped gives no evidence. Additionally tiles carry role=\"button\" (app.js:469-471) inside #world[aria-hidden=\"true\"] (index.html:42), which hides these interactive elements from assistive technology."
+      },
+      "frontend_rework": {
+        "score": 3,
+        "evidence": "Three of seven receipt checks fail: 'layout.overflow': fail, 'a11y.target_size': fail, 'type.min_projected_size': fail (measurement-summary.json). Visible surfaces otherwise look clean at both viewports — 'layout.responsive_collision': pass and 'text.truncation': pass, and neither screenshot shows clipped, colliding, or truncated UI. The overflow failure's visual cause is not identifiable from the screenshots, so rework cannot be sized below moderate."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed '空间操作有键盘等价物' is addressed exhaustively: the help overlay maps every pointer op to keys (index.html:68-125, footer states 'Every pointer spatial operation above has a keyboard equivalent'); source implements create (N/R), ghost positioning (arrows+Enter, app.js:774-785), move/drag-nudge (app.js:316-336), send-to-zone 1–8 (app.js:854-857), duplicate Ctrl+D, delete Del, reorder [ / ], pan WASD/Space-drag, zoom +/−/0/F, snap G, cycle Tab, select-all Ctrl+A; even zone dragging has arrow parity (app.js:319-326 comment 'keyboard parity for every spatial op'). Also covers delivery constraints: static index.html at root, no build, initial demo scene inlined so first paint is usable (app.js:15-41, 907-909), localStorage is a courtesy with no loading state (app.js:132-147)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "measurement-summary.json 'layout.overflow': fail — no corresponding visual defect identifiable in either screenshot; cause unknown from blind evidence",
+      "measurement-summary.json 'a11y.target_size': fail — consistent with compact toolbar buttons (styles.css:54-65) and small zone-chip hit areas (styles.css:177-194)",
+      "measurement-summary.json 'type.min_projected_size': fail — 10px text present: .link-label font-size 10px (styles.css:241), .zone-chip kbd 10px (styles.css:194); kbd 11px (styles.css:43)",
+      "Interactive tiles have role=\"button\" (app.js:469-471) but are nested inside #world marked aria-hidden=\"true\" (index.html:42), removing them from the accessibility tree",
+      "Zone-chip labels overlap the zone top edge by design (translateY(-100%), styles.css:180); at the Archive/Main Gallery chips this reads slightly cramped at 1280x860, though no check flags it"
+    ],
+    "missing_evidence": [
+      "a11y.focus_order was skipped in the receipt — no evidence on tab order/focus behavior under assistive navigation",
+      "Root cause of the layout.overflow failure cannot be located in the screenshots or source (viewport/world use overflow:hidden); only the check id is available"
+    ],
+    "overall_note": "impl-05 is a single-page static canvas application ('Plotboard') whose representation matches the brief almost point-for-point: a physical spatial workspace where canvas objects land in zones and 'placement is intent' is both the tagline and the implemented mechanic — zone membership, occupancy, nearest-neighbor, and landing previews are all derived from position (app.js:74-100, 305-315, 525-585), never entered via forms. The primary create task dominates the first screen, the primary object requires zero navigation, and no interaction forces context loss. The acceptance seed (keyboard equivalents for every spatial operation) is not merely covered but systematically implemented and documented (index.html:68-125). The weaknesses are concentrated in accessibility and polish: three of seven receipt checks fail (layout.overflow, a11y.target_size, type.min_projected_size), small type and small hit targets are traceable in styles.css, and the aria-hidden world container hides the interactive tiles from assistive technology despite otherwise strong ARIA usage; focus-order evidence is absent because that check was skipped. Net: representation, salience, navigation, and seed coverage are top-marked on visible evidence; accessibility and rework sit at the middle mark on receipt failures, with model-judged proxies only — no claim is made about human preference, task time, or retrieval accuracy."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 36368,
+      "outputTokens": 5800,
+      "cacheReadInputTokens": 103360,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.37851999999999997,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-10-23T17:25:06.460Z"
+}

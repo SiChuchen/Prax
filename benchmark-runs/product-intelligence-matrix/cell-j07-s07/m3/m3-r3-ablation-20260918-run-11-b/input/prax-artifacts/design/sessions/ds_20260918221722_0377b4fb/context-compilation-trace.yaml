@@ -1,0 +1,42 @@
+version: "0.1"
+session_id: ds_20260918221722_0377b4fb
+task_ref: Create canvas objects and land them in zones; re-place them as intent changes (drag, arrows, send-to-zone keys)
+selected:
+  - ref: product_relationships
+    reason:
+      - contained_in:canvas_object->region
+      - positioned_on:canvas_object->floor_canvas
+      - surfaced_by:derived_relation->canvas_object
+  - ref: region_relationships
+    reason:
+      - region_rel_architecture_inspector
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-CANVAS-WORKSPACE
+  - ref: unresolved
+    reason:
+      - Domain theme (gallery vs warehouse vs stage) is left neutral as 'floor & zones'; low impact on shape compliance
+      - domain_theme
+  - ref: corrections
+    reason: []
+  - ref: validation-plan@1
+    reason:
+      - semantic_conformance
+      - state_completeness
+      - product_model_alignment
+      - keyboard
+      - hierarchy_review
+      - representation_decided
+      - state_ownership_declared
+      - acceptance_contract_present
+      - complexity_budget_declared
+      - relationship_trace
+      - context_preservation
+      - canvas_signal_hierarchy
+      - destructive_recovery
+      - requirement_alignment
+excluded:
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata

@@ -1,0 +1,72 @@
+version: "0.2"
+jtbd:
+  verb: edit
+  target: a single structured document
+  success: Edits never break the document structure, and the preview is always consistent with the edited structure.
+primary_object:
+  type: document
+  label: Document（单一结构化文档）
+task_model:
+  frequency: medium
+  reversibility: reversible
+  consequence: medium
+  expertise: mixed
+user:
+  primary_role: Content author / documentation writer (edits structured docs like release notes, specs, reports)
+  expertise: intermediate
+  familiarity: medium
+goal:
+  primary: Let a user edit one structured document with full confidence that no edit can break its structure and that the preview always matches what is being edited.
+tasks:
+  primary: Edit the content of one structured document via structure-preserving controls while the live preview stays exactly consistent.
+  secondary:
+    - Reorder, rename, add or remove sections without breaking the outline
+    - Check structure integrity (validation) and see it stay valid after every edit
+    - Undo an accidental edit
+    - Export/copy the resulting document
+product_objects:
+  - id: document
+    user_name: 文档 Document
+    purpose: The single document being edited; owns title, metadata and its ordered sections; always structurally valid.
+  - id: section
+    user_name: 章节 Section
+    purpose: One typed, ordered structural block of the document (heading, key facts, list, paragraph…); the unit of structure-preserving edits.
+  - id: preview
+    user_name: 预览 Preview
+    purpose: Faithful rendering of the document derived from the same model as the editor; guarantees the 'structured editing ↔ preview' consistency.
+  - id: structure_check
+    user_name: 结构检查 Structure check
+    purpose: Live structural validation (required fields, empty headings, list integrity) so 'edits never break structure' is visible, not just promised.
+relationships:
+  - id: doc_has_sections
+    source: document
+    target: section
+    type: composed_of
+    direction: forward
+    meaning: The document is an ordered sequence of sections; adding/removing/reordering sections changes the document structure.
+    condition: always — sections define document structure
+    importance: primary
+  - id: preview_derives_doc
+    source: document
+    target: preview
+    type: rendered_as
+    direction: forward
+    meaning: The preview renders exactly the current document model; every edit is immediately reflected, guaranteeing editor↔preview consistency.
+    condition: always — preview is derived, never independently editable
+    importance: primary
+  - id: section_in_preview
+    source: section
+    target: preview
+    type: mirrored_in
+    direction: bidirectional
+    meaning: Selecting a section in the editor highlights its block in the preview and vice versa, making the correspondence inspectable.
+    condition: always — structural sync
+    importance: supporting
+mental_model_hypothesis:
+  summary: Users think of the document as an ordered outline of typed sections holding editable fields; the preview is simply 'what the document looks like' and must mirror that outline exactly. Structure is something the tool guards, not something the user can break.
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: Any sequence of edit operations (field edits, add/remove/reorder sections, list item edits) leaves the document structurally valid, and the live preview — rendered from the same in-memory model — exactly reflects the edited structure at all times, with the first screen fully usable at page load.
+open_questions: []

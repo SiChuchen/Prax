@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>脉络 · 自检 — 关系跟随全链路验证</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header id="topbar">
+    <div class="brand">
+      <div class="logo">络</div>
+      <div class="brand-txt">
+        <h1>脉络 <span>· 自检页</span></h1>
+        <p>在真实浏览器中执行交互全链路断言，结果见右下角面板</p>
+      </div>
+    </div>
+    <div class="search-wrap">
+      <input id="search" type="text" placeholder="搜索节点…" autocomplete="off" aria-label="搜索节点">
+      <div id="search-drop" class="search-drop" hidden></div>
+    </div>
+    <div class="topstats" id="topstats"></div>
+    <button id="btn-reset" class="btn" title="清除聚焦与跟随路径（Esc）">重置视图</button>
+  </header>
+
+  <main>
+    <section id="stage" aria-label="关系图主视图">
+      <svg id="graph" role="img" aria-label="系统依赖关系图">
+        <defs id="defs"></defs>
+        <g id="g-lanes"></g>
+        <g id="g-edges"></g>
+        <g id="g-trace"></g>
+        <g id="g-nodes"></g>
+      </svg>
+      <div id="tracebar" class="tracebar" hidden aria-label="跟随路径"></div>
+      <div class="modes" role="group" aria-label="高亮模式">
+        <button data-mode="adj" class="on">相邻</button>
+        <button data-mode="deps">依赖闭包</button>
+        <button data-mode="impact">影响闭包</button>
+      </div>
+      <div class="viewctl">
+        <button id="btn-zin" title="放大">+</button>
+        <button id="btn-zout" title="缩小">−</button>
+        <button id="btn-fit" title="适应视图（F）">⤢</button>
+      </div>
+      <div id="tooltip" class="tooltip" hidden></div>
+    </section>
+    <aside id="panel" aria-label="上下文面板"><div id="panel-body"></div></aside>
+  </main>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+  <script src="selftest.js"></script>
+</body>
+</html>

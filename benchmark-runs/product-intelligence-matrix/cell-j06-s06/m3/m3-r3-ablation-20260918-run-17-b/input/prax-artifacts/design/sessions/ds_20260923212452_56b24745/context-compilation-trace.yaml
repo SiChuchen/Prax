@@ -1,0 +1,36 @@
+version: "0.1"
+session_id: ds_20260923212452_56b24745
+task_ref: 在时间轴上浏览并选中一个变更事件，理解它改变了哪些组件的哪些字段、由哪个事件引起、又导致了哪些后续事件
+selected:
+  - ref: product_relationships
+    reason:
+      - rel_causal_chain_change_event:causal_chain->change_event
+      - rel_change_event_component:change_event->component
+      - rel_change_event_state_snapshot:change_event->state_snapshot
+  - ref: region_relationships
+    reason: []
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-WORKSPACE
+  - ref: unresolved
+    reason:
+      - demo_dataset_provenance
+  - ref: corrections
+    reason: []
+  - ref: validation-plan@1
+    reason:
+      - semantic_conformance
+      - state_completeness
+      - product_model_alignment
+      - keyboard
+      - hierarchy_review
+      - representation_decided
+      - state_ownership_declared
+      - acceptance_contract_present
+      - complexity_budget_declared
+      - requirement_alignment
+excluded:
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata

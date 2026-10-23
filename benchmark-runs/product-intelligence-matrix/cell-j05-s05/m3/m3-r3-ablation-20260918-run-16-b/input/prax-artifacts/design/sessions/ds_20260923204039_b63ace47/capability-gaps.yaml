@@ -1,0 +1,74 @@
+needs:
+  - id: trace_follow
+    product_action: 从选中节点沿上游（我所依赖）或下游（依赖我者）逐步追踪，全程全图可见
+    required_experience:
+      - 点击节点即选中并打开检查器
+      - 单方向逐跳扩展（逐步/自动到底），距离着色+面包屑同步更新
+      - 非追踪内容降不透明度但常驻，小地图同步高亮追踪范围
+    capabilities:
+      - 静态图模型（内联 JSON）+ 邻接表索引
+      - BFS 闭包与跳数计算（纯函数，可单测）
+      - SVG 状态类切换（trace-active/dimmed/distance-着色）
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端：数据内联、算法本地计算、SVG 渲染状态切换；无任何后端依赖
+  - id: inspect_selection
+    product_action: 选中节点后查看属性（类型/负责人/说明/关键度）与直接上/下游明细
+    required_experience:
+      - 选中即更新检查器
+      - 上/下游分组列表可点击继续跟随
+    capabilities:
+      - 图数据结构查询（入边/出边）
+      - 检查器 DOM 更新
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 检查器为选中驱动的从属面板，数据源自同一内联图模型
+  - id: search_locate
+    product_action: 按名称搜索并定位节点（画布居中+选中）
+    required_experience:
+      - 输入即时联想
+      - 回车后画布平滑定位且不改变全局布局
+    capabilities:
+      - 前缀/包含匹配
+      - 键盘上下选择+回车确认
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端字符串匹配；定位仅改变视口，不动布局，保持位置不变量
+  - id: pan_zoom
+    product_action: 画布平移缩放、适应全图
+    required_experience:
+      - 滚轮缩放+拖拽平移
+      - 适应全图按钮一键复位
+    capabilities:
+      - 视口变换矩阵（pan/zoom）
+      - 小地图视口框投影
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: SVG viewBox/transform 实现，不触碰节点坐标
+  - id: minimap_overview
+    product_action: 常驻小地图：全图轮廓+视口框+追踪范围高亮
+    required_experience:
+      - 任何追踪/平移缩放状态下小地图始终同步
+    capabilities:
+      - 布局结果二次投影到缩略画布
+      - 追踪集合与视口矩形叠加绘制
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 与主画布共享同一布局坐标，纯投影计算
+  - id: deterministic_layout
+    product_action: 确定性分层布局（固定行列、位置不变量）
+    required_experience:
+      - 同图同布局：每次加载与任何交互后节点位置不变
+    capabilities:
+      - 最长路径分层
+      - 层内重心法排序
+      - 交叉数与边长评估
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 自研轻量算法（无外部库）：最长路径分层+重心法排序，加载时一次性计算

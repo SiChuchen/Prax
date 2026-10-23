@@ -1,0 +1,79 @@
+{
+  "reviewer": "R2",
+  "package_id": "impl-20",
+  "session_id": "a56e366e-271c-4ddc-a1a1-1c3291a2c38e",
+  "wall_clock_seconds": 154,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-20",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Brief demands a locate path into an unbounded weakly-related collection (brief.md user_job/shape). App is a dedicated locator: title 'PartAtlas — locate a component' (source/index.html:6), search bar + collection tree + facet chips + grouped results + inspector (screenshots 1280x860/1440x900; source/app.js:1-10 declares PAT-LIST-DETAIL filter-first with query/filters/select state owners). Primary object is the item row (app.js:276-289)."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "Locating dominates the initial screen: full-width search input with 'Search parts — mpn, value, description…' placeholder and '/' hint centered in header (screenshot 1280x860; index.html:23-30), left rail filters with live counts, results list rendered with data on load, status bar '2,180 of 2,180 parts · 0 filters active'. No competing flows."
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "Model proxy: brand subtitle 'COMPONENT LOCATOR', breadcrumb 'All parts › no category scope', grouped list header 'Capacitors › Ceramic MLCC 120', and keyboard legend in footer ('/ search ↑↓ move ↵ inspect Esc clear') let a viewer parse what/where in seconds (screenshot 1280x860 footer; index.html:35-36,70-75)."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Locate in ≤3 interactions is structurally achievable: per-keystroke search over a precomputed haystack (app.js:111, data.js:249-255), one-click category (app.js:203) / family (app.js:217) / facet chips (app.js:245), keyboard /,↑↓,Enter path (app.js:412-429), deep-link ?q=&cat=&fam= (app.js:435-440). No modes, no page loads; everything on one screen."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "Explicit context rule: query and filters compose AND and never reset each other or the selection (app.js:6-9); selection surviving narrowing is annotated '✓ in current narrowing' / '⚠ outside current narrowing' with 'Show in its home context' (app.js:352-357); inspector is a third pane so 'detail never replaces context' (screenshot right panel; index.html:66); empty state says 'Your context is kept — nothing was lost' (index.html:57); removable facet chips in breadcrumb strip (app.js:139-149)."
+      },
+      "ui_surface_complexity": {
+        "score": 5,
+        "evidence": "Six permanent regions (header/search, breadcrumb strip, filter rail, results, inspector, status bar; index.html:13-75), all serving the locate job; facet chip volume (up to 14 per facet, app.js:232) is proportional to an unbounded 2,180-part catalog and carries counts for narrowing. No decorative surfaces, tabs, or dialogs in either screenshot."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Receipt fails 4 of 7 checks: a11y.contrast=fail, a11y.focus_order=fail, a11y.target_size=fail, type.min_projected_size=fail (measurement-summary.json checks layout.* pass). Source corroborates: 11px kbd/labels (styles.css:44,170,218,323), 20x20px clear button (styles.css:100-101), compact 2-3px-padding chips (~20px tall, styles.css:132-140,228-236), 12px gray text --ink-3 #6a7480 on #f4f6f8 ≈4.3:1 (styles.css:12,131). Good primitives exist — :focus-visible outline (styles.css:38-42), aria-pressed, role=listbox + aria-activedescendant (app.js:60,281) — but the objective failures dominate."
+      },
+      "frontend_rework": {
+        "score": 5,
+        "evidence": "layout.overflow=pass, layout.responsive_collision=pass, text.truncation=pass (measurement-summary.json:11-13); target_invalid=false; both screenshots (1280x860, 1440x900) show intact three-column layout with ellipsized descriptions, sticky group header, no clipping or collision. No defect receipts implying rework."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed '定位路径有搜索/过滤支撑且不丢上下文': search supported by per-part lowercase haystack (data.js:249-255) with tokenized AND matching (app.js:52-67); filters supported by category/family tree + 4 facets with live counts recomputed per query (app.js:71-96,226-250); context preservation via never-reset rule, out-of-narrowing badge, and context-kept empty state (app.js:6-9,352-357; index.html:57)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "a11y.contrast fail per receipt; consistent with 11-12px gray text pairs (e.g. --ink-3 #6a7480 on #f4f6f8, styles.css:12,131,218) despite the stylesheet header comment claiming 'AA contrast on all text pairs' (styles.css:3)",
+      "a11y.target_size fail per receipt; 20x20px search-clear button (styles.css:100-101) and low-padding chip/crumb targets (styles.css:132-140,228-236)",
+      "a11y.focus_order fail per receipt; document-level arrow-key handler can move selection independent of DOM focus, and ↵ moves focus via tabindex=-1 on the inspector (app.js:412-429)",
+      "type.min_projected_size fail per receipt; multiple 11px text styles (styles.css:44,170,218,323)"
+    ],
+    "missing_evidence": [],
+    "overall_note": "impl-20 is a single-screen locator whose representation matches the cell brief almost exactly: search plus faceted narrowing over an inlined 2,180-item catalog (8 categories, 29 families — counts in data.js sum to the 2,180 shown in the status bar), with a persistent inspector that annotates rather than drops context, directly answering the acceptance seed. Layout receipt is clean at both viewports and the source shows deliberate context-preservation logic. The one materially weak area is accessibility: four of seven objective checks fail (contrast, focus order, target size, minimum type size), and the source's own 'AA contrast on all text pairs' comment (styles.css:3) is contradicted by the receipt's a11y.contrast fail. Task completion time, retrieval accuracy, and human preference are not observable in this blind pilot; the 5s above are structural/model-proxy judgments, not human measurements."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 34091,
+      "outputTokens": 5864,
+      "cacheReadInputTokens": 244928,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.439519,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-10-23T18:12:26.704Z"
+}

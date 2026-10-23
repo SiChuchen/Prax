@@ -1,0 +1,81 @@
+needs:
+  - id: N1-live-stream
+    product_action: 持续推进易变指标流（每 ~1.2s 采样一次）
+    required_experience:
+      - 页面加载后指标值持续、平滑地变化
+      - 暂停/恢复（空格键）
+    capabilities:
+      - 前端 tick 引擎
+      - 确定性 PRNG 种子数据
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 无后端要求下以定时器驱动的客户端流引擎模拟；约束明确允许
+  - id: N2-inline-initial-data
+    product_action: 首屏即 ready（初始数据随页面就绪）
+    required_experience:
+      - 首屏渲染即呈现完整指标墙与历史轨迹，无 loading 态
+    capabilities:
+      - 加载时确定性生成 90 点/指标历史
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 脚本同步内联生成历史缓冲，首帧即为 ready
+  - id: N3-anomaly-detection
+    product_action: 在采样点上即时判定 anomaly（critical/warning）
+    required_experience:
+      - 异常在采样到达的同一 tick 内反映到墙面
+    capabilities:
+      - 阈值越界检测
+      - 突跳检测（|z|>2.5 或斜率阈值）
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 阈值与滑动基线均为纯前端计算
+  - id: N4-change-traceability
+    product_action: 任一 metric 的变化可追溯（带时间戳逐点历史）
+    required_experience:
+      - 选中指标看到 90 点轨迹与每点时间戳/值/Δ
+    capabilities:
+      - 环形缓冲
+      - inspector 轨迹图
+      - 逐点变化列表
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 每 metric 维护 90 点环形缓冲，inspector 就地渲染
+  - id: N5-no-flicker-update
+    product_action: 高易变流下更新无闪烁噪声
+    required_experience:
+      - DOM 节点与位置恒定，仅文本/色值就地替换
+      - 无入场动画、无整页重排
+    capabilities:
+      - 原生 DOM 文本/属性就地替换
+      - 恒定布局 CSS grid
+      - prefers-reduced-motion 尊重
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 不引入 vdom 差异抖动；瓦片节点一次性创建，更新仅改 textContent/类名/SVG path
+  - id: N6-filter-narrowing
+    product_action: 按 severity/group 收窄扫视范围
+    required_experience:
+      - 过滤后计数与墙面一致，位置语义不变
+    capabilities:
+      - 客户端谓词过滤
+      - 计数同步
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯客户端数组过滤
+  - id: N7-inline-sparkline
+    product_action: 每瓦片内嵌近期轨迹 sparkline
+    required_experience:
+      - 扫视时可辨趋势与异常区间
+    capabilities:
+      - 内联 SVG path
+      - inspector 放大轨迹图
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 轻量内联 SVG，无图表库依赖

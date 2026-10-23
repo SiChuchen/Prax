@@ -1,0 +1,55 @@
+version: "0.1"
+session_id: ds_20260923191201_1b62cf32
+task:
+  surfaces: []
+  primary: "Locate a target part: type a search fragment and/or apply 1–2 facet filters, then select the part from results."
+product_relationships:
+  - id: rel_part_family
+    source: part
+    target: family
+    type: belongs_to
+    direction: forward
+    meaning: Each part lives in exactly one family
+    importance: primary
+  - id: rel_family_category
+    source: family
+    target: category
+    type: belongs_to
+    direction: forward
+    meaning: Each family rolls up to one category
+    importance: primary
+  - id: rel_part_facet
+    source: part
+    target: facet
+    type: has_attribute
+    direction: forward
+    meaning: Parts expose attribute values usable as facet filters
+    importance: supporting
+region_relationships: []
+decisions:
+  primary_structure: PAT-LIST-DETAIL
+  density_intent: regular
+  major_choice_ids:
+    - instant_search
+    - context_rule
+    - inspector_pinning
+    - grouped_results
+    - initial_focus
+must_preserve: []
+regression_points: []
+unresolved: []
+corrections: []
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - requirement_alignment
+  regression_check_ids: []

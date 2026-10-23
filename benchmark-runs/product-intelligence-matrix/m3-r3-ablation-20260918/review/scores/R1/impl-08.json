@@ -1,0 +1,80 @@
+{
+  "reviewer": "R1",
+  "package_id": "impl-08",
+  "session_id": "6c7df846-f0f5-4948-b7c2-86f9ce75cc4a",
+  "wall_clock_seconds": 233,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-08",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Primary object is a change_set (source/js/data.js:28-76 — 42 changes with `cause` edge arrays over 5 components, 36h window) rendered as a component-swimlane temporal-sequence timeline with phase bands, causal edge paths, playback cursor, and same-window metric sparklines (screenshots 1280x860/1440x900; app.js:103-197). Matches brief shape temporal-sequence (time=high) and job 'understand evolving state with readable causality'."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "Causal timeline is the dominant center region in both screenshots; change c05 is pre-selected at load (app.js:32, app.js:420) with its chain highlighted and the right panel showing '◀ 因 · 直接上游（0） / ▶ 果 · 直接下游（1）' (1280x860 right card), making the causality-reading task immediately active."
+      },
+      "time_to_understand": {
+        "score": 4,
+        "evidence": "Near-instant orientation: header names object + counts + '时序校验 33/33 通过 ✓' badge, phase bands narrate 常规发布→延迟回归→缓存连锁→结算灰度→维护窗口 (screenshots; index.html:13-21). Deduction: check type.min_projected_size=fail and muted 9.5–11px labels (style.css:55,66,125,138); default edges lack arrowheads so direction rests on the sidebar note (index.html:40; app.js:164-165)."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Primary object requires 0 steps (selected detail visible at load, screenshots); everything else is 1 click — node (app.js:182→206), chain item (app.js:219), phase zoom (app.js:87), ArrowLeft/Right change stepping (app.js:400-405), deep-link params (app.js:35-42). No modes, pages, or drill-downs."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "All primary actions are in place: selection dims but never removes nodes/edges (app.js:178, style.css:143 `.node.dim` opacity .16); phase/scroll zoom preserves lanes, selection and cursor; metric strip shares the same view window (app.js:311), keeping cause→effect cross-reading aligned. Single screen, no navigation away (index.html:34-60)."
+      },
+      "ui_surface_complexity": {
+        "score": 4,
+        "evidence": "Permanent surfaces: top bar (play/speed/clock/fit), legend + phase list + note, timeline, 2 right cards, 3 metric panels (index.html:11-62). Each maps to the understand job and none is redundant, but simultaneous density is high at 1280x860 (style.css:52 — 214px + 342px side columns; style.css:113 — 174px strip), and usage instructions are permanently on screen (index.html:40-41) with small type as the cost."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Receipt: a11y.contrast=fail and type.min_projected_size=fail; a11y.focus_order and a11y.target_size pass (measurement-summary.json). Contrast fail is credible: --muted #66738a on #11151d ≈3.8:1 (style.css:9 vs :4), used at 9.5–11px (style.css:55,66,138). SVG change nodes are mouse-only — click/mouseenter listeners, no tabindex/role (app.js:174-186) — keyboard covers only playback (Space/Arrows, app.js:397-406); no :focus styles anywhere in style.css. Positive: shape+color dual encoding (data.js:6-13)."
+      },
+      "frontend_rework": {
+        "score": 4,
+        "evidence": "layout.overflow, layout.responsive_collision, text.truncation all pass (measurement-summary.json); both screenshots show clean, non-overlapping layout. Residual defects are a11y/type failures plus one micro-defect: last axis tick clipped to '22:0' at the right edge in both viewports (centered label drawn at x=TW-PADL, app.js:141)."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed '时间结构与变更语义一致' is enforced and surfaced: app.js:14-24 validates every causal edge points early→late and renders '时序校验 33/33 通过 ✓' in the header (visible in both screenshots); invariant stated in UI (index.html:40) and in the data contract comment (data.js:27)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "a11y.contrast fail (measurement-summary.json): muted token #66738a on dark surface ≈3.8:1 for 9.5–11px labels (style.css:9,55,66,138)",
+      "type.min_projected_size fail (measurement-summary.json): permanent 9.5–11px type in phase times, axis ticks, metric value labels (style.css:55,66,125,138)",
+      "SVG change nodes not keyboard-reachable: <g> with mouse-only handlers, no tabindex/role (app.js:174-186); no :focus-visible styles in style.css",
+      "Last x-axis tick label clipped at right edge in both viewports ('22:0', centered label at TW-PADL exceeds SVG bounds, app.js:141)",
+      "Default causal edges have no arrowheads; direction only stated in the sidebar note until a chain is highlighted (index.html:40, app.js:164-165)"
+    ],
+    "missing_evidence": [],
+    "overall_note": "impl-08 ('Ledgerline') is a single-screen change-set timeline that fits the brief tightly: 42 changes with explicit cause edges over a 36h window on component swimlanes, phase bands naming the temporal narrative, a playback cursor with speed control, a pre-selected change exposing its 因/果 chains, and three metric sparklines sharing the same time window (data.js:28-89, app.js:103-339, both screenshots). The acceptance seed is not merely depicted but machine-checked at load — '时序校验 33/33 通过 ✓' (app.js:14-24) — and delivered with no loading state, satisfying the static-open and first-screen-ready constraints (index.html:7,64-65; app.js:416-422). Navigation and context costs are minimal: everything is reachable in one click and selection dims rather than hides. The weaknesses are concentrated in accessibility and micro-typography — the receipt fails a11y.contrast and type.min_projected_size, muted small labels sit near 3.8:1, timeline nodes are mouse-only without focus affordances, and one axis label clips — while all layout checks pass and no structural rework signals appear. Preference, completion time, and retrieval accuracy are withheld per blind protocol; the understandability judgment here is a model proxy, not a human one."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 35871,
+      "outputTokens": 8918,
+      "cacheReadInputTokens": 149568,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.477089,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-10-23T16:29:33.514Z"
+}

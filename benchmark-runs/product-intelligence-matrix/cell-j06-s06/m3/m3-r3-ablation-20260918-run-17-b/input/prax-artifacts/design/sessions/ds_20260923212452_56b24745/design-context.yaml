@@ -1,0 +1,69 @@
+user:
+  expertise: expert
+  familiarity: medium
+task:
+  primary: 理解随时间演化的系统状态：沿时间轴读变更事件，看清每次变更改了什么、由何引起、导致了什么
+  modes:
+    - scan
+    - navigate
+    - inspect
+    - trace
+  frequency: medium
+domain:
+  type: 系统运维与变更管理（change management / 事件复盘）
+  entities:
+    - 变更事件（发版/配置/扩缩容/故障/回滚/修复）
+    - 系统组件（服务/模块）
+    - 组件状态字段（版本、副本数、配置项、健康度、开关）
+    - 状态快照（时间游标投影）
+    - 因果链（事件间导致关系）
+    - 操作者/变更单
+information:
+  volume: medium
+  relationship_complexity: medium
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: none
+  error_cost: low
+priorities:
+  - 时间结构与变更语义一致（验收种子，最高优先）
+  - 因果可读性：事件间因果链沿时间正向可视化可跳转
+  - 状态快照与时间游标严格一致（折叠语义可验证）
+  - 首屏即用：初始数据内联，无加载态
+  - 单屏完成主任务，不做多屏导航
+density_intent: regular
+confidence:
+  overall: high
+unknowns:
+  - id: demo_dataset_provenance
+    impact: low
+    affects:
+      - data_model
+      - realize
+classification:
+  version: "1"
+  task_type: compare_filter_records
+  domain_id: preferences
+  interaction_mode: unknown
+  product_type: configuration_surface
+  primary_object_type: change_event
+  secondary_object_types:
+    - component
+    - state_snapshot
+    - causal_chain
+  confidence: medium
+  evidence:
+    - task_type=compare_filter_records ← token '过滤' in context.task and frame.tasks
+    - domain_id=preferences ← token '配置' in context.domain
+    - product_type=configuration_surface ← preferences domain
+    - primary_object_type=change_event ← most referenced product object in the Product Frame
+  open_questions:
+    - interaction_mode could not be classified from the provided context; refine the context fields or record a custom classification

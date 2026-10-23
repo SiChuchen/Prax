@@ -1,0 +1,64 @@
+user:
+  expertise: expert
+  familiarity: medium
+task:
+  primary: 理解依赖关系结构：选中节点后沿上游/下游逐跳追踪，同时全图始终可见、位置可辨
+  modes:
+    - select
+    - trace_follow
+    - inspect
+    - search_locate
+    - pan_zoom
+  frequency: medium
+domain:
+  type: 软件系统架构依赖网（虚构电商平台，30 节点级）
+  entities:
+    - 接入层（网关/客户端）
+    - 业务服务
+    - 数据存储
+    - 消息/缓存中间件
+    - 第三方服务
+information:
+  volume: medium
+  relationship_complexity: high
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: none
+  error_cost: low
+priorities:
+  - 依赖/影响可跟随且跟随中不丢失全局上下文（首优先）
+  - 选中即检查：节点属性与直接上/下游明细
+  - 搜索定位与自由平移缩放
+  - 图例与可读的分层布局
+density_intent: regular
+confidence:
+  overall: high
+unknowns: []
+classification:
+  version: "1"
+  task_type: inspect_relationships
+  domain_id: data_exploration
+  interaction_mode: canvas_with_contextual_inspector
+  product_type: internal_engineering_tool
+  primary_object_type: node
+  secondary_object_types:
+    - relation
+    - trace
+    - minimap
+    - breadcrumb
+  confidence: high
+  evidence:
+    - task_type=inspect_relationships ← token 'inspect' in context.task and frame.tasks
+    - domain_id=data_exploration ← token '数据' in context.domain
+    - interaction_mode=canvas_with_contextual_inspector ← token '画布' in context.task, frame.tasks, and context.priorities
+    - product_type=internal_engineering_tool ← expert user in an engineering domain
+    - primary_object_type=node ← most referenced product object in the Product Frame
+  open_questions: []

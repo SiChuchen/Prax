@@ -1,0 +1,125 @@
+session_id: ds_20260923183311_073cb310
+information_shape:
+  cardinality: few
+  relationality: medium
+  hierarchy: low
+  temporality: low
+  density: high
+  dimensionality: medium
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: required
+representation:
+  primary:
+    type: table
+    reason: few 候选 × 高密度维度、行对齐比较即任务本身，表格是唯一能同时保证同维对齐与全维度同屏的表示
+  supporting: []
+  rejected:
+    - option: cards（每候选一卡）
+      reason: 竖向堆叠破坏行对齐，同维取值分散在不同纵向位置，跨候选比较退化为记忆任务
+    - option: wizard/form（逐项引导填权重再出结果）
+      reason: 把决策拆成多步，违背单屏驻留与加载即 ready 的交付约束
+  justification_vs_shape: few×high density×required comparison 直接指向 table；medium relationality 由地图与图钉联动承载；low hierarchy/temporality 不需要树/时间轴；spatiality=none 指数据本身无空间结构，地图是决策语境而非数据形状，故 map 为 supporting
+primary_structure:
+  pattern: PAT-WORKSPACE
+  rationale:
+    - 路由返回并已 L2 检视的 PAT-WORKSPACE：主对象空间持久化，支撑动作环绕其周，实例化为「persistent comparison workspace」：左侧持久地图语境栏（自绘 SVG 街区图+候选图钉+通勤锚点）、右侧比较矩阵（候选为列、维度为行、行内迷你条形、行优胜高亮）、底部持久权重/落定条（滑杆加权、总分重排、推荐徽标、落定后确认条驻留）
+    - comparison-panel 判别要求少量高密度条目并排且比较状态驻留同屏，持久工作区使语境、比较、权衡三者同屏共存
+    - P-03/H-13：地图与列头构成第一层级，维度行紧凑排布由结构与行对齐承载高密度
+    - 验收种子『地理语境与决策项同屏』由左地图栏硬性保证
+    - tradeoff 已知：PAT-WORKSPACE 初始复杂度较高，以强层级与降噪控件（P-22）对冲
+  confidence: high
+information_hierarchy:
+  primary:
+    - 候选身份列头（名称、区位、图钉色，与地图联动）
+    - 加权总分与推荐排序
+    - 核心比较维度行（月租、通勤、面积、噪音、采光）
+  secondary:
+    - 次要维度行（楼龄、楼层、周边配套、押付方式）
+    - 偏好权重控件与重置
+    - 落定后的决策摘要条
+density:
+  intent: compact
+  strategy:
+    - 紧凑行高的属性矩阵，行对齐承载比较
+    - 行内迷你条形图可视化同维取值差异，减少跨列扫读
+    - 地图约占左 1/3 宽度作为持久语境栏，不折叠
+    - 控件降噪：细边框分组与行斑马纹替代重容器
+    - 比较状态（选中/落定/行优胜）用色彩+徽标双编码驻留同屏
+  avoid:
+    - 大卡片高留白布局
+    - 候选间翻页/Tab 切换
+    - 悬停才可见的关键差异
+    - 低于 12px 的字号与低对比灰字
+    - 加载骨架屏
+major_choices:
+  - id: mc1
+    choice: 候选为列、维度为行的并排比较矩阵；行内迷你条形标示同维相对优劣，每维最优值着色徽标
+    rationale: few(3-5)×高密度属性，行对齐是 comparison_need=required 的最小实现；列向排列使跨候选比较沿水平视线完成（依据已 L2 检视的 H-13/P-01：结构承载密度、知觉分组先于标签）
+    confidence: medium
+    references:
+      - comparison_dimension
+      - candidate
+  - id: mc2
+    choice: 自绘内联 SVG 街区地图作为持久地理语境栏：街道、公园、地铁线、通勤锚点与候选图钉；选中候选时高亮其通勤线路
+    rationale: 满足验收种子『地理语境与决策项同屏』；无外部瓦片服务保证离线静态可用与首屏零加载
+    confidence: medium
+    references:
+      - map_context
+      - candidate
+  - id: mc3
+    choice: 6 个偏好维度用 0-5 滑杆加权，总分列实时重排并给出推荐徽标；提供三档预设与重置
+    rationale: decide 动词需要可操作的权衡机制；实时重排让权重后果可见，支撑可辩护决策
+    confidence: medium
+    references:
+      - weight_profile
+      - candidate
+  - id: mc4
+    choice: 『落定选择』按钮将决策驻留同屏：确认条 + 该列与地图图钉高亮 + 理由摘要，可一键重选
+    rationale: 比较状态必须驻留同屏；决策作为一等对象持续可见而非弹窗即逝（对应状态完备性要求中的 selected 状态）
+    confidence: medium
+    references:
+      - decision
+      - candidate
+  - id: mc5
+    choice: 纯静态零依赖交付（原生 HTML/CSS/JS，数据内联）
+    rationale: 交付约束要求本地直接打开、无外部服务；无构建步骤消除构建失败风险，首屏即 ready；桌面 web 平台惯例（大视口、指针+键盘）由原生控件即可满足
+    confidence: medium
+    references:
+      - map_context
+      - comparison_dimension
+rejected:
+  - option: PAT-APPLICATION-SHELL（全局导航壳）
+    reason: 单页单屏、无多区域导航需求，导航壳只增 chrome 与重学成本，违反 P-22 与交付约束『主屏 1 个』
+  - option: card 网格（每候选一张竖卡）
+    reason: 竖卡破坏同维行对齐，跨候选比较需记忆跳动，违背 comparison_need=required 与 H-13 结构化密度
+  - option: 候选 Tab/分页切换
+    reason: 把比较拆成时间序列，比较状态无法驻留同屏，直接违背成功标准『决策输入同屏可得』
+  - option: 外部地图瓦片（Leaflet/高德等）
+    reason: 引入网络依赖，违反『本地运行、无外部服务、加载即 ready』；改用自绘 SVG 地图
+unresolved:
+  - id: u-gap-domain
+    impact: low
+    affects:
+      - primary_structure
+      - map_context
+  - id: u1
+    impact: low
+    affects:
+      - weight_profile
+  - id: u2
+    impact: low
+    affects:
+      - map_context
+complexity_budget:
+  permanent_panels: 3
+  permanent_primary_actions: 1
+  modes: 0
+  state_owners: 2
+  navigation_levels: 1
+  persistent_filters: 0
+  new_semantic_concepts: 3
+  keyboard_contracts: 1
+  mobile_conflicts: 0
+  permanent_surfaces: 1

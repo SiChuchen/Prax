@@ -1,0 +1,23 @@
+check_id: requirement_alignment
+captured_at: "2026-09-19T06:12:00Z"
+captured_by: implementation-arm
+tool: chrome.exe (headless)
+method: >-
+  headless chrome opened the deliverable itself (not the evidence harness):
+  file:///E:/codex-prj/ab-worktrees/pi-matrix-r3/cell-j10-s09-b/index.html with --headless=new --screenshot.
+commands:
+  - chrome.exe --headless=new --screenshot=evidence/shotM-index-real.png <index.html> (budget 800)
+  - chrome.exe --headless=new --screenshot=evidence/shotI-certificate-zero.png <evidence.html?stage=9> (budget 90000)
+artifacts:
+  - path: evidence/shotM-index-real.png
+    shows: 交付物本体以 file:// 静态直开，首屏即就绪（旅程图渲染、步骤 1 可执行、偏差 0、进度 0/12、无加载态）
+  - path: evidence/shotI-certificate-zero.png
+    shows: 零失误达成绿色徽章的完成凭证（干净全程）
+  - path: README.md
+    shows: 运行方式与验收种子→机制映射
+observed:
+  static_open: 根路径 index.html 静态直开可用，无构建链、无外部服务、未部署
+  first_screen_usable: 初始数据内联随首屏就绪，加载态结构性不存在
+  zero_mistake_measurable: 偏差账本 + 完成凭证判定（零失误达成 / 偏差 N 处）
+  acceptance_seed: 不可逆步骤有恢复/确认路径——确认门 + 撤销窗口 + 恢复点三机制落实
+  scope: 单页应用、主屏 1 个、无后端/账号/持久化

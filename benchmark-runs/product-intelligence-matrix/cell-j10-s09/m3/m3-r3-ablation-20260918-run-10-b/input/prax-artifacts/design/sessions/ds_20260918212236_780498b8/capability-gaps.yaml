@@ -1,0 +1,81 @@
+needs:
+  - id: n1-guided-sequence
+    product_action: 按序逐步执行步骤，禁止跳步（当前步骤指针唯一）
+    required_experience:
+      - 旅程图常驻显示全部阶段/步骤状态
+      - 未解锁步骤锁定且不可点击推进
+      - 当前步骤聚焦区唯一主内容
+    capabilities: []
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端状态机：步骤指针由门禁推进逻辑唯一控制；旅程图渲染派生自同一状态
+  - id: n2-gate-validation
+    product_action: 步骤门禁校验（前置 checkbox 即时校验，未过不放行）
+    required_experience:
+      - checkbox 状态实时驱动主按钮可用性
+      - 未过项内联标红并给出原因
+    capabilities: []
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 本地状态派生校验结果，无异步依赖
+  - id: n3-confirm-gate
+    product_action: 不可逆动作确认门：后果陈述+恢复路径+显式确认对话后才可执行
+    required_experience:
+      - 模态对话阻断主动线
+      - 后果与恢复路径在对话内可见
+      - 显式确认动作（复选+按钮）
+    capabilities: []
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 原生 dialog 语义 + 焦点陷阱，前端实现
+  - id: n4-undo-window
+    product_action: 可逆类不可逆动作的冷静期撤销（30 秒倒计时 undo）
+    required_experience:
+      - 倒计时可见
+      - 撤销后状态回滚并记录审计
+    capabilities: []
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 前端计时器；倒计时归零后撤销入口关闭，仅剩回滚指引
+  - id: n5-recovery-guidance
+    product_action: 不可逆动作的恢复点/回滚指引常驻展示
+    required_experience:
+      - 每个不可逆步骤标注其恢复手段与依赖（备份/快照/回滚命令）
+    capabilities: []
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 静态内容随数据内联，渲染于确认对话与执行后卡片
+  - id: n6-audit-record
+    product_action: 执行记录/偏差日志（时间戳、确认记录、attempt 计数）与会话内持久
+    required_experience:
+      - 抽屉式时间线
+      - 完成凭证内审计摘要
+    capabilities: []
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: 内存状态 + sessionStorage 快照（页面会话级，刷新可续）；不引入后端，符合'无持久化服务'约束
+  - id: n7-inline-firstscreen
+    product_action: 首屏即用：流程数据随脚本内联就绪，无加载态
+    required_experience:
+      - DOM 同步渲染完成即为可测状态
+    capabilities: []
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: data.js 同步脚本 + 渲染函数同步执行，无 fetch/构建链
+  - id: n8-completion-proof
+    product_action: 走完全程后呈现完成凭证与全程审计摘要
+    required_experience:
+      - 收束态替换主动线
+      - 偏差数与关键事件可核对
+    capabilities: []
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 前端渲染凭证视图；提供浏览器打印导出

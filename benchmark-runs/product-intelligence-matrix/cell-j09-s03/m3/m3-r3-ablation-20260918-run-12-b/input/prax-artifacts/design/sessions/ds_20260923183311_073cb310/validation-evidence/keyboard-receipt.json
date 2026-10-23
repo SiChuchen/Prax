@@ -1,0 +1,20 @@
+{
+  "check_id": "keyboard",
+  "command": "node _ktest.mjs",
+  "exit_code": 0,
+  "runner": "node v24.14.0 + Chrome headless (CDP Input.dispatchKeyEvent)",
+  "collected_at": "2026-09-23T19:27:00Z",
+  "result": "ALL KEYBOARD TESTS PASSED",
+  "assertions_total": 9,
+  "assertions_passed": 9,
+  "tab_path": ["g:c1", "g:c2", "g:c3", "g:c4", "BUTTON:c1", "BUTTON:c2", "BUTTON:c3", "BUTTON:c4", "INPUT:w-price", "INPUT:w-commute", "INPUT:w-space", "INPUT:w-quiet", "INPUT:w-light", "INPUT:w-quality", "BUTTON:均衡", "BUTTON:省钱优先", "BUTTON:通勤优先", "BUTTON:品质优先", "BODY:", "g:c1", "g:c2", "g:c3"],
+  "key_findings": [
+    "Tab 1-4 reaches the four map pins (SVG tabindex, keyboard reachable)",
+    "Tab 5-8 reaches the four column-head select buttons",
+    "Tab 9-14 reaches the six weight sliders",
+    "Tab 15-18 reaches the four preset buttons (disabled decide button correctly skipped)",
+    "Enter on pin c3 fires select(): aria-pressed=true, panel switches to armed-decide",
+    "document.activeElement matches(':focus-visible') === true"
+  ],
+  "artifacts": ["evidence/07-keyboard-focus.png", "_ktest.mjs", "validation-evidence/keyboard-test.log"]
+}

@@ -1,0 +1,73 @@
+version: "0.2"
+jtbd:
+  verb: monitor
+  target: 易变指标流（many 个持续跳动的 metric）
+  success: 异常在扫视内发现；变化可追溯；更新不产生闪烁噪声
+primary_object:
+  type: metric
+  label: 指标（metric）
+task_model:
+  frequency: high
+  reversibility: reversible
+  consequence: medium
+  expertise: expert
+user:
+  primary_role: 值班运维 / SRE（服务健康值守）
+  expertise: expert
+  familiarity: high
+goal:
+  primary: 值守一组易变指标时，任何异常在扫视内（≤3 秒）被肉眼发现，且每次异常都能追溯到它的变化过程
+tasks:
+  primary: 扫视指标墙，即时发现新出现/仍在持续的异常
+  secondary:
+    - 点选单个指标，追溯其最近的变化序列（何时开始异常、如何演变）
+    - 按分组/严重度收窄扫视范围，抑制无关噪声
+product_objects:
+  - id: metric
+    user_name: 指标
+    purpose: 被监控的易变量，带当前值、阈值状态与近期轨迹
+  - id: anomaly
+    user_name: 异常
+    purpose: 指标越过阈值或突跳的事件，是扫视的靶点
+  - id: metric_group
+    user_name: 指标分组
+    purpose: 中等层级的组织单元（按服务/域），支撑扫视分区
+  - id: change_history
+    user_name: 变化历史
+    purpose: 单指标的时间戳化取值序列，支撑变化追溯
+relationships:
+  - source: anomaly
+    target: metric
+    type: raised_by
+    direction: forward
+    meaning: 异常由具体指标产生，可从异常跳到该指标的轨迹
+    importance: primary
+    id: rel_anomaly_metric
+  - source: metric
+    target: metric_group
+    type: belongs_to
+    direction: forward
+    meaning: 指标归属一个分组，形成扫视分区
+    importance: supporting
+    id: rel_metric_metric_group
+  - source: change_history
+    target: metric
+    type: records
+    direction: forward
+    meaning: 历史序列属于单个指标，支撑变化追溯
+    importance: supporting
+    id: rel_change_history_metric
+mental_model_hypothesis:
+  summary: 监控墙心智模型：一面恒温的指标墙（稳定网格布局、稳定行位），异常项用颜色+徽标在墙面上“跳出”，其余更新静默进行；点开任一指标即看到它的近期轨迹与逐点变化记录——墙负责扫视，抽屉负责追溯。
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: 页面加载即处于 ready 态：≥24 个指标在稳定网格中就位并持续更新；任何异常项在扫视内凭颜色/徽标被识别；点选指标可在不打断流的情况下追溯其带时间戳的变化；更新以就地数值替换呈现，无闪烁、无整页重排。
+open_questions: []
+existing_product:
+  stable_user_concepts: []
+  stable_patterns: []
+  current_user_pain_points: []
+  current_constraints: []
+  legacy_debt: []

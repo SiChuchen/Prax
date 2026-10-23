@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>驻点决策台 · 选址对比面板</title>
+<style>
+  :root{
+    --bg:#f4f2ec; --panel:#ffffff; --ink:#22252b; --ink2:#5b6068; --line:#e3e0d7;
+    --accent:#0f6f5c; --accent2:#c8a23a; --best:#eaf5f1; --bestline:#0f6f5c;
+    --danger:#b4452f; --chip:#f0ede4;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;font-size:14px;line-height:1.45}
+  header{display:flex;align-items:baseline;gap:14px;padding:18px 26px 10px}
+  header h1{font-size:20px;letter-spacing:.5px}
+  header .sub{color:var(--ink2);font-size:13px}
+  header .verdict{margin-left:auto;font-size:13px;background:var(--accent);color:#fff;padding:6px 14px;border-radius:999px;font-weight:600;white-space:nowrap}
+  header .verdict b{color:#ffe9a8}
+  main{display:grid;grid-template-columns:470px 1fr;gap:16px;padding:0 26px 20px;height:calc(100vh - 66px)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+
+  /* ---------- 地图 ---------- */
+  #mapCard{display:flex;flex-direction:column;overflow:hidden}
+  #mapCard h2, #panelCard h2{font-size:13px;font-weight:700;color:var(--ink2);letter-spacing:1px;padding:12px 16px 8px;text-transform:uppercase}
+  #mapWrap{flex:1;position:relative}
+  svg#map{width:100%;height:100%;display:block}
+  .pin{cursor:pointer}
+  .pin circle.dot{stroke:#fff;stroke-width:2.5;transition:transform .12s}
+  .pin text{font-weight:700;font-size:13px;fill:#fff;pointer-events:none}
+  .pin.out circle.dot{fill:#c9c4b6 !important;opacity:.55}
+  .pin.out text{fill:#8a857a}
+  .pin:hover circle.dot,.pin.hot circle.dot{transform:scale(1.35)}
+  .pin.focus-ring{fill:none;stroke:var(--ink);stroke-width:1.6;stroke-dasharray:4 3;opacity:0}
+  .pin.hot + .focus-ring,.pin:hover ~ .focus-ring{opacity:.9}
+  .maplegend{position:absolute;left:12px;bottom:10px;background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:6px;padding:6px 10px;font-size:12px;color:var(--ink2)}
+  .maplegend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin:0 4px -1px 8px}
+  .maplegend i:first-child{margin-left:0}
+  .maptip{position:absolute;pointer-events:none;background:#22252b;color:#fff;font-size:12px;padding:5px 9px;border-radius:6px;opacity:0;transition:opacity .1s;white-space:nowrap;z-index:5}
+
+  /* ---------- 对比面板 ---------- */
+  #panelCard{display:flex;flex-direction:column;overflow:hidden}
+  #weights{display:flex;align-items:center;gap:18px;padding:4px 16px 10px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  #weights label{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink2)}
+  #weights input[type=range]{width:110px;accent-color:var(--accent)}
+  #weights .wv{width:30px;font-weight:700;color:var(--ink)}
+  #weights button{margin-left:auto;border:1px solid var(--line);background:var(--chip);border-radius:6px;padding:4px 12px;cursor:pointer;font-size:12px;color:var(--ink2)}
+  #weights button:hover{background:#e7e3d7}
+
+  #tableWrap{flex:1;overflow:auto;padding:10px 16px 6px}
+  table{border-collapse:separate;border-spacing:0;width:100%}
+  th,td{padding:7px 10px;font-size:13px;border-bottom:1px solid #efece4;text-align:left;vertical-align:middle}
+  thead th{position:sticky;top:0;background:var(--panel);z-index:2;border-bottom:2px solid var(--line)}
+  th.attr{width:132px;color:var(--ink2);font-weight:600;font-size:12px}
+  thead th.col{cursor:pointer;min-width:150px}
+  thead .colhead{display:flex;align-items:center;gap:8px}
+  thead .badge{width:22px;height:22px;border-radius:50%;color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:12px;flex:none}
+  thead .cname{font-weight:700}
+  thead .rank{margin-left:auto;font-size:11px;padding:2px 8px;border-radius:999px;background:var(--chip);color:var(--ink2)}
+  thead .rank.r1{background:var(--accent);color:#fff}
+  thead .remove{color:#b9b3a4;font-size:15px;line-height:1;cursor:pointer;padding:2px}
+  thead .remove:hover{color:var(--danger)}
+  tr:hover td, td.hot{background:#faf8f2}
+  td.best{background:var(--best);font-weight:700}
+  td.best .up{color:var(--accent);margin-right:3px}
+  td .bar{height:5px;border-radius:3px;background:#e9e5da;margin-top:4px;position:relative;overflow:hidden}
+  td .bar i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:#b8b2a2}
+  td.best .bar i{background:var(--accent)}
+  td.score{font-size:18px;font-weight:800;padding:10px}
+  td.score small{font-size:11px;color:var(--ink2);font-weight:400;display:block}
+  tr.scoreRow td{border-bottom:none}
+  .why{padding:6px 10px;font-size:12px;color:var(--ink2);background:#fbfaf6;border:1px dashed var(--line);border-radius:6px;margin-top:2px}
+
+  #bench{padding:10px 16px 14px;border-top:1px solid var(--line)}
+  #bench .lbl{font-size:12px;color:var(--ink2);margin-bottom:8px}
+  #bench .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{display:flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--chip);border-radius:999px;padding:4px 12px;cursor:pointer;font-size:12.5px}
+  .chip .badge{width:18px;height:18px;border-radius:50%;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;opacity:.45}
+  .chip:hover{border-color:var(--accent);background:var(--best)}
+  .chip:hover .badge{opacity:1}
+  .chip.full{opacity:.45;pointer-events:none}
+  #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#22252b;color:#fff;font-size:13px;padding:8px 18px;border-radius:8px;opacity:0;transition:opacity .2s;pointer-events:none}
+</style>
+</head>
+<body>
+<header>
+  <h1>驻点决策台</h1>
+  <span class="sub">候选选址对比面板 · 地理语境与决策项同屏</span>
+  <span class="verdict" id="verdict"></span>
+</header>
+
+<main>
+  <section class="card" id="mapCard">
+    <h2>区位图 · 点击图钉加入/移出对比</h2>
+    <div id="mapWrap">
+      <svg id="map" viewBox="0 0 470 620" role="img" aria-label="城区示意图，标注办公室与五个候选住址"></svg>
+      <div class="maplegend">
+        <i style="background:#b4452f"></i>办公室
+        <i style="background:#0f6f5c"></i>对比中
+        <i style="background:#c9c4b6"></i>未选入
+        <span style="margin-left:8px">⌀ 虚线圈 = 通勤等时线</span>
+      </div>
+      <div class="maptip" id="maptip"></div>
+    </div>
+  </section>
+
+  <section class="card" id="panelCard">
+    <h2>并排对比 · 比较状态驻留本屏</h2>
+    <div id="weights">
+      <label>租金 <input type="range" id="wRent" min="0" max="100" value="40"><span class="wv" id="wRentV">40</span></label>
+      <label>通勤 <input type="range" id="wCommute" min="0" max="100" value="45"><span class="wv" id="wCommuteV">45</span></label>
+      <label>居住品质 <input type="range" id="wQuality" min="0" max="100" value="15"><span class="wv" id="wQualityV">15</span></label>
+      <button id="resetW" type="button">重置权重</button>
+    </div>
+    <div id="tableWrap">
+      <table id="cmpTable" aria-label="候选选址对比表"></table>
+      <div class="why" id="why"></div>
+    </div>
+    <div id="bench">
+      <div class="lbl">未选入候选（点击加入对比，最多 4 个）</div>
+      <div class="chips" id="chips"></div>
+    </div>
+  </section>
+</main>
+<div id="toast"></div>
+
+<script>
+"use strict";
+/* ---------------- 数据（首屏内联，无加载态） ---------------- */
+const OFFICE = {x:238, y:300, name:"启明科技园（办公室）"};
+const SITES = [
+  {id:"A", name:"滨江里",  x:330, y:190, color:"#0f6f5c", rent:4200, area:38, commute:15, metro:300,  noise:62, light:3, floor:"12/28", conv:4.5, park:850, note:"高层江景，夜生活的酒吧街就在楼下"},
+  {id:"B", name:"望山巷",  x:118, y:132, color:"#3457a8", rent:3600, area:45, commute:28, metro:900,  noise:48, light:5, floor:"6/7",   conv:3.5, park:200, note:"顶楼带露台，巷口有早市，生活气息浓"},
+  {id:"C", name:"梧桐坊",  x:322, y:405, color:"#7a3fa0", rent:5100, area:52, commute:10, metro:150,  noise:58, light:4, floor:"18/33", conv:5.0, park:600, note:"地铁上盖，商圈中心，楼下三个便利店"},
+  {id:"D", name:"旧仓Loft",x:112, y:452, color:"#b4452f", rent:3900, area:60, commute:35, metro:1500, noise:52, light:2, floor:"2/4",   conv:3.0, park:400, note:"挑高 5 米的改造仓库，采光弱是硬伤"},
+  {id:"E", name:"学府里",  x:150, y:290, color:"#1a7f8a", rent:4500, area:40, commute:22, metro:450,  noise:45, light:5, floor:"9/18",  conv:4.0, park:150, note:"大学城旁，图书馆与体育场开放共享"},
+];
+const MAXCMP = 4;
+const state = { cmp:new Set(["A","B","C"]), hot:null };
+
+/* ---------------- 评分 ---------------- */
+const norm = (v,min,max,lowerBetter)=> lowerBetter ? (max-v)/((max-min)||1) : (v-min)/((max-min)||1);
+function scoreAll(){
+  const act = SITES; // 全体参与归一化，选入与否不影响分值口径
+  const ext = k => { const vs=act.map(s=>s[k]); return [Math.min(...vs),Math.max(...vs)]; };
+  const [r0,r1]=ext("rent"),[c0,c1]=ext("commute"),[m0,m1]=ext("metro"),[a0,a1]=ext("area"),
+        [l0,l1]=ext("light"),[n0,n1]=ext("noise"),[cv0,cv1]=ext("conv"),[p0,p1]=ext("park");
+  const w = {rent:+wRent.value, com:+wCommute.value, qua:+wQuality.value};
+  return SITES.map(s=>{
+    const rent  = norm(s.rent,r0,r1,true);
+    const com   = .7*norm(s.commute,c0,c1,true) + .3*norm(s.metro,m0,m1,true);
+    const qua   = ( norm(s.area,a0,a1,false) + norm(s.light,l0,l1,false) +
+                    norm(s.noise,n0,n1,true)  + norm(s.conv,cv0,cv1,false) +
+                    norm(s.park,p0,p1,true) ) / 5;
+    const total = (w.rent*rent + w.com*com + w.qua*qua) / ((w.rent+w.com+w.qua)||1) * 100;
+    return {s, ...s, rentS:rent, comS:com, quaS:qua, total,
+            floorN:parseFloat(s.floor)||0};
+  }).sort((a,b)=>b.total-a.total);
+}
+const pct = x => Math.round(x*100);
+
+/* ---------------- 地图 ---------------- */
+const NS="http://www.w3.org/2000/svg";
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+function buildMap(){
+  const svg=document.getElementById("map");
+  el("rect",{width:470,height:620,fill:"#eef0e6"},svg);
+  // 河
+  el("path",{d:"M0 470 C 120 430, 200 520, 320 480 S 470 430, 470 500 L 470 620 L 0 620 Z",fill:"#cfe3e8"},svg);
+  el("path",{d:"M0 470 C 120 430, 200 520, 320 480 S 470 430, 470 500",fill:"none",stroke:"#a8c8d0","stroke-width":2},svg);
+  // 街区
+  [[30,60,120,90],[190,40,150,80],[380,60,70,100],[60,200,100,110],[210,180,140,70],
+   [400,220,50,120],[240,320,90,90],[380,380,70,80],[40,360,120,60],[200,540,160,50]
+  ].forEach(([x,y,w,h])=>el("rect",{x,y,width:w,height:h,rx:6,fill:"#e2e5d4",stroke:"#d3d7c2"},svg));
+  // 干道
+  el("path",{d:"M0 180 L470 160",stroke:"#fff","stroke-width":10},svg);
+  el("path",{d:"M170 0 L200 620",stroke:"#fff","stroke-width":10},svg);
+  el("path",{d:"M0 380 L470 350",stroke:"#fff","stroke-width":8},svg);
+  // 公园
+  el("ellipse",{cx:95,cy:255,rx:52,ry:38,fill:"#bcd8b0"},svg);
+  el("text",{x:95,y:258,"text-anchor":"middle","font-size":11,fill:"#4e7a44"},svg).textContent="城北公园";
+  el("ellipse",{cx:250,cy:555,rx:70,ry:32,fill:"#bcd8b0"},svg);
+  el("text",{x:250,y:559,"text-anchor":"middle","font-size":11,fill:"#4e7a44"},svg).textContent="滨河绿道";
+  // 通勤等时线（以办公室为圆心）
+  [[80,"步行 10min"],[160,"公交 20min"],[250,"通勤 35min"]].forEach(([r,label])=>{
+    el("circle",{cx:OFFICE.x,cy:OFFICE.y,r,fill:"none",stroke:"#b4452f","stroke-opacity":".35","stroke-dasharray":"5 6"},svg);
+    el("text",{x:OFFICE.x+6,y:OFFICE.y-r+13,"font-size":10,fill:"#b4452f","fill-opacity":".75"},svg).textContent=label;
+  });
+  // 办公室
+  const g0=el("g",{class:"office"},svg);
+  el("path",{d:star(OFFICE.x,OFFICE.y,11,4.6),fill:"#b4452f",stroke:"#fff","stroke-width":1.5},g0);
+  el("text",{x:OFFICE.x+15,y:OFFICE.y+4,"font-size":12,"font-weight":700,fill:"#b4452f"},g0).textContent=OFFICE.name;
+  // 候选图钉
+  SITES.forEach(s=>{
+    const g=el("g",{class:"pin",tabindex:0,role:"button","aria-label":`候选${s.id} ${s.name}，点击加入或移出对比`,"data-id":s.id},svg);
+    g._dot=el("circle",{class:"dot",cx:s.x,cy:s.y,r:13,fill:s.color},g);
+    const t=el("text",{x:s.x,y:s.y+4.5,"text-anchor":"middle"},g); t.textContent=s.id;
+    g.addEventListener("click",()=>toggle(s.id));
+    g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();toggle(s.id);}});
+    g.addEventListener("mouseenter",()=>hot(s.id,true));
+    g.addEventListener("mouseleave",()=>hot(null,true));
+  });
+}
+function star(cx,cy,R,r){let p="";for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rad=i%2?r:R;p+=(i?"L":"M")+(cx+rad*Math.cos(a)).toFixed(1)+" "+(cy+rad*Math.sin(a)).toFixed(1);}return p+"Z";}
+
+/* ---------------- 联动高亮 ---------------- */
+function hot(id,fromMap){
+  state.hot=id;
+  document.querySelectorAll("#map .pin").forEach(g=>g.classList.toggle("hot",g.dataset.id===id));
+  document.querySelectorAll("#cmpTable td[data-col]").forEach(td=>td.classList.toggle("hot",td.dataset.col===id));
+  const tip=document.getElementById("maptip");
+  if(id){
+    const s=SITES.find(x=>x.id===id);
+    tip.textContent=`${s.id} ${s.name} · 租¥${s.rent} · 通勤${s.commute}min`;
+    const g=document.querySelector(`#map .pin[data-id="${id}"]`);
+    const wrap=document.getElementById("mapWrap").getBoundingClientRect();
+    tip.style.left=(g._dot.getBoundingClientRect().right-wrap.left+8)+"px";
+    tip.style.top =(g._dot.getBoundingClientRect().top -wrap.top -6)+"px";
+    tip.style.opacity=1;
+  } else tip.style.opacity=0;
+}
+
+/* ---------------- 对比表 ---------------- */
+function metricRow(scored, label, key, fmt, dir){
+  const vals=scored.map(o=>o[key]);
+  const bestV = dir==="low" ? Math.min(...vals) : Math.max(...vals);
+  const lo=Math.min(...vals), hi=Math.max(...vals);
+  let tr=`<tr><th class="attr">${label}</th>`;
+  scored.forEach(o=>{
+    const v=o[key], isBest = state.cmp.size>1 && v===bestV;
+    const w = hi===lo?100:Math.round(18+((dir==="low"?(hi-v):(v-lo))/(hi-lo))*82);
+    tr+=`<td data-col="${o.s.id}" class="${isBest?"best":""}">${isBest?'<span class="up">▲</span>':""}${fmt(o)}<div class="bar"><i style="width:${w}%"></i></div></td>`;
+  });
+  return tr+"</tr>";
+}
+function renderTable(){
+  const all=scoreAll();
+  const scored=all.filter(o=>state.cmp.has(o.s.id));
+  const rank=Object.fromEntries(all.map((o,i)=>[o.s.id,i+1]));
+  let html=`<thead><tr><th class="attr">对比维度</th>`;
+  scored.forEach((o,i)=>{ const s=o.s;
+    html+=`<th class="col" data-col="${s.id}" onmouseenter="hot('${s.id}')" onmouseleave="hot(null)">
+      <div class="colhead"><span class="badge" style="background:${s.color}">${s.id}</span>
+      <span class="cname">${s.name}</span>
+      <span class="rank ${rank[s.id]===1?"r1":""}">#${rank[s.id]}</span>
+      ${state.cmp.size>2?`<span class="remove" title="移出对比" data-rm="${s.id}">✕</span>`:""}</div></th>`;
+  });
+  html+=`</tr></thead><tbody>`;
+  html+=metricRow(scored,"月租","rent",o=>`¥${o.s.rent}`,"low");
+  html+=metricRow(scored,"面积","area",o=>`${o.s.area} ㎡`,"high");
+  html+=metricRow(scored,"通勤时间","commute",o=>`${o.commute} 分钟`,"low");
+  html+=metricRow(scored,"地铁站距离","metro",o=>`${o.metro} m`,"low");
+  html+=metricRow(scored,"噪音","noise",o=>`${o.s.noise} dB`,"low");
+  html+=metricRow(scored,"采光","light",o=>"☀".repeat(o.s.light)+`（${o.s.light}/5）`,"high");
+  html+=metricRow(scored,"楼层","floorN",o=>`${o.s.floor} 层`,"high");
+  html+=metricRow(scored,"便利度","conv",o=>`★ ${o.s.conv.toFixed(1)}`,"high");
+  html+=metricRow(scored,"公园绿地","park",o=>`${o.s.park} m`,"low");
+  html+=metricRow(scored,"综合得分","total",o=>`<b style="font-size:16px">${Math.round(o.total)}</b><small>租金${pct(o.rentS)} · 通勤${pct(o.comS)} · 品质${pct(o.quaS)}</small>`,"high");
+  html+=`</tbody>`;
+  const t=document.getElementById("cmpTable");
+  t.innerHTML=html;
+  t.querySelectorAll(".remove").forEach(x=>x.addEventListener("click",e=>{e.stopPropagation();toggle(x.dataset.rm);}));
+  // 结论
+  const win=scored[0];
+  document.getElementById("verdict").innerHTML=`推荐 <b>${win.s.id} · ${win.s.name}</b>（综合 ${Math.round(win.total)} 分）`;
+  const second=scored[1];
+  const d=Math.round(win.s.rent-second.s.rent), dc=win.s.commute-second.s.commute;
+  document.getElementById("why").innerHTML=`<b>决策备注：</b>${win.s.name} —— ${win.s.note}。较次优 ${second.s.name}：租金${d===0?"持平":(d>0?"高":"低")+" ¥"+Math.abs(d)}、通勤${dc===0?"持平":(dc<0?"短":"长")+" "+Math.abs(dc)+" 分钟"}（当前权重：租金${wRent.value}/通勤${wCommute.value}/品质${wQuality.value}，调整滑杆即实时重排）。`;
+  renderChips(all,rank);
+  syncPins(rank,win.s.id);
+}
+function renderChips(all,rank){
+  const box=document.getElementById("chips");box.innerHTML="";
+  SITES.filter(s=>!state.cmp.has(s.id)).forEach(s=>{
+    const b=document.createElement("button");b.type="button";
+    b.className="chip"+(state.cmp.size>=MAXCMP?" full":"");
+    b.innerHTML=`<span class="badge" style="background:${s.color}">${s.id}</span>${s.name} <span style="color:var(--ink2)">#${rank[s.id]} · ¥${s.rent} · ${s.commute}min</span>`;
+    b.addEventListener("click",()=>toggle(s.id));
+    box.appendChild(b);
+  });
+}
+function syncPins(rank,winId){
+  document.querySelectorAll("#map .pin").forEach(g=>{
+    g.classList.toggle("out",!state.cmp.has(g.dataset.id));
+    g._dot.style.fill = g.dataset.id===winId && state.cmp.has(winId) ? "#0f6f5c" : "";
+    let ring=g.querySelector(".win-ring");
+    if(g.dataset.id===winId && state.cmp.has(winId)){
+      if(!ring){ring=el("circle",{class:"win-ring",r:19,fill:"none",stroke:"#0f6f5c","stroke-width":2,"stroke-dasharray":"4 4"},g);
+        const s=SITES.find(x=>x.id===g.dataset.id);ring.setAttribute("cx",s.x);ring.setAttribute("cy",s.y);}
+    } else if(ring) ring.remove();
+  });
+}
+let toastTimer;
+function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.style.opacity=1;clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.style.opacity=0,1600);}
+function toggle(id){
+  if(state.cmp.has(id)){
+    if(state.cmp.size<=2){toast("至少保留 2 个候选才能对比");return;}
+    state.cmp.delete(id);
+  }else{
+    if(state.cmp.size>=MAXCMP){toast(`最多对比 ${MAXCMP} 个候选`);return;}
+    state.cmp.add(id);
+  }
+  renderTable();
+}
+["wRent","wCommute","wQuality"].forEach(id=>{
+  const inp=document.getElementById(id);
+  inp.addEventListener("input",()=>{document.getElementById(id+"V").textContent=inp.value;renderTable();});
+});
+document.getElementById("resetW").addEventListener("click",()=>{
+  const d={wRent:40,wCommute:45,wQuality:15};
+  for(const k in d){const e=document.getElementById(k);e.value=d[k];document.getElementById(k+"V").textContent=d[k];}
+  renderTable();
+});
+
+buildMap();
+/* URL 参数引导（供自动化验证复现交互态）：?cmp=ABCD&wr=70&wc=20&wq=10 */
+(function boot(){
+  const q=new URLSearchParams(location.search);
+  if(q.get("cmp")){
+    const ids=[...q.get("cmp").toUpperCase()].filter(id=>SITES.some(s=>s.id===id));
+    if(ids.length>=2){state.cmp=new Set(ids.slice(0,MAXCMP));}
+  }
+  [["wr","wRent","wRentV"],["wc","wCommute","wCommuteV"],["wq","wQuality","wQualityV"]].forEach(([k,e,v])=>{
+    const n=parseInt(q.get(k),10); if(n>=0&&n<=100){document.getElementById(e).value=n;document.getElementById(v).textContent=n;}
+  });
+})();
+renderTable();
+
+</script>
+</body>
+</html>

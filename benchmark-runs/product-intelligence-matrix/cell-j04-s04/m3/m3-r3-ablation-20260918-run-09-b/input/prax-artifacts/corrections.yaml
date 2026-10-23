@@ -1,0 +1,39 @@
+version: "0.1"
+corrections:
+  - id: COR-SDIR02-001
+    scope:
+      project: cell-j04-s04-b
+      surfaces:
+        - monitor-wall
+        - list_detail_inspector_screen
+    finding:
+      type: session_artifact_persistence_gap
+      observed: sdir 门以 generate_from_decisions 产出并将 0.1 自生成
+        SDIR（list_detail_inspector_screen，含自动派生的 7 个 experimental 区域）持久化到
+        screen.sdir.yaml；执行臂随后提交的完整 0.2
+        SDIR（monitor-wall：representation.primary=grid、state_ownership 含
+        selection/preview owner、acceptance 5 条、complexity_budget）经 design_sdir
+        mode=validate 以 PASS（schema_errors=[]、semantic_errors=[]）通过 lint，但
+        validate 模式不落盘；进入 VALIDATION 门后 design_sdir
+        全部模式均不合法（GATE_NOT_SATISFIED），导致 evaluate 的三个确定性检查（representation_decided
+        / state_ownership_declared / acceptance_contract_present）按持久化的 0.1 形态判定
+        fail。同一根因（持久化形态缺 0.2 块），三处表现。
+    intended:
+      statement: 会话 SDIR 应以经过 validate PASS 的 0.2
+        契约（monitor-wall）持久化：representation.primary=grid（reason
+        非空）、state_ownership 声明 selection→inspector 与 preview→session、acceptance
+        5 条、complexity_budget 10 项。0.2 契约全文已存证于
+        validation-evidence/sdir-0.2-validated.json；其语义与已交付实现一致（实现按该 SDIR
+        四区域与交互意图落地，CDP 浏览器证据见 validation-evidence/report.json）。后续会话在 sdir
+        门应优先持久化经 lint 的 0.2 载荷，而非仅 generate_from_decisions 的自生成 0.1 形态。
+    evidence_refs:
+      - validation-evidence/sdir-0.2-validated.json
+      - validation-evidence/report.json
+      - screen.sdir.yaml
+    regression:
+      check_id: representation_decided
+      requirement: SDIR 0.2 declares representation.primary with a non-empty reason.
+    supersedes: []
+    promotion:
+      candidate: false
+    created_at: 2026-09-18T21:20:08.365Z

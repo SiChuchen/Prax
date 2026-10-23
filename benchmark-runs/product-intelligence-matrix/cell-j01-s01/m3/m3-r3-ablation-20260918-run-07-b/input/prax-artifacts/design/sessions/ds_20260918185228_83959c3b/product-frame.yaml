@@ -1,0 +1,68 @@
+version: "0.2"
+jtbd:
+  verb: manage
+  target: 有层级归属的大型结构化实体集合
+  success: 批量操作无误完成：作用范围与选中集严格一致，且每个实体的状态与层级归属在操作前后均显式可见
+primary_object:
+  type: entity
+  label: 设备资产实体
+task_model:
+  frequency: high
+  reversibility: reversible
+  consequence: high
+  expertise: mixed
+user:
+  primary_role: 设备资产管理员（负责台账维护与批量盘点操作的后台运营人员）
+  expertise: intermediate
+  familiarity: high
+goal:
+  primary: 精确管理大量有层级归属的结构化实体集合：批量变更状态、移动归属、删除，全程零误伤
+tasks:
+  primary: 在层级树中定位目标实体，精确圈定选中集（含跨节点、跨筛选条件的多选），核对选择摘要后执行批量操作，并核验回执计数与选中集一致
+  secondary:
+    - 按层级节点折叠/展开浏览实体
+    - 按状态筛选以圈定特定状态的实体
+    - 执行后用撤销恢复到操作前状态
+    - 单个实体的快速状态修正
+product_objects:
+  - id: entity
+    user_name: 设备资产
+    purpose: 被管理的结构化记录：有唯一编号、名称、状态和层级归属
+  - id: hierarchy_node
+    user_name: 组织节点（中心/科室）
+    purpose: 实体的层级归属容器，构成可展开/折叠的部门树
+  - id: selection
+    user_name: 选中集
+    purpose: 批量操作的精确作用范围，可跨节点、跨页累积
+  - id: batch_operation
+    user_name: 批量操作
+    purpose: 对选中集整体执行的变更：批量改状态、批量移动归属、批量删除
+relationships:
+  - id: rel_entity_node
+    source: entity
+    target: hierarchy_node
+    type: belongs_to
+    direction: forward
+    meaning: 每个实体恰好归属一个层级节点；归属必须显式呈现（路径面包屑）
+    importance: primary
+  - id: rel_selection_entity
+    source: selection
+    target: entity
+    type: selects
+    direction: forward
+    meaning: 选中集是实体的显式子集；批量操作绝不触及选中集之外的实体
+    importance: primary
+  - id: rel_op_selection
+    source: batch_operation
+    target: selection
+    type: acts_on
+    direction: forward
+    meaning: 批量操作以确认回执绑定当时的选中集快照，操作可整体撤销
+    importance: primary
+mental_model_hypothesis:
+  summary: 管理员将实体组织在层级节点树下，工作流为『定位（浏览/筛选）→ 选中（精确圈定范围）→ 核对（选择摘要）→ 执行（批量操作）→ 验证（回执计数一致）』。信任来自『所见即所中』：选中计数、状态徽标、归属路径必须始终显式可见，隐藏（折叠/被筛掉）的实体绝不参与批量操作。
+  confidence: high
+  evidence:
+    - user_requirement
+primary_success_definition: 批量操作完成后，实际受影响的实体集合与用户确认时的选中集完全一致（零误伤：不多、不少、不含未选中/被折叠/被过滤的实体），操作回执计数与确认计数一致，且每个受影响实体的新状态与新归属立即显式可见，全程可撤销。
+open_questions: []

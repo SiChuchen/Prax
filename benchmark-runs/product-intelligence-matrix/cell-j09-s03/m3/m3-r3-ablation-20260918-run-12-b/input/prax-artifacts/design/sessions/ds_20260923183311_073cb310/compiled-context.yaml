@@ -1,0 +1,65 @@
+version: "0.1"
+session_id: ds_20260923183311_073cb310
+task:
+  surfaces: []
+  primary: 并排比较候选地点：在同一屏内对照地理语境与高密度属性逐维权衡，得出加权排序
+product_relationships:
+  - id: rel-cand-map
+    source: candidate
+    target: map_context
+    type: located_on
+    direction: bidirectional
+    meaning: 候选在地图上有唯一位置标注，选中候选时地图高亮其位置与通勤线路
+    importance: primary
+  - id: rel-cand-dim
+    source: candidate
+    target: comparison_dimension
+    type: has_value
+    direction: bidirectional
+    meaning: 候选在每个比较维度上有一个取值，列间同行对齐形成比较
+    importance: primary
+  - id: rel-weights-cand
+    source: weight_profile
+    target: candidate
+    type: ranks
+    direction: forward
+    meaning: 偏好权重对全部候选逐维评分，产生加权总分与排名
+    importance: primary
+  - id: rel-decision-cand
+    source: decision
+    target: candidate
+    type: selects
+    direction: forward
+    meaning: 决定选中恰好一个候选，记录时间与理由
+    importance: primary
+region_relationships: []
+decisions:
+  primary_structure: PAT-WORKSPACE
+  density_intent: compact
+  major_choice_ids:
+    - mc1
+    - mc2
+    - mc3
+    - mc4
+    - mc5
+must_preserve: []
+regression_points: []
+unresolved:
+  - u-gap-domain
+  - u1
+  - u2
+corrections: []
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - requirement_alignment
+  regression_check_ids: []

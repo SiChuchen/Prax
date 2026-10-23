@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>脉墙 PulseWall · 易变指标监控</title>
+<link rel="stylesheet" href="styles.css">
+<script src="data.js" defer></script>
+<script src="app.js" defer></script>
+</head>
+<body>
+
+<header id="status-bar">
+  <div class="brand">
+    <span class="logo" aria-hidden="true"></span>
+    <div class="brand-text">
+      <h1>脉墙 <span class="en">PulseWall</span></h1>
+      <span class="sub">易变指标监控 · monitor × volatile-evidence-stream</span>
+    </div>
+  </div>
+
+  <div class="heartbeat" id="hb" title="数据流心跳">
+    <span class="hb-dot" aria-hidden="true"></span>
+    <span class="hb-label" id="hb-label">LIVE</span>
+    <time id="clock" datetime="">--:--:--</time>
+  </div>
+
+  <nav class="filters" id="sev-filter" aria-label="按严重度过滤">
+    <button data-sev="all" class="sev on" aria-pressed="true">全部 <b id="c-all">0</b></button>
+    <button data-sev="crit" class="sev f-crit" aria-pressed="false">危急 <b id="c-crit">0</b></button>
+    <button data-sev="warn" class="sev f-warn" aria-pressed="false">告警 <b id="c-warn">0</b></button>
+  </nav>
+
+  <nav class="filters" id="group-filter" aria-label="按分组过滤"><!-- 由 app.js 填充 --></nav>
+
+  <button id="pause-btn" class="pause" aria-pressed="false" title="暂停/恢复数据流">
+    <span class="pause-glyph" aria-hidden="true">▍▍</span><span id="pause-label">暂停</span>
+    <kbd>空格</kbd>
+  </button>
+</header>
+
+<main id="layout">
+  <section id="wall" aria-label="指标墙"><!-- 分组与瓦片由 app.js 构建 --></section>
+
+  <aside id="side">
+    <section id="inspector" aria-label="指标详情">
+      <div class="insp-empty" id="insp-empty">
+        <p class="empty-title">未选中指标</p>
+        <p>点击左侧任一指标瓦片，<br>查看其 90 点变化历史与逐点采样明细。</p>
+        <p class="empty-hint"><kbd>Tab</kbd> 移动焦点 · <kbd>Enter</kbd> 选中 · <kbd>Esc</kbd> 关闭</p>
+      </div>
+      <div class="insp-body" id="insp-body" hidden>
+        <header class="insp-head">
+          <h2 id="insp-name">—</h2>
+          <span class="t-badge" id="insp-badge">—</span>
+        </header>
+        <p class="insp-meta">
+          <span id="insp-group">—</span>
+          <span class="dot" aria-hidden="true">·</span>
+          <span id="insp-thr">—</span>
+        </p>
+        <p class="insp-since" id="insp-since">—</p>
+        <svg id="insp-chart" viewBox="0 0 360 130" preserveAspectRatio="none" role="img" aria-label="选中指标 90 点轨迹图">
+          <line class="th th-warn" x1="0" x2="360" y1="0" y2="0"></line>
+          <line class="th th-crit" x1="0" x2="360" y1="0" y2="0"></line>
+          <path class="ch-area" d=""></path>
+          <path class="ch-line" d=""></path>
+          <path class="ch-hot" d=""></path>
+        </svg>
+        <p class="ch-legend"><span class="lg lg-warn">┄ 告警阈值</span><span class="lg lg-crit">┄ 危急阈值</span><span class="lg lg-hot">━ 异常段</span></p>
+        <h3>最近采样变化 <span class="h3-sub">最新 12 点 · 时间戳化</span></h3>
+        <ol id="insp-points"></ol>
+      </div>
+    </section>
+
+    <section id="feed-sec" aria-label="异常事件流">
+      <h2 class="feed-title">异常事件 <span class="h3-sub">最近 8 条 · 点击跳转</span></h2>
+      <ol id="feed"></ol>
+    </section>
+  </aside>
+</main>
+
+<noscript><p style="padding:1rem">本应用为实时指标流模拟，需要启用 JavaScript。</p></noscript>
+</body>
+</html>

@@ -1,0 +1,81 @@
+version: "0.1"
+screen:
+  id: workspace_screen
+  intent:
+    primary_task: 在层级树中定位目标实体，精确圈定选中集（含跨节点、跨筛选条件的多选），核对选择摘要后执行批量操作，并核验回执计数与选中集一致
+    secondary_tasks:
+      - 按层级节点折叠/展开浏览实体
+      - 按状态筛选以圈定特定状态的实体
+      - 执行后用撤销恢复到操作前状态
+      - 单个实体的快速状态修正
+  archetype:
+    pattern_ref: PAT-WORKSPACE
+  density_intent: compact
+  regions:
+    - id: 选中集（批量操作的作用范围，永远最显眼）
+      role: experimental:选中集（批量操作的作用范围，永远最显眼）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 实体清单（每行：状态徽标 + 归属路径 + 关键属性）
+      role: experimental:实体清单（每行：状态徽标 + 归属路径 + 关键属性）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 层级树（归属容器导航与节点级显式选择）
+      role: experimental:层级树（归属容器导航与节点级显式选择）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 操作回执/撤销条
+      role: experimental:操作回执/撤销条
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 状态筛选与搜索
+      role: experimental:状态筛选与搜索
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: workspace
+      role: dominant_workspace
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - preserve_context
+  relationships: []
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved:
+    - id: no_visual_spec
+      question: no_visual_spec
+      impact: low
+      affects:
+        - visual_design
+  rejected_alternatives:
+    - option: PAT-APPLICATION-SHELL
+      reason: "其契约明确 does_not_apply_when: the product is a single workspace；本产品单主屏无多区域导航，持久 chrome 只会浪费高密度空间"
+    - option: PAT-DATA-EXPLORER
+      reason: 其任务域为 compare/filter/inspect；本任务 comparison_need=none，核心是批量生命周期操作而非探索比较（路由亦已排除）
+    - option: PAT-LIST-DETAIL-INSPECTOR
+      reason: 任务域 inspect/trace 与 manage 不符；状态与归属已显式呈现在行内，无需详情检视器

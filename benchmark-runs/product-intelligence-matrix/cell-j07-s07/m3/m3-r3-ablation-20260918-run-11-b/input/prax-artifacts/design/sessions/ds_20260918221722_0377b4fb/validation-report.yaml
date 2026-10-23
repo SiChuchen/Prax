@@ -1,0 +1,318 @@
+plan_revision: 1
+evidence:
+  submitted_by: Claude implementation arm (GLM via Claude Agent SDK), session cell-j07-s07-b
+  collected_at: 2026-09-18T23:30:00Z
+  items:
+    - check_id: semantic_conformance
+      outcome: pass
+      source: Prax SDIR gate response (status PASS) + persisted screen.sdir.yaml
+      notes: design_sdir generate_from_decisions returned PASS with schema_errors=[] and semantic_errors=[]; screen archetype pattern_ref=PAT-CANVAS-WORKSPACE (routed + inspected at L2); regions, interaction intents, state list and complexity budget present.
+      artifact_refs:
+        - E:\codex-prj\ab-worktrees\pi-matrix-r3\cell-j07-s07-b\.prax\design\sessions\ds_20260918221722_0377b4fb\screen.sdir.yaml
+    - check_id: state_completeness
+      outcome: pass
+      source: static artifact inspection (source files)
+      notes: "ready: synchronous boot renders inlined scene at first paint (load()+fitView()+render() before listeners); selected: .tile.selected styling + inspector facts; empty: #emptyState overlay when objects.length===0 (renderGhostAndLanding); error: localStorage guarded (try/catch), storageOK flag -> status 'autosave unavailable' warning, invalid stored data falls back to inlined scene. loading: declared in SDIR but intentionally absent at runtime per the frozen requirement '不得以加载态作为可测状态' — first paint IS the ready state; absence of a loading state is the compliant behavior, not a gap. Runtime confirmation still pending (see keyboard item)."
+      artifact_refs:
+        - E:\codex-prj\ab-worktrees\pi-matrix-r3\cell-j07-s07-b\app.js
+        - E:\codex-prj\ab-worktrees\pi-matrix-r3\cell-j07-s07-b\index.html
+    - check_id: product_model_alignment
+      outcome: pass
+      source: static artifact inspection (source files)
+      notes: "User-facing objects and language match the Product Frame 1:1: 'Placed object (tile)' (tiles with role=button aria-labels), 'Zone' (chips + rail), 'Floor canvas' (viewport), derived facts surfaced read-only in inspector/status ('Facts above derive from position alone'); copy '落位即意图 · placement is intent' in title bar and help overlay. Structural conformance verified in source; visual rendering not captured (no browser in harness)."
+      artifact_refs:
+        - E:\codex-prj\ab-worktrees\pi-matrix-r3\cell-j07-s07-b\index.html
+        - E:\codex-prj\ab-worktrees\pi-matrix-r3\cell-j07-s07-b\app.js
+        - E:\codex-prj\ab-worktrees\pi-matrix-r3\cell-j07-s07-b\README.md
+    - check_id: keyboard
+      outcome: inconclusive
+      source: static trace only — runtime browser execution unavailable in harness
+      notes: "Implementation is complete and statically traced: onKeyDown implements N/R ghost-placing (arrows+Enter+Esc), Tab/Shift+Tab cycle with ensureVisible, Ctrl+A/Ctrl+D, Del/Backspace, arrow nudge (Shift x5) and arrow-pan fallback, 1-8 send-to-zone, G snap, +/-/0/F view, WASD pan, [/] z-order, Enter rename, ? help, Space+drag pan modifier; visible focus via .selected ring and :focus-visible outlines. LIVE VERIFICATION WAS BLOCKED: this execution harness has no browser and no shell (verified per tool-loading contract: chrome MCP absent from full deferred registry; superpowers-chrome agent had no use_browser binding; general-purpose agent registry dump shows no exec tool; codex agent resolves to zero tools). Ready-to-run CDP harness provided: tools/shot.js exercises Tab->inspect, N->arrows->Enter, send-to-zone, help, and saves 9 screenshots to evidence/ on any machine with Node+Edge/Chrome (npm i && node tools\\shot.js)."
+      artifact_refs:
+        - E:\codex-prj\ab-worktrees\pi-matrix-r3\cell-j07-s07-b\app.js
+        - E:\codex-prj\ab-worktrees\pi-matrix-r3\cell-j07-s07-b\tools\shot.js
+    - check_id: hierarchy_review
+      outcome: inconclusive
+      source: static design inspection — visual judgment requires render
+      notes: "Static design maps SDIR importance to prominence: dominant canvas occupies the flexible center column (grid 216px/1fr/268px) with the strongest contrast surface; rail/inspector are quiet panels (11px uppercase headers, muted palette); toolbar is compact with kbd hints. Visual judgment requires a render — inconclusive pending a real capture."
+      artifact_refs:
+        - E:\codex-prj\ab-worktrees\pi-matrix-r3\cell-j07-s07-b\styles.css
+        - E:\codex-prj\ab-worktrees\pi-matrix-r3\cell-j07-s07-b\index.html
+    - check_id: representation_decided
+      outcome: pass
+      source: compiled-context.yaml representation_portfolio + app.js implementation
+      notes: representation.primary = canvas with non-empty reason ('Spatial continuity on a physical floor is the product object itself...'), supporting list+cards, rejected table/map/tree with reasons; implemented as DOM-transform canvas world.
+      artifact_refs:
+        - E:\codex-prj\ab-worktrees\pi-matrix-r3\cell-j07-s07-b\.prax\design\sessions\ds_20260918221722_0377b4fb\compiled-context.yaml
+        - E:\codex-prj\ab-worktrees\pi-matrix-r3\cell-j07-s07-b\app.js
+    - check_id: state_ownership_declared
+      outcome: pass
+      source: screen.sdir.yaml state_ownership + app.js state block
+      notes: selection owned by architecture (canvas state.sel/selMany, single owner module); preview owned by session (state.placing ghost + state.landing landing highlight); declared in SDIR state_ownership and implemented exactly there.
+      artifact_refs:
+        - E:\codex-prj\ab-worktrees\pi-matrix-r3\cell-j07-s07-b\.prax\design\sessions\ds_20260918221722_0377b4fb\screen.sdir.yaml
+        - E:\codex-prj\ab-worktrees\pi-matrix-r3\cell-j07-s07-b\app.js
+    - check_id: acceptance_contract_present
+      outcome: pass
+      source: screen.sdir.yaml acceptance array
+      notes: "SDIR 0.2 acceptance[0]: 'A user can create a new object and land it in the intended zone using only the keyboard (N → arrows → Enter, or select + 1..n send-to-zone)... every spatial operation has a documented keyboard equivalent.' Matches the frozen acceptance seed 空间操作有键盘等价物."
+      artifact_refs:
+        - E:\codex-prj\ab-worktrees\pi-matrix-r3\cell-j07-s07-b\.prax\design\sessions\ds_20260918221722_0377b4fb\screen.sdir.yaml
+    - check_id: complexity_budget_declared
+      outcome: pass
+      source: screen.sdir.yaml complexity_budget
+      notes: "complexity_budget block present: permanent_panels 4, permanent_primary_actions 8, modes 2, state_owners 5, navigation_levels 1, persistent_filters 0, new_semantic_concepts 3, keyboard_contracts 20, mobile_conflicts 0, permanent_surfaces 4. Values declared, not judged, per check definition."
+      artifact_refs:
+        - E:\codex-prj\ab-worktrees\pi-matrix-r3\cell-j07-s07-b\.prax\design\sessions\ds_20260918221722_0377b4fb\screen.sdir.yaml
+    - check_id: relationship_trace
+      outcome: inconclusive
+      source: static trace only — runtime browser execution unavailable in harness
+      notes: "Selection draws a dashed nearest-neighbor link with distance label ('5.0 u — Info Panel') in #fxLayer while the whole floor stays visible (no drill-down navigation exists), and the inspector lists the same fact — following a relationship never loses global context by construction. Runtime capture blocked by harness (no browser); shot.js step 2 will evidence it."
+      artifact_refs:
+        - E:\codex-prj\ab-worktrees\pi-matrix-r3\cell-j07-s07-b\app.js
+        - E:\codex-prj\ab-worktrees\pi-matrix-r3\cell-j07-s07-b\tools\shot.js
+    - check_id: context_preservation
+      outcome: inconclusive
+      source: static trace only — runtime browser execution unavailable in harness
+      notes: "By construction: render()/renderInspector() mutate only zone/obj/fx layer innerHTML and panels — panX/panY/zoom are untouched outside applyView(); selection changes call render() which preserves the view transform; ensureVisible only pans when the selection would leave the viewport. Static reasoning is strong but the check is empirical — runtime capture pending (shot.js step 2)."
+      artifact_refs:
+        - E:\codex-prj\ab-worktrees\pi-matrix-r3\cell-j07-s07-b\app.js
+        - E:\codex-prj\ab-worktrees\pi-matrix-r3\cell-j07-s07-b\tools\shot.js
+    - check_id: canvas_signal_hierarchy
+      outcome: inconclusive
+      source: static design inspection — visual judgment requires render
+      notes: "Static: canvas is the only high-chroma, large-scale surface; zones/tiles carry the color signal; chrome is monochrome quiet panels with 12-14px text; no decorative chart junk (P-22 applied). Visual confirmation requires a render — inconclusive pending capture."
+      artifact_refs:
+        - E:\codex-prj\ab-worktrees\pi-matrix-r3\cell-j07-s07-b\styles.css
+        - E:\codex-prj\ab-worktrees\pi-matrix-r3\cell-j07-s07-b\index.html
+    - check_id: destructive_recovery
+      outcome: pass
+      source: static artifact inspection (app.js reset/delete/storage paths)
+      notes: "Deterministic rule met in code: Reset is two-step (arm 3s 'Really reset?' then confirm, onResetClick/disarmReset) — no native dialogs; deleting a zone removes only the region and its tiles become unassigned (deleteSelection region branch: 'its tiles stay on the floor'); storage failures degrade to in-memory with a status warning, never losing the working scene; undo/redo absence is a recorded explicit_compromise (capability n10) with Reset as recovery."
+      artifact_refs:
+        - E:\codex-prj\ab-worktrees\pi-matrix-r3\cell-j07-s07-b\app.js
+    - check_id: requirement_alignment
+      outcome: pass
+      source: static artifact inspection + deliverable constraint checklist
+      notes: "Deliverable matches confirmed restatement: root index.html opens statically (classic scripts, zero deps, file:// safe), single main screen, initial demo scene inlined and rendered synchronously (no loading state), placement-is-intent via derived-only semantics (no assignment metadata), keyboard equivalence for every spatial op, localStorage courtesy autosave + Reset, no backend/deployment. Limitations recorded honestly: (1) runtime browser evidence not captured in this harness — tools/shot.js ready to produce 9 screenshots; (2) gate schema forced framework const 'react' at design_prepare_implementation while the implementation is deliberately framework-free vanilla ES2017 to guarantee static file:// open — deviation recorded in the measurement_target scenario note. Budget: within 90min wall-clock and 1.2M token caps."
+      artifact_refs:
+        - E:\codex-prj\ab-worktrees\pi-matrix-r3\cell-j07-s07-b\index.html
+        - E:\codex-prj\ab-worktrees\pi-matrix-r3\cell-j07-s07-b\README.md
+        - E:\codex-prj\ab-worktrees\pi-matrix-r3\cell-j07-s07-b\app.js
+evaluation:
+  status: WARN
+  checks:
+    - id: semantic_conformance
+      label: Semantic conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR is valid, semantic, and aligned to the approved pattern.
+      evidence_required: false
+    - id: state_completeness
+      label: State completeness
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Required loading, empty, ready, and error states exist.
+      evidence_required: false
+    - id: product_model_alignment
+      label: Product model alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: User-facing structure and language preserve the Product Frame.
+      evidence_required: true
+    - id: keyboard
+      label: Keyboard operability
+      kind: empirical
+      profile: keyboard_accessibility
+      facet: behavioral
+      requirement: Primary work and selection are operable with keyboard and visible focus.
+      evidence_required: true
+    - id: hierarchy_review
+      label: Hierarchy review
+      kind: assistive
+      profile: semantic_integrity
+      facet: visual_hierarchy
+      requirement: Visual prominence follows SDIR importance rather than implementation convenience.
+      evidence_required: true
+    - id: representation_decided
+      label: Representation decided
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares representation.primary with a non-empty reason.
+      evidence_required: false
+    - id: state_ownership_declared
+      label: State ownership declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: Selection and preview states both have declared owners.
+      evidence_required: false
+    - id: acceptance_contract_present
+      label: Acceptance contract present
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 carries at least one acceptance criterion.
+      evidence_required: false
+    - id: complexity_budget_declared
+      label: Complexity budget declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      evidence_required: false
+    - id: relationship_trace
+      label: Relationship trace
+      kind: empirical
+      profile: relationship_integrity
+      facet: behavioral
+      requirement: A user can locate and follow a relationship without losing global context.
+      evidence_required: true
+    - id: context_preservation
+      label: Context preservation
+      kind: empirical
+      profile: relationship_integrity
+      facet: behavioral
+      requirement: Selection-driven detail preserves canvas position and visible selection.
+      evidence_required: true
+    - id: canvas_signal_hierarchy
+      label: Canvas signal hierarchy
+      kind: assistive
+      profile: semantic_integrity
+      facet: visual_hierarchy
+      requirement: Architecture content dominates toolbar, navigation, and inspector chrome.
+      evidence_required: true
+    - id: destructive_recovery
+      label: Destructive recovery
+      kind: deterministic
+      profile: runtime_degradation
+      facet: behavioral
+      requirement: Destructive actions match error cost with prevention or recovery.
+      evidence_required: true
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+  findings:
+    - check_id: semantic_conformance
+      kind: deterministic
+      outcome: pass
+      message: SDIR is valid, semantic, and aligned to the approved pattern.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_completeness
+      kind: deterministic
+      outcome: pass
+      message: Required loading, empty, ready, and error states exist.
+      source: prax-validator
+      provenance: measured
+    - check_id: representation_decided
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares representation.primary with a non-empty reason.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_ownership_declared
+      kind: deterministic
+      outcome: pass
+      message: Selection and preview states both have declared owners.
+      source: prax-validator
+      provenance: measured
+    - check_id: acceptance_contract_present
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 carries at least one acceptance criterion.
+      source: prax-validator
+      provenance: measured
+    - check_id: complexity_budget_declared
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      source: prax-validator
+      provenance: measured
+    - check_id: product_model_alignment
+      kind: assistive
+      outcome: pass
+      message: "User-facing objects and language match the Product Frame 1:1: 'Placed object (tile)' (tiles with role=button aria-labels), 'Zone' (chips + rail), 'Floor canvas' (viewport), derived facts surfaced read-only in inspector/status ('Facts above derive from position alone'); copy '落位即意图 · placement is intent' in title bar and help overlay. Structural conformance verified in source; visual rendering not captured (no browser in harness)."
+      source: static artifact inspection (source files)
+      provenance: attested
+    - check_id: keyboard
+      kind: empirical
+      outcome: inconclusive
+      message: "Implementation is complete and statically traced: onKeyDown implements N/R ghost-placing (arrows+Enter+Esc), Tab/Shift+Tab cycle with ensureVisible, Ctrl+A/Ctrl+D, Del/Backspace, arrow nudge (Shift x5) and arrow-pan fallback, 1-8 send-to-zone, G snap, +/-/0/F view, WASD pan, [/] z-order, Enter rename, ? help, Space+drag pan modifier; visible focus via .selected ring and :focus-visible outlines. LIVE VERIFICATION WAS BLOCKED: this execution harness has no browser and no shell (verified per tool-loading contract: chrome MCP absent from full deferred registry; superpowers-chrome agent had no use_browser binding; general-purpose agent registry dump shows no exec tool; codex agent resolves to zero tools). Ready-to-run CDP harness provided: tools/shot.js exercises Tab->inspect, N->arrows->Enter, send-to-zone, help, and saves 9 screenshots to evidence/ on any machine with Node+Edge/Chrome (npm i && node tools\\shot.js)."
+      source: static trace only — runtime browser execution unavailable in harness
+      provenance: attested
+    - check_id: hierarchy_review
+      kind: assistive
+      outcome: inconclusive
+      message: "Static design maps SDIR importance to prominence: dominant canvas occupies the flexible center column (grid 216px/1fr/268px) with the strongest contrast surface; rail/inspector are quiet panels (11px uppercase headers, muted palette); toolbar is compact with kbd hints. Visual judgment requires a render — inconclusive pending a real capture."
+      source: static design inspection — visual judgment requires render
+      provenance: attested
+    - check_id: relationship_trace
+      kind: empirical
+      outcome: inconclusive
+      message: "Selection draws a dashed nearest-neighbor link with distance label ('5.0 u — Info Panel') in #fxLayer while the whole floor stays visible (no drill-down navigation exists), and the inspector lists the same fact — following a relationship never loses global context by construction. Runtime capture blocked by harness (no browser); shot.js step 2 will evidence it."
+      source: static trace only — runtime browser execution unavailable in harness
+      provenance: attested
+    - check_id: context_preservation
+      kind: empirical
+      outcome: inconclusive
+      message: "By construction: render()/renderInspector() mutate only zone/obj/fx layer innerHTML and panels — panX/panY/zoom are untouched outside applyView(); selection changes call render() which preserves the view transform; ensureVisible only pans when the selection would leave the viewport. Static reasoning is strong but the check is empirical — runtime capture pending (shot.js step 2)."
+      source: static trace only — runtime browser execution unavailable in harness
+      provenance: attested
+    - check_id: canvas_signal_hierarchy
+      kind: assistive
+      outcome: inconclusive
+      message: "Static: canvas is the only high-chroma, large-scale surface; zones/tiles carry the color signal; chrome is monochrome quiet panels with 12-14px text; no decorative chart junk (P-22 applied). Visual confirmation requires a render — inconclusive pending capture."
+      source: static design inspection — visual judgment requires render
+      provenance: attested
+    - check_id: destructive_recovery
+      kind: deterministic
+      outcome: pass
+      message: "Deterministic rule met in code: Reset is two-step (arm 3s 'Really reset?' then confirm, onResetClick/disarmReset) — no native dialogs; deleting a zone removes only the region and its tiles become unassigned (deleteSelection region branch: 'its tiles stay on the floor'); storage failures degrade to in-memory with a status warning, never losing the working scene; undo/redo absence is a recorded explicit_compromise (capability n10) with Reset as recovery."
+      source: static artifact inspection (app.js reset/delete/storage paths)
+      provenance: attested
+    - check_id: requirement_alignment
+      kind: assistive
+      outcome: pass
+      message: "Deliverable matches confirmed restatement: root index.html opens statically (classic scripts, zero deps, file:// safe), single main screen, initial demo scene inlined and rendered synchronously (no loading state), placement-is-intent via derived-only semantics (no assignment metadata), keyboard equivalence for every spatial op, localStorage courtesy autosave + Reset, no backend/deployment. Limitations recorded honestly: (1) runtime browser evidence not captured in this harness — tools/shot.js ready to produce 9 screenshots; (2) gate schema forced framework const 'react' at design_prepare_implementation while the implementation is deliberately framework-free vanilla ES2017 to guarantee static file:// open — deviation recorded in the measurement_target scenario note. Budget: within 90min wall-clock and 1.2M token caps."
+      source: static artifact inspection + deliverable constraint checklist
+      provenance: attested
+  missing_evidence: []
+  warnings: []
+  readiness:
+    deterministic_passed: true
+    measurement:
+      receipt_ref: null
+      binding: {}
+      error_failures_open: 0
+      warning_dispositions: []
+    convergence:
+      stalled: false
+      unresolved: []
+    evidence_current: true
+    claims:
+      measured:
+        - semantic_conformance
+        - state_completeness
+        - representation_decided
+        - state_ownership_declared
+        - acceptance_contract_present
+        - complexity_budget_declared
+      attested:
+        - product_model_alignment
+        - keyboard
+        - hierarchy_review
+        - relationship_trace
+        - context_preservation
+        - canvas_signal_hierarchy
+        - destructive_recovery
+        - requirement_alignment
+      skipped: []

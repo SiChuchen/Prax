@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>发布指挥台 · orders-api v2.4.0</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%230a0e13'/%3E%3Cpath d='M8 3l5 9H3z' fill='%234cc2ff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true">▲</span>
+    <div class="brand-text">
+      <strong>发布指挥台</strong>
+      <span class="brand-sub">orders-api · v2.4.0 · 运行手册 RLB-2.4</span>
+    </div>
+  </div>
+  <div class="top-meta">
+    <span class="chip">变更单 CHG-20260919-042</span>
+    <span class="chip">窗口 02:00–04:00</span>
+    <span class="chip chip-ok">已审批 · 林晓</span>
+  </div>
+  <div class="top-right">
+    <div class="progress-wrap" title="步骤进度">
+      <div class="progress-bar"><i id="progress-fill"></i></div>
+      <span id="progress-text" class="mono">0/14</span>
+    </div>
+    <div id="mistake-badge" class="verdict-chip ok">零失误</div>
+    <div id="timer" class="mono timer">00:00</div>
+  </div>
+</header>
+
+<main class="layout">
+  <aside class="rail rail-phases" id="rail" aria-label="阶段与步骤"></aside>
+  <section class="stage" id="stage" aria-label="当前步骤"></section>
+  <aside class="rail rail-status" id="status" aria-label="状态面板"></aside>
+</main>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<div class="modal-backdrop hidden" id="modal-backdrop">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-head">
+      <span class="irr-badge">不可逆操作</span>
+      <h2 id="modal-title">确认执行</h2>
+    </div>
+    <p id="modal-desc" class="modal-desc"></p>
+    <div class="phrase-box">
+      <span>该操作无法直接撤销。输入确认短语以继续：</span>
+      <code id="modal-phrase" class="mono"></code>
+    </div>
+    <input id="modal-input" class="mono" autocomplete="off" spellcheck="false" placeholder="输入上方短语">
+    <p id="modal-hint" class="modal-hint hidden">短语不匹配，请核对后重试。</p>
+    <p class="modal-note">取消不产生任何记录；执行后如出现异常，请立即按该步骤的「恢复路径」处置。</p>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-action="confirm-cancel">取消</button>
+      <button class="btn btn-danger" id="modal-exec" data-action="confirm-exec" disabled>确认执行</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="overlay"></div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

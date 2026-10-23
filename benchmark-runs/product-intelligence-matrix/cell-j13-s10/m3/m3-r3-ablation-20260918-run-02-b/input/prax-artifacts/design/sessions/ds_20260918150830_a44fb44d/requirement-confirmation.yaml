@@ -1,0 +1,30 @@
+version: "0.1"
+user_quote:
+  - 动词：explore；对象：多维数据；成功标准：维度切换不重置认知
+  - 验收种子：过滤/投影状态有归属且可回退
+  - 交付物必须能直接静态打开（根路径 index.html，或构建产物 dist/）；应用在页面加载完成时即处于可用状态
+restatement: 构建一个单页多维数据探索器：主对象为 dataset（无界基数、高维度、高密度的多维记录集）。核心用户任务是 explore——在多个维度之间切换投影（如 X/Y 轴、颜色编码）来探索数据。成功标准是维度切换不重置认知：切换投影维度时，已建立的过滤、选中集与关注焦点必须跨维度保留，而不是被清空。验收种子要求过滤/投影状态有归属（每个过滤/投影状态可追溯其来源动作）且可回退（可撤销/回滚到任意先前状态）。交付物为静态可直接打开的单页应用（index.html），初始数据内联、首屏即用，无外部服务依赖。
+boundaries:
+  in_scope:
+    - 单页多维数据探索主屏 1 个
+    - 维度投影切换（X/Y/颜色编码等维度分配），切换时保留过滤与选中状态
+    - 过滤状态归属展示（来源动作可追溯）与单条移除
+    - 状态历史账本与回退（撤销/重做/跳转到任意快照）
+    - 初始数据内联、首屏即用、静态打开（file:// 兼容）
+    - 高密度数据的可视化渲染（数千条记录）
+  out_of_scope:
+    - 后端、账号体系或持久化服务
+    - 部署到外部服务
+    - 多屏/移动端适配
+    - 数据编辑或写入（只读探索）
+    - 实时数据流（时间性低、易变性中，不做 live 更新管道）
+  scope_complete: true
+open_questions: []
+confirmation:
+  status: requirement_is_sufficient
+  evidence:
+    - type: task_brief
+      ref: brief.md (Product Brief — cell-j13-s10, frozen by M2 2026-09-03)
+    - type: conversation_message
+      ref: user task message with REQUIREMENT block
+  confirmed_at: 2026-09-18T00:00:00Z

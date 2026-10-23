@@ -1,0 +1,164 @@
+version: "0.1"
+revision: 2
+session_id: ds_20260923191201_1b62cf32
+derived_from:
+  artifact_digests:
+    product_frame: 7c8ce3dfb95d26da6296b4ddfeeb1a544e9bb430bf8819426e183e1ae338ef3d
+    design_context: 0acaf55a507137b05554e47f41c2eb32a3eddd4458fdc523aa97900a799cf804
+    design_decisions: 1798a278f9fe4f199eb4a4ae227edbd7aaa931cab71b5d97e85bf588423c908d
+    sdir: 28b47bf74b7a1c2474a8b28840d194d4b53d5be90c0a50019058aa6bd1f632b1
+    realization_decision: 30d1442dd1e70388551571b3da37a3035c494c9c3a9df17d4b72a96212d27a07
+plan:
+  version: "0.1"
+  pattern_ref: PAT-LIST-DETAIL
+  checks:
+    - id: semantic_conformance
+      label: Semantic conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR is valid, semantic, and aligned to the approved pattern.
+      evidence_required: false
+    - id: state_completeness
+      label: State completeness
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Required loading, empty, ready, and error states exist.
+      evidence_required: false
+    - id: product_model_alignment
+      label: Product model alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: User-facing structure and language preserve the Product Frame.
+      evidence_required: true
+    - id: keyboard
+      label: Keyboard operability
+      kind: empirical
+      profile: keyboard_accessibility
+      facet: behavioral
+      requirement: Primary work and selection are operable with keyboard and visible focus.
+      evidence_required: true
+    - id: hierarchy_review
+      label: Hierarchy review
+      kind: assistive
+      profile: semantic_integrity
+      facet: visual_hierarchy
+      requirement: Visual prominence follows SDIR importance rather than implementation convenience.
+      evidence_required: true
+    - id: representation_decided
+      label: Representation decided
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares representation.primary with a non-empty reason.
+      evidence_required: false
+    - id: state_ownership_declared
+      label: State ownership declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: Selection and preview states both have declared owners.
+      evidence_required: false
+    - id: acceptance_contract_present
+      label: Acceptance contract present
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 carries at least one acceptance criterion.
+      evidence_required: false
+    - id: complexity_budget_declared
+      label: Complexity budget declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      evidence_required: false
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+history:
+  - revision: 1
+    derived_from:
+      artifact_digests:
+        product_frame: 7c8ce3dfb95d26da6296b4ddfeeb1a544e9bb430bf8819426e183e1ae338ef3d
+        design_context: 0acaf55a507137b05554e47f41c2eb32a3eddd4458fdc523aa97900a799cf804
+        design_decisions: 1798a278f9fe4f199eb4a4ae227edbd7aaa931cab71b5d97e85bf588423c908d
+        sdir: b0879bce4c383521a3d4877db13f2053a71769cc403f25ac4c60f5bd27a2c0a0
+        realization_decision: 30d1442dd1e70388551571b3da37a3035c494c9c3a9df17d4b72a96212d27a07
+    checks:
+      - id: semantic_conformance
+        label: Semantic conformance
+        kind: deterministic
+        profile: semantic_integrity
+        facet: semantic
+        requirement: SDIR is valid, semantic, and aligned to the approved pattern.
+        evidence_required: false
+      - id: state_completeness
+        label: State completeness
+        kind: deterministic
+        profile: state_coverage
+        facet: behavioral
+        requirement: Required loading, empty, ready, and error states exist.
+        evidence_required: false
+      - id: product_model_alignment
+        label: Product model alignment
+        kind: assistive
+        profile: semantic_integrity
+        facet: semantic
+        requirement: User-facing structure and language preserve the Product Frame.
+        evidence_required: true
+      - id: keyboard
+        label: Keyboard operability
+        kind: empirical
+        profile: keyboard_accessibility
+        facet: behavioral
+        requirement: Primary work and selection are operable with keyboard and visible focus.
+        evidence_required: true
+      - id: hierarchy_review
+        label: Hierarchy review
+        kind: assistive
+        profile: semantic_integrity
+        facet: visual_hierarchy
+        requirement: Visual prominence follows SDIR importance rather than implementation convenience.
+        evidence_required: true
+      - id: representation_decided
+        label: Representation decided
+        kind: deterministic
+        profile: semantic_integrity
+        facet: semantic
+        requirement: SDIR 0.2 declares representation.primary with a non-empty reason.
+        evidence_required: false
+      - id: state_ownership_declared
+        label: State ownership declared
+        kind: deterministic
+        profile: semantic_integrity
+        facet: semantic
+        requirement: Selection and preview states both have declared owners.
+        evidence_required: false
+      - id: acceptance_contract_present
+        label: Acceptance contract present
+        kind: deterministic
+        profile: semantic_integrity
+        facet: semantic
+        requirement: SDIR 0.2 carries at least one acceptance criterion.
+        evidence_required: false
+      - id: complexity_budget_declared
+        label: Complexity budget declared
+        kind: deterministic
+        profile: semantic_integrity
+        facet: semantic
+        requirement: SDIR 0.2 declares a complexity_budget block (values are not judged).
+        evidence_required: false
+      - id: requirement_alignment
+        label: Requirement alignment
+        kind: assistive
+        profile: semantic_integrity
+        facet: semantic
+        requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+        evidence_required: true

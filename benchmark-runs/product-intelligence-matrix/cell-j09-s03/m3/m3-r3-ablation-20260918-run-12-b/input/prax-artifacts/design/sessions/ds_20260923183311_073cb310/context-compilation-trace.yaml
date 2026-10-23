@@ -1,0 +1,39 @@
+version: "0.1"
+session_id: ds_20260923183311_073cb310
+task_ref: 并排比较候选地点：在同一屏内对照地理语境与高密度属性逐维权衡，得出加权排序
+selected:
+  - ref: product_relationships
+    reason:
+      - rel-cand-map:candidate->map_context
+      - rel-cand-dim:candidate->comparison_dimension
+      - rel-weights-cand:weight_profile->candidate
+      - rel-decision-cand:decision->candidate
+  - ref: region_relationships
+    reason: []
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-WORKSPACE
+  - ref: unresolved
+    reason:
+      - u-gap-domain
+      - u1
+      - u2
+  - ref: corrections
+    reason: []
+  - ref: validation-plan@1
+    reason:
+      - semantic_conformance
+      - state_completeness
+      - product_model_alignment
+      - keyboard
+      - hierarchy_review
+      - representation_decided
+      - state_ownership_declared
+      - acceptance_contract_present
+      - complexity_budget_declared
+      - requirement_alignment
+excluded:
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata

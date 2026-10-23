@@ -1,0 +1,256 @@
+plan_revision: 1
+evidence:
+  submitted_by: agent (Claude, cell-j08-s08 execution arm)
+  collected_at: 2026-09-23T23:40:00Z
+  items:
+    - check_id: semantic_conformance
+      outcome: pass
+      source: prax design_sdir generate_from_decisions response (status PASS, no schema/semantic errors)
+      notes: SDIR 0.2 generated from decisions and lint-passed (schema_errors=[], semantic_errors=[]); regions, archetype pattern_ref PAT-APPLICATION-SHELL, and complexity budget all carried into implementation.
+      artifact_refs: []
+    - check_id: state_completeness
+      outcome: pass
+      source: real-browser run scripts/evidence.mjs (Chrome headless via puppeteer-core), 9/9 PASS on final build
+      notes: ready = default (inlined doc, 0 loading nodes at load event); selected = editor/preview highlight states; error = content-level validation surfaced via pill+flags; loading intentionally absent by design (data inlined; constraint forbids loading as first state); empty rendered as placeholders（未命名章节/空条目）.
+      artifact_refs:
+        - evidence/01-initial-ready.png
+        - evidence/06-content-validation.png
+        - validation-evidence/results.json
+    - check_id: product_model_alignment
+      outcome: pass
+      source: real-browser screenshots + DOM assertions
+      notes: "User-facing language uses exactly the frame's object names: 文档 (title), 章节 (第 n 节), 预览 (pane), 结构检查 (status pill); relationships visible: document composed of ordered sections, preview renders document, selection mirrors across panes."
+      artifact_refs:
+        - evidence/01-initial-ready.png
+        - evidence/03-selection-sync.png
+    - check_id: keyboard
+      outcome: pass
+      source: scripts/keyboard-check.mjs run log (validation-evidence/keyboard-run.log), Chrome headless, exit code 0 on final dist build
+      notes: "MEASUREMENT (receipt-bound, a11y.focus_order): scripts/keyboard-check.mjs — 6/6 PASS with per-step ISO-timestamped log: first Tab lands on title input with computed 'solid 2px' focus ring; keyboard-only typing updates preview h1 (Aurora 笔记 2.5 更新说明); Ctrl+Z reverts whole typed group to 2.4; Ctrl+Y redoes to 2.5; 8/8 tab stops are interactive elements with solid 2px ring (62 tabbable elements); Tab reached preview block (stop 61/62) and Enter selected both panes. The measurement drove one product fix: text edits coalesce into a single undo group per field."
+      artifact_refs:
+        - evidence/keyboard-run.log
+        - evidence/keyboard-run.json
+        - evidence/07-focus-ring.png
+      measurement_receipt: validation-evidence/keyboard-run.receipt.json
+    - check_id: hierarchy_review
+      outcome: pass
+      source: screenshot review against SDIR region importance
+      notes: Header (identity+status) > editor pane (primary) > preview pane (primary) > hover-revealed section ops (supporting) matches SDIR importance; preview reading column is the visually calmest region per spacious density intent.
+      artifact_refs:
+        - evidence/01-initial-ready.png
+        - evidence/03-selection-sync.png
+        - evidence/06-content-validation.png
+    - check_id: representation_decided
+      outcome: pass
+      source: SDIR 0.2 representation block (compiled context)
+      notes: SDIR 0.2 representation.primary = form with non-empty reason; supporting = document + list; rejected code_editor/wizard/canvas recorded.
+      artifact_refs: []
+    - check_id: state_ownership_declared
+      outcome: pass
+      source: SDIR 0.2 state_ownership block; implementation matches
+      notes: selection owned by header strip per SDIR (single selectedId state in App); preview owned by session (derived, no independent preview state).
+      artifact_refs: []
+    - check_id: acceptance_contract_present
+      outcome: pass
+      source: SDIR 0.2 acceptance[] (compiled context)
+      notes: SDIR carries the acceptance criterion on operation sequences, structural validity, preview consistency, and first-screen usability; verified empirically (see requirement_alignment).
+      artifact_refs: []
+    - check_id: complexity_budget_declared
+      outcome: pass
+      source: SDIR 0.2 complexity_budget block
+      notes: "Budget declared: 3 panels, 4 primary actions, 1 mode, 2 state owners, 1 nav level, 0 filters, 2 new concepts, 1 keyboard contract, 0 mobile conflicts, 3 surfaces; implementation stays within it."
+      artifact_refs: []
+    - check_id: destructive_recovery
+      outcome: pass
+      source: real-browser delete→undo assertions + scripts/verify-model.mjs
+      notes: "Section delete (5→4) fully restored by Ctrl+Z; delete disabled at minimum cardinality; reset guarded by confirm dialog mentioning undo; text edits coalesce per field so undo strength matches error cost; model fuzz: 2000 random ops never broke skeleton (npm run verify PASS on final build)."
+      artifact_refs:
+        - evidence/04-section-deleted.png
+        - evidence/05-undo-restored.png
+        - validation-evidence/results.json
+    - check_id: requirement_alignment
+      outcome: pass
+      source: build artifact + real-browser run (scripts/evidence.mjs, 9/9 PASS)
+      notes: "Restatement met on final build: from-scratch single-page app; opens statically (file:// AND http verified); usable at load (5 sections/5 cards present at load event, zero loading nodes); structure-preserving edit×document; acceptance seed verified: typed edit appears in preview immediately (old text gone), delete+undo restores, empty-content validation consistent across both panes; no backend/deployment — all evidence from local static server + file://."
+      artifact_refs:
+        - dist/index.html
+        - evidence/00-file-open.png
+        - evidence/01-initial-ready.png
+        - evidence/02-edit-preview-sync.png
+        - validation-evidence/results.json
+evaluation:
+  status: PASS
+  checks:
+    - id: semantic_conformance
+      label: Semantic conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR is valid, semantic, and aligned to the approved pattern.
+      evidence_required: false
+    - id: state_completeness
+      label: State completeness
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Required loading, empty, ready, and error states exist.
+      evidence_required: false
+    - id: product_model_alignment
+      label: Product model alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: User-facing structure and language preserve the Product Frame.
+      evidence_required: true
+    - id: keyboard
+      label: Keyboard operability
+      kind: empirical
+      profile: keyboard_accessibility
+      facet: behavioral
+      requirement: Primary work and selection are operable with keyboard and visible focus.
+      evidence_required: true
+    - id: hierarchy_review
+      label: Hierarchy review
+      kind: assistive
+      profile: semantic_integrity
+      facet: visual_hierarchy
+      requirement: Visual prominence follows SDIR importance rather than implementation convenience.
+      evidence_required: true
+    - id: representation_decided
+      label: Representation decided
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares representation.primary with a non-empty reason.
+      evidence_required: false
+    - id: state_ownership_declared
+      label: State ownership declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: Selection and preview states both have declared owners.
+      evidence_required: false
+    - id: acceptance_contract_present
+      label: Acceptance contract present
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 carries at least one acceptance criterion.
+      evidence_required: false
+    - id: complexity_budget_declared
+      label: Complexity budget declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      evidence_required: false
+    - id: destructive_recovery
+      label: Destructive recovery
+      kind: deterministic
+      profile: runtime_degradation
+      facet: behavioral
+      requirement: Destructive actions match error cost with prevention or recovery.
+      evidence_required: true
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+  findings:
+    - check_id: semantic_conformance
+      kind: deterministic
+      outcome: pass
+      message: SDIR is valid, semantic, and aligned to the approved pattern.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_completeness
+      kind: deterministic
+      outcome: pass
+      message: Required loading, empty, ready, and error states exist.
+      source: prax-validator
+      provenance: measured
+    - check_id: representation_decided
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares representation.primary with a non-empty reason.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_ownership_declared
+      kind: deterministic
+      outcome: pass
+      message: Selection and preview states both have declared owners.
+      source: prax-validator
+      provenance: measured
+    - check_id: acceptance_contract_present
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 carries at least one acceptance criterion.
+      source: prax-validator
+      provenance: measured
+    - check_id: complexity_budget_declared
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      source: prax-validator
+      provenance: measured
+    - check_id: product_model_alignment
+      kind: assistive
+      outcome: pass
+      message: "User-facing language uses exactly the frame's object names: 文档 (title), 章节 (第 n 节), 预览 (pane), 结构检查 (status pill); relationships visible: document composed of ordered sections, preview renders document, selection mirrors across panes."
+      source: real-browser screenshots + DOM assertions
+      provenance: attested
+    - check_id: keyboard
+      kind: empirical
+      outcome: pass
+      message: "MEASUREMENT (receipt-bound, a11y.focus_order): scripts/keyboard-check.mjs — 6/6 PASS with per-step ISO-timestamped log: first Tab lands on title input with computed 'solid 2px' focus ring; keyboard-only typing updates preview h1 (Aurora 笔记 2.5 更新说明); Ctrl+Z reverts whole typed group to 2.4; Ctrl+Y redoes to 2.5; 8/8 tab stops are interactive elements with solid 2px ring (62 tabbable elements); Tab reached preview block (stop 61/62) and Enter selected both panes. The measurement drove one product fix: text edits coalesce into a single undo group per field."
+      source: scripts/keyboard-check.mjs run log (validation-evidence/keyboard-run.log), Chrome headless, exit code 0 on final dist build
+      provenance: measured
+    - check_id: hierarchy_review
+      kind: assistive
+      outcome: pass
+      message: Header (identity+status) > editor pane (primary) > preview pane (primary) > hover-revealed section ops (supporting) matches SDIR importance; preview reading column is the visually calmest region per spacious density intent.
+      source: screenshot review against SDIR region importance
+      provenance: attested
+    - check_id: destructive_recovery
+      kind: deterministic
+      outcome: pass
+      message: "Section delete (5→4) fully restored by Ctrl+Z; delete disabled at minimum cardinality; reset guarded by confirm dialog mentioning undo; text edits coalesce per field so undo strength matches error cost; model fuzz: 2000 random ops never broke skeleton (npm run verify PASS on final build)."
+      source: real-browser delete→undo assertions + scripts/verify-model.mjs
+      provenance: attested
+    - check_id: requirement_alignment
+      kind: assistive
+      outcome: pass
+      message: "Restatement met on final build: from-scratch single-page app; opens statically (file:// AND http verified); usable at load (5 sections/5 cards present at load event, zero loading nodes); structure-preserving edit×document; acceptance seed verified: typed edit appears in preview immediately (old text gone), delete+undo restores, empty-content validation consistent across both panes; no backend/deployment — all evidence from local static server + file://."
+      source: build artifact + real-browser run (scripts/evidence.mjs, 9/9 PASS)
+      provenance: attested
+  missing_evidence: []
+  warnings: []
+  readiness:
+    deterministic_passed: true
+    measurement:
+      receipt_ref: validation-evidence/keyboard-run.receipt.json
+      binding:
+        validation-evidence/keyboard-run.receipt.json: implementation_current
+      error_failures_open: 0
+      warning_dispositions: []
+    convergence:
+      stalled: false
+      unresolved: []
+    evidence_current: true
+    claims:
+      measured:
+        - semantic_conformance
+        - state_completeness
+        - representation_decided
+        - state_ownership_declared
+        - acceptance_contract_present
+        - complexity_budget_declared
+        - keyboard
+      attested:
+        - product_model_alignment
+        - hierarchy_review
+        - destructive_recovery
+        - requirement_alignment
+      skipped: []

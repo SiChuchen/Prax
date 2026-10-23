@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenVault — collection locator</title>
+<meta name="description" content="Locate any item in a large open collection within three interactions — search and facet filters that never lose your place.">
+<link rel="icon" href="data:,">
+<style>
+/* ============ tokens ============ */
+:root {
+  --bg: #f5f6f8;
+  --panel: #ffffff;
+  --line: #e3e6eb;
+  --line-2: #d4d9e0;
+  --ink: #1b222b;
+  --ink-2: #5a6572;
+  --ink-3: #8b95a2;
+  --accent: #3454d1;
+  --accent-soft: #e9eefb;
+  --ring: rgba(52, 84, 209, .18);
+  --mark: #ffe9a3;
+  --radius: 10px;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font: 14px/1.45 -apple-system, "Segoe UI", system-ui, Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  overflow: hidden;
+}
+button { font: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+mark { background: var(--mark); color: inherit; border-radius: 2px; padding: 0 1px; }
+kbd {
+  border: 1px solid var(--line-2); border-bottom-width: 2px; border-radius: 4px;
+  padding: 1px 5px; font-size: 11px; color: var(--ink-3); background: #fff;
+  font-family: inherit;
+}
+
+/* ============ top bar ============ */
+.topbar {
+  display: flex; align-items: center; gap: 16px;
+  height: 56px; padding: 0 16px;
+  background: var(--panel); border-bottom: 1px solid var(--line);
+}
+.brand { display: flex; align-items: baseline; gap: 8px; white-space: nowrap; }
+.brand-mark { color: var(--accent); font-size: 17px; }
+.brand-name { font-weight: 700; font-size: 15px; letter-spacing: .2px; }
+.brand-sub { color: var(--ink-3); font-size: 12px; }
+.search-wrap { flex: 1; max-width: 580px; position: relative; display: flex; align-items: center; }
+.search-wrap input {
+  width: 100%; height: 36px; padding: 0 66px 0 34px;
+  border: 1px solid var(--line-2); border-radius: 8px;
+  background: var(--bg); font: inherit; color: inherit; outline: none;
+}
+.search-wrap input:focus { border-color: var(--accent); background: #fff; box-shadow: 0 0 0 3px var(--ring); }
+.search-wrap input::-webkit-search-cancel-button { display: none; }
+.search-icon { position: absolute; left: 11px; color: var(--ink-3); display: flex; pointer-events: none; }
+.search-clear {
+  position: absolute; right: 38px; width: 20px; height: 20px;
+  border: 0; border-radius: 50%; background: transparent; color: var(--ink-3);
+  cursor: pointer; font-size: 15px; line-height: 18px; padding: 0;
+}
+.search-clear:hover { background: var(--line); color: var(--ink); }
+.search-kbd { position: absolute; right: 10px; pointer-events: none; }
+.snapshot { margin-left: auto; color: var(--ink-3); font-size: 12px; white-space: nowrap; }
+
+/* ============ layout ============ */
+.layout {
+  display: grid;
+  grid-template-columns: 268px minmax(0, 1fr);
+  height: calc(100vh - 56px);
+}
+.layout.with-detail { grid-template-columns: 268px minmax(0, 1fr) 384px; }
+
+/* ============ sidebar ============ */
+.sidebar {
+  border-right: 1px solid var(--line); background: var(--panel);
+  overflow-y: auto; padding: 12px 10px 20px;
+}
+.sidebar-head {
+  font-size: 11px; text-transform: uppercase; letter-spacing: .8px;
+  color: var(--ink-3); padding: 4px 8px 10px; font-weight: 600;
+}
+.facet-block { margin-bottom: 18px; }
+.facet-block h3 {
+  font-size: 12px; margin: 0 0 5px; padding: 0 8px;
+  color: var(--ink-2); font-weight: 600;
+}
+.facet-row {
+  display: flex; align-items: center; gap: 7px;
+  padding: 4px 8px; border-radius: 6px; cursor: pointer;
+  font-size: 13px; color: var(--ink-2);
+}
+.facet-row:hover { background: var(--bg); }
+.facet-row.on { color: var(--ink); font-weight: 600; }
+.facet-row.zero { opacity: .45; }
+.facet-row input { accent-color: var(--accent); margin: 0; }
+.facet-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cnt {
+  margin-left: auto; font-size: 11.5px; color: var(--ink-3);
+  font-variant-numeric: tabular-nums; font-weight: 400;
+}
+.tree-dom { margin-bottom: 1px; }
+.tree-row { display: flex; align-items: center; border-radius: 6px; }
+.tree-row.active { background: var(--accent-soft); }
+.twist {
+  width: 22px; height: 26px; border: 0; background: transparent; cursor: pointer;
+  color: var(--ink-3); display: flex; align-items: center; justify-content: center;
+  padding: 0; border-radius: 5px;
+}
+.twist:hover { color: var(--ink); background: var(--bg); }
+.twist svg { transition: transform .12s ease; }
+.twist.open svg { transform: rotate(90deg); }
+.tree-label {
+  flex: 1; display: flex; align-items: center; gap: 6px;
+  border: 0; background: transparent; cursor: pointer; text-align: left;
+  padding: 5px 8px 5px 2px; border-radius: 6px; min-width: 0;
+  font-size: 13px; color: var(--ink-2);
+}
+.tree-label:hover { background: var(--bg); }
+.tree-row.active .tree-label { color: var(--accent); font-weight: 600; }
+.tree-label .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tree-label.sub { padding-left: 26px; font-size: 12.5px; }
+.tree-label.sub.active { color: var(--accent); font-weight: 600; background: var(--accent-soft); }
+.tree-groups { margin: 1px 0 4px; }
+.sidebar-foot {
+  border-top: 1px solid var(--line); margin-top: 6px; padding: 10px 8px 0;
+  font-size: 11.5px; color: var(--ink-3); line-height: 1.5;
+}
+
+/* ============ main column ============ */
+.main { display: flex; flex-direction: column; min-width: 0; }
+.contextbar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 16px 4px;
+}
+.counts { font-size: 13px; color: var(--ink-2); }
+.counts b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.filters-toggle { display: none; }
+.sort-wrap { margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-3); white-space: nowrap; }
+.sort-wrap select {
+  font: inherit; font-size: 12.5px; border: 1px solid var(--line-2); border-radius: 6px;
+  padding: 4px 6px; background: #fff; color: var(--ink); cursor: pointer;
+}
+.chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 16px 10px; min-height: 26px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; background: #eef1f6; border: 1px solid var(--line);
+  color: var(--ink-2); border-radius: 999px; padding: 3px 6px 3px 10px;
+}
+.chip b { font-weight: 600; color: var(--ink); }
+.chip button {
+  all: unset; cursor: pointer; width: 16px; height: 16px; line-height: 15px;
+  text-align: center; border-radius: 50%; color: var(--ink-3); font-size: 13px;
+}
+.chip button:hover { background: #dfe4ec; color: var(--ink); }
+.chip.clear {
+  background: #fff; border-style: dashed; cursor: pointer; padding: 3px 10px;
+  color: var(--ink-2);
+}
+.chip.clear:hover { border-color: var(--ink-3); color: var(--ink); }
+
+/* ============ results ============ */
+.results { flex: 1; overflow-y: auto; padding: 0 16px 48px; }
+.group-head {
+  position: sticky; top: 0; z-index: 2;
+  display: flex; align-items: baseline; gap: 8px;
+  font-size: 12.5px; font-weight: 600; color: var(--ink-2);
+  background: linear-gradient(var(--bg) 78%, rgba(245,246,248,0));
+  padding: 14px 2px 7px; margin: 0;
+}
+.group-head .cnt { font-weight: 400; }
+.row {
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  padding: 10px 12px; margin-bottom: 6px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+  cursor: pointer; text-align: left; color: inherit;
+}
+.row:hover { border-color: var(--line-2); box-shadow: 0 1px 4px rgba(20, 30, 50, .07); }
+.row.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.row.focused { outline: 2px solid var(--accent); outline-offset: 1px; }
+.row-main { flex: 1; min-width: 0; display: block; }
+.row-name { display: block; font-weight: 600; font-size: 13.5px; }
+.row-desc {
+  display: block; color: var(--ink-2); font-size: 12.5px; margin-top: 2px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.row-meta {
+  display: flex; align-items: center; gap: 10px; white-space: nowrap;
+  color: var(--ink-3); font-size: 12px;
+}
+.row-group { font-size: 11.5px; max-width: 130px; overflow: hidden; text-overflow: ellipsis; }
+.row-size, .row-date { font-variant-numeric: tabular-nums; }
+.pill {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .4px;
+  padding: 2px 7px; border-radius: 5px;
+}
+.pill-CSV     { background: #e4edfb; color: #2b5cc4; }
+.pill-JSON    { background: #efe7fb; color: #6d3fc0; }
+.pill-Parquet { background: #dff4f0; color: #1c7a68; }
+.pill-GeoJSON { background: #e2f4e2; color: #2e7d32; }
+.pill-XLSX    { background: #fdf1dc; color: #a26a08; }
+.pill-API     { background: #fdece6; color: #c25018; }
+.empty { text-align: center; padding: 64px 20px; color: var(--ink-2); }
+.empty-title { font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+.empty-sub { font-size: 13px; margin-bottom: 18px; }
+
+/* ============ detail panel ============ */
+.detail {
+  border-left: 1px solid var(--line); background: var(--panel);
+  overflow-y: auto; padding: 18px; position: relative;
+}
+.detail-close {
+  position: absolute; top: 12px; right: 12px; width: 26px; height: 26px;
+  border: 1px solid var(--line); border-radius: 50%; background: #fff;
+  color: var(--ink-2); cursor: pointer; font-size: 15px; line-height: 22px; padding: 0;
+}
+.detail-close:hover { border-color: var(--ink-3); color: var(--ink); }
+.crumb { font-size: 12px; color: var(--ink-3); padding-right: 30px; }
+.crumb span { margin: 0 4px; color: #c6cdd6; }
+.crumb b { color: var(--ink-2); font-weight: 600; }
+.detail-name { font-size: 17px; margin: 10px 0 6px; line-height: 1.35; }
+.detail-desc { color: var(--ink-2); font-size: 13px; margin: 0 0 12px; }
+.tagrow { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.tag {
+  border: 1px solid var(--line-2); background: var(--bg); color: var(--ink-2);
+  border-radius: 999px; padding: 3px 10px; font-size: 12px; cursor: pointer;
+}
+.tag:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.meta {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  margin: 0 0 16px;
+}
+.meta > div {
+  background: var(--bg); border: 1px solid var(--line);
+  border-radius: 8px; padding: 8px 10px; min-width: 0;
+}
+.meta dt {
+  font-size: 10.5px; text-transform: uppercase; letter-spacing: .6px;
+  color: var(--ink-3); margin-bottom: 3px;
+}
+.meta dd { margin: 0; font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
+.mono { font-family: ui-monospace, Consolas, "Cascadia Mono", Menlo, monospace; font-weight: 500; font-size: 12px; }
+.detail-actions { display: flex; align-items: center; gap: 10px; }
+.btn {
+  background: var(--accent); color: #fff; border: 0; border-radius: 8px;
+  padding: 8px 14px; font-size: 13px; cursor: pointer;
+}
+.btn:hover { filter: brightness(1.08); }
+.cite-note { font-size: 12px; color: #1c7a68; font-weight: 600; }
+.detail-hint { font-size: 12px; color: var(--ink-3); margin: 14px 0 0; line-height: 1.5; }
+
+/* ============ responsive ============ */
+@media (max-width: 1120px) {
+  .layout, .layout.with-detail { grid-template-columns: 236px minmax(0, 1fr); }
+  .layout .detail {
+    position: fixed; top: 56px; right: 0; bottom: 0; width: min(400px, 92vw);
+    box-shadow: -10px 0 28px rgba(15, 25, 45, .14); z-index: 30;
+  }
+  .row-date { display: none; }
+}
+@media (max-width: 800px) {
+  .layout, .layout.with-detail { grid-template-columns: minmax(0, 1fr); }
+  .sidebar { display: none; }
+  body.filters-open .sidebar {
+    display: block; position: fixed; top: 56px; left: 0; bottom: 0;
+    width: min(320px, 86vw); z-index: 40;
+    box-shadow: 10px 0 28px rgba(15, 25, 45, .14);
+  }
+  .filters-toggle {
+    display: inline-block; border: 1px solid var(--line-2); background: #fff;
+    border-radius: 6px; padding: 4px 10px; font-size: 12.5px; cursor: pointer; color: var(--ink-2);
+  }
+  .snapshot, .row-group, .row-size { display: none; }
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true">◫</span>
+    <span class="brand-name">OpenVault</span>
+    <span class="brand-sub">collection locator</span>
+  </div>
+  <div class="search-wrap" role="search">
+    <span class="search-icon" aria-hidden="true">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.8-3.8"/></svg>
+    </span>
+    <input id="search" type="search" placeholder="Search items…" autocomplete="off" spellcheck="false" aria-label="Search items by name, description or tag">
+    <button id="search-clear" class="search-clear" type="button" hidden aria-label="Clear search">×</button>
+    <span class="search-kbd" aria-hidden="true"><kbd>/</kbd></span>
+  </div>
+  <div class="snapshot" id="snapshot"></div>
+</header>
+
+<div class="layout" id="layout">
+
+  <aside class="sidebar" id="sidebar" aria-label="Browse and filter">
+    <div class="sidebar-head">Browse &amp; filter</div>
+    <nav class="facet-block" id="tree" aria-label="Category tree"></nav>
+    <div class="facet-block" id="facet-format"></div>
+    <div class="facet-block" id="facet-license"></div>
+    <div class="facet-block" id="facet-size"></div>
+    <div class="sidebar-foot" id="sidebar-foot"></div>
+  </aside>
+
+  <main class="main">
+    <div class="contextbar">
+      <button id="filters-toggle" class="filters-toggle" type="button">Filters</button>
+      <div class="counts" id="counts" aria-live="polite"></div>
+      <div class="sort-wrap">
+        <label for="sort">Sort</label>
+        <select id="sort">
+          <option value="relevance">Best match</option>
+          <option value="name">Name A–Z</option>
+          <option value="updated">Recently updated</option>
+          <option value="size">Largest first</option>
+        </select>
+      </div>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="results" id="results" role="listbox" aria-label="Items in collection" tabindex="-1"></div>
+  </main>
+
+  <aside class="detail" id="detail" hidden aria-label="Item details"></aside>
+
+</div>
+
+<noscript><p style="padding:24px">OpenVault needs JavaScript to browse the collection.</p></noscript>
+
+<script>
+'use strict';
+/* =====================================================================
+   OpenVault — locate × open-collection (cell-j02-s02)
+   Single file, zero dependencies, zero network, zero async.
+   The collection below is synthetic and generated deterministically
+   (seeded PRNG) at parse time, so the first paint is fully usable —
+   there is no loading state by construction.
+   ===================================================================== */
+
+/* ---------- seeded PRNG (mulberry32) ---------- */
+var _s = 20260902 >>> 0;
+function rnd() {
+  _s = (_s + 0x6D2B79F5) >>> 0;
+  var t = _s;
+  t = Math.imul(t ^ (t >>> 15), t | 1);
+  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+}
+function pick(a) { return a[Math.floor(rnd() * a.length)]; }
+function int(min, max) { return min + Math.floor(rnd() * (max - min + 1)); }
+function pickW(pairs) {
+  var s = 0, i;
+  for (i = 0; i < pairs.length; i++) s += pairs[i][1];
+  var r = rnd() * s;
+  for (i = 0; i < pairs.length; i++) { r -= pairs[i][1]; if (r <= 0) return pairs[i][0]; }
+  return pairs[0][0];
+}
+function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+/* ---------- vocabulary ---------- */
+var CITIES = ["Berlin","Lisbon","Taipei","Toronto","Amsterdam","Seoul","Helsinki","Austin","Nairobi","Osaka","Bogota","Zurich","Auckland","Krakow","Manchester","Copenhagen","Wellington","Portland","Tbilisi","Montreal"];
+
+var DOMAINS = [
+  { name: "Environment", groups: [
+    ["Air & Climate",     ["Air Quality","GHG Emissions","Urban Heat","Pollen Count","Noise Levels"]],
+    ["Water",             ["Drinking Water","River Gauges","Coastal Bathymetry","Wastewater","Rainfall"]],
+    ["Biodiversity",      ["Bird Observations","Tree Cadastre","Invasive Species","Insect Traps","Habitat Zones"]],
+    ["Energy",            ["Solar Potential","Grid Load","EV Charging","Building Consumption","Wind Resource"]]
+  ]},
+  { name: "Mobility", groups: [
+    ["Road Traffic",      ["Loop Detector Counts","Collision Records","Speed Profiles","Truck Routes","Road Works"]],
+    ["Public Transit",    ["Bus GPS Traces","Ridership by Stop","Timetable Feed","Fare Gate Counts","Service Reliability"]],
+    ["Micro-mobility",    ["Bike Share Trips","Scooter Parking","Cycleway Usage","Dock Availability"]],
+    ["Parking",           ["On-street Occupancy","Garage Tariffs","Permit Zones","Enforcement Actions"]]
+  ]},
+  { name: "Economy", groups: [
+    ["Prices & Costs",    ["Grocery Basket","Rents Index","Fuel Prices","Utility Tariffs"]],
+    ["Business Register", ["Company Filings","Openings & Closures","Market Licenses","Vendor Awards"]],
+    ["Trade & Freight",   ["Port Throughput","Warehouse Leases","Courier Volumes","Customs Declarations"]],
+    ["Labor",             ["Job Postings","Wage Bands","Apprenticeships","Unemployment Claims"]]
+  ]},
+  { name: "Society", groups: [
+    ["Demographics",      ["Population Grid","Migration Flows","Age Structure","Household Survey"]],
+    ["Health",            ["Clinic Locations","Vaccination Coverage","Ambulance Response","Morbidity Panels"]],
+    ["Education",         ["School Capacity","Enrollment Tables","Library Loans","Adult Courses"]],
+    ["Housing",           ["Building Permits","Social Housing Queue","Rental Registry","Vacancy Survey"]]
+  ]},
+  { name: "Geospatial", groups: [
+    ["Boundaries",        ["Admin Districts","Census Tracts","Postal Zones","Planning Areas"]],
+    ["Terrain & Land Use",["LiDAR Tiles","Land Cover Raster","Cadastral Parcels","Floodplain Map"]],
+    ["Addresses & Places",["Address Points","POI Directory","Street Names","Building Entrances"]]
+  ]},
+  { name: "Culture & Community", groups: [
+    ["Events",            ["Festival Calendar","Sports Fixtures","Street Markets","Civic Ceremonies"]],
+    ["Facilities",        ["Museum Collections","Sports Halls","Community Centers","Theater Programs"]],
+    ["Heritage",          ["Listed Buildings","Monuments","Archaeology Sites","Street Name Origins"]]
+  ]},
+  { name: "Infrastructure", groups: [
+    ["Utilities",         ["Water Mains","Street Lighting","Sewer Network","Power Poles"]],
+    ["Digital",           ["Fiber Rollout","Public Wi-Fi","IoT Gateways","Cell Coverage"]],
+    ["Built Fabric",      ["Bridge Inspections","Roof Photogrammetry","Facade Registry","Demolitions"]]
+  ]},
+  { name: "Agriculture & Food", groups: [
+    ["Farming",           ["Crop Yields","Field Parcels","Livestock Census","Irrigation Rights"]],
+    ["Food System",       ["Farmers Markets","Food Inspections","Community Gardens","Food Bank Stocks"]]
+  ]}
+];
+
+var FREQS = ["hourly","daily","weekly","monthly","quarterly","annual"];
+var FREQ_CAP = { hourly:"Hourly", daily:"Daily", weekly:"Weekly", monthly:"Monthly", quarterly:"Quarterly", annual:"Annual" };
+var RECORDS = { hourly:[120000,8600000], daily:[20000,700000], weekly:[5000,120000], monthly:[1200,60000], quarterly:[400,20000], annual:[60,6000] };
+var EXTRAS = ["quality flags and station metadata","geocoded coordinates for every record","a data dictionary and changelog","breakdowns by district","confidence intervals per estimate","raw and cleaned variants","join-ready keys and column notes"];
+var EXTRA_TAGS = ["official","timeseries","geodata","survey","registry","microdata","panel","open"];
+var LICENSE_POOL = [["CC BY 4.0",6],["CC0 1.0",3],["CC BY-SA 4.0",2],["ODbL 1.0",2],["Custom (open)",1]];
+var FORMAT_POOL      = [["CSV",6],["JSON",2],["Parquet",2],["XLSX",1],["API",1]];
+var FORMAT_POOL_GEO  = [["GeoJSON",5],["CSV",3],["Parquet",2]];
+
+var DESC_T = [
+  function (c, t, f, x) { return cap(f) + " " + t.toLowerCase() + " records for " + c + ", including " + x + "."; },
+  function (c, t, f, x) { return cap(f) + " snapshot of " + t.toLowerCase() + " across " + c + ", with " + x + "."; },
+  function (c, t, f, x) { return "Open dataset tracking " + t.toLowerCase() + " in " + c + " at " + f + " resolution; ships with " + x + "."; },
+  function (c, t, f, x) { return cap(f) + " aggregate of " + t.toLowerCase() + " maintained for " + c + ", plus " + x + "."; },
+  function (c, t, f, x) { return "Collection of " + t.toLowerCase() + " observations in " + c + ", refreshed " + f + "; includes " + x + "."; }
+];
+
+function yearsStr() {
+  var end = 2020 + int(0, 6);
+  var start = Math.max(2007, end - pick([0, 1, 2, 3, 5, 8, 11]));
+  return start === end ? String(end) : start + "–" + end;
+}
+function updatedISO() {
+  var ms = Date.UTC(2024, 8, 1) + int(0, 748) * 86400000; // 2024-09-01 .. 2026-09-19
+  return new Date(ms).toISOString().slice(0, 10);
+}
+function makeName(city, topic, qual, yr) {
+  var r = rnd();
+  if (r < 0.45) return city + " " + topic + " " + qual + " " + yr;
+  if (r < 0.75) return city + " " + topic + " " + yr;
+  return topic + " " + qual + " " + yr + " — " + city;
+}
+
+/* ---------- generate the collection ---------- */
+var items = [];
+var domainsIndex = [];
+(function generate() {
+  var used = {};
+  var n = 0, di, gi, i;
+  for (di = 0; di < DOMAINS.length; di++) {
+    var dom = DOMAINS[di];
+    var groupNames = [];
+    for (gi = 0; gi < dom.groups.length; gi++) {
+      var gName = dom.groups[gi][0];
+      var topics = dom.groups[gi][1];
+      groupNames.push(gName);
+      var count = int(18, 34);
+      for (i = 0; i < count; i++) {
+        var city = pick(CITIES);
+        var topic = pick(topics);
+        var freq = pick(FREQS);
+        var qual = rnd() < 0.75 ? FREQ_CAP[freq] : pick(["Snapshot","Master Extract","Beta Release","Sample Panel"]);
+        var name = makeName(city, topic, qual, yearsStr());
+        var guard = 0;
+        while (used[name] && guard++ < 8) name = makeName(pick(CITIES), topic, qual, yearsStr());
+        used[name] = true;
+        var records = int(RECORDS[freq][0], RECORDS[freq][1]);
+        var sizeMB = Math.max(0.1, Math.round(records * pick([24, 32, 48, 64, 96, 140]) / 1e6 * 10) / 10);
+        var fmt = dom.name === "Geospatial" ? pickW(FORMAT_POOL_GEO) : pickW(FORMAT_POOL);
+        var tagCity = city.toLowerCase();
+        var tagTopic = topic.toLowerCase().split(/[^a-z]+/)[0];
+        var tags = [];
+        if (tags.indexOf(tagCity) < 0) tags.push(tagCity);
+        if (tags.indexOf(tagTopic) < 0) tags.push(tagTopic);
+        tags.push(freq);
+        tags.push(pick(EXTRA_TAGS));
+        n++;
+        items.push({
+          id: "it-" + String(n).padStart(4, "0"),
+          name: name,
+          domain: dom.name,
+          group: gName,
+          format: fmt,
+          license: pickW(LICENSE_POOL),
+          sizeMB: sizeMB,
+          records: records,
+          updated: updatedISO(),
+          tags: tags,
+          desc: pick(DESC_T)(city, topic, freq, pick(EXTRAS))
+        });
+      }
+    }
+    domainsIndex.push({ name: dom.name, groups: groupNames });
+  }
+})();
+
+var TOTAL = items.length;
+var byId = {};
+var searchIdx = {};
+(function buildIndex() {
+  for (var i = 0; i < items.length; i++) {
+    var it = items[i];
+    byId[it.id] = it;
+    searchIdx[it.id] = (it.name + " " + it.desc + " " + it.tags.join(" ") + " " + it.domain + " " + it.group).toLowerCase();
+  }
+})();
+var FORMATS_ALL = [];
+var LICENSES_ALL = [];
+(function facetValues() {
+  var fs = {}, ls = {}, i;
+  for (i = 0; i < items.length; i++) { fs[items[i].format] = 1; ls[items[i].license] = 1; }
+  FORMATS_ALL = Object.keys(fs).sort();
+  LICENSES_ALL = Object.keys(ls).sort();
+})();
+
+/* ---------- state ---------- */
+var state = {
+  q: "",            // free text, whitespace-separated AND terms
+  domain: null,     // level-1 category (single select)
+  group: null,      // level-2 category, only within selected domain
+  formats: {},      // multi-select facets (object as set)
+  licenses: {},
+  sizes: {},
+  sort: "relevance",
+  selectedId: null, // item shown in the detail panel
+  focusIdx: -1,     // keyboard focus index into the flat visible list
+  openDomains: {}   // sidebar tree expansion (set)
+};
+var SIZE_BUCKETS = [
+  { id: "s",  label: "Under 10 MB",    test: function (mb) { return mb < 10; } },
+  { id: "m",  label: "10 – 100 MB",    test: function (mb) { return mb >= 10 && mb < 100; } },
+  { id: "l",  label: "100 MB – 1 GB",  test: function (mb) { return mb >= 100 && mb < 1000; } },
+  { id: "xl", label: "Over 1 GB",      test: function (mb) { return mb >= 1000; } }
+];
+function bucketOf(mb) { return mb < 10 ? "s" : mb < 100 ? "m" : mb < 1000 ? "l" : "xl"; }
+
+var visibleIds = [];
+
+/* ---------- helpers ---------- */
+function el(id) { return document.getElementById(id); }
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+  });
+}
+function escRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+function fmtInt(n) { return n.toLocaleString("en-US"); }
+function fmtSize(mb) {
+  return mb >= 1000 ? (mb / 1000).toFixed(1) + " GB"
+       : mb >= 10   ? Math.round(mb) + " MB"
+       : mb.toFixed(1) + " MB";
+}
+function fmtMonth(iso) {
+  return new Date(iso + "T00:00:00Z").toLocaleDateString("en-US", { month: "short", year: "numeric", timeZone: "UTC" });
+}
+function fmtDate(iso) {
+  return new Date(iso + "T00:00:00Z").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+}
+function terms() { return state.q.toLowerCase().split(/\s+/).filter(Boolean); }
+function matchQ(id, tsArr) {
+  var hay = searchIdx[id];
+  for (var i = 0; i < tsArr.length; i++) if (hay.indexOf(tsArr[i]) < 0) return false;
+  return true;
+}
+/* except: "q" | "dom" (also relaxes "grp") | "fmt" | "lic" | "sz" — used for faceted counts */
+function applyFilters(list, except) {
+  var tsArr = terms();
+  var out = [];
+  for (var i = 0; i < list.length; i++) {
+    var it = list[i];
+    if (except !== "q" && tsArr.length && !matchQ(it.id, tsArr)) continue;
+    if (except !== "dom" && except !== "grp") {
+      if (state.domain && it.domain !== state.domain) continue;
+      if (state.group && it.group !== state.group) continue;
+    }
+    if (except !== "fmt" && hasKeys(state.formats) && !state.formats[it.format]) continue;
+    if (except !== "lic" && hasKeys(state.licenses) && !state.licenses[it.license]) continue;
+    if (except !== "sz" && hasKeys(state.sizes) && !state.sizes[bucketOf(it.sizeMB)]) continue;
+    out.push(it);
+  }
+  return out;
+}
+function hasKeys(o) { for (var k in o) if (o[k] === true) return true; return false; }
+function countBy(fn, list) {
+  var m = {};
+  for (var i = 0; i < list.length; i++) { var k = fn(list[i]); m[k] = (m[k] || 0) + 1; }
+  return m;
+}
+function score(it, tsArr) {
+  if (!tsArr.length) return 0;
+  var nm = it.name.toLowerCase(), s = 0;
+  for (var i = 0; i < tsArr.length; i++) {
+    var pos = nm.indexOf(tsArr[i]);
+    s += pos === 0 ? 6 : pos > 0 ? 3 : 1;
+  }
+  return s;
+}
+function sortList(list) {
+  var arr = list.slice();
+  var tsArr = terms();
+  if (state.sort === "name") arr.sort(function (a, b) { return a.name.localeCompare(b.name); });
+  else if (state.sort === "updated") arr.sort(function (a, b) { return b.updated.localeCompare(a.updated); });
+  else if (state.sort === "size") arr.sort(function (a, b) { return b.sizeMB - a.sizeMB; });
+  else arr.sort(function (a, b) { return score(b, tsArr) - score(a, tsArr) || b.updated.localeCompare(a.updated); });
+  return arr;
+}
+function hl(text) {
+  var safe = esc(text);
+  var tsArr = terms();
+  if (!tsArr.length) return safe;
+  var parts = [];
+  for (var i = 0; i < tsArr.length; i++) {
+    var p = escRe(esc(tsArr[i]));
+    if (p) parts.push(p);
+  }
+  if (!parts.length) return safe;
+  try {
+    return safe.replace(new RegExp("(" + parts.join("|") + ")", "gi"), "<mark>$1</mark>");
+  } catch (e) { return safe; }
+}
+function anyFilter() {
+  return !!(state.q.trim() || state.domain || state.group || hasKeys(state.formats) || hasKeys(state.licenses) || hasKeys(state.sizes));
+}
+
+/* ---------- rendering ---------- */
+var CHEV = '<svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+function facetHTML(title, entries, kind) {
+  var h = "<h3>" + esc(title) + "</h3>";
+  for (var i = 0; i < entries.length; i++) {
+    var e = entries[i];
+    h += '<label class="facet-row' + (e.on ? " on" : "") + (e.count ? "" : " zero") + '">'
+      + '<input type="checkbox" data-kind="' + kind + '" data-val="' + esc(e.val) + '"' + (e.on ? " checked" : "") + '>'
+      + '<span class="facet-name">' + esc(e.label) + '</span>'
+      + '<span class="cnt">' + e.count + '</span></label>';
+  }
+  return h;
+}
+
+function renderSidebar() {
+  var baseDom = applyFilters(items, "dom"); // relax domain+group → counts show the wider collection
+  var treeCounts = {};
+  var groupCounts = {};
+  for (var i = 0; i < baseDom.length; i++) {
+    var it = baseDom[i];
+    treeCounts[it.domain] = (treeCounts[it.domain] || 0) + 1;
+    if (!groupCounts[it.domain]) groupCounts[it.domain] = {};
+    groupCounts[it.domain][it.group] = (groupCounts[it.domain][it.group] || 0) + 1;
+  }
+  var h = "<h3>Collection</h3>";
+  for (var d = 0; d < domainsIndex.length; d++) {
+    var dom = domainsIndex[d];
+    var open = state.openDomains[dom.name] === true;
+    var sel = state.domain === dom.name;
+    h += '<div class="tree-dom"><div class="tree-row' + (sel ? " active" : "") + '">'
+      + '<button type="button" class="twist' + (open ? " open" : "") + '" data-act="twist" data-dom="' + esc(dom.name) + '" aria-expanded="' + open + '" aria-label="Toggle groups in ' + esc(dom.name) + '">' + CHEV + '</button>'
+      + '<button type="button" class="tree-label" data-act="dom" data-dom="' + esc(dom.name) + '"><span class="name">' + esc(dom.name) + '</span><span class="cnt">' + (treeCounts[dom.name] || 0) + '</span></button>'
+      + '</div>';
+    if (open) {
+      h += '<div class="tree-groups">';
+      for (var g = 0; g < dom.groups.length; g++) {
+        var gname = dom.groups[g];
+        var gsel = sel && state.group === gname;
+        h += '<button type="button" class="tree-label sub' + (gsel ? " active" : "") + '" data-act="grp" data-dom="' + esc(dom.name) + '" data-grp="' + esc(gname) + '"><span class="name">' + esc(gname) + '</span><span class="cnt">' + ((groupCounts[dom.name] || {})[gname] || 0) + '</span></button>';
+      }
+      h += '</div>';
+    }
+    h += '</div>';
+  }
+  el("tree").innerHTML = h;
+
+  var fc = countBy(function (it) { return it.format; }, applyFilters(items, "fmt"));
+  var entries = [];
+  for (var f = 0; f < FORMATS_ALL.length; f++) {
+    var fv = FORMATS_ALL[f];
+    entries.push({ val: fv, label: fv, count: fc[fv] || 0, on: state.formats[fv] === true });
+  }
+  el("facet-format").innerHTML = facetHTML("Format", entries, "fmt");
+
+  var lc = countBy(function (it) { return it.license; }, applyFilters(items, "lic"));
+  entries = [];
+  for (var l = 0; l < LICENSES_ALL.length; l++) {
+    var lv = LICENSES_ALL[l];
+    entries.push({ val: lv, label: lv, count: lc[lv] || 0, on: state.licenses[lv] === true });
+  }
+  el("facet-license").innerHTML = facetHTML("License", entries, "lic");
+
+  var sc = countBy(function (it) { return bucketOf(it.sizeMB); }, applyFilters(items, "sz"));
+  entries = [];
+  for (var b = 0; b < SIZE_BUCKETS.length; b++) {
+    var bk = SIZE_BUCKETS[b];
+    entries.push({ val: bk.id, label: bk.label, count: sc[bk.id] || 0, on: state.sizes[bk.id] === true });
+  }
+  el("facet-size").innerHTML = facetHTML("File size", entries, "sz");
+}
+
+function rowHTML(it) {
+  var sel = it.id === state.selectedId;
+  return '<button type="button" class="row' + (sel ? " selected" : "") + '" data-id="' + it.id + '" role="option" aria-selected="' + sel + '">'
+    + '<span class="row-main">'
+    + '<span class="row-name">' + hl(it.name) + '</span>'
+    + '<span class="row-desc">' + hl(it.desc) + '</span>'
+    + '</span>'
+    + '<span class="row-meta">'
+    + '<span class="row-group">' + esc(it.group) + '</span>'
+    + '<span class="pill pill-' + esc(it.format) + '">' + esc(it.format) + '</span>'
+    + '<span class="row-size">' + fmtSize(it.sizeMB) + '</span>'
+    + '<span class="row-date">' + fmtMonth(it.updated) + '</span>'
+    + '</span></button>';
+}
+
+function renderResults() {
+  var list = sortList(applyFilters(items, null));
+  visibleIds = [];
+  for (var i = 0; i < list.length; i++) visibleIds.push(list[i].id);
+  var box = el("results");
+  if (!list.length) {
+    box.innerHTML = '<div class="empty">'
+      + '<div class="empty-title">No items match the current path</div>'
+      + '<div class="empty-sub">Search terms and filters combine — remove one to widen the view.</div>'
+      + '<button type="button" class="btn" id="empty-clear">Clear search &amp; filters</button></div>';
+    return;
+  }
+  var sections = {};
+  for (var d = 0; d < domainsIndex.length; d++) sections[domainsIndex[d].name] = [];
+  for (var j = 0; j < list.length; j++) sections[list[j].domain].push(list[j]);
+  var h = "";
+  for (var s = 0; s < domainsIndex.length; s++) {
+    var domName = domainsIndex[s].name;
+    var arr = sections[domName];
+    if (!arr.length) continue;
+    h += '<section class="res-group"><h3 class="group-head">' + esc(domName) + '<span class="cnt">' + arr.length + '</span></h3>';
+    for (var r = 0; r < arr.length; r++) h += rowHTML(arr[r]);
+    h += '</section>';
+  }
+  box.innerHTML = h;
+  paintSelection();
+}
+
+var pendingScrollSel = false; // scroll to the selected row only when selection changes, not on every re-render
+
+function paintSelection() {
+  var rows = el("results").querySelectorAll(".row");
+  for (var i = 0; i < rows.length; i++) {
+    var on = rows[i].getAttribute("data-id") === state.selectedId;
+    rows[i].classList.toggle("selected", on);
+    rows[i].setAttribute("aria-selected", on ? "true" : "false");
+    if (on && pendingScrollSel) rows[i].scrollIntoView({ block: "nearest" });
+  }
+  pendingScrollSel = false;
+  paintFocus();
+}
+
+function paintFocus() {
+  var rows = el("results").querySelectorAll(".row");
+  for (var i = 0; i < rows.length; i++) rows[i].classList.remove("focused");
+  var id = visibleIds[state.focusIdx];
+  if (!id) return;
+  for (var j = 0; j < rows.length; j++) {
+    if (rows[j].getAttribute("data-id") === id) {
+      rows[j].classList.add("focused");
+      rows[j].scrollIntoView({ block: "nearest" });
+      break;
+    }
+  }
+}
+
+function renderChips() {
+  var chips = [];
+  if (state.q.trim()) chips.push({ k: "q", html: 'Search <b>“' + esc(state.q) + '”</b>' });
+  if (state.domain) chips.push({ k: "dom", html: 'Domain <b>' + esc(state.domain) + '</b>' });
+  if (state.group) chips.push({ k: "grp", html: 'Group <b>' + esc(state.group) + '</b>' });
+  var f;
+  for (f in state.formats) if (state.formats[f] === true) chips.push({ k: "fmt:" + f, html: 'Format <b>' + esc(f) + '</b>' });
+  for (f in state.licenses) if (state.licenses[f] === true) chips.push({ k: "lic:" + f, html: 'License <b>' + esc(f) + '</b>' });
+  for (f in state.sizes) if (state.sizes[f] === true) {
+    var label = f;
+    for (var b = 0; b < SIZE_BUCKETS.length; b++) if (SIZE_BUCKETS[b].id === f) label = SIZE_BUCKETS[b].label;
+    chips.push({ k: "sz:" + f, html: 'Size <b>' + esc(label) + '</b>' });
+  }
+  var h = "";
+  for (var i = 0; i < chips.length; i++) {
+    h += '<span class="chip">' + chips[i].html + '<button type="button" data-clear="' + esc(chips[i].k) + '" aria-label="Remove this filter">×</button></span>';
+  }
+  if (chips.length) h += '<button type="button" class="chip clear" data-clear="all">Clear all</button>';
+  el("chips").innerHTML = h;
+}
+
+function renderCounts() {
+  el("counts").innerHTML = anyFilter()
+    ? "Showing <b>" + fmtInt(visibleIds.length) + "</b> of <b>" + fmtInt(TOTAL) + "</b> items"
+    : "Showing <b>" + fmtInt(TOTAL) + "</b> items";
+}
+
+function renderDetail() {
+  var box = el("detail"), layout = el("layout");
+  var it = state.selectedId ? byId[state.selectedId] : null;
+  if (!it) { box.hidden = true; layout.classList.remove("with-detail"); box.innerHTML = ""; return; }
+  layout.classList.add("with-detail");
+  box.hidden = false;
+  box.innerHTML =
+    '<button type="button" class="detail-close" id="detail-close" aria-label="Close details">×</button>'
+    + '<div class="crumb">Collection <span>/</span> ' + esc(it.domain) + ' <span>/</span> ' + esc(it.group) + ' <span>/</span> <b>' + esc(it.name) + '</b></div>'
+    + '<h2 class="detail-name">' + hl(it.name) + '</h2>'
+    + '<p class="detail-desc">' + esc(it.desc) + '</p>'
+    + '<div class="tagrow">' + it.tags.map(function (t) {
+        return '<button type="button" class="tag" data-tag="' + esc(t) + '" title="Add to search — filters stay">#' + esc(t) + '</button>';
+      }).join("") + '</div>'
+    + '<dl class="meta">'
+    + '<div><dt>Format</dt><dd><span class="pill pill-' + esc(it.format) + '">' + esc(it.format) + '</span></dd></div>'
+    + '<div><dt>License</dt><dd>' + esc(it.license) + '</dd></div>'
+    + '<div><dt>Download size</dt><dd>' + fmtSize(it.sizeMB) + '</dd></div>'
+    + '<div><dt>Records</dt><dd>' + fmtInt(it.records) + '</dd></div>'
+    + '<div><dt>Updated</dt><dd>' + fmtDate(it.updated) + '</dd></div>'
+    + '<div><dt>Item ID</dt><dd class="mono">' + esc(it.id) + '</dd></div>'
+    + '</dl>'
+    + '<div class="detail-actions"><button type="button" class="btn" id="cite-btn">Copy citation</button><span class="cite-note" id="cite-note" role="status"></span></div>'
+    + '<p class="detail-hint">Tip: a tag adds one search term — your other filters and your place in the list are kept.</p>';
+}
+
+function writeHash() {
+  var p = new URLSearchParams();
+  if (state.q) p.set("q", state.q);
+  if (state.domain) p.set("dom", state.domain);
+  if (state.group) p.set("grp", state.group);
+  var f, a = [];
+  for (f in state.formats) if (state.formats[f] === true) a.push(f);
+  if (a.length) p.set("fmt", a.join(","));
+  a = [];
+  for (f in state.licenses) if (state.licenses[f] === true) a.push(f);
+  if (a.length) p.set("lic", a.join(","));
+  a = [];
+  for (f in state.sizes) if (state.sizes[f] === true) a.push(f);
+  if (a.length) p.set("sz", a.join(","));
+  if (state.sort !== "relevance") p.set("sort", state.sort);
+  if (state.selectedId) p.set("sel", state.selectedId);
+  var s = p.toString();
+  var url = location.pathname + location.search + (s ? "#" + s : "");
+  if (location.hash.slice(1) !== s) {
+    try { history.replaceState(null, "", url); } catch (e) { /* file:// edge */ }
+  }
+}
+
+function render() {
+  renderSidebar();
+  renderResults();
+  renderCounts();
+  renderChips();
+  renderDetail();
+  writeHash();
+}
+
+/* ---------- actions ---------- */
+function syncClearBtn() { el("search-clear").hidden = !state.q; }
+
+function select(id) {
+  if (id && !byId[id]) id = null;
+  state.selectedId = id;
+  if (id) { state.openDomains[byId[id].domain] = true; pendingScrollSel = true; }
+  render();
+}
+
+function setQ(v) {
+  state.q = v;
+  searchEl.value = v;
+  syncClearBtn();
+  state.focusIdx = -1;
+  render();
+}
+
+function clearAll() {
+  state.q = ""; searchEl.value = ""; syncClearBtn();
+  state.domain = null; state.group = null;
+  state.formats = {}; state.licenses = {}; state.sizes = {};
+  state.focusIdx = -1;
+  render();
+}
+
+function addTerm(t) {
+  t = (t || "").trim();
+  if (!t) return;
+  if (terms().indexOf(t.toLowerCase()) > -1) return;
+  setQ(state.q ? state.q + " " + t : t);
+}
+
+function copyCitation() {
+  var it = byId[state.selectedId];
+  if (!it) return;
+  var text = it.name + " — item " + it.id + ". OpenVault local collection snapshot (" + it.format + ", " + it.license + ", updated " + it.updated + ").";
+  var note = el("cite-note");
+  function done() { note.textContent = "Copied ✓"; setTimeout(function () { note.textContent = ""; }, 1800); }
+  function fallback() {
+    try {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+      done();
+    } catch (e) { note.textContent = "Copy failed — select the ID above."; }
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback);
+  else fallback();
+}
+
+function moveFocus(d) {
+  if (!visibleIds.length) return;
+  if (state.focusIdx < 0) state.focusIdx = d > 0 ? 0 : visibleIds.length - 1;
+  else state.focusIdx = Math.max(0, Math.min(visibleIds.length - 1, state.focusIdx + d));
+  paintFocus();
+}
+
+/* ---------- init from URL hash (context survives reload) ---------- */
+(function initState() {
+  var p = new URLSearchParams(location.hash.slice(1));
+  state.q = p.get("q") || "";
+  state.domain = p.get("dom");
+  state.group = p.get("grp");
+  function fillSet(key, obj) {
+    var vals = (p.get(key) || "").split(",");
+    for (var i = 0; i < vals.length; i++) if (vals[i]) obj[vals[i]] = true;
+  }
+  fillSet("fmt", state.formats);
+  fillSet("lic", state.licenses);
+  fillSet("sz", state.sizes);
+  state.sort = p.get("sort") || "relevance";
+  if (["relevance", "name", "updated", "size"].indexOf(state.sort) < 0) state.sort = "relevance";
+  state.selectedId = p.get("sel");
+  // validate against the actual collection
+  var domNames = {}, d;
+  for (d = 0; d < domainsIndex.length; d++) domNames[domainsIndex[d].name] = true;
+  if (state.domain && !domNames[state.domain]) state.domain = null;
+  if (!state.domain) state.group = null;
+  else if (state.group) {
+    var groups = null;
+    for (d = 0; d < domainsIndex.length; d++) if (domainsIndex[d].name === state.domain) groups = domainsIndex[d].groups;
+    if (!groups || groups.indexOf(state.group) < 0) state.group = null;
+  }
+  if (state.selectedId && !byId[state.selectedId]) state.selectedId = null;
+  if (state.domain) state.openDomains[state.domain] = true;
+  if (state.selectedId) { state.openDomains[byId[state.selectedId].domain] = true; pendingScrollSel = true; }
+})();
+
+/* ---------- wire up ---------- */
+var searchEl = el("search");
+
+searchEl.addEventListener("input", function () { setQ(searchEl.value); });
+searchEl.addEventListener("keydown", function (e) {
+  if (e.key === "ArrowDown") { e.preventDefault(); moveFocus(1); }
+  else if (e.key === "ArrowUp") { e.preventDefault(); moveFocus(-1); }
+  else if (e.key === "Enter") {
+    var id = state.focusIdx >= 0 ? visibleIds[state.focusIdx] : visibleIds[0];
+    if (id) select(id);
+  }
+});
+el("search-clear").addEventListener("click", function () { setQ(""); searchEl.focus(); });
+
+el("sidebar").addEventListener("click", function (e) {
+  var b = e.target.closest ? e.target.closest("button[data-act]") : null;
+  if (!b) return;
+  var act = b.getAttribute("data-act");
+  var dom = b.getAttribute("data-dom");
+  if (act === "twist") {
+    if (state.openDomains[dom] === true) delete state.openDomains[dom];
+    else state.openDomains[dom] = true;
+    renderSidebar();
+  } else if (act === "dom") {
+    if (state.domain === dom) { state.domain = null; state.group = null; }
+    else { state.domain = dom; state.group = null; state.openDomains[dom] = true; }
+    state.focusIdx = -1;
+    render();
+    document.body.classList.remove("filters-open");
+  } else if (act === "grp") {
+    var grp = b.getAttribute("data-grp");
+    if (state.domain === dom && state.group === grp) state.group = null;
+    else { state.domain = dom; state.group = grp; state.openDomains[dom] = true; }
+    state.focusIdx = -1;
+    render();
+    document.body.classList.remove("filters-open");
+  }
+});
+
+el("sidebar").addEventListener("change", function (e) {
+  var t = e.target;
+  if (!t || !t.matches || !t.matches("input[data-kind]")) return;
+  var kind = t.getAttribute("data-kind"), v = t.getAttribute("data-val");
+  var set = kind === "fmt" ? state.formats : kind === "lic" ? state.licenses : state.sizes;
+  if (t.checked) set[v] = true; else delete set[v];
+  state.focusIdx = -1;
+  render();
+});
+
+el("results").addEventListener("click", function (e) {
+  if (e.target.closest && e.target.closest("#empty-clear")) { clearAll(); return; }
+  var row = e.target.closest ? e.target.closest(".row") : null;
+  if (row) select(row.getAttribute("data-id"));
+});
+
+el("chips").addEventListener("click", function (e) {
+  var b = e.target.closest ? e.target.closest("[data-clear]") : null;
+  if (!b) return;
+  var k = b.getAttribute("data-clear"), f;
+  if (k === "all") clearAll();
+  else if (k === "q") setQ("");
+  else if (k === "dom") { state.domain = null; state.group = null; state.focusIdx = -1; render(); }
+  else if (k === "grp") { state.group = null; state.focusIdx = -1; render(); }
+  else if (k.indexOf("fmt:") === 0) { delete state.formats[k.slice(4)]; state.focusIdx = -1; render(); }
+  else if (k.indexOf("lic:") === 0) { delete state.licenses[k.slice(4)]; state.focusIdx = -1; render(); }
+  else if (k.indexOf("sz:") === 0) { delete state.sizes[k.slice(3)]; state.focusIdx = -1; render(); }
+});
+
+el("detail").addEventListener("click", function (e) {
+  if (!e.target.closest) return;
+  if (e.target.closest("#detail-close")) { select(null); return; }
+  var tag = e.target.closest(".tag");
+  if (tag) { addTerm(tag.getAttribute("data-tag")); return; }
+  if (e.target.closest("#cite-btn")) copyCitation();
+});
+
+el("sort").addEventListener("change", function (e) {
+  state.sort = e.target.value;
+  state.focusIdx = -1;
+  render();
+});
+
+el("filters-toggle").addEventListener("click", function () {
+  document.body.classList.toggle("filters-open");
+});
+
+document.addEventListener("keydown", function (e) {
+  var inSearch = document.activeElement === searchEl;
+  if (e.key === "/" && !inSearch) {
+    var t = e.target;
+    if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT")) return;
+    e.preventDefault();
+    searchEl.focus();
+    searchEl.select();
+  } else if (e.key === "Escape") {
+    if (inSearch && state.q) setQ("");
+    else if (state.selectedId) select(null);
+    else if (inSearch) searchEl.blur();
+  }
+});
+
+/* ---------- first paint (all synchronous — no loading state) ---------- */
+el("sort").value = state.sort;
+searchEl.value = state.q;
+syncClearBtn();
+el("snapshot").textContent = fmtInt(TOTAL) + " items · " + domainsIndex.length + " domains";
+el("sidebar-foot").textContent = "Snapshot 2026-09 · " + fmtInt(TOTAL) + " items across " + domainsIndex.length + " domains · read-only demo data";
+searchEl.placeholder = "Search " + fmtInt(TOTAL) + " items — name, description or tag";
+render();
+if (!state.selectedId && window.innerWidth > 800) searchEl.focus();
+</script>
+</body>
+</html>

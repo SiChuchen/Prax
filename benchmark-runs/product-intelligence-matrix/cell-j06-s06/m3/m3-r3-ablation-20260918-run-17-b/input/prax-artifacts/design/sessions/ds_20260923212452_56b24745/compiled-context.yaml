@@ -1,0 +1,82 @@
+version: "0.1"
+session_id: ds_20260923212452_56b24745
+task:
+  surfaces: []
+  primary: 在时间轴上浏览并选中一个变更事件，理解它改变了哪些组件的哪些字段、由哪个事件引起、又导致了哪些后续事件
+product_relationships:
+  - id: rel_causal_chain_change_event
+    source: causal_chain
+    target: change_event
+    type: links
+    direction: forward
+    meaning: 因果链按『导致』语义串联变更事件；每个环的因在时间上游、果在时间下游
+    importance: primary
+  - id: rel_change_event_component
+    source: change_event
+    target: component
+    type: affects
+    direction: forward
+    meaning: 事件通过字段级变更明细（前值→后值）作用于组件状态
+    importance: primary
+  - id: rel_change_event_state_snapshot
+    source: change_event
+    target: state_snapshot
+    type: composes
+    direction: forward
+    meaning: 游标之前的全部事件按时间序折叠出该时刻快照
+    importance: supporting
+region_relationships: []
+decisions:
+  primary_structure: PAT-WORKSPACE
+  density_intent: regular
+  major_choice_ids:
+    - time-forward-causality
+    - fold-snapshot
+    - causal-chips-and-rails
+    - inline-data-first-paint
+must_preserve: []
+regression_points: []
+unresolved:
+  - demo_dataset_provenance
+corrections: []
+representation_portfolio:
+  primary:
+    type: timeline
+    reason: 时间性 high 且判别要求因果与时间结构互相一致：垂直时间轴让『顺序』成为主结构，因果连线沿轴呈现即时间-因果同构；change_set 的天然投影
+  supporting:
+    - type: list
+      reason: 时间轴条目为按天分组的事件列表（List-Detail 的列表侧），顺序严格单调，行内承载徽标/时间/标题/组件/chips
+    - type: table
+      reason: 状态快照面板用表格式字段清单呈现组件×字段×当前值，支持变更字段高亮
+    - type: diagram
+      reason: 时间轴左轨因果连线以小型链路图元表达因果链方向（始终指向时间下游）
+  rejected:
+    - option: card grid / 仪表盘磁贴（cards 作为主表征）
+      reason: 等权磁贴抹平时间序与因果方向，属于被反驳的卡片网格默认（myth-card-grid-default）：cardinality=many 且 temporality=high 时，平铺布局丢失时间结构与因果参照
+    - option: graph（独立力导向因果图）
+      reason: relationality 仅 medium；脱离时间轴后因果方向失去时间参照，违背时间-因果一致性判别
+    - option: calendar
+      reason: 事件粒度为分钟级序列，日历格弱化顺序与因果链语义
+    - option: feed
+      reason: feed 弱游标语义：无法承载『任一时刻状态快照』的折叠投影与游标交互
+state_ownership:
+  - state: selection
+    owner: 变更事件序列：按时间正序排列的时间轴（顺序即因果上限）
+  - state: preview
+    owner: session
+acceptance:
+  - 用户任选一个时间点，能看到该时刻完整且由因果一致的事件序列折叠出的系统状态；任选一个事件，能看到它改了什么字段（前值→后值）、由哪个事件引起、又引发了哪些事件；时间轴排序与因果方向处处一致，用户无需自行比对时间戳判断先后。
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - requirement_alignment
+  regression_check_ids: []

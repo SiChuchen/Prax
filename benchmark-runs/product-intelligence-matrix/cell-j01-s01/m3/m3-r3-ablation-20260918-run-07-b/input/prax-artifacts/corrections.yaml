@@ -1,0 +1,46 @@
+version: "0.1"
+corrections:
+  - id: sdir-artifact-materialization-vs-validate-gate
+    scope:
+      project: cell-j01-s01-b
+      surfaces:
+        - workspace_screen
+    finding:
+      type: process_observation
+      observed: validate 门内确定性检查 representation_decided / state_ownership_declared /
+        acceptance_contract_present 持续 fail。原因：design_validate evaluate 读取的会话
+        SDIR 工件（screen.sdir.yaml）是 design_prepare_implementation 时的物化快照；此后经
+        design_sdir mode=validate 三次 lint PASS 的 0.2 内容（含
+        representation.primary=table+非空 reason、state_ownership 含 selection 与
+        preview 双 owner、acceptance 6 条）不会回写该工件，且 validate 门内
+        design_prepare_implementation 与 design_sdir apply_delta 均被
+        GATE_NOT_SATISFIED 拒绝，工件不可再物化。同类问题：keyboard 检查为 empirical 类，本执行环境无
+        shell/浏览器工具（ToolSearch 全模式检索验证），无法产出运行时取证，已按 inconclusive 如实提交。
+    intended:
+      statement: 在 greenfield 流程中，SDIR 0.2 的屏幕级声明（representation / state_ownership 含
+        selection+preview 双 owner / acceptance / complexity_budget）必须在
+        design_prepare_implementation 之前以可持久化方式写入会话 SDIR（例如 prepare 前最后一次
+        design_sdir validate 前确认内容完整，或由 prepare 从 lint 后内容物化），使 validate
+        阶段确定性检查读取到完整工件；empirical 类检查在无执行通道的环境中应如实标记 inconclusive
+        并留给验收方复核，而非反复重评。
+    evidence_refs:
+      - design_sdir validate PASS（版本
+        0.2，screen.representation/table+tree+list、screen.state_ownership 含
+        preview→entity_table、screen.acceptance 6 条、complexity_budget 齐备）
+      - "design_prepare_implementation BLOCK: 'not legal while session is at the
+        validate gate'"
+      - "design_sdir apply_delta BLOCK: 'not legal while session is at the
+        validate gate'"
+      - "design_validate evaluate ×2: representation_decided /
+        state_ownership_declared / acceptance_contract_present
+        measured-fail，readiness.deterministic_passed=false"
+    regression:
+      check_id: representation_decided
+      requirement: SDIR 0.2 declares representation.primary with a non-empty
+        reason；同类适用 state_ownership_declared（selection+preview 双 owner）与
+        acceptance_contract_present（≥1 条验收标准）——物化工件须包含 validate 模式 lint
+        已通过的全部屏幕级声明
+    supersedes: []
+    promotion:
+      candidate: false
+    created_at: 2026-09-18T19:38:20.510Z

@@ -1,0 +1,72 @@
+version: "0.1"
+session_id: ds_20260918212236_780498b8
+task:
+  surfaces: []
+  primary: 按阶段逐步执行流程：阅读当前步骤→满足门禁校验→（不可逆步骤）查看后果并显式确认→执行并标记完成
+product_relationships:
+  - id: rel-runbook-phase
+    source: runbook
+    target: phase
+    type: contains
+    direction: forward
+    meaning: 一个流程包含多个有序阶段
+    importance: primary
+  - id: rel-phase-step
+    source: phase
+    target: step
+    type: contains
+    direction: forward
+    meaning: 阶段包含按序执行的步骤
+    importance: primary
+  - id: rel-step-gate
+    source: step
+    target: irreversible_gate
+    type: gated_by
+    direction: forward
+    meaning: 不可逆步骤在执行前必须通过确认门（后果展示+显式确认）
+    importance: primary
+  - id: rel-gate-recovery
+    source: irreversible_gate
+    target: recovery_path
+    type: backed_by
+    direction: forward
+    meaning: 确认门背后提供恢复路径：冷静期撤销/恢复点/回滚指引
+    importance: primary
+  - id: rel-step-record
+    source: step
+    target: execution_record
+    type: appends_to
+    direction: forward
+    meaning: 每一步执行、确认、偏差都写入执行记录
+    importance: supporting
+region_relationships: []
+decisions:
+  primary_structure: PAT-LIST-DETAIL
+  density_intent: spacious
+  major_choice_ids:
+    - mc1-scenario
+    - mc2-gate-mechanics
+    - mc3-recovery-dual
+    - mc4-deviation-ledger
+    - mc5-tech
+must_preserve: []
+regression_points: []
+unresolved:
+  - u1-domain-scenario
+  - u2-user-expertise-mix
+corrections: []
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - destructive_recovery
+    - requirement_alignment
+  regression_check_ids: []

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StructEd · 结构文档工作台</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">▣</span>
+      <span class="brand-name">StructEd</span>
+      <span class="brand-sub">结构文档工作台</span>
+    </div>
+    <div class="topbar-actions">
+      <button id="btn-undo" class="btn ghost" title="撤销 (Ctrl+Z)">↶ 撤销</button>
+      <button id="btn-redo" class="btn ghost" title="重做 (Ctrl+Y)">↷ 重做</button>
+      <span class="divider" aria-hidden="true"></span>
+      <button id="btn-copy-md" class="btn ghost" title="复制全文为 Markdown">复制 MD</button>
+      <button id="btn-export-md" class="btn" title="下载 .md 文件">导出 .md</button>
+      <button id="btn-reset" class="btn danger-ghost" title="恢复内置示例文档">重置示例</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <!-- 左栏：大纲 + 结构体检 -->
+    <aside class="pane pane-outline" aria-label="文档大纲">
+      <div class="pane-head">大纲</div>
+      <nav id="outline" class="outline"></nav>
+      <div class="pane-head pane-head-sub">结构体检</div>
+      <div id="checker" class="checker" aria-live="polite"></div>
+    </aside>
+
+    <!-- 中栏：结构化编辑器 -->
+    <section class="pane pane-editor" aria-label="结构化编辑器">
+      <div class="pane-head">
+        编辑器
+        <span class="head-hint">Enter 新建段落 · Shift+Enter 换行 · 空块上按 Backspace 删除</span>
+      </div>
+      <div id="editor" class="editor"></div>
+    </section>
+
+    <!-- 右栏：实时预览 -->
+    <section class="pane pane-preview" aria-label="实时预览">
+      <div class="pane-head">
+        预览
+        <span id="sync-badge" class="sync-badge">已同步</span>
+      </div>
+      <div class="preview-scroll">
+        <article id="preview" class="preview-paper" aria-live="polite"></article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="statusbar">
+    <span id="status-msg" class="status-msg">就绪 · 已载入示例文档</span>
+    <span id="status-stats" class="status-stats"></span>
+  </footer>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

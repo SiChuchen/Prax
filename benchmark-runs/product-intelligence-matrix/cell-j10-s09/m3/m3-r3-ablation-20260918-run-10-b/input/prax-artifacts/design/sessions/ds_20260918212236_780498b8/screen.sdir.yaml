@@ -1,0 +1,176 @@
+version: "0.2"
+screen:
+  id: list_detail_screen
+  intent:
+    primary_task: 按阶段逐步执行流程：阅读当前步骤→满足门禁校验→（不可逆步骤）查看后果并显式确认→执行并标记完成
+    secondary_tasks:
+      - 在冷静期内撤销刚执行的不可逆动作（恢复路径）
+      - 查看执行记录/偏差日志以核对零失误
+      - 走完全程后查看完成凭证与审计摘要
+  archetype:
+    pattern_ref: PAT-LIST-DETAIL
+  density_intent: spacious
+  user_job:
+    verb: complete
+    target: 高后果流程（生产服务器安全下线 runbook）
+    success: 零失误走完全程：无跳步、无校验失败放行、无未经确认的不可逆动作，且每个不可逆动作都有可指认的恢复路径
+  primary_object:
+    label: 高后果流程（runbook）
+    type: workflow
+  information_shape:
+    cardinality: one
+    relationality: low
+    hierarchy: high
+    temporality: low
+    density: low
+    dimensionality: medium
+    spatiality: none
+    volatility: medium
+    uncertainty: medium
+    comparison_need: none
+  representation:
+    primary:
+      type: wizard
+      reason: complete×顺序门禁执行是向导式推进本质；每个不可逆步骤是一站，向导保证不跳步；卡片网格默认壳已被反证驳回
+    supporting:
+      - type: list
+        reason: 旅程图常驻：两级总览+状态灯+不可逆点预警（PAT-LIST-DETAIL 列表侧）
+      - type: document
+        reason: 执行记录/审计摘要以文档形态呈现于抽屉与完成凭证
+  priority:
+    primary:
+      - step-focus
+      - journey-map
+      - safety-gate
+      - completion-certificate
+    contextual:
+      - zero-mistake-status
+      - record-drawer
+  interaction:
+    preview: none
+    inspect: select
+    navigate: none
+    locate: none
+  state_ownership:
+    - state: selection
+      owner: journey-map
+    - state: preview
+      owner: session
+    - state: inspector
+      owner: record-drawer
+    - state: viewport
+      owner: session
+    - state: query
+      owner: session
+    - state: mode
+      owner: session
+  regions:
+    - id: journey-map
+      role: experimental:persistent journey overview
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:当前指针唯一
+        - experimental:锁定步骤不可点击
+        - experimental:当前步骤 aria-current
+    - id: step-focus
+      role: experimental:current step execution area
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:门禁未过内联报错并记偏差
+        - experimental:确认门为模态焦点陷阱
+    - id: safety-gate
+      role: experimental:irreversible consequence + confirm modal + recovery path
+      importance: primary
+      visibility:
+        condition: task_driven
+      behavior_intent:
+        - experimental:执行前预览可见
+        - experimental:执行后转为恢复卡片
+        - experimental:撤销窗口倒计时横条置顶
+    - id: record-drawer
+      role: experimental:execution record timeline
+      importance: supporting
+      visibility:
+        condition: task_driven
+      behavior_intent:
+        - experimental:完成前记录先于结果可核对
+    - id: zero-mistake-status
+      role: experimental:deviation counter badge
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:偏差 0 徽标常驻顶栏
+    - id: completion-certificate
+      role: experimental:terminal certificate
+      importance: dominant
+      visibility:
+        condition: task_driven
+      behavior_intent:
+        - experimental:偏差数与审计摘要可核对
+        - experimental:打印样式隐藏导航
+  relationships: []
+  interaction_intents:
+    - experimental:向导式顺序推进：当前步骤聚焦执行，指针唯一且禁止跳步
+    - experimental:门禁校验即时反馈（未过项内联列出）
+    - experimental:不可逆动作确认门（后果+恢复路径+显式勾选解锁执行按钮）
+    - experimental:冷静期撤销：倒计时横条+一键撤销+级联回退
+    - experimental:旅程图只读回看已完成步骤，锁定未达步骤
+    - experimental:执行记录抽屉时间线
+    - experimental:完成凭证收束态与打印导出
+  required_states:
+    - ready
+    - selected
+    - error
+    - empty
+    - loading
+  decision_points:
+    - id: dp-gate-attempt
+      question: 门禁未过时主按钮禁用还是可点并记偏差？
+      adapter_may_choose:
+        - 门禁未过即点击执行记为偏差（本实现）
+        - 禁用按钮+原因列表
+    - id: dp-confirm-form
+      question: 确认门的显式确认形态？
+      adapter_may_choose:
+        - 知晓勾选+确认按钮（本实现）
+        - 输入确认词
+        - 倒计时按钮
+    - id: dp-undo-length
+      question: 冷静期时长取值？
+      adapter_may_choose:
+        - 按动作风险分级取 30s/45s（本实现）
+        - 统一 60s
+  unresolved:
+    - id: u3-loading-absent
+      question: loading 状态在本应用中结构性不存在（无异步、无构建、数据内联同步渲染）；简报明文禁止以加载态作为可测状态。SDIR 按词汇契约保留 loading 声明，实现层以『首屏同步就绪』等价满足其意图。
+      impact: low
+      affects:
+        - state_completeness
+  rejected_alternatives:
+    - option: Dashboard/卡片网格默认壳
+      reason: myth-card-grid-default：多对象并列浏览前提与本格（单一流程、强制顺序、无比较）相逆
+    - option: 纯线性 wizard
+      reason: hierarchy high 要求全程结构可见，需预知前方不可逆点
+    - option: PAT-APPLICATION-SHELL
+      reason: 单工作区产品不适用（契约 does_not_apply）
+  complexity_budget:
+    permanent_panels: 2
+    permanent_primary_actions: 2
+    modes: 1
+    state_owners: 3
+    navigation_levels: 1
+    persistent_filters: 0
+    new_semantic_concepts: 3
+    keyboard_contracts: 1
+    mobile_conflicts: 0
+    permanent_surfaces: 1
+  acceptance:
+    - 不可逆步骤有恢复/确认路径：4 个不可逆动作均先过确认门（后果+恢复路径+显式勾选）再执行，可撤销类有 30s/45s 撤销窗口，最终类有常驻恢复点/回滚指引
+    - 零失误走完全程可测：门禁未过尝试执行与确认门取消均记偏差，完成凭证显示偏差数与不可逆动作审计摘要
+    - 首屏即用：数据内联同步渲染，无加载态
+    - 静态直开：根路径 index.html，file:// 可用，无构建/无外部服务

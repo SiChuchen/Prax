@@ -1,0 +1,222 @@
+# SDIR 0.2 — list_detail_screen (PAT-LIST-DETAIL, filter-first)
+# NOTE: persisted by the implementation arm because design_sdir mode=validate
+# lints but does not persist, and mode=apply_delta is illegal at the validate
+# gate. Content is byte-for-byte the payload that passed the design_sdir
+# semantic linter (PASS, twice: single- and dual-placement variants).
+version: "0.2"
+representation:
+  primary:
+    type: search_results
+    reason: "Locate job = query → narrow → scan matches; an always-visible filtered list with live counts is the shortest path and keeps collection context while detail sits adjacent."
+  supporting:
+    - type: tree
+      reason: "Category→family narrowing rail expresses the medium hierarchy as a scoping control with live counts"
+    - type: list
+      reason: "Facet value chips with counts let users narrow on attributes at a glance"
+state_ownership:
+  - state: selection
+    owner: results_list
+  - state: preview
+    owner: detail_inspector
+  - state: inspector
+    owner: detail_inspector
+  - state: query
+    owner: search_bar
+  - state: viewport
+    owner: results_list
+  - state: mode
+    owner: session
+acceptance:
+  - "A target part is reachable from first paint within three interactions (type-to-search → optional facet/family narrowing → select)"
+  - "Search and filter changes never clear each other, the breadcrumb, or the pinned selection; a selection that falls out of the narrowing is visibly annotated, not dropped"
+  - "The full catalog is present at first paint from inlined data — no loading state is measurable after load"
+  - "Live match counts (status bar, families, facet values) give continuous narrowing feedback"
+complexity_budget:
+  permanent_panels: 3
+  permanent_primary_actions: 1
+  modes: 1
+  state_owners: 3
+  navigation_levels: 2
+  persistent_filters: 3
+  new_semantic_concepts: 1
+  keyboard_contracts: 1
+  mobile_conflicts: 0
+  permanent_surfaces: 4
+screen:
+  id: list_detail_screen
+  version: "0.2"
+  user_job:
+    verb: locate
+    target: "a target part in a large open catalog"
+    success: "Target located within three interactions, category/family path still visible — narrowing never discards context"
+  primary_object:
+    type: item
+    label: Part
+  information_shape:
+    cardinality: unbounded
+    relationality: low
+    hierarchy: medium
+    temporality: low
+    density: medium
+    dimensionality: medium
+    spatiality: none
+    volatility: medium
+    uncertainty: low
+    comparison_need: none
+  representation:
+    primary:
+      type: search_results
+      reason: "Locate job = query → narrow → scan matches; an always-visible filtered list with live counts is the shortest path and keeps collection context while detail sits adjacent."
+    supporting:
+      - type: tree
+        reason: "Category→family narrowing rail expresses the medium hierarchy as a scoping control with live counts"
+      - type: list
+        reason: "Facet value chips with counts let users narrow on attributes at a glance"
+  state_ownership:
+    - state: selection
+      owner: results_list
+    - state: preview
+      owner: detail_inspector
+    - state: inspector
+      owner: detail_inspector
+    - state: query
+      owner: search_bar
+    - state: viewport
+      owner: results_list
+    - state: mode
+      owner: session
+  acceptance:
+    - "A target part is reachable from first paint within three interactions (type-to-search → optional facet/family narrowing → select)"
+    - "Search and filter changes never clear each other, the breadcrumb, or the pinned selection; a selection that falls out of the narrowing is visibly annotated, not dropped"
+    - "The full catalog is present at first paint from inlined data — no loading state is measurable after load"
+    - "Live match counts (status bar, families, facet values) give continuous narrowing feedback"
+  complexity_budget:
+    permanent_panels: 3
+    permanent_primary_actions: 1
+    modes: 1
+    state_owners: 3
+    navigation_levels: 2
+    persistent_filters: 3
+    new_semantic_concepts: 1
+    keyboard_contracts: 1
+    mobile_conflicts: 0
+    permanent_surfaces: 4
+  intent:
+    primary_task: "Locate a target part: type a search fragment and/or apply 1–2 facet filters, then select the part from results."
+    secondary_tasks:
+      - "Narrow by category → family when the target is not precisely named"
+      - "Return to the surrounding collection after inspecting a located part (context preserved)"
+      - "Count-verify: know how many parts match the current narrowing"
+  archetype:
+    pattern_ref: PAT-LIST-DETAIL
+  density_intent: regular
+  interaction:
+    locate: search
+    inspect: select
+    navigate: none
+    preview: none
+  priority:
+    primary:
+      - search_bar
+      - results_list
+      - filter_rail
+      - detail_inspector
+    contextual:
+      - breadcrumb_strip
+      - status_bar
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+    - experimental:live_counts
+  regions:
+    - id: search_bar
+      role: experimental:query entry
+      importance: primary
+      visibility: { condition: always }
+      behavior_intent:
+        - "experimental:auto-focused on load"
+        - "experimental:search and narrowing compose rather than supersede"
+    - id: filter_rail
+      role: experimental:narrowing controls
+      importance: primary
+      visibility: { condition: always }
+      behavior_intent:
+        - "experimental:category → family narrowing with live counts"
+        - "experimental:facet value chips with live counts"
+    - id: results_list
+      role: "experimental:scan and select matches"
+      importance: dominant
+      visibility: { condition: always }
+      behavior_intent:
+        - "experimental:grouped by family with sticky headers and per-group counts"
+        - "experimental:roving keyboard selection"
+        - "experimental:scroll position preserved across re-filters"
+    - id: detail_inspector
+      role: "experimental:contextual detail of selection"
+      importance: primary
+      visibility: { condition: always }
+      behavior_intent:
+        - "experimental:reflects current selection without navigation"
+        - "experimental:annotates a selection that left the current narrowing"
+        - "experimental:offers reveal action restoring context"
+    - id: breadcrumb_strip
+      role: "experimental:current narrowing context"
+      importance: supporting
+      visibility: { condition: always }
+      behavior_intent:
+        - "experimental:clickable ancestors relax narrowing"
+        - "experimental:active facet chips removable"
+    - id: status_bar
+      role: "experimental:match count and keyboard hints"
+      importance: supporting
+      visibility: { condition: always }
+      behavior_intent:
+        - "experimental:updates synchronously with narrowing"
+    - id: empty_state
+      role: "experimental:no-match feedback"
+      importance: primary
+      visibility: { condition: task_driven }
+      behavior_intent:
+        - "experimental:offers clear-narrowing recovery"
+    - id: error_state
+      role: "experimental:data failure feedback"
+      importance: primary
+      visibility: { condition: task_driven }
+      behavior_intent:
+        - "experimental:defensive rendering path when the inlined catalog is unavailable"
+    - id: loading_state
+      role: "experimental:pre-data feedback"
+      importance: supporting
+      visibility: { condition: task_driven }
+      behavior_intent:
+        - "experimental:present in the state machine only; inline data makes it unobservable after first paint"
+        - "experimental:MUST NOT be the measurable state at page load"
+  required_states:
+    - ready
+    - empty
+    - selected
+    - error
+    - loading
+  decision_points:
+    - id: region_realization
+      question: "How should the platform adapter realize the semantic regions while preserving hierarchy?"
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+    - id: facet_realization
+      question: "Which attribute dimensions surface as facet chips and how are live counts displayed?"
+      adapter_may_choose:
+        - which attribute dimensions become chips
+        - chip grouping and ordering
+        - count display style
+  rejected_alternatives:
+    - option: PAT-WORKSPACE
+      reason: "Built for iterative multi-object work with higher initial complexity; the job is a single locate"
+    - option: Card grid results
+      reason: "Lower density hurts scanning long match lists; rows carry more comparable scan signal"
+    - option: Modal detail page
+      reason: "Breaks context preservation — detail must sit beside results"
+    - option: Tree-drill-only navigation
+      reason: "Three-interaction budget fails on an unbounded collection without search"
+  unresolved: []

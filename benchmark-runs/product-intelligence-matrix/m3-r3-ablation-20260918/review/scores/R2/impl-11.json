@@ -1,0 +1,79 @@
+{
+  "reviewer": "R2",
+  "package_id": "impl-11",
+  "session_id": "bb20d161-f095-4bfe-9353-55873c27e0df",
+  "wall_clock_seconds": 168,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-11",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Brief demands edit × single-document with medium hierarchy and low density (brief.md shape table); impl is a single-document block workbench — outline+editor+preview all derived from one model doc={title,blocks[]} (source/app.js:3-18), block types cover heading/list/quote/callout structure (app.js:24-32). Matches the shape/object/job exactly."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "The editor pane is the central, widest surface with the sample document loaded at first paint in both screenshots (1280x860 and 1440x900); the structure guard the task centers on ('编辑不破坏结构') is permanently visible as 结构体检 with '结构有效：唯一 H1、层级连续、无空标题；编辑与预览一致' (1280x860.png left pane; app.js:617-641)."
+      },
+      "time_to_understand": {
+        "score": 5,
+        "evidence": "Model-judged proxy: explicit pane labels 编辑器/预览/大纲 (index.html:29-48), status bar '就绪 · 内置示例文档已随首屏就绪' (1440x900.png bottom-left; app.js:899), sync badge '已同步' (1440x900.png preview header) — what/where is conveyed immediately."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Zero structural navigation: single page, single screen, primary object on screen at load; outline items jump directly to the target block via placeCaretEnd+scrollIntoView (app.js:462-469); no routes, modes, or drill-downs exist in source (index.html is one static page)."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "All primary actions are in-place: text edits re-render only derived views to protect the caret (app.js:259), undo/redo restore focus to the active block (app.js:223-241), rejected structural ops revert the model and toast the reason without navigation (app.js:154-159, 334). Only reset uses a blocking confirm() (app.js:750); minor focus drop after guard-rejected renderAll (app.js:157) is a rare path."
+      },
+      "ui_surface_complexity": {
+        "score": 4,
+        "evidence": "Permanent surfaces (topbar 5 actions index.html:16-23, three panes, checker, statusbar) are proportionate to a structure-guarded editing job, and per-block tools (6 controls/block, app.js:404-411) are hidden until hover/active/focus-within (styles.css:373-379) — but the checker audit, sync badge, and statusbar overlap in what they report, a slight redundancy."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Receipt fails 2 of 3 a11y checks: a11y.contrast=fail and a11y.focus_order=fail (measurement-summary.json; a11y.target_size=pass), plus type.min_projected_size=fail. Visible correlates: faint #9aa1b2 text on white for hints/gutter numbers (styles.css:10, 151-160, 316-325) and 11-12px minimum type (styles.css:156, 217, 404); hover-revealed toolbars leave controls in tab order while invisible (styles.css:373-379). Semantic groundwork is otherwise strong (aria-labels app.js:314, 386; aria-live regions index.html:32, 51, 61; lang=zh-CN index.html:2)."
+      },
+      "frontend_rework": {
+        "score": 4,
+        "evidence": "No visible layout defects: layout.overflow=pass, layout.responsive_collision=pass, text.truncation=pass (measurement-summary.json), and both screenshots (1280x860, 1440x900) show clean three-pane layout with no clipping or collision. The 3 failed receipt checks (contrast, focus order, projected type size) imply accessibility-directed rework, hence not 5."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed '结构化编辑与预览一致' is the app's core mechanism, not a label: consistency audit compares model node count vs preview DOM nodes live (app.js:609-613, 650-651), shown as '模型 19 节点 + 预览 19 节点 = 一致 ✓' in the 1280x860 screenshot; preview meta states 'StructEd 实时预览 · 18 个内容块' matching status '块 18' (1440x900.png); a self-test suite asserts model↔preview equality after random ops and guard rejection of level-jumps/dangling-H3 (app.js:785-838), reachable via index.html#selftest (app.js:902)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "a11y.contrast=fail in receipt; low-contrast faint tokens (#9aa1b2 on white) used for permanent hints, gutter numbers, and outline-empty text (styles.css:10, 151-160, 322)",
+      "a11y.focus_order=fail in receipt; per-block toolbars (type select + 5 buttons, app.js:404-411) are invisible until hover/active/focus-within (styles.css:373-379), putting many unreachable-looking controls in tab order across the three panes",
+      "type.min_projected_size=fail in receipt; 11px/11.5px text in pane hints, num chips, and type-select (styles.css:156, 217, 404)",
+      "Minor: guard-rejected structural op triggers full renderAll() (app.js:157) which rebuilds the editor DOM and drops keyboard focus; rare path, recoverable via toast feedback"
+    ],
+    "missing_evidence": [],
+    "overall_note": "impl-11 delivers a three-pane structured document workbench (outline / block editor / live preview) whose representation matches the brief's edit × single-document job — medium hierarchy, low density, one primary object — almost exactly: a single data model derives all three views (app.js:3-18), the editor dominates the initial screen at both 1280x860 and 1440x900, and the acceptance seed 'structured editing consistent with preview' is enforced by construction and surfaced live (consistency audit '模型 19 节点 ↔ 预览 19 节点 = 一致', guarded structural ops via attempt()/validate() at app.js:146-166, plus a hash-triggered self-test suite covering level-jump rejection and model↔preview node equality, app.js:785-838). Navigation cost is minimal (single screen; outline click jumps straight to a block, app.js:462-469) and primary actions preserve context, including caret-safe text editing (app.js:259) and focus-restoring undo/redo (app.js:223-241). The clear weaknesses are objective receipt failures — a11y.contrast, a11y.focus_order, and type.min_projected_size — with visible correlates in source: #9aa1b2 faint text on white, 11-12px minimum sizes, and hover-only toolbars that flood tab order with invisible controls (styles.css:373-379). Layout itself is defect-free in both viewports with all three layout/text checks passing. These scores are model-judged structural proxies from screenshots, source, and the sanitized receipt only; no human preference, task timing, or retrieval accuracy is observable, and model judgment here is not human preference."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 42580,
+      "outputTokens": 6269,
+      "cacheReadInputTokens": 91904,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.41557700000000003,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-10-23T17:43:19.116Z"
+}

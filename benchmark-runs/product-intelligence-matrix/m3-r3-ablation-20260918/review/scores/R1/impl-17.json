@@ -1,0 +1,83 @@
+{
+  "reviewer": "R1",
+  "package_id": "impl-17",
+  "session_id": "48f58639-5a0d-4e8a-a310-e784cb8ba3a3",
+  "wall_clock_seconds": 166,
+  "cli_exit_code": 0,
+  "parsed_ok": true,
+  "scores": {
+    "package_id": "impl-17",
+    "scores": {
+      "representation_fit": {
+        "score": 5,
+        "evidence": "Brief demands manage×entity-hierarchy (many, high hierarchy, high density). Impl pairs a 3-level region→system→device tree (source/index.html:23-32) with a dense flat table carrying an 归属路径 attribution-path column (source/index.html:52; source/app.js:174), and batch operations as first-class surface (source/index.html:60-76); both screenshots (1280x860, 1440x900) show 138 devices with tree counts (4系统·55台 etc.) — canonical fit for the shape bundle."
+      },
+      "primary_task_salience": {
+        "score": 5,
+        "evidence": "Initial screen at both 1280x860 and 1440x900 is entirely the batch-management workspace: checkboxes on every tree node and table row, 全选可见 in the toolbar, per-row status dropdowns, and header stats (138 台设备 / 运行 92 / 维护 21 / 停用 14 / 待报废 11). No hero, marketing, or unrelated content competes (source/index.html:11-57)."
+      },
+      "time_to_understand": {
+        "score": 4,
+        "evidence": "What/where is conveyed immediately: title 设备资产批量管理台 (screenshots/1280x860.png top bar), columns 编码/名称/归属路径/状态, status pills colored per state. Held at 4 because receipt check type.min_projected_size=fail and base font 13px (source/styles.css:16) with 12px secondary text (source/styles.css:37,127) make the dense grid harder to scan than it needs to be."
+      },
+      "navigation_cost": {
+        "score": 5,
+        "evidence": "Zero navigation to the primary object: single screen lists all 138 devices (显示 138 条, screenshots/1440x900.png); hierarchy narrowing is in-place via tree focus chip (source/app.js:213-219, 148-160) rather than drill-down pages; batch actions appear in a floating bar on selection (source/index.html:60-76). No routes or modes exist in source."
+      },
+      "context_loss": {
+        "score": 5,
+        "evidence": "All primary actions preserve the working view: status change and delete go through a modal over the same table (source/app.js:314-364), per-row status edits commit in place (source/app.js:408-411), undo is offered via toast and op-log drawer without leaving the view (source/app.js:290-298, 447-454); no navigation away is possible."
+      },
+      "ui_surface_complexity": {
+        "score": 5,
+        "evidence": "Permanent surfaces are exactly four — topbar, tree pane, toolbar, table (source/index.html:11-57); conditional surfaces (batch bar index.html:60 [hidden], modal index.html:83 [hidden], op-log drawer via off-canvas transform source/styles.css:159-165) appear only on demand. Each permanent control maps to a brief need (scope select, filter, batch select, op log)."
+      },
+      "accessibility": {
+        "score": 2,
+        "evidence": "Receipt fails all three a11y checks: a11y.contrast=fail, a11y.focus_order=fail, a11y.target_size=fail (measurement-summary.json:13-15), plus type.min_projected_size=fail (line 16). Corroborated in source: 14px checkboxes and 16px tree toggles (source/styles.css:87,79), 2px-padding small buttons (source/styles.css:37), tree rows are non-focusable divs with no tabindex (source/app.js:125-132), modal open does not move or trap focus (source/app.js:301-302), only one aria-label exists (source/app.js:123). Not 1 because native checkbox/select/button elements are used and status is color+text+dot encoded (source/app.js:164-169)."
+      },
+      "frontend_rework": {
+        "score": 3,
+        "evidence": "No visible layout defects: layout.overflow=pass, layout.responsive_collision=pass, text.truncation=pass (measurement-summary.json:10-12) and both screenshots render cleanly with no collision or clipped text. But 4 of 7 receipt checks fail (lines 13-16: contrast, focus_order, target_size, min type size), which are defect-class failures implying rework; 3 pass / 4 fail / 1 warning (line 7) puts this mid-scale."
+      },
+      "acceptance_seed_coverage": {
+        "score": 5,
+        "evidence": "Seed 批量选择与操作零误伤，状态归属显式 is addressed explicitly: tri-state subtree selection with device-leaf semantics (source/app.js:72-96); confirm modal enumerates every affected device grouped by system with old→new status and a scope guard 全库共 X 台，未列出的 Y 台不受任何影响 (source/app.js:329-337); delete guard protects org nodes (source/app.js:357); batch bar shows per-status breakdown and separates org nodes (source/app.js:198-204); op log stores per-device [id, from, to] and undo restores exactly (source/app.js:270-287); 归属路径 column makes attribution visible per row (source/app.js:174)."
+      }
+    },
+    "not_observable": [
+      "task_completion_time",
+      "information_retrieval_accuracy",
+      "human_preference"
+    ],
+    "defects_observed": [
+      "a11y.contrast fail, a11y.focus_order fail, a11y.target_size fail and type.min_projected_size fail per receipt (measurement-summary.json:13-16)",
+      "Tree rows are divs without tabindex/keyboard semantics and modal focus is not managed (source/app.js:125-132, 301-302), consistent with focus_order failure",
+      "Sub-15px interactive targets: 14px checkboxes, 16px tree toggles, 2px-padding small buttons (source/styles.css:87,79,37)",
+      "Base type 13px with 11-12px secondary text below projected minimum (source/styles.css:16,89,37)",
+      "One receipt check carries an unresolved warning (measurement-summary.json:7)"
+    ],
+    "missing_evidence": [
+      "The receipt does not identify which of the seven checks carries the warning, nor severities (contrast ratios, target px, focus-order detail) — a11y failure magnitude cannot be graded beyond pass/fail",
+      "No receipt data on interactive flows (modal, batch bar, undo) — only the initial page was measured, so zero-collateral behavior is judged from source structure, not executed checks"
+    ],
+    "overall_note": "This package is a near-canonical representation of the manage×entity-hierarchy cell: a single static page (source/index.html) that renders 138 seeded devices synchronously at load (source/data.js:39-78, app.js:468) across a 3-level tree and a dense table with explicit attribution paths, with batch select/状态/删除/导出 surfaced in place and conditional surfaces hidden until selection. The acceptance seed is implemented unusually literally — enumerated per-device confirm modals with scope guards stating exactly how many devices are and are not affected (source/app.js:329-337, 357), per-device old→new change records and one-click undo (source/app.js:270-287) — and all three layout checks pass with clean screenshots at 1280x860 and 1440x900. The clear weakness is accessibility: every a11y check in the receipt fails (contrast, focus_order, target_size) plus minimum projected type size, corroborated by small targets, non-focusable tree rows, and unmanaged modal focus in the source; the dense 13px grid also slightly damps time-to-understand. Model-judged proxy only: no human preference or task-time data exists in this pilot, and those dimensions are marked not_observable."
+  },
+  "usage": {
+    "glm-5.3-flash[1M]": {
+      "inputTokens": 41681,
+      "outputTokens": 6049,
+      "cacheReadInputTokens": 83840,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.40154999999999996,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "glm-5.3-flash[1m]",
+      "provider": "firstParty",
+      "costBasis": "unknown"
+    }
+  },
+  "stderr_tail": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3-flash[1M]\",\"query_source\":\"sdk\"}\n",
+  "recorded_at": "2026-10-23T16:59:48.324Z"
+}

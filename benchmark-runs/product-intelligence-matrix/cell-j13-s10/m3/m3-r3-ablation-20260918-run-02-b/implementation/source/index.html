@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DimScope · 多维数据探索台</title>
+<!--
+  cell-j13-s10 · explore × dimensional-space
+  单文件静态交付：无外部依赖，file:// 直接打开，首屏即用（数据内联同步生成，无加载态）。
+  成功标准：维度切换不重置认知（过滤/选中跨投影保留 + 显式回执）。
+  验收种子：过滤/投影状态有归属（账本记录来源部件+动作+时间）且可回退（撤销/重做/跳转任意快照）。
+-->
+<style>
+  :root{
+    --bg:#0e1117; --panel:#151a23; --panel2:#1a2130; --line:#242d3d;
+    --text:#e8eaf0; --text2:#a7b0c0; --text3:#7d8798;
+    --accent:#6cb2ff; --accent2:#8fd6c0; --warn:#f6bd16; --danger:#ff8a8a;
+    --pt-hidden:#3a4150; --focus:#8fc6ff;
+    --rad:8px; --rad-s:5px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg); color:var(--text);
+    font:13px/1.45 "Segoe UI","Microsoft YaHei",-apple-system,sans-serif;
+    overflow:hidden;
+  }
+  button{font:inherit; color:inherit; background:none; border:none; cursor:pointer}
+  button:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--focus); outline-offset:1px; border-radius:3px}
+
+  #app{
+    display:grid; height:100vh;
+    grid-template-rows:46px 1fr;
+    grid-template-columns:272px 1fr 308px;
+    grid-template-areas:"top top top" "rail canvas ledger";
+    gap:8px; padding:8px;
+  }
+
+  /* ---------- topbar ---------- */
+  #topbar{
+    grid-area:top; display:flex; align-items:center; gap:14px;
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--rad);
+    padding:0 14px;
+  }
+  #topbar .brand{font-weight:600; font-size:14px; letter-spacing:.02em}
+  #topbar .brand em{font-style:normal; color:var(--accent)}
+  #topbar .dataset{color:var(--text2); font-size:12px}
+  #topbar .counts{margin-left:auto; display:flex; gap:12px; font-size:12px; color:var(--text2)}
+  #topbar .counts b{color:var(--text); font-weight:600}
+  #topbar .counts .sel b{color:var(--warn)}
+  .tbtn{
+    border:1px solid var(--line); background:var(--panel2); border-radius:var(--rad-s);
+    padding:4px 10px; font-size:12px; color:var(--text2); transition:color .12s,border-color .12s;
+  }
+  .tbtn:hover:not(:disabled){color:var(--text); border-color:#35415a}
+  .tbtn:disabled{opacity:.38; cursor:default}
+
+  /* ---------- dimension rail ---------- */
+  #rail{
+    grid-area:rail; background:var(--panel); border:1px solid var(--line); border-radius:var(--rad);
+    display:flex; flex-direction:column; min-height:0;
+  }
+  .rail-head{
+    padding:9px 12px 7px; border-bottom:1px solid var(--line);
+    display:flex; align-items:baseline; gap:8px;
+  }
+  .rail-head h2{font-size:12.5px; font-weight:600}
+  .rail-head span{font-size:11px; color:var(--text3)}
+  #dimlist{overflow-y:auto; padding:8px; display:flex; flex-direction:column; gap:7px; min-height:0}
+  .dimcard{
+    background:var(--panel2); border:1px solid var(--line); border-radius:var(--rad-s);
+    padding:8px 9px 7px;
+  }
+  .dimcard.ax{border-color:#33507e}
+  .dimcard .row1{display:flex; align-items:center; gap:6px}
+  .dimcard .dname{font-weight:600; font-size:12.5px}
+  .dimcard .dtype{font-size:10px; color:var(--text3); border:1px solid var(--line); border-radius:3px; padding:0 4px}
+  .dimcard .fbadge{
+    margin-left:auto; font-size:10px; color:#0e1117; background:var(--warn);
+    border-radius:8px; padding:0 6px; font-weight:600; display:none;
+  }
+  .dimcard .fbadge.on{display:inline-block}
+  .slots{display:flex; gap:4px; margin-left:6px}
+  .slot{
+    font-size:10px; min-width:22px; padding:1px 4px; text-align:center;
+    border:1px solid var(--line); border-radius:3px; color:var(--text3);
+  }
+  .slot:hover{color:var(--text); border-color:#35415a}
+  .slot.on{background:var(--accent); border-color:var(--accent); color:#0b1220; font-weight:700}
+  .slot.color.on{background:var(--accent2); border-color:var(--accent2)}
+  .spark{display:block; width:100%; height:34px; margin-top:6px}
+  .spark-hint{font-size:10px; color:var(--text3); margin-top:3px}
+  .catvals{display:flex; flex-wrap:wrap; gap:3px; margin-top:6px}
+  .catv{
+    font-size:10.5px; padding:1px 6px; border:1px solid var(--line); border-radius:9px; color:var(--text2);
+  }
+  .catv:hover{color:var(--text); border-color:#35415a}
+  .catv.on{background:#2c3b58; border-color:var(--accent); color:var(--text)}
+  .catv .n{color:var(--text3); font-size:9.5px}
+
+  /* ---------- canvas region ---------- */
+  #canvaswrap{
+    grid-area:canvas; background:var(--panel); border:1px solid var(--line); border-radius:var(--rad);
+    display:flex; flex-direction:column; min-width:0; min-height:0;
+  }
+  #canvashead{
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    padding:8px 12px; border-bottom:1px solid var(--line);
+  }
+  #projtitle{font-size:12.5px; font-weight:600}
+  #projtitle .xy{color:var(--accent)}
+  #carryover{
+    display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--text2);
+    background:var(--panel2); border:1px solid var(--line); border-radius:14px; padding:2px 10px;
+    transition:box-shadow .3s, border-color .3s;
+  }
+  #carryover.flash{border-color:var(--accent); box-shadow:0 0 0 1px var(--accent), 0 0 14px rgba(108,178,255,.25); color:var(--text)}
+  #carryover .shield{color:var(--accent2)}
+  #legend{margin-left:auto; display:flex; gap:5px; flex-wrap:wrap; max-width:46%}
+  .lgchip{
+    display:inline-flex; align-items:center; gap:4px; font-size:10.5px; color:var(--text2);
+    border:1px solid var(--line); border-radius:9px; padding:1px 7px;
+  }
+  .lgchip .dot{width:8px; height:8px; border-radius:50%}
+  .lgchip:hover{color:var(--text); border-color:#35415a}
+  .lgchip.on{background:#2c3b58; border-color:var(--accent); color:var(--text)}
+  #stage{position:relative; flex:1; min-height:0}
+  #plot{position:absolute; inset:0; width:100%; height:100%; display:block; cursor:crosshair}
+  #hovercard{
+    position:absolute; display:none; pointer-events:none; z-index:5;
+    background:rgba(16,20,29,.96); border:1px solid #35415a; border-radius:var(--rad-s);
+    padding:7px 10px; font-size:11px; min-width:170px; box-shadow:0 6px 20px rgba(0,0,0,.5);
+  }
+  #hovercard .hid{color:var(--text3); font-size:10px}
+  #hovercard .hname{font-weight:600; margin:1px 0 3px}
+  #hovercard .hrow{display:flex; justify-content:space-between; gap:12px; color:var(--text2)}
+  #hovercard .hrow b{color:var(--text); font-weight:500}
+  #emptystate{
+    position:absolute; inset:0; display:none; align-items:center; justify-content:center;
+    background:rgba(14,17,23,.55); z-index:4;
+  }
+  #emptystate .box{
+    text-align:center; background:var(--panel2); border:1px solid var(--line);
+    border-radius:var(--rad); padding:22px 30px;
+  }
+  #emptystate .box p{color:var(--text2); margin-bottom:12px}
+  #toast{
+    position:absolute; left:50%; bottom:14px; transform:translateX(-50%);
+    background:rgba(20,26,38,.95); border:1px solid #33507e; color:var(--text);
+    font-size:12px; border-radius:14px; padding:5px 16px; opacity:0; transition:opacity .25s;
+    pointer-events:none; z-index:6;
+  }
+  #toast.show{opacity:1}
+  #canvasfoot{
+    display:flex; align-items:center; gap:14px; padding:6px 12px;
+    border-top:1px solid var(--line); font-size:11px; color:var(--text3);
+  }
+  #canvasfoot .axinfo b{color:var(--text2); font-weight:600}
+
+  /* ---------- ledger ---------- */
+  #ledger{
+    grid-area:ledger; background:var(--panel); border:1px solid var(--line); border-radius:var(--rad);
+    display:flex; flex-direction:column; min-height:0;
+  }
+  .lg-head{padding:9px 12px 7px; border-bottom:1px solid var(--line); display:flex; align-items:baseline; gap:8px}
+  .lg-head h2{font-size:12.5px; font-weight:600}
+  .lg-head span{font-size:11px; color:var(--text3)}
+  #filtersbox{padding:8px 10px; border-bottom:1px solid var(--line)}
+  #filtersbox .fb-title{font-size:11px; color:var(--text2); margin-bottom:6px; display:flex; align-items:center}
+  #filtersbox .fb-title button{margin-left:auto; font-size:10.5px; color:var(--danger)}
+  #filterchips{display:flex; flex-wrap:wrap; gap:4px}
+  #filterchips .none{font-size:11px; color:var(--text3)}
+  .fchip{
+    display:inline-flex; align-items:center; gap:5px; font-size:11px;
+    background:var(--panel2); border:1px solid #3a4a68; border-radius:9px; padding:2px 4px 2px 9px; color:var(--text);
+  }
+  .fchip .src{font-size:9.5px; color:var(--text3)}
+  .fchip .rm{
+    width:15px; height:15px; border-radius:50%; line-height:13px; text-align:center;
+    color:var(--text3); font-size:11px;
+  }
+  .fchip .rm:hover{background:var(--danger); color:#0e1117}
+  #histlist{flex:1; overflow-y:auto; padding:6px 8px; min-height:0}
+  .hsnap{
+    display:flex; align-items:center; gap:7px; width:100%; text-align:left;
+    padding:5px 8px; border-radius:var(--rad-s); border:1px solid transparent; margin-bottom:2px;
+  }
+  .hsnap:hover{background:var(--panel2)}
+  .hsnap.cur{background:#20304c; border-color:#33507e}
+  .hsnap .idx{font-size:10px; color:var(--text3); min-width:26px}
+  .hsnap .tm{font-size:10px; color:var(--text3); min-width:52px}
+  .hsnap .src{
+    font-size:9.5px; border:1px solid var(--line); color:var(--text2);
+    border-radius:3px; padding:0 4px; min-width:30px; text-align:center;
+  }
+  .hsnap .lbl{font-size:11.5px; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .lg-foot{padding:6px 12px 8px; border-top:1px solid var(--line); font-size:10.5px; color:var(--text3)}
+
+  /* status (a11y live region) */
+  #status{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0)}
+
+  ::-webkit-scrollbar{width:9px}
+  ::-webkit-scrollbar-thumb{background:#2a3446; border-radius:5px; border:2px solid var(--panel)}
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="topbar">
+    <div class="brand">Dim<em>Scope</em> · 多维数据探索台</div>
+    <div class="dataset">产品经营数据集（合成）· <span id="dssize"></span></div>
+    <div class="counts">
+      <span>可见 <b id="cnt-visible">0</b> / <span id="cnt-total">0</span></span>
+      <span class="sel">选中 <b id="cnt-selected">0</b></span>
+    </div>
+    <button class="tbtn" id="btn-undo" title="撤销 (Ctrl+Z)">↶ 撤销</button>
+    <button class="tbtn" id="btn-redo" title="重做 (Ctrl+Shift+Z)">↷ 重做</button>
+    <button class="tbtn" id="btn-reset" title="回到初始快照">⟲ 重置</button>
+  </header>
+
+  <aside id="rail">
+    <div class="rail-head"><h2>维度导轨</h2><span>点槽位切换投影 · 点分布/取值过滤</span></div>
+    <div id="dimlist"></div>
+  </aside>
+
+  <main id="canvaswrap">
+    <div id="canvashead">
+      <div id="projtitle">投影：<span class="xy" id="proj-xy"></span> · 颜色 <span id="proj-color"></span></div>
+      <div id="carryover" title="过滤与选中按记录身份跨投影保留，切换维度不重置认知">
+        <span class="shield">🛡</span><span id="carryover-text"></span>
+      </div>
+      <div id="legend" title="点击图例值 = 切换该取值过滤（来源：图例）"></div>
+    </div>
+    <div id="stage">
+      <canvas id="plot" aria-label="投影画布：当前 X×Y 维度散点投影，支持框选"></canvas>
+      <div id="hovercard"></div>
+      <div id="emptystate"><div class="box">
+        <p>当前过滤条件下没有可见记录</p>
+        <button class="tbtn" id="btn-clearall">清除全部过滤</button>
+      </div></div>
+      <div id="toast"></div>
+    </div>
+    <div id="canvasfoot">
+      <span class="axinfo">X <b id="fx"></b> · Y <b id="fy"></b></span>
+      <span>拖拽框选（Shift 加选）· 点击空白清除选中 · <b>A</b> 全选可见 · <b>Esc</b> 取消 · <b>Ctrl+Z</b> 撤销</span>
+    </div>
+  </main>
+
+  <aside id="ledger">
+    <div class="lg-head"><h2>状态账本</h2><span>归属 + 回退 · 点任意条目跳转</span></div>
+    <div id="filtersbox">
+      <div class="fb-title">生效过滤 <span id="fb-count"></span><button id="btn-clearfilters" hidden>全部清除</button></div>
+      <div id="filterchips"></div>
+    </div>
+    <div id="histlist"></div>
+    <div class="lg-foot">每条记录：序号 · 时间 · 来源部件 · 动作摘要。跳转回退不销毁后续快照，可再前进。</div>
+  </aside>
+</div>
+<div id="status" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+/* ================= 工具 ================= */
+function mulberry32(seed){let a=seed>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const rnd = mulberry32(20260918);
+function randn(){let u=0,v=0;while(u===0)u=rnd();while(v===0)v=rnd();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+function hash01(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return ((h>>>0)%10000)/10000}
+const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
+const fmtInt=v=>Math.round(v).toLocaleString('en-US');
+function fmtTick(v,max){
+  if(max>=1000) return (v/1000).toFixed(v>=10000||v===0?0:1)+'k';
+  if(max>=100) return String(Math.round(v));
+  return (Math.round(v*10)/10).toString();
+}
+function nowHMS(){const d=new Date();return [d.getHours(),d.getMinutes(),d.getSeconds()].map(n=>String(n).padStart(2,'0')).join(':')}
+
+/* ================= 数据集（内联合成，首屏同步就绪） ================= */
+const LINE_CATS = {
+  '云服务':  ['云数据库','消息队列','容器服务'],
+  '智能硬件':['边缘网关','传感终端'],
+  '数据平台':['分析引擎','数据集成','开发套件'],
+};
+const CAT_OF = {}; Object.entries(LINE_CATS).forEach(([l,cs])=>cs.forEach(c=>CAT_OF[c]=l));
+const REGIONS = ['华东','华北','华南','西南','东北','海外'];
+const REGION_FACTOR = {'华东':1.25,'华北':1.05,'华南':1.1,'西南':0.8,'东北':0.7,'海外':0.95};
+const CHANNELS = ['直销','电商','代理商','自营门店','OEM'];
+const QUARTERS = []; for(let y=2023;y<=2026;y++)for(let q=1;q<=4;q++){if(y===2026&&q>3)break;QUARTERS.push(y+'Q'+q)}
+const NAME_A=['星','云','曜','睿','驰','澜','拓','衡','捷','澈','岚','擎'];
+const NAME_B=['航','石','川','界','维','峰','格','流','枢','矩','桥','链'];
+
+const RECORDS = [];
+(function generate(){
+  const catNames = Object.keys(CAT_OF);
+  const catBase = {'云数据库':420,'消息队列':260,'容器服务':300,'边缘网关':120,'传感终端':60,'分析引擎':520,'数据集成':280,'开发套件':150};
+  for(let i=0;i<2400;i++){
+    const id='SKU-'+String(i+1).padStart(4,'0');
+    const category=catNames[Math.floor(rnd()*catNames.length)];
+    const region=REGIONS[Math.floor(rnd()*REGIONS.length)];
+    const r=rnd(); const channel=CHANNELS[r<.3?0:r<.5?1:r<.68?2:r<.85?3:4];
+    const r2=rnd(); const qi=clamp(Math.floor((r2*r2)*QUARTERS.length),0,QUARTERS.length-1);
+    const quarter=QUARTERS[qi];
+    const revenue=clamp(catBase[category]*Math.exp(randn()*0.72)*(0.8+0.4*rnd()), 18, 4200);
+    const margin=clamp(9+22*rnd()+randn()*7+(category==='分析引擎'?6:category==='传感终端'?-5:0), 1.5, 57);
+    const users=clamp(Math.pow(revenue,0.86)*Math.exp(randn()*0.5)*REGION_FACTOR[region]*0.9, 0.8, 980);
+    const latency=clamp(300-0.22*users+Math.abs(randn())*90+randn()*40, 21, 920);
+    const csat=clamp(3.1+0.055*margin-randn()*0.55, 1, 5);
+    RECORDS.push({
+      id, name:NAME_A[Math.floor(rnd()*12)]+NAME_B[Math.floor(rnd()*12)]+' '+id.slice(4),
+      revenue, margin, users, latency, csat,
+      line:CAT_OF[category], category, region, channel, quarter,
+    });
+  }
+})();
+
+/* ================= 维度定义 ================= */
+const DIMS = [
+  {key:'revenue', name:'营收',   type:'num', unit:'¥万', fmt:fmtInt},
+  {key:'margin',  name:'利润率', type:'num', unit:'%',   fmt:v=>v.toFixed(1)},
+  {key:'users',   name:'活跃用户',type:'num', unit:'k',  fmt:fmtInt},
+  {key:'latency', name:'响应延迟',type:'num', unit:'ms', fmt:fmtInt},
+  {key:'csat',    name:'满意度', type:'num', unit:'分',  fmt:v=>v.toFixed(1)},
+  {key:'line',    name:'产品线', type:'cat'},
+  {key:'category',name:'品类',   type:'cat'},
+  {key:'region',  name:'地区',   type:'cat'},
+  {key:'channel', name:'渠道',   type:'cat'},
+  {key:'quarter', name:'上线季度',type:'cat', ordinal:true},
+];
+const DIM = Object.fromEntries(DIMS.map(d=>[d.key,d]));
+const NBINS = 12;
+const PALETTE = ['#5b8ff9','#61ddaa','#f6bd16','#7262fd','#78d3f8','#f6903d','#9661bc','#f08bb4','#008685','#e8684a'];
+
+/* 每个维度的静态元数据：范围 / 分箱 / 取值序 */
+DIMS.forEach(d=>{
+  if(d.type==='num'){
+    let mn=Infinity,mx=-Infinity; RECORDS.forEach(r=>{mn=Math.min(mn,r[d.key]);mx=Math.max(mx,r[d.key])});
+    d.min=mn; d.max=mx;
+    d.bins=Array.from({length:NBINS},(_,i)=>({lo:mn+(mx-mn)*i/NBINS, hi:mn+(mx-mn)*(i+1)/NBINS}));
+  }else{
+    let vals=[...new Set(RECORDS.map(r=>r[d.key]))];
+    vals.sort(d.ordinal?undefined:(a,b)=>a.localeCompare(b,'zh'));
+    d.values=vals;
+  }
+});
+/* 颜色编码取色（按维度内取值排序稳定分配） */
+const colorOf=(dim,val)=>{
+  const dd=DIM[dim]; const i=dd.values.indexOf(val);
+  return PALETTE[(i<0?0:i)%PALETTE.length];
+};
+
+/* ================= 全局状态 + 带归属的历史账本 ================= */
+let state = {
+  x:'revenue', y:'margin', color:'region',
+  filters: [],            // {id,dim,kind:'bin'|'val',bin?,value?,label,source,t}
+  selection: new Set(),   // 记录 id —— 跨投影不变量
+};
+let filterSeq=0, snapSeq=0;
+const ledger=[];   // {idx,id,t,source,icon,label,state:{x,y,color,filters,selection}}
+let pointer=-1;
+
+function serialize(){return {x:state.x,y:state.y,color:state.color,
+  filters:state.filters.map(f=>({...f})), selection:[...state.selection]}}
+function restore(s){
+  state.x=s.x; state.y=s.y; state.color=s.color;
+  state.filters=s.filters.map(f=>({...f}));
+  state.selection=new Set(s.selection);
+}
+function commit(source,icon,label){
+  const snap={idx:snapSeq++,id:'s'+snapSeq,t:nowHMS(),source,icon,label,state:serialize()};
+  ledger.push(snap); pointer=ledger.length-1;
+  renderLedger(); syncButtons();
+}
+function jump(i,note){
+  if(i<0||i>=ledger.length||i===pointer)return;
+  pointer=i; restore(ledger[i].state);
+  toast(note||('已跳转至 #'+ledger[i].idx+' · '+ledger[i].label));
+  renderLedger(); syncButtons(); renderAll();
+}
+function undo(){if(pointer>0)jump(pointer-1,'撤销：回到 #'+ledger[pointer-1].idx)}
+function redo(){if(pointer<ledger.length-1)jump(pointer+1,'重做：前进到 #'+ledger[pointer+1].idx)}
+
+/* ================= 过滤语义 ================= */
+function predOf(f){
+  if(f.kind==='bin'){const d=DIM[f.dim],b=d.bins[f.bin];return v=>v>=b.lo&&v<b.hi|| (f.bin===NBINS-1&&v===b.hi)}
+  return v=>v===f.value;
+}
+let visibleSet=new Set();
+function recomputeVisible(){
+  /* 同维度过滤取并集（分箱/多选语义），跨维度取交集（分面语义） */
+  const byDim={};
+  state.filters.forEach(f=>{(byDim[f.dim]=byDim[f.dim]||[]).push(predOf(f))});
+  const groups=Object.keys(byDim).map(dim=>({dim,ps:byDim[dim]}));
+  visibleSet=new Set();
+  for(const r of RECORDS){
+    let ok=true;
+    for(const g of groups){
+      const v=r[g.dim]; let any=false;
+      for(const p of g.ps){ if(p(v)){any=true;break} }
+      if(!any){ok=false;break}
+    }
+    if(ok)visibleSet.add(r.id);
+  }
+}
+
+/* ================= 投影刻度 ================= */
+let plotW=0,plotH=0,projCacheKey='',projPX=null,projPY=null,projPts=[];
+const M={l:52,r:18,t:14,b:46};
+function bandGeom(dimKey,size,orth){
+  const d=DIM[dimKey], n=d.values.length;
+  return {n, size: size/n};
+}
+function scalePoint(r){
+  const sx=scale1D(state.x,r[state.x],plotW-M.l-M.r);
+  const sy=scale1D(state.y,r[state.y],plotH-M.t-M.b);
+  return {px:M.l+sx, py:M.t+sy};
+}
+function scale1D(key,val,span){
+  const d=DIM[key];
+  if(d.type==='num') return span*( (val-d.min)/(d.max-d.min||1) );
+  const g=bandGeom(key,span);
+  const i=d.values.indexOf(val);
+  const center=span*(i+0.5)/g.n;
+  const jitter=(hash01(r_idKey)-0.5)*g.size*0.62;
+  return center+jitter;
+}
+let r_idKey='';
+function projectAll(){
+  const key=state.x+'|'+state.y+'|'+Math.round(plotW)+'x'+Math.round(plotH);
+  if(key===projCacheKey)return;
+  projCacheKey=key;
+  projPX=new Float32Array(RECORDS.length); projPY=new Float32Array(RECORDS.length);
+  for(let i=0;i<RECORDS.length;i++){
+    r_idKey=RECORDS[i].id;
+    const p=scalePoint(RECORDS[i]);
+    projPX[i]=p.px; projPY[i]=p.py;
+  }
+}
+
+/* ================= 画布渲染 ================= */
+const cv=document.getElementById('plot'), ctx=cv.getContext('2d');
+function resizeCanvas(){
+  const stage=document.getElementById('stage');
+  const w=stage.clientWidth,h=stage.clientHeight,dpr=window.devicePixelRatio||1;
+  if(w===0||h===0)return;
+  cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  plotW=w; plotH=h; projCacheKey='';
+  draw();
+}
+function niceTicks(mn,mx,count){
+  const span=mx-mn, step0=span/count;
+  const mag=Math.pow(10,Math.floor(Math.log10(step0)));
+  const norm=step0/mag;
+  const step=(norm<1.5?1:norm<3.5?2:norm<7.5?5:10)*mag;
+  const ticks=[]; for(let v=Math.ceil(mn/step)*step; v<=mx+1e-9; v+=step)ticks.push(v);
+  return ticks;
+}
+function draw(){
+  if(!plotW)return;
+  projectAll();
+  ctx.clearRect(0,0,plotW,plotH);
+  /* 背景网格 + 刻度 */
+  ctx.font='10.5px "Segoe UI","Microsoft YaHei",sans-serif';
+  const dx=DIM[state.x], dy=DIM[state.y];
+  const w=plotW-M.l-M.r, h=plotH-M.t-M.b;
+  ctx.fillStyle='#141926'; ctx.fillRect(M.l,M.t,w,h);
+  ctx.strokeStyle='#222b3d'; ctx.lineWidth=1;
+  if(dx.type==='num'){
+    for(const t of niceTicks(dx.min,dx.max,5)){
+      const x=M.l+w*(t-dx.min)/(dx.max-dx.min);
+      ctx.beginPath();ctx.moveTo(x,M.t);ctx.lineTo(x,M.t+h);ctx.stroke();
+      ctx.fillStyle='#828da0'; ctx.textAlign='center'; ctx.fillText(fmtTick(t,dx.max),x,plotH-M.b+16);
+    }
+  }else{
+    const g=bandGeom(state.x,w);
+    dx.values.forEach((v,i)=>{
+      const x=M.l+w*(i+0.5)/g.n;
+      ctx.beginPath();ctx.moveTo(x,M.t);ctx.lineTo(x,M.t+h);ctx.stroke();
+      ctx.fillStyle='#828da0'; ctx.textAlign='center';
+      const long=g.n>10;
+      ctx.save();ctx.translate(x,plotH-M.b+16);if(long)ctx.rotate(-Math.PI/5);
+      ctx.fillText(long?v.slice(2):v,0,long?0:0);ctx.restore();
+    });
+  }
+  if(dy.type==='num'){
+    for(const t of niceTicks(dy.min,dy.max,5)){
+      const y=M.t+h*(1-(t-dy.min)/(dy.max-dy.min));
+      ctx.beginPath();ctx.moveTo(M.l,y);ctx.lineTo(M.l+w,y);ctx.stroke();
+      ctx.fillStyle='#828da0'; ctx.textAlign='right'; ctx.fillText(fmtTick(t,dy.max),M.l-7,y+3.5);
+    }
+  }else{
+    const g=bandGeom(state.y,h);
+    dy.values.forEach((v,i)=>{
+      const y=M.t+h*(i+0.5)/g.n;
+      ctx.beginPath();ctx.moveTo(M.l,y);ctx.lineTo(M.l+w,y);ctx.stroke();
+      ctx.fillStyle='#828da0'; ctx.textAlign='right'; ctx.fillText(v,M.l-7,y+3.5);
+    });
+  }
+  ctx.strokeStyle='#3a455c';
+  ctx.strokeRect(M.l+.5,M.t+.5,w-1,h-1);
+  /* 轴题 */
+  ctx.fillStyle='#9aa5b8'; ctx.textAlign='center';
+  ctx.fillText(dx.name+(dx.unit?'（'+dx.unit+'）':''), M.l+w/2, plotH-8);
+  ctx.save(); ctx.translate(13,M.t+h/2); ctx.rotate(-Math.PI/2);
+  ctx.fillText(dy.name+(dy.unit?'（'+dy.unit+'）':''),0,0); ctx.restore();
+
+  /* 点层：先灰（被过滤），再彩（可见），选中描边 */
+  const n=RECORDS.length;
+  ctx.globalAlpha=.42;
+  ctx.fillStyle='#454d5e';
+  for(let i=0;i<n;i++){
+    if(visibleSet.has(RECORDS[i].id))continue;
+    ctx.beginPath();ctx.arc(projPX[i],projPY[i],2.4,0,6.2832);ctx.fill();
+  }
+  ctx.globalAlpha=.5;
+  for(let i=0;i<n;i++){
+    const r=RECORDS[i];
+    if(!visibleSet.has(r.id))continue;
+    ctx.fillStyle=colorOf(state.color,r[state.color]);
+    ctx.beginPath();ctx.arc(projPX[i],projPY[i],3,0,6.2832);ctx.fill();
+  }
+  ctx.globalAlpha=1;
+  if(state.selection.size){
+    ctx.lineWidth=1.4; ctx.strokeStyle='#ffffff';
+    ctx.fillStyle='rgba(255,255,255,.92)';
+    for(let i=0;i<n;i++){
+      if(!state.selection.has(RECORDS[i].id))continue;
+      ctx.beginPath();ctx.arc(projPX[i],projPY[i],4.6,0,6.2832);ctx.stroke();
+    }
+  }
+  if(hoverIdx>=0){
+    ctx.lineWidth=1.6; ctx.strokeStyle='#ffd66b';
+    ctx.beginPath();ctx.arc(projPX[hoverIdx],projPY[hoverIdx],6,0,6.2832);ctx.stroke();
+  }
+  if(brush){ctx.strokeStyle='#6cb2ff';ctx.fillStyle='rgba(108,178,255,.12)';ctx.lineWidth=1;
+    ctx.fillRect(brush.x0,brush.y0,brush.x1-brush.x0,brush.y1-brush.y0);
+    ctx.strokeRect(brush.x0+.5,brush.y0+.5,brush.x1-brush.x0,brush.y1-brush.y0);}
+}
+
+/* ================= 维度卡渲染 ================= */
+function renderDimCards(){
+  const box=document.getElementById('dimlist'); box.innerHTML='';
+  DIMS.forEach(d=>{
+    const card=document.createElement('div');
+    card.className='dimcard'+(state.x===d.key||state.y===d.key||state.color===d.key?' ax':'');
+    const r1=document.createElement('div'); r1.className='row1';
+    const nm=document.createElement('span'); nm.className='dname'; nm.textContent=d.name;
+    const tp=document.createElement('span'); tp.className='dtype';
+    tp.textContent=d.type==='num'?'数值':'类别';
+    const slots=document.createElement('div'); slots.className='slots';
+    [['x','X'],['y','Y'],['color','彩']].forEach(([role,lab])=>{
+      const b=document.createElement('button'); b.className='slot'+(role==='color'?' color':'')+(state[role]===d.key?' on':'');
+      b.textContent=lab; b.title='设为'+(role==='color'?'颜色编码':(role==='x'?'X 轴':'Y 轴'))+'（切换后过滤/选中保留）';
+      b.setAttribute('aria-label',d.name+' 设为 '+(role==='color'?'颜色编码':role.toUpperCase()+' 轴'));
+      b.addEventListener('click',()=>assignRole(role,d.key));
+      slots.appendChild(b);
+    });
+    const fb=document.createElement('span'); fb.className='fbadge'+(countFiltersOf(d.key)?' on':'');
+    fb.textContent=String(countFiltersOf(d.key));
+    r1.append(nm,tp,slots,fb); card.appendChild(r1);
+    if(d.type==='num'){
+      const c=document.createElement('canvas'); c.className='spark'; c.width=480; c.height=68;
+      drawSpark(c,d); card.appendChild(c);
+      const hint=document.createElement('div'); hint.className='spark-hint';
+      hint.textContent='点击分箱切换过滤 · 同维多箱取并集';
+      card.appendChild(hint);
+    }else{
+      const wrap=document.createElement('div'); wrap.className='catvals';
+      const cnt={}; RECORDS.forEach(r=>{if(visibleSet.has(r.id))cnt[r[d.key]]=(cnt[r[d.key]]||0)+1});
+      d.values.forEach(v=>{
+        const b=document.createElement('button');
+        b.className='catv'+(hasValFilter(d.key,v)?' on':'');
+        b.innerHTML=v+' <span class="n">'+(cnt[v]||0)+'</span>';
+        b.title='切换过滤：'+d.name+' = '+v;
+        b.setAttribute('aria-label','过滤 '+d.name+' '+v);
+        b.addEventListener('click',()=>toggleValFilter(d.key,v,'维度卡·'+d.name+' · 取值'));
+        wrap.appendChild(b);
+      });
+      card.appendChild(wrap);
+    }
+    box.appendChild(card);
+  });
+}
+function countFiltersOf(dim){return state.filters.filter(f=>f.dim===dim).length}
+function hasValFilter(dim,val){return state.filters.some(f=>f.dim===dim&&f.kind==='val'&&f.value===val)}
+function hasBinFilter(dim,bin){return state.filters.some(f=>f.dim===dim&&f.kind==='bin'&&f.bin===bin)}
+function drawSpark(c,d){
+  const g=c.getContext('2d'); const W=c.width,H=c.height;
+  g.clearRect(0,0,W,H);
+  const cnt=new Array(NBINS).fill(0);
+  RECORDS.forEach(r=>{if(visibleSet.has(r.id)){const i=clamp(Math.floor((r[d.key]-d.min)/(d.max-d.min)*NBINS),0,NBINS-1);cnt[i]++}});
+  const mx=Math.max(1,...cnt);
+  const bw=W/NBINS;
+  for(let i=0;i<NBINS;i++){
+    const hVal=cnt[i]/mx*(H-8);
+    g.fillStyle=hasBinFilter(d.key,i)?'#6cb2ff':'#39445c';
+    g.fillRect(i*bw+1.5,H-hVal,bw-3,hVal);
+  }
+  /* 全量轮廓参考 */
+  const cntAll=new Array(NBINS).fill(0);
+  RECORDS.forEach(r=>{const i=clamp(Math.floor((r[d.key]-d.min)/(d.max-d.min)*NBINS),0,NBINS-1);cntAll[i]++});
+  const mxAll=Math.max(1,...cntAll);
+  g.strokeStyle='rgba(140,155,180,.5)'; g.beginPath();
+  for(let i=0;i<NBINS;i++){const y=H-cntAll[i]/mxAll*(H-8); i?g.lineTo(i*bw+bw/2,y):g.moveTo(bw/2,y)}
+  g.stroke();
+}
+
+/* ================= 账本 / 过滤条渲染 ================= */
+function renderLedger(){
+  const box=document.getElementById('histlist'); box.innerHTML='';
+  for(let i=ledger.length-1;i>=0;i--){
+    const s=ledger[i];
+    const b=document.createElement('button');
+    b.className='hsnap'+(i===pointer?' cur':'');
+    b.title=(i===pointer?'当前状态：':'跳转到：')+'#'+s.idx+' '+s.label+'（'+s.source+'，'+s.t+'）';
+    b.innerHTML='<span class="idx">#'+s.idx+'</span><span class="tm">'+s.t+'</span>'+
+      '<span class="src">'+s.icon+' '+s.source+'</span><span class="lbl">'+s.label+'</span>';
+    b.addEventListener('click',()=>jump(i));
+    box.appendChild(b);
+  }
+  const cur=box.querySelector('.cur'); if(cur)cur.scrollIntoView({block:'nearest'});
+  renderFilterChips();
+}
+function renderFilterChips(){
+  const box=document.getElementById('filterchips'); box.innerHTML='';
+  const n=state.filters.length;
+  document.getElementById('fb-count').textContent=n?('（'+n+'）'):'';
+  document.getElementById('btn-clearfilters').hidden=n===0;
+  if(!n){box.innerHTML='<span class="none">无 —— 数据集全量可见</span>';return}
+  state.filters.forEach(f=>{
+    const chip=document.createElement('span'); chip.className='fchip';
+    chip.title='归属来源：'+f.source+' · 建立于 '+f.t;
+    const rm=document.createElement('button'); rm.className='rm'; rm.textContent='✕';
+    rm.title='移除该过滤（其余保留）';
+    rm.setAttribute('aria-label','移除过滤 '+f.label);
+    rm.addEventListener('click',e=>{e.stopPropagation();removeFilter(f.id,'账本')});
+    chip.append(document.createTextNode(f.label+' '), rm);
+    box.appendChild(chip);
+  });
+}
+
+/* ================= 动作（全部写入账本，带归属） ================= */
+function assignRole(role,dimKey){
+  const roleCN={x:'X 轴',y:'Y 轴',color:'颜色编码'}[role];
+  if(state[role]===dimKey)return;
+  const old=state[role];
+  let swapped=false;
+  if(role!=='color'&&state[role==='x'?'y':'x']===dimKey){
+    state[role==='x'?'y':'x']=old; // X/Y 互换，避免同维同轴
+    swapped=true;
+  }
+  state[role]=dimKey;
+  commit('维度卡','维',roleCN+' → '+DIM[dimKey].name+(swapped?'（原 '+roleCN+' 维换至对侧）':''));
+  carryFlash('投影已切换：'+DIM[state.x].name+' × '+DIM[state.y].name+' · 已保留 '+state.filters.length+' 项过滤 · '+state.selection.size+' 条选中');
+  renderAll();
+}
+function toggleBinFilter(dimKey,bin){
+  const d=DIM[dimKey],b=d.bins[bin];
+  const ex=state.filters.find(f=>f.dim===dimKey&&f.kind==='bin'&&f.bin===bin);
+  if(ex){removeFilter(ex.id,'维度卡·'+d.name+' · 分箱');return}
+  const f={id:'f'+(++filterSeq),dim:dimKey,kind:'bin',bin,
+    label:d.name+' ∈ ['+fmtTick(b.lo,d.max)+', '+fmtTick(b.hi,d.max)+')'+(bin===NBINS-1?']':''),
+    source:'维度卡·'+d.name+' · 分箱',t:nowHMS()};
+  state.filters.push(f);
+  commit('维度卡','维','过滤 '+f.label);
+  afterFilterChange();
+}
+function toggleValFilter(dimKey,val,source){
+  const d=DIM[dimKey];
+  const ex=state.filters.find(f=>f.dim===dimKey&&f.kind==='val'&&f.value===val);
+  if(ex){removeFilter(ex.id,source);return}
+  const f={id:'f'+(++filterSeq),dim:dimKey,kind:'val',value:val,
+    label:d.name+' = '+val,source,t:nowHMS()};
+  state.filters.push(f);
+  commit(source.split(' · ')[0],'维','过滤 '+f.label);
+  afterFilterChange();
+}
+function removeFilter(fid,source){
+  const f=state.filters.find(x=>x.id===fid); if(!f)return;
+  state.filters=state.filters.filter(x=>x.id!==fid);
+  commit(source,'账','移除过滤 '+f.label);
+  afterFilterChange();
+}
+function clearFilters(source){
+  if(!state.filters.length)return;
+  const n=state.filters.length;
+  state.filters=[];
+  commit(source,'账','清除全部 '+n+' 项过滤');
+  afterFilterChange();
+}
+function setSelection(ids,label,source,icon){
+  state.selection=new Set(ids);
+  commit(source,icon,label);
+  afterSelectionChange();
+}
+function clearSelection(source){
+  if(!state.selection.size)return;
+  const n=state.selection.size; state.selection=new Set();
+  commit(source,'画','清除选中（原 '+n+' 条）');
+  afterSelectionChange();
+}
+function afterFilterChange(){recomputeVisible();renderAll();
+  setStatus('过滤已更新：可见 '+visibleSet.size+' 条，过滤与选中上下文保持归属')}
+function afterSelectionChange(){renderAll();
+  setStatus('选中集已更新：'+state.selection.size+' 条（跨投影保留）')}
+
+/* ================= 画布交互：框选 / 悬停 ================= */
+let brush=null, hoverIdx=-1;
+function canvasPos(e){const rect=cv.getBoundingClientRect();return {x:e.clientX-rect.left,y:e.clientY-rect.top}}
+function nearestPoint(x,y,maxD){
+  let best=-1,bd=maxD*maxD;
+  for(let i=0;i<RECORDS.length;i++){
+    const dx=projPX[i]-x,dy=projPY[i]-y,d2=dx*dx+dy*dy;
+    if(d2<bd){bd=d2;best=i}
+  }
+  return best;
+}
+cv.addEventListener('mousedown',e=>{
+  const p=canvasPos(e);
+  brush={x0:p.x,y0:p.y,x1:p.x,y1:p.y,shift:e.shiftKey,moved:false};
+  hoverIdx=-1;document.getElementById('hovercard').style.display='none';
+});
+window.addEventListener('mousemove',e=>{
+  if(brush){
+    const p=canvasPos(e);brush.x1=p.x;brush.y1=p.y;
+    if(Math.abs(brush.x1-brush.x0)>3||Math.abs(brush.y1-brush.y0)>3)brush.moved=true;
+    draw();return;
+  }
+  if(e.target!==cv){if(hoverIdx>=0){hoverIdx=-1;document.getElementById('hovercard').style.display='none';draw()}return}
+  const p=canvasPos(e);
+  const i=nearestPoint(p.x,p.y,9);
+  if(i!==hoverIdx){hoverIdx=i;draw();showHover(i,p)}
+});
+window.addEventListener('mouseup',()=>{
+  if(!brush)return;
+  const b=brush;brush=null;
+  if(b.moved){
+    const x0=Math.min(b.x0,b.x1),x1=Math.max(b.x0,b.x1),y0=Math.min(b.y0,b.y1),y1=Math.max(b.y0,b.y1);
+    const ids=[];
+    for(let i=0;i<RECORDS.length;i++){
+      if(!visibleSet.has(RECORDS[i].id))continue;
+      const px=projPX[i],py=projPY[i];
+      if(px>=x0&&px<=x1&&py>=y0&&py<=y1)ids.push(RECORDS[i].id);
+    }
+    const next=b.shift?[...state.selection,...ids]:ids;
+    setSelection(next,'框选 '+ids.length+' 条'+(b.shift?'（叠加）':''),'投影画布','画');
+  }else{
+    const i=nearestPoint(b.x0,b.y0,9);
+    if(i>=0&&visibleSet.has(RECORDS[i].id)){
+      const id=RECORDS[i].id;
+      if(b.shift){
+        const s=new Set(state.selection); s.has(id)?s.delete(id):s.add(id);
+        setSelection([...s],(s.has(id)?'选中':'取消选中')+' 1 条（叠加）','投影画布','画');
+      }else setSelection([id],'点选 1 条','投影画布','画');
+    }else clearSelection('投影画布');
+  }
+  draw();
+});
+function showHover(i,p){
+  const card=document.getElementById('hovercard');
+  if(i<0){card.style.display='none';return}
+  const r=RECORDS[i];
+  card.innerHTML='<div class="hid">'+r.id+' · '+r.line+'/'+r.category+'</div>'+
+    '<div class="hname">'+r.name+'</div>'+
+    '<div class="hrow"><span>营收</span><b>'+fmtInt(r.revenue)+' 万</b></div>'+
+    '<div class="hrow"><span>利润率</span><b>'+r.margin.toFixed(1)+'%</b></div>'+
+    '<div class="hrow"><span>活跃用户</span><b>'+fmtInt(r.users)+'k</b></div>'+
+    '<div class="hrow"><span>延迟</span><b>'+fmtInt(r.latency)+'ms</b></div>'+
+    '<div class="hrow"><span>满意度</span><b>'+r.csat.toFixed(1)+'</b></div>'+
+    '<div class="hrow"><span>地区/渠道</span><b>'+r.region+' · '+r.channel+'</b></div>'+
+    '<div class="hrow"><span>上线</span><b>'+r.quarter+'</b></div>';
+  card.style.display='block';
+  const stage=document.getElementById('stage');
+  let lx=p.x+16,ly=p.y+14;
+  if(lx+190>stage.clientWidth)lx=p.x-200; if(ly+160>stage.clientHeight)ly=p.y-160;
+  card.style.left=lx+'px'; card.style.top=ly+'px';
+}
+
+/* ================= 键盘 ================= */
+window.addEventListener('keydown',e=>{
+  if(e.ctrlKey&&e.key.toLowerCase()==='z'){e.preventDefault(); e.shiftKey?redo():undo();return}
+  if(e.ctrlKey&&e.key.toLowerCase()==='y'){e.preventDefault();redo();return}
+  if(e.key==='Escape'){
+    if(brush){brush=null;draw();return}
+    clearSelection('键盘 Esc');
+  }
+  if(!e.ctrlKey&&!e.altKey&&e.key.toLowerCase()==='a'&&e.target===document.body){
+    e.preventDefault();
+    setSelection([...visibleSet],'全选可见 '+visibleSet.size+' 条（键盘 A）','键盘','键');
+  }
+});
+
+/* ================= 回执 / 状态提示 ================= */
+let toastTimer=null;
+function toast(msg){
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2200);
+}
+function carryFlash(extra){
+  const el=document.getElementById('carryover');
+  el.classList.add('flash'); setTimeout(()=>el.classList.remove('flash'),1700);
+  renderCarryover(extra);
+}
+function renderCarryover(extra){
+  document.getElementById('carryover-text').textContent=
+    (extra?extra+' · ':'')+'上下文保持：'+state.filters.length+' 项过滤 · '+state.selection.size+' 条选中（切换维度不重置）';
+}
+function setStatus(s){document.getElementById('status').textContent=s}
+
+/* ================= 图例 ================= */
+function renderLegend(){
+  const box=document.getElementById('legend'); box.innerHTML='';
+  const d=DIM[state.color];
+  d.values.forEach(v=>{
+    const b=document.createElement('button');
+    b.className='lgchip'+(hasValFilter(state.color,v)?' on':'');
+    b.innerHTML='<span class="dot" style="background:'+colorOf(state.color,v)+'"></span>'+v;
+    b.title='切换过滤：'+d.name+' = '+v+'（来源：图例）';
+    b.setAttribute('aria-label','图例过滤 '+d.name+' '+v);
+    b.addEventListener('click',()=>toggleValFilter(state.color,v,'图例·'+d.name));
+    box.appendChild(b);
+  });
+}
+
+/* ================= 总渲染 ================= */
+function renderAll(){
+  const ae=document.activeElement;
+  const focusKey=(ae&&ae!==document.body)?ae.getAttribute('aria-label'):null;
+  document.getElementById('proj-xy').textContent=DIM[state.x].name+' × '+DIM[state.y].name;
+  document.getElementById('proj-color').textContent=DIM[state.color].name;
+  document.getElementById('fx').textContent=DIM[state.x].name+(DIM[state.x].unit?'（'+DIM[state.x].unit+'）':'');
+  document.getElementById('fy').textContent=DIM[state.y].name+(DIM[state.y].unit?'（'+DIM[state.y].unit+'）':'');
+  document.getElementById('cnt-visible').textContent=fmtInt(visibleSet.size);
+  document.getElementById('cnt-total').textContent=fmtInt(RECORDS.length);
+  document.getElementById('cnt-selected').textContent=fmtInt(state.selection.size);
+  document.getElementById('emptystate').style.display=visibleSet.size===0?'flex':'none';
+  renderCarryover(); renderLegend(); renderDimCards();
+  projCacheKey=''; draw();
+  if(focusKey){const el=document.querySelector('[aria-label="'+focusKey+'"]'); if(el&&el!==document.activeElement)el.focus()}
+}
+function syncButtons(){
+  document.getElementById('btn-undo').disabled=pointer<=0;
+  document.getElementById('btn-redo').disabled=pointer>=ledger.length-1;
+}
+
+/* ================= 装配 ================= */
+function init(){
+  document.getElementById('dssize').textContent=fmtInt(RECORDS.length)+' 记录 × '+DIMS.length+' 维';
+  document.getElementById('btn-undo').addEventListener('click',undo);
+  document.getElementById('btn-redo').addEventListener('click',redo);
+  document.getElementById('btn-reset').addEventListener('click',()=>{
+    if(pointer===0){toast('已在初始快照');return}
+    jump(0,'已重置回初始快照 #0');
+  });
+  document.getElementById('btn-clearfilters').addEventListener('click',()=>clearFilters('账本'));
+  document.getElementById('btn-clearall').addEventListener('click',()=>clearFilters('空状态恢复'));
+  commit('系统','系','初始状态：营收 × 利润率 · 颜色 地区');
+  recomputeVisible();
+  renderAll();
+  setStatus('就绪：'+fmtInt(RECORDS.length)+' 条记录已内联渲染（无加载态）');
+}
+try{
+  init();
+  new ResizeObserver(resizeCanvas).observe(document.getElementById('stage'));
+  /* 深链演示 ?demo=step;step：依序重放与用户点击/键盘完全相同的动作函数，
+     用于验证与分享初始探索状态（bin:维度:箱 / val:维度:取值 / x:维度 / y:维度 / color:维度 /
+     selall / undo / redo / jump:序号）。无参数时不受影响。 */
+  const demoSteps=new URLSearchParams(location.search).get('demo');
+  if(demoSteps){
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      demoSteps.split(';').forEach(s=>{
+        s=s.trim(); if(!s)return;
+        const [op,a,b]=s.split(':');
+        if(op==='bin')toggleBinFilter(a,+b);
+        else if(op==='val')toggleValFilter(a,b,'维度卡·'+DIM[a].name+' · 取值');
+        else if(op==='x')assignRole('x',a);
+        else if(op==='y')assignRole('y',a);
+        else if(op==='color')assignRole('color',a);
+        else if(op==='selall')setSelection([...visibleSet],'全选可见 '+visibleSet.size+' 条（键盘 A）','键盘','键');
+        else if(op==='undo')undo();
+        else if(op==='redo')redo();
+        else if(op==='jump')jump(+a);
+      });
+    }));
+  }
+}catch(err){
+  document.body.innerHTML='<div style="padding:40px;color:#ff8a8a;font-size:14px">初始化失败：'+err.message+'</div>';
+}
+</script>
+</body>
+</html>
