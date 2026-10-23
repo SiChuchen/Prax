@@ -84,3 +84,30 @@ justified by current evidence.
 - attribution.md (this directory) · pooled-n2-analysis.md / pooled-n2-findings.yaml (m3-r2-20260909) ·
   run-ledger.yaml ×2 · comparison/findings/review-agreement ×2 rounds ·
   b-session-audit.yaml · operator-events.ndjson ×2.
+
+## 6. R3 ablation + pooled n=3 update (2026-10-24)
+
+R3 (`m3-r3-ablation-20260918`) closed 2026-10-24; full record in
+`../m3-r3-ablation-20260918/ablation-report.md` (+ §6 verification addendum,
+`pooled-n3-findings.yaml`, `pre-analysis-note.md` v2). Key entries for this
+ledger:
+
+- **Pooled n=3 (90 runs)**: blind rubric A 4.38 vs B 4.39 (cells 6/4 split) —
+  the §4 tie conclusion HOLDS at n=3. B cost ≈1.7× A. The 150-cell expansion
+  **defer** stands.
+- **H-23 causal ablation verdict: NEGATIVE at the pre-registered bar**, with a
+  two-stage mechanism (independently verified): router selection 9/10 →
+  design_inspect surfacing only 2/10 → of the surfaced, 0/2 clean improvement.
+  The pilot's "knowledge-routing footprint" (§4) now has its Gate B answer:
+  **routing works, surfacing breaks, application unproven**.
+- Three-way 回流 updates:
+  | item | action | basis |
+  |---|---|---|
+  | §3 investigate-before-building (a11y root cause) | **done** | a11y-root-cause.md → H-23 admission → r3 ablation |
+  | H-23 entry lifecycle | **keep draft; rewrite-and-reprobe on a second cell is the only permitted next step** | probe protocol §3 action caps; retirement needs multi-cell evidence |
+  | disclosure layer engineering (auto-expand admitted entries at decide/validation) | **candidate, pending m4 probe** | m4-probe-20261024 running (P0/P1x2/P2x2/P3/P3p, contrastive locator) |
+  | measure→fix loop in design_validate | **candidate, pending m4 probe P3 vs P3p** | same batch, placebo-controlled |
+  | frontend_rework rubric revision | unchanged defer-to-next-round | r3 inter-reviewer exact 35% — worse at n=3, re-specify before reuse |
+- **m4 contrastive probe batch in flight** (`m4-probe-20261024/protocol.md`,
+  frozen before runs; readout matrix pre-registered). Its report supersedes
+  the "candidate" rows above when it lands.
