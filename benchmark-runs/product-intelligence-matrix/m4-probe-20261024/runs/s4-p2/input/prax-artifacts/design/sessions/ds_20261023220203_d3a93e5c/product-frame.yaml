@@ -1,0 +1,77 @@
+version: "0.2"
+jtbd:
+  verb: explore
+  target: multi-dimensional dataset (unbounded records × many numeric/categorical dimensions)
+  success: Switching projection dimensions never resets filters, selection, or the user's reading position; every filter/projection change is attributed and revertible
+primary_object:
+  type: dataset
+  label: 多维数据集 (multi-dimensional dataset)
+task_model:
+  frequency: medium
+  reversibility: reversible
+  consequence: low
+  expertise: mixed
+user:
+  primary_role: 数据分析师 / data analyst exploring a multivariate dataset
+  expertise: intermediate
+  familiarity: medium
+goal:
+  primary: Understand the structure of a high-dimensional dataset by freely re-projecting it across dimension pairs without losing the filtered context being examined
+tasks:
+  primary: Explore a multivariate dataset by re-projecting records onto different dimension pairs while filters and selection persist untouched
+  secondary:
+    - Subset the dataset by constraining dimension ranges (filters)
+    - Review the attributed history of projection/filter changes and revert to any earlier state
+product_objects:
+  - id: dataset
+    user_name: 数据集 (Dataset)
+    purpose: The collection of records under exploration; loaded inline and ready at first paint
+  - id: dimension
+    user_name: 维度 (Dimension)
+    purpose: A measurable attribute of every record; can be mapped to an axis or constrained by a filter
+  - id: projection
+    user_name: 投影 (Projection)
+    purpose: "The current 2D view: which dimension is on X, which on Y; switchable without side effects"
+  - id: filter
+    user_name: 过滤器 (Filter)
+    purpose: A named range/category constraint on one dimension that subsets the records; owned and visible
+  - id: state_trail
+    user_name: 探索轨迹 (State trail)
+    purpose: Attributed, revertible history of every projection/filter change; the ownership + rollback mechanism required by the acceptance seed
+relationships:
+  - source: dimension
+    target: projection
+    type: mapped_to_axis
+    direction: forward
+    meaning: Each axis of the projection is bound to exactly one dimension; rebinding preserves all other state
+    importance: primary
+    id: rel_dimension_projection
+  - source: filter
+    target: dimension
+    type: constrains
+    direction: forward
+    meaning: A filter restricts which values of a dimension are included in the visible subset
+    importance: primary
+    id: rel_filter_dimension
+  - source: state_trail
+    target: projection
+    type: records_change
+    direction: forward
+    meaning: Every projection change is appended to the trail with an attributed label
+    importance: primary
+    id: rel_state_trail_projection
+  - source: state_trail
+    target: filter
+    type: records_change
+    direction: forward
+    meaning: Every filter add/adjust/remove is appended to the trail with an attributed label
+    importance: primary
+    id: rel_state_trail_filter
+mental_model_hypothesis:
+  summary: The user separates 'which records am I looking AT (the filtered subset + selection)' from 'which dimensions am I looking THROUGH (the current 2D projection)'. Dimension switching changes the lens, never the subset. The exploration trail is a visible timeline of lens+subset changes, each attributed to the action that caused it, any of which can be revisited in one step.
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: A user can switch the X/Y projection dimensions any number of times while their filters, selection, and reading position remain intact; every projection/filter change appears in a visible, attributed state trail and any prior state can be restored in one action.
+open_questions: []

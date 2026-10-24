@@ -1,0 +1,16 @@
+version: "1"
+check_id: requirement_alignment
+outcome: pass
+kind: assistive
+collected_at: "2026-10-24T02:05:00Z"
+executor: "Claude (GLM) execution arm, cell-j13-s10, session ds_20261024000046_e6648d02"
+environment: "Chrome (superpowers-chrome MCP, CDP), 1680x950, file:///E:/codex-prj/ab-worktrees/pi-matrix-m4/s6-p3/index.html, Windows 10"
+method: "real-browser journey: clicks + trusted keyboard, App state assertions before/after each step"
+command: "mcp chrome use_browser: navigate → click row → click bar → click rail 行星半径 → keyboard_press ctrl+z"
+observations:
+  - "success criterion reproduced: after dimension switch, selection r16 (Kepler-4128 b), filter chip 图表:method:{凌星法}, and visible count 166 all unchanged; only projection_view re-rendered (sel-band + 选中 label drawn)"
+  - "acceptance seed reproduced: filter/projection chips carry owner labels; three-level revert verified (chip ×, trusted Ctrl+Z undo 2→1, Reset all present)"
+  - "single screen, static open (file://), zero runtime requests, data ready at first paint (no loading state)"
+artifacts:
+    - path: evidence/shots/fix-04-dimswitch-context-kept.png
+    - path: evidence/shots/fix-05-undo.png

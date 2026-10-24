@@ -1,0 +1,36 @@
+PASS S1 首屏 ready（数据内联，无加载态）  → {"total":420,"visible":"420","journal":1,"pointer":0,"sel":0,"anchor":0,"lens":"population","ready":true}
+PASS S1 初始：1 条日志 / 指针就位 / 透镜=人口  → journal=1
+SHOT 01-initial-ready.png
+PASS S2 选中2 + 锚定77 + 大区筛选生效  → {"sel":2,"anchor":77,"filters":"[{\"kind\":\"cat\",\"dim\":\"region\",\"values\":[\"亚太\"]}]","visible":118,"chips":1}
+SHOT 02-selection-filter.png
+PASS S3 透镜→人均GDP：选区/锚点/过滤器全部保持  → {"lens":"gdpPerCapita","sel":2,"anchor":77,"filters":1,"trail":2,"lastLabel":"透镜 → 人均GDP（排序跟随）","sortedTh":"人均GDP ·透镜","lensTh":true}
+PASS S3 日志归属：最后一条为透镜动作  → 透镜 → 人均GDP（排序跟随）
+PASS S3 表格重排：透镜列带头 + 排序指示  → 人均GDP ·透镜
+SHOT 03-after-lens-switch.png
+PASS S4 键盘 ] → 下一维度（面积）  → lens=area
+SHOT 04-keyboard-lens.png
+PASS S5 Ctrl+Z 撤销 → 回到人均GDP  → lens=gdpPerCapita
+SHOT 05-after-undo.png
+PASS S6 搜索 port 生效且记入日志  → {"search":"port","visible":6}
+SHOT 06-search.png
+PASS S7 空态：0 可见 + 空态提示  → {"visible":0,"emptyShown":true}
+SHOT 07-empty-state.png
+PASS S8 恢复日志条目：回到该时刻完整状态（透镜当时=人口、无搜索、选区2）  → {"search":"","lens":"population","sel":2,"pointerSeq":2,"visible":118}
+SHOT 08-restored-from-journal.png
+S9 diag {"hit":"chart","mm":1,"hidden":false,"len":28,"pt":{"x":339.2104344322836,"y":135.43062200956942}}
+PASS S9 图表悬停提示（定位到真实数据点）
+PASS S10 焦点从 DOM 首区开始（header 可用时=撤销按钮，否则搜索框）  → {"tag":"button","id":"btn-undo","cls":"btn","label":"撤销","visible":true,"focusVisible":true,"region":"header"}
+PASS S10 全部焦点停靠点可见且 :focus-visible 生效
+PASS S10 关键区域全部可达（搜索/维度/对比轴/记录表网格/检查器/日志）  → 共 52 站
+PASS S10 区域顺序符合 DOM（过滤栏→维度栏→图台→表格→检查器→日志）  → stage@42 table@44 insp@45 journal@47
+PASS S11 网格导航：↓↓ 聚焦行
+PASS S11 键盘 Enter 切换选中并复原  → before=2 after=3 restored=2
+PASS S11 Shift+Enter 锚定焦点行  → before=77 after=35
+SHOT 09-focus-order.png
+PASS S12 空应用且本无范围过滤器 → 无日志、无状态变化  → {"a":{"j":5,"f":1},"b":{"j":5,"f":1}}
+PASS S12 范围输入内回车 = 应用（新日志在栈顶、过滤生效）  → {"j":3,"ptr":2,"label":"筛选 人口 500 – +∞ 万","min":500,"visible":43}
+PASS S12 重复应用同一范围 → 不产生重复日志  → j=3 vs 3
+PASS S12 清空范围回车 → 真实移除（+1 日志）  → {"j":4,"has":false}
+JS_ERRORS 0
+PASS 全程无未捕获 JS 异常
+DONE

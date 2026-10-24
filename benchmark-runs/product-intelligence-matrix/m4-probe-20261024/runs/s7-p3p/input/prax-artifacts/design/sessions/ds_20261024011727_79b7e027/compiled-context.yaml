@@ -1,0 +1,78 @@
+version: "0.1"
+session_id: ds_20261024011727_79b7e027
+task:
+  surfaces: []
+  primary: Switch the active projection dimension (the lens) that arranges the dataset in the view
+product_relationships:
+  - id: rel-lens-dim
+    source: lens
+    target: dimension
+    type: projects_by
+    direction: forward
+    meaning: The lens points at exactly one dimension at a time; switching lens re-points it
+    importance: primary
+  - id: rel-filter-dataset
+    source: filter
+    target: dataset
+    type: narrows
+    direction: forward
+    meaning: Each filter narrows the visible subset of records; independent of the lens
+    importance: primary
+  - id: rel-entry-state
+    source: journal_entry
+    target: filter
+    type: snapshots
+    direction: forward
+    meaning: Each journal entry owns the full filter+lens state after one user action and can restore it
+    importance: primary
+  - id: sel-record
+    source: selection
+    target: record
+    type: marks
+    direction: bidirectional
+    meaning: Selection marks records; anchors persist across lens switches
+    importance: supporting
+region_relationships: []
+decisions:
+  primary_structure: PAT-DATA-EXPLORER
+  density_intent: compact
+  major_choice_ids:
+    - mc-lens-invariants
+    - mc-owned-journal
+    - mc-dual-axis
+    - mc-trail
+must_preserve: []
+regression_points: []
+unresolved:
+  - unb-1
+corrections: []
+state_ownership:
+  - state: selection
+    owner: session
+  - state: query
+    owner: session
+  - state: inspector
+    owner: session
+  - state: viewport
+    owner: record-table
+acceptance:
+  - 维度切换不重置认知：切换活动维度后，选区、过滤器、锚定记录、日志与轨迹全部保持
+  - 过滤/投影状态有归属且可回退：每个状态变化归具名动作，可恢复到任一先前状态，undo/redo 可用
+  - 首屏即用：数据内联，页面加载完成即 ready，无加载态作为可测状态
+  - 静态单页交付：根 index.html 直接打开，本地离线可运行
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - filter_state
+    - comparison_scan
+    - requirement_alignment
+  regression_check_ids: []

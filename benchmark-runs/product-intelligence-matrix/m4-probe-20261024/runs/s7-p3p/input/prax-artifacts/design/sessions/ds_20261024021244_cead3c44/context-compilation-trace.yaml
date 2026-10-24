@@ -1,0 +1,39 @@
+version: "0.1"
+session_id: ds_20261024021244_cead3c44
+task_ref: Switch the active projection dimension (the lens) that arranges the dataset in the view
+selected:
+  - ref: product_relationships
+    reason:
+      - rel-lens-dim:lens->dimension
+      - rel-filter-dataset:filter->dataset
+      - rel-entry-state:journal_entry->filter
+      - sel-record:selection->record
+  - ref: region_relationships
+    reason: []
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-DATA-EXPLORER
+  - ref: unresolved
+    reason:
+      - unb-1
+  - ref: corrections
+    reason: []
+  - ref: validation-plan@1
+    reason:
+      - semantic_conformance
+      - state_completeness
+      - product_model_alignment
+      - keyboard
+      - hierarchy_review
+      - representation_decided
+      - state_ownership_declared
+      - acceptance_contract_present
+      - complexity_budget_declared
+      - filter_state
+      - comparison_scan
+      - requirement_alignment
+excluded:
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata

@@ -39,7 +39,7 @@ const report = JSON.parse(readFileSync(`${M4}/launch/prepare-launch-report.json`
 const wsRep = report.workspaces.find((w) => w.slot === slot && w.arm === arm);
 if (!wsRep) throw new Error(`${slot}-${arm}: not in prepare-launch-report`);
 if (sha256(`${ws}/brief.md`) !== wsRep.brief_sha256) throw new Error(`${slot}: brief hash drifted`);
-if (sha256(`${M4}/launch/s-${arm}-prompt.md`) !== wsRep.prompt_sha256) throw new Error(`${slot}: prompt hash drifted`);
+if (sha256(`${M4}/launch/${wsRep.prompt_file}`) !== wsRep.prompt_sha256) throw new Error(`${slot}: prompt hash drifted`);
 if (existsSync(`${ws}/.prax`) && !existsSync(`${pkg}/execution`)) {
   // fresh run must start clean; a resumed packaging pass (execution exists) keeps state
   throw new Error(`${slot}: stale .prax before run`);
@@ -137,10 +137,21 @@ function stageAndMeasure(stageDir, outDir) {
   ], { encoding: "utf8", timeout: 5 * 60_000, env: { ...process.env, MSYS_NO_PATHCONV: "1" } });
   return { exit: r.status, stdout: r.stdout || "", stderr: (r.stderr || "").slice(-400), outDir };
 }
+const CHECK_IDS = ["a11y.contrast", "a11y.focus_order", "a11y.target_size", "layout.overflow", "layout.responsive_collision", "text.truncation", "type.min_projected_size"];
 function parseChecks(stdout) {
   const checks = {};
   for (const m of stdout.matchAll(/^\s*(pass|fail|skipped(?:\s*\([^)]*\))?)\s+([a-z0-9_.]+)\s*$/gm)) {
     checks[m[2]] = m[1];
+  }
+  // prax-measure prints per-check lines only for fail/skipped. When the summary
+  // accounts for all 7 checks and the listed lines account for fail+skipped,
+  // every unlisted id passed — derive explicit pass entries from the full set.
+  const sm = stdout.match(/summary:\s*pass=(\d+)\s+fail=(\d+)\s+skipped=(\d+)/);
+  if (sm) {
+    const listed = Object.keys(checks).length;
+    if (+sm[1] + +sm[2] + +sm[3] === 7 && listed === +sm[2] + +sm[3]) {
+      for (const id of CHECK_IDS) if (!(id in checks)) checks[id] = "pass";
+    }
   }
   return checks;
 }

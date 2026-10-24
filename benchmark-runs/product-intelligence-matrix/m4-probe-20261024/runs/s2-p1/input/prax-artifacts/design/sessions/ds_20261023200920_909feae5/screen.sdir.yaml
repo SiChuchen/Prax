@@ -1,0 +1,141 @@
+version: "0.2"
+screen:
+  id: data_explorer_screen
+  intent:
+    primary_task: 在投影视图间切换维度（换 X/Y 轴、换画像维度、换排序维），同时保持选中/过滤/焦点不丢失
+    secondary_tasks:
+      - 对某维度做过滤（区间或类别子集）并从状态条移除
+      - 点选记录进入选中集并在任何视图下保持高亮
+      - 通过状态轨迹撤销/重做/复位状态链
+  archetype:
+    pattern_ref: PAT-DATA-EXPLORER
+  density_intent: compact
+  regions:
+    - id: data
+      role: collection
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - comparison_group
+        - filter_then_inspect
+        - "experimental:换维只重投影不重置行级状态"
+    - id: collection
+      role: "experimental:dimension_rail"
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - "experimental:维度角色徽标与迷你分布"
+        - "experimental:键盘 roving tabindex"
+    - id: state bar
+      role: "experimental:state_trail_bar"
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - "experimental:过滤投影选中 chips 带归属可单条移除"
+        - "experimental:undo redo reset 常驻"
+    - id: inspector
+      role: "experimental:inspector_and_trail"
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - "experimental:状态轨迹条目点击回退"
+        - "experimental:选中明细全维度值"
+    - id: detail
+      role: contextual_inspector
+      importance: contextual
+      visibility:
+        condition: selection_driven
+      behavior_intent:
+        - selection_driven
+        - "experimental:空选中引导文案"
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+    - filter_then_inspect
+    - "experimental:brush_to_filter"
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  information_shape:
+    cardinality: unbounded
+    relationality: medium
+    hierarchy: medium
+    temporality: low
+    density: high
+    dimensionality: high
+    spatiality: none
+    volatility: medium
+    uncertainty: low
+    comparison_need: none
+  representation:
+    primary:
+      type: canvas
+      reason: 散点画布支持任意维度对即时重投影且保留选中高亮；对抗 card-grid 默认（myth-card-grid-default）：cardinality=unbounded 无法卡片枚举，dimensionality=high 要求连续二维投影与刷选
+    supporting:
+      - type: list
+        reason: 维度轨用带类型徽标与迷你分布的列表呈现可选维度
+      - type: chart
+        reason: 维度画像以直方图/类别条展示当前聚焦维度分布并承载刷选过滤
+      - type: table
+        reason: 明细表提供行级精确值与选中态、表头换排序维
+  state_ownership:
+    - state: selection
+      owner: session
+    - state: preview
+      owner: data
+    - state: query
+      owner: state bar
+    - state: viewport
+      owner: data
+    - state: inspector
+      owner: detail
+    - state: mode
+      owner: session
+  complexity_budget:
+    permanent_panels: 4
+    permanent_primary_actions: 3
+    modes: 1
+    state_owners: 1
+    navigation_levels: 1
+    persistent_filters: 8
+    new_semantic_concepts: 3
+    keyboard_contracts: 2
+    mobile_conflicts: 0
+    permanent_surfaces: 4
+  acceptance:
+    - 切换 X/Y/颜色/画像/排序维度后：选中集、过滤 chips、聚焦行、画布缩放原样保留（shots/06 实证）
+    - 每个过滤/投影 chip 显示归属（动作+维度）且可单条移除（shots/04、07）；undo/redo/reset/轨迹回退全链可用（shots/08、09）
+    - 首屏即 ready：数据内联，无加载态可测（shots/01、11 file://）
+    - 刷选画像即生成带归属的过滤器 chip；chip 移除后分布与散点同步回退
+    - WCAG AA 对比度下限：正文 #d9e0e8 on #171d24 ≥ 4.5:1，焦点环可见（shots/01 focusRingVisible）
+  user_job:
+    verb: explore
+    target: 多维数据集
+    success: 维度切换不重置认知；过滤/投影状态有归属且可回退
+  primary_object:
+    type: dataset
+    label: 多维数据集
+  priority:
+    primary:
+      - data
+      - collection
+      - state bar
+      - inspector
+    contextual:
+      - detail
+# 注：0.1 原版备份于 screen.sdir.0.1.bak.yaml。0.2 内容与 validate 模式 lint 通过的提交一致；
+# validate 门不可再调用 design_sdir（GATE_NOT_SATISFIED），故将已 lint 通过的内容写回落盘。

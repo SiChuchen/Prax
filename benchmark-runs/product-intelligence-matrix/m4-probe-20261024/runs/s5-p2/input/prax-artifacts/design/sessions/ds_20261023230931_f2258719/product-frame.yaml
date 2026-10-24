@@ -1,0 +1,67 @@
+version: "0.2"
+jtbd:
+  verb: explore
+  target: 多维数据（高维数据集）
+  success: 维度切换不重置认知
+primary_object:
+  type: dataset
+  label: 城市观测数据集（240 条记录 × 15 维度）
+task_model:
+  frequency: high
+  reversibility: reversible
+  consequence: low
+  expertise: mixed
+user:
+  primary_role: 数据分析 / 研究型用户（分析多指标数据集的结构）
+  expertise: intermediate
+  familiarity: medium
+goal:
+  primary: 在不丢失已积累认知上下文（选择、过滤、走过的投影路径）的前提下，探索一个高维数据集并逐步形成对数据结构的理解
+tasks:
+  primary: 在同一主屏上对多维数据集做投影探索：切换 X/Y/颜色编码维度、增删过滤，同时保持选中对象与过滤上下文跨维度切换稳定
+  secondary:
+    - 通过投影轨迹/撤销回退到任意先前的过滤或投影状态（状态有归属可回退）
+    - 选中数据记录，查看其全部维度的画像
+    - 在分组维度目录中发现并理解可用维度
+product_objects:
+  - id: obj-dataset
+    user_name: 数据集
+    purpose: 探索对象：一批记录与一组按主题分组的维度
+  - id: obj-record
+    user_name: 数据记录（城市）
+    purpose: 投影中的一个点；可选中并在详情面板查看全维度画像，选中状态跨投影持久
+  - id: obj-dimension
+    user_name: 维度
+    purpose: 主要认知负担来源；可被指派轴/颜色角色、可被过滤，过滤器归属到维度
+  - id: obj-projection
+    user_name: 投影（视图状态）
+    purpose: 轴/编码维度 + 过滤 + 选择的命名快照；在轨迹中可见、可一键回退
+relationships:
+  - id: rel-dim-proj
+    source: obj-dimension
+    target: obj-projection
+    type: assigned_to
+    direction: forward
+    meaning: 维度被指派为投影的 X 轴 / Y 轴 / 颜色编码角色
+    importance: primary
+  - id: rel-filter-dim
+    source: obj-projection
+    target: obj-dimension
+    type: filtered_by
+    direction: forward
+    meaning: 每个过滤器归属并标注其所属维度，随投影状态一起入历史栈
+    importance: primary
+  - id: rel-record-sel
+    source: obj-record
+    target: obj-projection
+    type: selected_in
+    direction: bidirectional
+    meaning: 选中集合属于视图状态，跨维度切换与过滤变更保持
+    importance: supporting
+mental_model_hypothesis:
+  summary: 用户把探索理解为"在同一片点云上换镜头"：数据点与其身份/选中状态是恒定地形，维度切换只是更换投影镜头；过滤器与选择是用户积累的上下文，必须持续可见、归属明确、随时可撤销或沿轨迹回退。
+  confidence: high
+  evidence:
+    - user_requirement
+primary_success_definition: 用户切换 X/Y/颜色维度或增删过滤器后：先前的选中对象保持高亮、过滤链仍完整可见且逐条归属维度、走过的投影可在轨迹中一键回到；全程无需重建任何上下文。
+open_questions: []

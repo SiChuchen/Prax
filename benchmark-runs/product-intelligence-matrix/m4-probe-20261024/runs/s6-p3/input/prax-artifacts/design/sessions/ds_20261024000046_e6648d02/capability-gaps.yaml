@@ -1,0 +1,90 @@
+needs:
+  - id: n1-context-preserving-dimension-switch
+    product_action: 切换 X/Y/颜色维度时不重置选中与镜头（认知上下文）
+    required_experience:
+      - 换维度只重投影中央视图
+      - 选中记录跨切换保持高亮
+      - 活跃过滤/投影芯片跨切换保留
+    capabilities:
+      - central app state with lens_store / selection_store / dimension_assignment_store
+      - re-render only projection_view on dimension switch
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端状态架构即可满足：记录以稳定 id 为键，维度切换只改投影赋值，不动 lens/selection store。
+  - id: n2-owned-revertible-lens
+    product_action: 过滤/投影状态有归属且可回退（单芯片移除/Ctrl+Z 撤销/Reset all）
+    required_experience:
+      - 芯片显示归属（维度+谓词）
+      - 单芯片 ×
+      - 撤销栈
+      - 一键回退
+    capabilities:
+      - typed lens entries {id,kind,owner,dimension,predicate}
+      - chip UI + history stack + reset action
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 本地数据、本地状态，无后端依赖。
+  - id: n3-aggregate-projection
+    product_action: 对无界记录做维度聚合投影（bin/桶分布），选中高亮叠加
+    required_experience:
+      - 聚合条形/分箱视图
+      - 选中高亮叠加
+      - 切换即时重绘（~420 条）
+    capabilities:
+      - binning for numeric dims
+      - groupBy for categorical dims
+      - O(n) aggregation per re-projection
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 420 条 × O(n) 聚合在 1 帧内完成，无需 worker。
+  - id: n4-selection-inspector
+    product_action: 选中记录后查看其全部维度值（跨维度恒等卡）
+    required_experience:
+      - 点击选中
+      - 全维度剖面
+      - 身份跨切换恒定
+    capabilities:
+      - selection-driven contextual inspector region
+      - stable record id
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: PAT-LIST-DETAIL-INSPECTOR 直接实现。
+  - id: n5-instant-first-paint
+    product_action: 首屏加载完成即处于可用状态（初始数据随首屏就绪）
+    required_experience:
+      - 无加载转圈/骨架屏作为可测状态
+      - 首帧即有数据渲染
+    capabilities:
+      - synchronous deterministic seeded generation at script parse
+      - no fetch, no loading state
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 种子化 PRNG 同步生成 ~420 条 × 10 维，脚本解析期完成，先渲染后无任何异步依赖。
+  - id: n6-static-open-no-server
+    product_action: 根路径 index.html 直接静态打开（含 file://），运行时零外部依赖
+    required_experience:
+      - 双击 index.html 即可用
+      - 无网络请求
+    capabilities:
+      - vendored react/react-dom UMD + htm as classic scripts
+      - no module scripts, no CDN at runtime
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: React UMD 构建产物 vendor 进仓库；经典 <script> 避免 file:// 下 ES module CORS 限制。若 vendoring 失败降级 vanilla JS 并如实记录。
+  - id: n7-keyboard-undo
+    product_action: 键盘撤销（Ctrl+Z）撤销最近一次镜头变更
+    required_experience:
+      - Ctrl/Cmd+Z
+      - 焦点不依赖
+    capabilities:
+      - global keydown listener with undoable history
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: document 级监听即可。

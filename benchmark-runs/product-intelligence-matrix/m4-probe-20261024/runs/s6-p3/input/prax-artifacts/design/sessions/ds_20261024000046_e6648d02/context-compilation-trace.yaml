@@ -1,0 +1,39 @@
+version: "0.1"
+session_id: ds_20261024000046_e6648d02
+task_ref: 切换探索维度（换轴/换分面/换聚合维度）并保持选中、过滤与投影状态原样延续，继续观察同一批数据对象
+selected:
+  - ref: product_relationships
+    reason:
+      - rel_dimension_dataset:dimension->dataset
+      - rel_lens_dataset:lens->dataset
+      - rel_selection_record:selection->record
+  - ref: region_relationships
+    reason:
+      - region_rel_data_detail
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-DATA-EXPLORER
+  - ref: unresolved
+    reason:
+      - oq-dataset-domain
+  - ref: corrections
+    reason: []
+  - ref: validation-plan@1
+    reason:
+      - semantic_conformance
+      - state_completeness
+      - product_model_alignment
+      - keyboard
+      - hierarchy_review
+      - representation_decided
+      - state_ownership_declared
+      - acceptance_contract_present
+      - complexity_budget_declared
+      - filter_state
+      - comparison_scan
+      - requirement_alignment
+excluded:
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata

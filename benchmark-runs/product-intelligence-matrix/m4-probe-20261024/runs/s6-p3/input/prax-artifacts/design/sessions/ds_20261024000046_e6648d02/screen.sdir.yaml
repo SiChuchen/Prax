@@ -1,0 +1,180 @@
+version: "0.2"
+screen:
+  id: dimension_explorer_main
+  intent:
+    primary_task: 切换探索维度（换轴/换分面/换聚合维度）并保持选中、过滤与投影状态原样延续，继续观察同一批数据对象
+    secondary_tasks:
+      - 按分类或数值条件过滤记录
+      - 选中并查看单条记录的完整维度值
+      - 移除单个过滤/投影或整体回退到默认状态
+      - 按当前维度读分布与聚合，定位异常/感兴趣区域
+  archetype:
+    pattern_ref: PAT-DATA-EXPLORER
+  density_intent: compact
+  information_shape:
+    cardinality: unbounded
+    relationality: medium
+    hierarchy: medium
+    temporality: low
+    density: high
+    dimensionality: high
+    spatiality: none
+    volatility: medium
+    uncertainty: low
+    comparison_need: none
+  primary_object:
+    type: dataset
+    label: 多维数据集（dataset）
+  user_job:
+    verb: explore
+    target: 多维数据
+    success: 维度切换不重置认知
+  regions:
+    - id: lens_bar
+      role: experimental:active_lens_status
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:单芯片移除、Ctrl+Z 撤销、Reset all 整体回退
+        - experimental:芯片标注归属（维度与谓词）
+        - filter_then_inspect
+    - id: dimension_rail
+      role: experimental:dimension_switcher
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:X/Y/颜色三个维度选择器
+        - experimental:分类/数值维度族分组呈现
+        - experimental:固定位置不随切换移动
+    - id: projection_view
+      role: experimental:data_projection
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:切换维度只重投影本区（bin 聚合承载无界基数）
+        - experimental:选中记录高亮叠加跨切换保持
+        - comparison_group
+        - selection_driven
+    - id: records_table
+      role: collection
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:Top-N 记录表
+        - experimental:点击行选中并与主视图联动高亮
+    - id: inspector
+      role: contextual_inspector
+      importance: primary
+      visibility:
+        condition: selection_driven
+      behavior_intent:
+        - experimental:记录全维度值身份卡跨切换恒定
+        - experimental:空选中时显示引导文案（非错误）
+        - selection_driven
+    - id: status_footer
+      role: experimental:context_summary
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:结果计数（过滤前后）
+        - experimental:dataset 概要
+  relationships:
+    - id: rel_rail_proj
+      source: dimension_rail
+      target: projection_view
+      type: experimental:dimension_switch_reprojects
+    - id: rel_lens_proj
+      source: lens_bar
+      target: projection_view
+      type: experimental:lens_narrows_projection
+    - id: rel_proj_insp
+      source: projection_view
+      target: inspector
+      type: selection_drives_contextual_detail
+    - id: rel_table_proj
+      source: records_table
+      target: projection_view
+      type: experimental:selection_highlight_sync
+  representation:
+    primary:
+      type: chart
+      reason: 维度是镜头，投影视图承载维度切换主表示；聚合层吸收无界基数；density=high+cardinality=unbounded 下以信息墨水直接编码维度投影
+    supporting:
+      - type: table
+        reason: Top-N 记录表提供可点选记录身份与免开条目的数值扫描
+      - type: list
+        reason: 维度栏分组列表承载维度族，选择器常驻
+      - type: form
+        reason: 过滤构建用紧凑内联控件（维度→谓词/范围），不弹模态
+  required_states:
+    - ready
+    - selected
+    - empty
+    - error
+    - loading
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+    - experimental:locate=filter
+    - experimental:inspect=select
+  state_ownership:
+    - state: query
+      owner: lens_bar
+    - state: selection
+      owner: session
+    - state: preview
+      owner: inspector
+    - state: inspector
+      owner: inspector
+    - state: viewport
+      owner: dimension_rail
+    - state: mode
+      owner: session
+  complexity_budget:
+    permanent_panels: 4
+    permanent_primary_actions: 3
+    modes: 1
+    state_owners: 3
+    navigation_levels: 1
+    persistent_filters: 4
+    new_semantic_concepts: 4
+    keyboard_contracts: 1
+    mobile_conflicts: 0
+    permanent_surfaces: 4
+  acceptance:
+    - 切换任意维度后：选中记录保持选中且高亮，检查器内容不变
+    - 切换任意维度后：全部活跃过滤/投影芯片原样保留且计数不变
+    - 每个过滤/投影芯片显示归属（维度与谓词）并可单独移除
+    - Ctrl+Z 撤销上一步镜头变更；Reset all 一键回退到默认镜头
+    - 首屏加载完成即呈现全部数据（无加载态作为可测状态）
+    - 根路径 index.html 直接静态打开，运行时零外部依赖
+  decision_points:
+    - id: dp-rendering
+      question: 投影主视图用 SVG 还是 Canvas 渲染？
+      adapter_may_choose:
+        - svg
+        - canvas
+    - id: dp-binning
+      question: 数值维度分箱策略？
+      adapter_may_choose:
+        - fixed_24_bins
+        - adaptive_by_cardinality
+    - id: dp-chip-overflow
+      question: 镜头芯片过多时的形态？
+      adapter_may_choose:
+        - inline_chips
+        - collapsible_chip_group
+  priority:
+    primary:
+      - projection_view
+      - lens_bar
+      - dimension_rail
+      - inspector
+    contextual:
+      - records_table
+      - status_footer

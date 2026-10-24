@@ -1,0 +1,85 @@
+version: "0.2"
+jtbd:
+  verb: explore
+  target: 多维数据集（高维度性、无界基数）
+  success: 维度切换不重置认知；过滤/投影状态有归属且可回退
+primary_object:
+  type: dataset
+  label: 多维数据集
+task_model:
+  frequency: high
+  reversibility: reversible
+  consequence: low
+  expertise: mixed
+user:
+  primary_role: 数据分析师 / 探索型用户
+  expertise: intermediate
+  familiarity: high
+goal:
+  primary: Explore a multi-dimensional dataset by freely switching projection dimensions while all established cognitive state (selection, filters, focus) persists across switches and every filter/projection state is owned and revertible.
+tasks:
+  primary: 在投影视图间切换维度（换 X/Y 轴、换画像维度、换排序维），同时保持选中/过滤/焦点不丢失
+  secondary:
+    - 对某维度做过滤（区间或类别子集）并从状态条移除
+    - 点选记录进入选中集并在任何视图下保持高亮
+    - 通过状态轨迹撤销/重做/复位状态链
+product_objects:
+  - id: dataset
+    user_name: 数据集
+    purpose: 被探索的固定行集，首屏内联就绪；一切状态附着于它
+  - id: dimension
+    user_name: 维度
+    purpose: 数据集的一个可投影属性（数值/类别/布尔），是切换与认知负担的主体
+  - id: projection
+    user_name: 投影
+    purpose: 当前维度到视图的映射（散点 X/Y/颜色维、画像维度、排序维），可被回退
+  - id: filter
+    user_name: 过滤器
+    purpose: 作用于行集的持久约束，带归属（来源动作+维度），可单条移除
+  - id: selection
+    user_name: 选中集
+    purpose: 用户标记关注的行集合，跨维度切换与跨视图保留
+  - id: state_trail
+    user_name: 状态轨迹
+    purpose: 过滤/投影/选中变更的历史链，支撑撤销/重做/复位（可回退性的载体）
+relationships:
+  - id: rel_dim_proj
+    source: dimension
+    target: projection
+    type: defines_axes_of
+    direction: forward
+    meaning: 投影从维度列表取轴/分箱/颜色映射；换维不换行集
+    condition: 始终
+    importance: primary
+  - id: rel_filter_rows
+    source: filter
+    target: dataset
+    type: restricts_rows_of
+    direction: forward
+    meaning: 过滤器限定参与所有投影与统计的行子集
+    condition: 有激活过滤器时
+    importance: primary
+  - id: rel_sel_rows
+    source: selection
+    target: dataset
+    type: marks_rows_of
+    direction: forward
+    meaning: 选中集指向具体行，投影切换后仍高亮同一批行
+    condition: 始终
+    importance: primary
+  - id: rel_trail_states
+    source: state_trail
+    target: projection
+    type: records_history_of
+    direction: forward
+    meaning: 状态轨迹记录每次过滤/投影/选中变更，支持回退
+    condition: 每次状态变更
+    importance: supporting
+mental_model_hypothesis:
+  summary: “固定行集 + 可换镜头”：数据集是固定的行集合，每个维度是观察它的一个镜头；切换维度只是重新投影同一批行。选中、过滤、焦点都附着在“行/数据集”上而不是附着在某个投影上，因此换镜头不丢认知。过滤/投影状态是一条带归属的历史链，可单条回退。
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: 用户在任意投影视图间切换维度（换 X/Y 轴、换画像维度、换排序维）后：(1) 选中集、过滤条件、聚焦记录原样保留；(2) 状态条上每条过滤/投影状态可见其归属（产生动作+作用维度）并可单独移除；(3) 整个状态链可逐步撤销/重做/一键复位。
+open_questions: []

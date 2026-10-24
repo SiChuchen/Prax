@@ -1,0 +1,121 @@
+session_id: ds_20261024000046_e6648d02
+information_shape:
+  cardinality: unbounded
+  relationality: medium
+  hierarchy: medium
+  temporality: low
+  density: high
+  dimensionality: high
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: chart
+    reason: 维度是镜头，投影视图（可换轴的聚合条形/散点）是承载维度切换的主表示；聚合层吸收无界基数
+  supporting:
+    - type: table
+      reason: Top-N 记录表提供可点选的记录身份，与主视图联动高亮
+    - type: list
+      reason: 维度栏用分组列表承载维度族（分类/数值），选择器常驻
+    - type: form
+      reason: 过滤构建用紧凑内联控件（维度→谓词），不弹模态
+  rejected:
+    - option: map
+      reason: spatiality=none
+    - option: timeline
+      reason: temporality=low
+    - option: graph
+      reason: relationality=medium，非主要负担
+    - option: cards
+      reason: "density=high + cardinality=unbounded 下卡片网格是反模式（anti_pattern: card-grid-for-dense-comparison；myth-card-grid-default）"
+  justification_vs_shape: 针对 myth-card-grid-default 的论证：本格 information_shape 为 dimensionality=high（主认知负担在维度投影）、density=high、cardinality=unbounded、comparison_need=none、spatiality=none——高维度+高密度+无界基数下，卡片网格每个成员都重复支付 chrome 税且无法聚合，故主表示选 chart（可重投影聚合分布图）直接以信息墨水承载维度投影；cardinality=unbounded 由 bin/桶聚合吸收；comparison_need=none → 不做并排对比布局；spatiality=none → 排除 map/canvas；relationality=medium/hierarchy=medium → 以维度栏分组与检查器剖面承载，不升级为 graph。
+primary_structure:
+  pattern: PAT-DATA-EXPLORER
+  rationale:
+    - 路由模式 PAT-DATA-EXPLORER（L2 已检视）为主结构：结构化数据面 + 持久过滤 + 按需明细，与本格 shape 对齐
+    - 组合 PAT-LIST-DETAIL-INSPECTOR（L2 已检视）作检查器：选中驱动的从属面板保持工作区上下文
+    - 维度性高 → 主交互是换维度：固定维度栏 + 可重投影中央 data 主视图（dominant），切换只重绘视图区，其余区域为定向不变量（H-21/P-19）
+    - 基数无界+密度高 → 聚合优先（bin/桶分布）承载无界记录，明细按需进检查器（H-22/H-13）
+    - 验收种子 → 镜头芯片条标注归属，支持单芯片移除、撤销栈与一键重置（有归属且可回退）
+    - 关系性/层级中 → 维度栏分组呈现维度族，检查器展示全维度剖面；不引入 canvas/graph 复杂度
+  confidence: high
+information_hierarchy:
+  primary:
+    - data
+    - data 投影主视图（dominant surface）：dataset 按当前维度聚合的分布图（chart）+ 常驻记录 table；explore 主任务「换维度继续观察」在此发生，选中记录在此高亮
+    - lens 镜头条：活跃过滤/投影芯片（归属标签 + 单独移除 + 全部回退 + 撤销）
+    - dimension 维度切换栏：X/Y/颜色 三个维度选择器，固定位置
+    - selection 选中检查器：所选记录的全部维度值恒等卡，不随切换重排
+  secondary:
+    - 结果计数与 dataset 概要（常驻页脚）
+    - Top-N 记录表（collection 子集，可点选，与主视图联动）
+density:
+  intent: compact
+  strategy:
+    - 固定三区+镜头栏的桌面布局，全部主控件常驻可见
+    - 芯片化状态而非面板化，保持视野稳定
+    - 紧凑排版（小号数字、表格对齐、色带编码维度），密度服务扫描
+    - 主视图聚合渲染（bin/桶）承载无界基数，明细按需展开
+  avoid:
+    - 模态弹窗承载过滤器（切断上下文）
+    - 装饰性 chrome 与加载转圈
+    - 卡片网格（myth-card-grid-default：高密度比较下卡片是反模式）
+major_choices:
+  - id: mc-dataset
+    choice: 数据集选系外行星目录（exoplanet archive 风格，确定性同步生成 ~420 条 × 10 维：分类维度=发现方法/恒星类型/半长轴带，数值维度=半径/质量/轨道周期/恒星温度/距离/发现年份），首屏就绪无加载态
+    rationale: 高维、无界感、数值+分类混合、低时间性、无空间性，与 shape 束对齐；此前开放问题（领域选择）以此关闭
+    confidence: high
+    references:
+      - dataset
+      - dimension
+      - record
+  - id: mc-dimension-switch
+    choice: 维度切换采用固定「维度栏 + X/Y/颜色选择器」，切换只重绘中央投影视图，镜头条/维度栏/检查器/页脚位置与内容不动
+    rationale: 定向不变量+上下文保持（H-21/P-19 两条路由知识）：视野锚点不动，认知地图不重建
+    confidence: high
+    references:
+      - dimension
+      - dataset
+      - selection
+      - lens
+  - id: mc-lens-store
+    choice: 镜头状态单一 store：每条过滤/投影为 {id, kind, owner, dimension, predicate}，UI 为带归属的芯片；单芯片 ×、Ctrl+Z 撤销栈、Reset all 三级回退
+    rationale: 直接落实验收种子「过滤/投影状态有归属且可回退」（Overview-Filter-Detail 的 Filter 层有显式所有者，H-22）
+    confidence: high
+    references:
+      - lens
+      - dimension
+      - record
+  - id: mc-stack
+    choice: 技术栈：vendored React UMD + htm 无构建单页（经典 <script>，file:// 直接打开，运行时零外部依赖）；失败则降级 vanilla 并如实记录
+    rationale: 满足「根路径 index.html 静态直接打开」+「本地无外部服务」；选中/镜头状态变化→响应式重投影成本低
+    confidence: medium
+    references:
+      - dataset
+      - lens
+      - selection
+rejected:
+  - option: PAT-CANVAS-WORKSPACE / 自由画布
+    reason: spatiality=none，拓扑不主导；路由已排除
+  - option: graph/network 视图
+    reason: relationality=medium 且非主认知负担；边噪声破坏高密度扫描
+  - option: timeline 主视图
+    reason: temporality=low，年代仅是普通数值维度
+  - option: 模态过滤器/向导
+    reason: 模态切换重置认知，与成功标准直接冲突
+  - option: 卡片网格 dashboard（myth-card-grid-default 所指默认壳）
+    reason: cardinality=unbounded 且 density=high 时卡片网格无法承载聚合比较；each-card-pays-chrome 税，数据墨水比过低；主表示用 chart 聚合投影而非卡片
+unresolved: []
+complexity_budget:
+  permanent_panels: 4
+  permanent_primary_actions: 3
+  modes: 1
+  state_owners: 3
+  navigation_levels: 1
+  persistent_filters: 4
+  new_semantic_concepts: 4
+  keyboard_contracts: 1
+  mobile_conflicts: 0
+  permanent_surfaces: 4

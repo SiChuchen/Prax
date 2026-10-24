@@ -1,0 +1,69 @@
+version: "0.1"
+session_id: ds_20261023200920_909feae5
+task:
+  surfaces: []
+  primary: 在投影视图间切换维度（换 X/Y 轴、换画像维度、换排序维），同时保持选中/过滤/焦点不丢失
+product_relationships:
+  - id: rel_dim_proj
+    source: dimension
+    target: projection
+    type: defines_axes_of
+    direction: forward
+    meaning: 投影从维度列表取轴/分箱/颜色映射；换维不换行集
+    importance: primary
+  - id: rel_filter_rows
+    source: filter
+    target: dataset
+    type: restricts_rows_of
+    direction: forward
+    meaning: 过滤器限定参与所有投影与统计的行子集
+    importance: primary
+  - id: rel_sel_rows
+    source: selection
+    target: dataset
+    type: marks_rows_of
+    direction: forward
+    meaning: 选中集指向具体行，投影切换后仍高亮同一批行
+    importance: primary
+  - id: rel_trail_states
+    source: state_trail
+    target: projection
+    type: records_history_of
+    direction: forward
+    meaning: 状态轨迹记录每次过滤/投影/选中变更，支持回退
+    importance: supporting
+region_relationships:
+  - id: region_rel_data_detail
+    source: data
+    target: detail
+    type: selection_drives_contextual_detail
+decisions:
+  primary_structure: PAT-DATA-EXPLORER
+  density_intent: compact
+  major_choice_ids:
+    - mc-stack
+    - mc-state-rows
+    - mc-trail
+    - mc-canvas
+must_preserve: []
+regression_points: []
+unresolved:
+  - dataset-theme-unspecified
+  - view-mix-unspecified
+corrections: []
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - filter_state
+    - comparison_scan
+    - requirement_alignment
+  regression_check_ids: []

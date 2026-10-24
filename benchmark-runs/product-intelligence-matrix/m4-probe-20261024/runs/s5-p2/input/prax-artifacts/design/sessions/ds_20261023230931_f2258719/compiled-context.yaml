@@ -1,0 +1,88 @@
+version: "0.1"
+session_id: ds_20261023230931_f2258719
+task:
+  surfaces: []
+  primary: 在同一主屏上对多维数据集做投影探索：切换 X/Y/颜色编码维度、增删过滤，同时保持选中对象与过滤上下文跨维度切换稳定
+product_relationships:
+  - id: rel-dim-proj
+    source: obj-dimension
+    target: obj-projection
+    type: assigned_to
+    direction: forward
+    meaning: 维度被指派为投影的 X 轴 / Y 轴 / 颜色编码角色
+    importance: primary
+  - id: rel-filter-dim
+    source: obj-projection
+    target: obj-dimension
+    type: filtered_by
+    direction: forward
+    meaning: 每个过滤器归属并标注其所属维度，随投影状态一起入历史栈
+    importance: primary
+  - id: rel-record-sel
+    source: obj-record
+    target: obj-projection
+    type: selected_in
+    direction: bidirectional
+    meaning: 选中集合属于视图状态，跨维度切换与过滤变更保持
+    importance: supporting
+region_relationships:
+  - id: region_rel_data_detail
+    source: data
+    target: detail
+    type: selection_drives_contextual_detail
+decisions:
+  primary_structure: PAT-DATA-EXPLORER
+  density_intent: compact
+  major_choice_ids:
+    - choice-preserve-context
+    - choice-attributed-reversible-state
+    - choice-synthetic-dataset
+    - choice-vanilla-static
+    - choice-a11y-floor
+must_preserve: []
+regression_points: []
+unresolved:
+  - uq-react-brief-vs-vanilla
+corrections: []
+representation_portfolio:
+  primary:
+    type: chart
+    reason: 维度性高的核心交互是重投影：散点图把任意两维+颜色维映射到同一恒定点云上，是"维度切换不重置认知"最直接的载体
+  supporting:
+    - type: list
+      reason: 维度目录：15 个维度按 4 主题分组（层级性中的落点），行内完成角色指派与过滤入口
+    - type: cards
+      reason: 检查器：选中记录的全维度画像卡，跨投影持久
+    - type: list
+      reason: 投影轨迹：历史快照纵向列表，每条命名归属，点击回退
+  rejected:
+    - option: table
+      reason: 偏线性逐行比较，弱于呈现非线性维度关系，且比较需求=none
+    - option: map
+      reason: 空间性=none，地理隐喻引入无关认知负担
+    - option: tree
+      reason: 层级性仅中，维度分组以列表分组即可
+state_ownership:
+  - state: selection
+    owner: data
+  - state: preview
+    owner: session
+acceptance:
+  - 用户切换 X/Y/颜色维度或增删过滤器后：先前的选中对象保持高亮、过滤链仍完整可见且逐条归属维度、走过的投影可在轨迹中一键回到；全程无需重建任何上下文。
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - filter_state
+    - comparison_scan
+    - destructive_recovery
+    - requirement_alignment
+  regression_check_ids: []

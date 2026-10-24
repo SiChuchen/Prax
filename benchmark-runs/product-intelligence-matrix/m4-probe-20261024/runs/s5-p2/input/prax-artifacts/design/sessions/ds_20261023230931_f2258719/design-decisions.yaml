@@ -1,0 +1,119 @@
+session_id: ds_20261023230931_f2258719
+version: "0.2"
+information_shape:
+  cardinality: unbounded
+  relationality: medium
+  hierarchy: medium
+  temporality: low
+  density: high
+  dimensionality: high
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: chart
+    reason: 维度性高的核心交互是重投影：散点图把任意两维+颜色维映射到同一恒定点云上，是"维度切换不重置认知"最直接的载体
+  supporting:
+    - type: list
+      reason: 维度目录：15 个维度按 4 主题分组（层级性中的落点），行内完成角色指派与过滤入口
+    - type: cards
+      reason: 检查器：选中记录的全维度画像卡，跨投影持久
+    - type: list
+      reason: 投影轨迹：历史快照纵向列表，每条命名归属，点击回退
+  rejected:
+    - option: table
+      reason: 偏线性逐行比较，弱于呈现非线性维度关系，且比较需求=none
+    - option: map
+      reason: 空间性=none，地理隐喻引入无关认知负担
+    - option: tree
+      reason: 层级性仅中，维度分组以列表分组即可
+primary_structure:
+  pattern: PAT-DATA-EXPLORER
+  rationale:
+    - 探索的主交互是重投影：散点总览让任意两维×颜色编码组成同一片恒定点云，"换镜头不换地形"（H-22 Overview-Filter-Detail 的总览层）
+    - 持久过滤与按需详情是 PAT-DATA-EXPLORER 契约的核心（persistent narrowing + detail on demand）
+    - 叠加路由返回的 PAT-LIST-DETAIL-INSPECTOR 为辅助区：检查器绑定显式选择，选中记录画像跨投影持久，是认知锚点（H-19/H-21）
+    - 拒绝 table 为主：非线性关系弱（pattern tradeoff）且比较需求=none；拒绝 map：空间性=none
+  confidence: high
+information_hierarchy:
+  primary:
+    - data
+    - dimension_catalog 维度目录（按主题分组；行内指派轴/颜色角色、开启过滤）
+    - state_bar 状态条（过滤/选择/投影的归属芯片 + 撤销/重做）
+  secondary:
+    - 选中记录画像（Contextual Inspector，跨投影持久）
+    - 投影轨迹（命名快照，点击回退）
+    - 颜色图例（含被过滤态）
+density:
+  intent: compact
+  strategy:
+    - 15 个维度按 4 主题分组收纳于左栏目录，行内完成角色指派与过滤
+    - 单一 data 面承载全部 240 点（紧凑散点，H-13 Structured Density）
+    - 状态条以紧凑芯片逐条归属过滤/选择（P-22：控件弱于信息）
+    - 检查器以紧凑画像列呈现选中记录全维度
+  avoid:
+    - "卡片网格（anti-pattern: card-grid-for-dense-comparison）"
+    - 装饰性 chrome / 无信息图表
+    - 8-12px 小字号与灰-300/400 文本（H-23）
+major_choices:
+  - id: choice-preserve-context
+    choice: 切换 X/Y/颜色维度只改变投影映射，selection、filters、历史栈全部保持；被选中点在新投影中继续高亮并带标签
+    rationale: H-21 Orientation Invariants（稳定锚点降低工作记忆负担）+ P-19 Preserve Context；直接实现成功标准"维度切换不重置认知"
+    confidence: high
+    references:
+      - obj-record
+      - obj-projection
+      - obj-dimension
+  - id: choice-attributed-reversible-state
+    choice: 每个过滤器芯片标注所属维度（归属），视图状态变更加入历史栈，支持撤销/重做与投影轨迹点击回退
+    rationale: 验收种子"过滤/投影状态有归属且可回退"的直接落实；轨迹条目命名到维度角色（如 Y→幸福指数）
+    confidence: high
+    references:
+      - obj-projection
+      - obj-dimension
+  - id: choice-synthetic-dataset
+    choice: 合成"城市观测集"240 记录 × 15 维度（12 数值 + 3 分类），维度间有受控相关性，构建时内联为 data.js
+    rationale: 满足首屏即就绪（无加载态）与本地静态运行；合成数据避免真实数据失实，受控相关使探索有真实结构可发现
+    confidence: high
+    references:
+      - obj-dataset
+      - obj-dimension
+  - id: choice-vanilla-static
+    choice: 原生 HTML/CSS/JS + SVG，无构建步骤，根路径 index.html 直接静态打开
+    rationale: 冻结交付约束"能直接静态打开"优先；file:// 下 ES module 不可用，故用经典 script；React 组件模型以 vanilla 状态-渲染分层镜像
+    confidence: high
+    references:
+      - obj-dataset
+  - id: choice-a11y-floor
+    choice: 散点数据标记以透明描边把命中区扩到 ≥24px 直径；所有真实控件（按钮/选择器/芯片）≥24×24、文本 ≥12px、对比 ≥4.5:1、焦点可见
+    rationale: H-23：数据标记不是控件，但命中扩展可兼顾；控件类目标严格执行四项底线
+    confidence: high
+    references:
+      - obj-record
+rejected:
+  - option: PAT-LIST-DETAIL（纯列表-详情为主结构）
+    reason: 集合浏览型；维度切换/重投影才是本格主要认知动作，散点总览比列表更适合承载维度性=high
+  - option: table
+    reason: 偏线性逐行比较，弱于呈现非线性维度关系（pattern contract tradeoff），且比较需求=none
+  - option: map
+    reason: 信息形状空间性=none，地理隐喻引入无关认知负担
+  - option: tree
+    reason: 层级性仅中（维度分组），作为目录列表的分组即可，不需要树为主结构
+unresolved:
+  - id: uq-react-brief-vs-vanilla
+    impact: low
+    affects:
+      - realization.framework
+complexity_budget:
+  permanent_panels: 3
+  permanent_primary_actions: 4
+  modes: 0
+  state_owners: 4
+  navigation_levels: 1
+  persistent_filters: 15
+  new_semantic_concepts: 3
+  keyboard_contracts: 2
+  mobile_conflicts: 0
+  permanent_surfaces: 4

@@ -1,0 +1,262 @@
+plan_revision: 1
+evidence:
+  submitted_by: Claude execution arm (GLM via Claude Agent SDK)
+  collected_at: 2026-10-24T02:10:00Z
+  items:
+    - check_id: product_model_alignment
+      outcome: pass
+      source: headless Edge (CDP) real browser session against file:// deliverable
+      notes: 用户可见结构与语言保持 Product Frame：数据集/记录/维度/透镜/过滤器/选区/状态日志全部以用户语言呈现（透镜 pill、足迹 chips、状态日志条目）。透镜-维度 projects_by、过滤器 narrows、日志 snapshots、选区 marks 关系在截图 03/08 可见。全部 13 条断言 PASS、0 未捕获异常。
+      artifact_refs:
+        - validation-evidence/run-log.txt
+        - validation-evidence/01-initial-ready.png
+        - validation-evidence/03-after-lens-switch.png
+      measurement_receipt: validation-evidence/run-log.txt
+    - check_id: keyboard
+      outcome: pass
+      source: headless Edge (CDP) Input.dispatchKeyEvent (real input events)
+      notes: CDP Input.dispatchKeyEvent 真实键盘事件：] 切换透镜（S4 lens=area）、Ctrl+Z 撤销（S5 回到人均GDP）；[ 为同契约对称；表格行 tabindex+Enter 选中；过滤器为原生控件；:focus-visible 轮廓。
+      artifact_refs:
+        - validation-evidence/04-keyboard-lens.png
+        - validation-evidence/05-after-undo.png
+        - validation-evidence/run-log.txt
+      measurement_receipt: validation-evidence/run-log.txt
+    - check_id: hierarchy_review
+      outcome: pass
+      source: screenshot review against SDIR regions/priority
+      notes: 截图核对：record-table（dominant）与 lens-stage（primary）居中占主视觉，dim-rail/inspector（primary）两侧，journal/filter-bar/header（supporting/contextual）辅助；无装饰 chrome 争夺注意力。
+      artifact_refs:
+        - validation-evidence/01-initial-ready.png
+        - validation-evidence/03-after-lens-switch.png
+      measurement_receipt: validation-evidence/01-initial-ready.png
+    - check_id: filter_state
+      outcome: pass
+      source: headless Edge (CDP) real browser session
+      notes: 活动过滤器与结果状态显式呈现：chips 可逐个移除/清除全部、头部实时计数（共/可见/已选）、每条状态日志记录动作后可见数（归属）、空态专用提示；恢复任一条目还原过滤/投影/选区全量状态（S8）。断言 S2 chips=1 visible=118、S6 搜索入日志、S7 空态 visible=0。
+      artifact_refs:
+        - validation-evidence/02-selection-filter.png
+        - validation-evidence/06-search.png
+        - validation-evidence/07-empty-state.png
+        - validation-evidence/08-restored-from-journal.png
+      measurement_receipt: validation-evidence/run-log.txt
+    - check_id: comparison_scan
+      outcome: pass
+      source: headless Edge (CDP) real browser session + dataviz palette validator
+      notes: 断言 S3：透镜列表头带排序指示（th-sorted='人均GDP ·透镜'）且内嵌全距条逐行可见。可比值无需打开条目即可扫读：记录表每行含透镜维度内嵌全距条 + 固定对比列；检查器并列单条记录全部 14 维度全距条；图表悬停提示给出精确值。已知折中如实记录：着色维度限定为两个 3 值分类（发展带/海陆属性），因全对 CVD 校验色板的散点 3 系列上限（dataviz validator all-pairs 全部 PASS，aqua 对比度 WARN 已由图例+表格视图+悬停提示缓解）；大区（6 值）保留为筛选维度。
+      artifact_refs:
+        - validation-evidence/01-initial-ready.png
+        - validation-evidence/03-after-lens-switch.png
+      measurement_receipt: validation-evidence/run-log.txt
+    - check_id: requirement_alignment
+      outcome: pass
+      source: headless Edge (CDP) real browser session against file:// deliverable
+      notes: 逐条对确认复述：(1) 维度切换不重置认知 — S3 切换后选区2/锚点77/过滤器1/日志/足迹全保持；(2) 过滤/投影状态有归属且可回退 — 每动作具名入日志、可恢复（S8 pointerSeq=2）可撤销（S5）；(3) 首屏即用 — S1 数据内联同步渲染即 ready 无加载态；(4) 静态单页 file:// 直开、零外部请求、零未捕获异常。
+      artifact_refs:
+        - validation-evidence/01-initial-ready.png
+        - validation-evidence/03-after-lens-switch.png
+        - validation-evidence/08-restored-from-journal.png
+        - validation-evidence/run-log.txt
+      measurement_receipt: validation-evidence/run-log.txt
+    - check_id: state_completeness
+      outcome: pass
+      source: headless Edge (CDP) real browser session
+      notes: ready（S1 首屏 visible=420）、empty（S7 空态提示+清除入口）、selected（S2/S3 行高亮+计数）、error（window error → 可见 banner，全程 0 异常）均存在；loading 已声明但按简报要求（不得以加载态作为可测状态）因数据内联同步渲染永不出现。
+      artifact_refs:
+        - validation-evidence/run-log.txt
+        - validation-evidence/07-empty-state.png
+      measurement_receipt: validation-evidence/run-log.txt
+evaluation:
+  status: BLOCK
+  checks:
+    - id: semantic_conformance
+      label: Semantic conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR is valid, semantic, and aligned to the approved pattern.
+      evidence_required: false
+    - id: state_completeness
+      label: State completeness
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Required loading, empty, ready, and error states exist.
+      evidence_required: false
+    - id: product_model_alignment
+      label: Product model alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: User-facing structure and language preserve the Product Frame.
+      evidence_required: true
+    - id: keyboard
+      label: Keyboard operability
+      kind: empirical
+      profile: keyboard_accessibility
+      facet: behavioral
+      requirement: Primary work and selection are operable with keyboard and visible focus.
+      evidence_required: true
+    - id: hierarchy_review
+      label: Hierarchy review
+      kind: assistive
+      profile: semantic_integrity
+      facet: visual_hierarchy
+      requirement: Visual prominence follows SDIR importance rather than implementation convenience.
+      evidence_required: true
+    - id: representation_decided
+      label: Representation decided
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares representation.primary with a non-empty reason.
+      evidence_required: false
+    - id: state_ownership_declared
+      label: State ownership declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: Selection and preview states both have declared owners.
+      evidence_required: false
+    - id: acceptance_contract_present
+      label: Acceptance contract present
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 carries at least one acceptance criterion.
+      evidence_required: false
+    - id: complexity_budget_declared
+      label: Complexity budget declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      evidence_required: false
+    - id: filter_state
+      label: Filter state
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Active filters and result state are represented explicitly.
+      evidence_required: true
+    - id: comparison_scan
+      label: Comparison scan
+      kind: empirical
+      profile: state_coverage
+      facet: behavioral
+      requirement: Comparable values can be scanned without opening every item.
+      evidence_required: true
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+  findings:
+    - check_id: semantic_conformance
+      kind: deterministic
+      outcome: pass
+      message: SDIR is valid, semantic, and aligned to the approved pattern.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_completeness
+      kind: deterministic
+      outcome: pass
+      message: Required loading, empty, ready, and error states exist.
+      source: prax-validator
+      provenance: measured
+    - check_id: representation_decided
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares representation.primary with a non-empty reason.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_ownership_declared
+      kind: deterministic
+      outcome: fail
+      message: "0.2 session SDIR does not satisfy 'state_ownership_declared': Selection and preview states both have declared owners."
+      source: prax-validator
+      provenance: measured
+    - check_id: acceptance_contract_present
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 carries at least one acceptance criterion.
+      source: prax-validator
+      provenance: measured
+    - check_id: complexity_budget_declared
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      source: prax-validator
+      provenance: measured
+    - check_id: product_model_alignment
+      kind: assistive
+      outcome: pass
+      message: 用户可见结构与语言保持 Product Frame：数据集/记录/维度/透镜/过滤器/选区/状态日志全部以用户语言呈现（透镜 pill、足迹 chips、状态日志条目）。透镜-维度 projects_by、过滤器 narrows、日志 snapshots、选区 marks 关系在截图 03/08 可见。全部 13 条断言 PASS、0 未捕获异常。
+      source: headless Edge (CDP) real browser session against file:// deliverable
+      provenance: attested
+    - check_id: keyboard
+      kind: empirical
+      outcome: pass
+      message: CDP Input.dispatchKeyEvent 真实键盘事件：] 切换透镜（S4 lens=area）、Ctrl+Z 撤销（S5 回到人均GDP）；[ 为同契约对称；表格行 tabindex+Enter 选中；过滤器为原生控件；:focus-visible 轮廓。
+      source: headless Edge (CDP) Input.dispatchKeyEvent (real input events)
+      provenance: attested
+    - check_id: hierarchy_review
+      kind: assistive
+      outcome: pass
+      message: 截图核对：record-table（dominant）与 lens-stage（primary）居中占主视觉，dim-rail/inspector（primary）两侧，journal/filter-bar/header（supporting/contextual）辅助；无装饰 chrome 争夺注意力。
+      source: screenshot review against SDIR regions/priority
+      provenance: attested
+    - check_id: filter_state
+      kind: deterministic
+      outcome: pass
+      message: 活动过滤器与结果状态显式呈现：chips 可逐个移除/清除全部、头部实时计数（共/可见/已选）、每条状态日志记录动作后可见数（归属）、空态专用提示；恢复任一条目还原过滤/投影/选区全量状态（S8）。断言 S2 chips=1 visible=118、S6 搜索入日志、S7 空态 visible=0。
+      source: headless Edge (CDP) real browser session
+      provenance: attested
+    - check_id: comparison_scan
+      kind: empirical
+      outcome: pass
+      message: 断言 S3：透镜列表头带排序指示（th-sorted='人均GDP ·透镜'）且内嵌全距条逐行可见。可比值无需打开条目即可扫读：记录表每行含透镜维度内嵌全距条 + 固定对比列；检查器并列单条记录全部 14 维度全距条；图表悬停提示给出精确值。已知折中如实记录：着色维度限定为两个 3 值分类（发展带/海陆属性），因全对 CVD 校验色板的散点 3 系列上限（dataviz validator all-pairs 全部 PASS，aqua 对比度 WARN 已由图例+表格视图+悬停提示缓解）；大区（6 值）保留为筛选维度。
+      source: headless Edge (CDP) real browser session + dataviz palette validator
+      provenance: attested
+    - check_id: requirement_alignment
+      kind: assistive
+      outcome: pass
+      message: 逐条对确认复述：(1) 维度切换不重置认知 — S3 切换后选区2/锚点77/过滤器1/日志/足迹全保持；(2) 过滤/投影状态有归属且可回退 — 每动作具名入日志、可恢复（S8 pointerSeq=2）可撤销（S5）；(3) 首屏即用 — S1 数据内联同步渲染即 ready 无加载态；(4) 静态单页 file:// 直开、零外部请求、零未捕获异常。
+      source: headless Edge (CDP) real browser session against file:// deliverable
+      provenance: attested
+  missing_evidence:
+    - keyboard
+  warnings: []
+  codes:
+    - MEASUREMENT_RECEIPT_INVALID
+    - MEASUREMENT_RECEIPT_MISSING
+  readiness:
+    deterministic_passed: false
+    measurement:
+      receipt_ref: null
+      binding:
+        validation-evidence/run-log.txt: invalid
+        validation-evidence/01-initial-ready.png: invalid
+      error_failures_open: 0
+      warning_dispositions: []
+    convergence:
+      stalled: false
+      unresolved: []
+    evidence_current: false
+    claims:
+      measured:
+        - semantic_conformance
+        - state_completeness
+        - representation_decided
+        - state_ownership_declared
+        - acceptance_contract_present
+        - complexity_budget_declared
+      attested:
+        - product_model_alignment
+        - keyboard
+        - hierarchy_review
+        - filter_state
+        - comparison_scan
+        - requirement_alignment
+      skipped: []

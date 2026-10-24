@@ -1,0 +1,340 @@
+{
+  "receipt_version": "0.2",
+  "tool": {
+    "name": "prax-measure",
+    "version": "0.2.0"
+  },
+  "target": {
+    "app_root": "E:\\codex-prj\\ab-worktrees\\pi-matrix-m4\\s3-p1",
+    "base_url": "http://127.0.0.1:10967/",
+    "build_ref": null
+  },
+  "run_at": "2026-10-23T21:41:29.127Z",
+  "viewport_matrix": [
+    {
+      "width": 1280,
+      "height": 860
+    }
+  ],
+  "checks": [
+    {
+      "id": "layout.overflow",
+      "status": "pass",
+      "severity": "error",
+      "measured": {
+        "scroll_width": 1280,
+        "inner_width": 1280,
+        "overflow_px": 0,
+        "element_overflows": 0,
+        "flagged_elements": [],
+        "viewport": "1280x860"
+      },
+      "threshold": {
+        "max_overflow_px": 0,
+        "element_overflow_tolerance_px": 1
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "layout.responsive_collision",
+      "status": "pass",
+      "severity": "error",
+      "measured": {
+        "collisions": 0,
+        "pairs": [],
+        "interactive_elements": 34,
+        "viewport": "1280x860"
+      },
+      "threshold": {
+        "max_collisions": 0
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "text.truncation",
+      "status": "pass",
+      "severity": "error",
+      "measured": {
+        "truncated": 0,
+        "elements": [],
+        "viewport": "1280x860"
+      },
+      "threshold": {
+        "max_truncated": 0
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "a11y.contrast",
+      "status": "fail",
+      "severity": "error",
+      "subject": "span; button#undoBtn; button#redoBtn; button#baseBtn; span; span; span; span",
+      "measured": {
+        "failing": 8,
+        "pairs": [
+          {
+            "selector": "span",
+            "ratio": 3.68,
+            "required": 4.5,
+            "font_px": 12.5,
+            "bold": false,
+            "foreground": "rgb(207, 230, 243)",
+            "background": "rgb(54,126,122)"
+          },
+          {
+            "selector": "button#undoBtn",
+            "ratio": 2.69,
+            "required": 4.5,
+            "font_px": 13,
+            "bold": true,
+            "foreground": "rgb(217, 226, 236)",
+            "background": "rgb(28,38,50)"
+          },
+          {
+            "selector": "button#redoBtn",
+            "ratio": 2.69,
+            "required": 4.5,
+            "font_px": 13,
+            "bold": true,
+            "foreground": "rgb(217, 226, 236)",
+            "background": "rgb(28,38,50)"
+          },
+          {
+            "selector": "button#baseBtn",
+            "ratio": 2.69,
+            "required": 4.5,
+            "font_px": 13,
+            "bold": true,
+            "foreground": "rgb(217, 226, 236)",
+            "background": "rgb(28,38,50)"
+          },
+          {
+            "selector": "span",
+            "ratio": 2.89,
+            "required": 4.5,
+            "font_px": 10,
+            "bold": false,
+            "foreground": "rgb(134, 149, 166)",
+            "background": "rgb(241,250,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.24,
+            "required": 4.5,
+            "font_px": 11.5,
+            "bold": false,
+            "foreground": "rgb(217, 226, 236)",
+            "background": "rgb(241,250,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 2.89,
+            "required": 4.5,
+            "font_px": 10,
+            "bold": false,
+            "foreground": "rgb(134, 149, 166)",
+            "background": "rgb(241,250,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 2.89,
+            "required": 4.5,
+            "font_px": 10,
+            "bold": false,
+            "foreground": "rgb(134, 149, 166)",
+            "background": "rgb(241,250,255)"
+          }
+        ],
+        "viewport": "1280x860"
+      },
+      "threshold": {
+        "normal_min_ratio": 4.5,
+        "large_min_ratio": 3
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/7afb381e-879f-4309-8476-e523475f54fd/viewport-0/a11y.contrast/contrast-1280x860.png",
+          "sha256": "c815f6ea5310cae2c122f0d27fa1d4d2c0ee16280c0b74ba555302db3be37e75"
+        }
+      ],
+      "supported_fixes": [
+        "darken the failing text color (or lighten it against a dark background) until the measured ratio meets the required minimum"
+      ]
+    },
+    {
+      "id": "a11y.focus_order",
+      "status": "fail",
+      "severity": "error",
+      "subject": "tab order contradicts visual order: select#measureSel → button; tab order contradicts visual order: button → div",
+      "measured": {
+        "stops": 32,
+        "sequence": [
+          "select#measureSel",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "div"
+        ],
+        "missing_indicators": [],
+        "inversions": [
+          {
+            "from": "select#measureSel",
+            "to": "button"
+          },
+          {
+            "from": "button",
+            "to": "div"
+          }
+        ],
+        "viewport": "1280x860"
+      },
+      "threshold": {
+        "max_missing_focus_indicators": 0,
+        "max_order_inversions": 0
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/7afb381e-879f-4309-8476-e523475f54fd/viewport-0/a11y.focus_order/focus-order-1280x860.png",
+          "sha256": "3bf3a81dbab49449126c1b3668cde4cbf40cbe163d1b2bb4d64b319810ee6c6b"
+        }
+      ],
+      "supported_fixes": [
+        "restore a visible focus indicator (outline or box-shadow) on the listed elements and order the tab sequence to follow the visual reading order (positive tabindex or DOM reordering)"
+      ]
+    },
+    {
+      "id": "a11y.target_size",
+      "status": "pass",
+      "severity": "error",
+      "measured": {
+        "undersized": 0,
+        "elements": [],
+        "viewport": "1280x860"
+      },
+      "threshold": {
+        "min_target_px": 24
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "type.min_projected_size",
+      "status": "fail",
+      "severity": "warning",
+      "subject": "span; span; th; th; th; th; th; th; th; th; th; th; td; th; td; th; td; th; td; th; td; th; td; th; td; th; td; th; td; td; td; td; td; td; td; td",
+      "measured": {
+        "min_font_px": 11,
+        "undersized": 36,
+        "elements": [
+          "span",
+          "span",
+          "th",
+          "th",
+          "th",
+          "th",
+          "th",
+          "th",
+          "th",
+          "th",
+          "th",
+          "th",
+          "td",
+          "th",
+          "td",
+          "th",
+          "td",
+          "th",
+          "td",
+          "th",
+          "td",
+          "th",
+          "td",
+          "th",
+          "td",
+          "th",
+          "td",
+          "th",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td"
+        ],
+        "viewport": "1280x860"
+      },
+      "threshold": {
+        "min_projected_px": 12
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/7afb381e-879f-4309-8476-e523475f54fd/viewport-0/type.min_projected_size/min-projected-size-1280x860.png",
+          "sha256": "c815f6ea5310cae2c122f0d27fa1d4d2c0ee16280c0b74ba555302db3be37e75"
+        }
+      ],
+      "supported_fixes": [
+        "raise the listed primary-content text to at least 12px, or declare a density intent that justifies the smaller projection"
+      ]
+    }
+  ],
+  "summary": {
+    "pass": 4,
+    "fail": 3,
+    "skipped": 0,
+    "warnings": 1
+  },
+  "binding": {
+    "run_id": "7afb381e-879f-4309-8476-e523475f54fd",
+    "entry": "/index.html",
+    "scenario": "explore-axis-switch-cognition-preservation",
+    "implementation": {
+      "root": "E:\\codex-prj\\ab-worktrees\\pi-matrix-m4\\s3-p1",
+      "digest": "652392a6bf5184b7b5d4cdf9066b04122367d444e5ce9743aa51df4ba0343f57",
+      "kind": "static_tree"
+    },
+    "session_id": "ds_20261023205741_2a9a445c",
+    "contract_digests": {
+      "screen.sdir.yaml": "05c0a8b0007a99c39d65d90a84280c2889f72521b7dbb0e52962522b97ca69a5",
+      "sdir-delta.yaml": null,
+      "implementation-brief.yaml": "61e5ab9febfde4a30c388203b4fd42836dcdfc7a29f9493e9bc7cc8d1d3f0c87"
+    }
+  },
+  "target_validation": {
+    "status": "valid",
+    "issues": [],
+    "readiness": "selector",
+    "ready_selector": ".heat"
+  }
+}

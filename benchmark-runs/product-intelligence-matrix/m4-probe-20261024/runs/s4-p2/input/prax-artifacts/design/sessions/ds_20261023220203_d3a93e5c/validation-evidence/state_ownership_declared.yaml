@@ -1,0 +1,14 @@
+version: "1"
+check_id: state_ownership_declared
+outcome: pass
+kind: deterministic
+collected_at: "2026-10-23T22:38:00Z"
+executor: "Claude (GLM) execution arm, cell-j13-s10"
+environment: "headless Chrome --headless=new, 1680x1050, file:/// index.html, Windows 10"
+method: "SDIR 0.2 field audit (design_sdir validate=PASS)"
+observations:
+  - "state_ownership declared: selection->data, query->filter_rail, viewport->dimension_controls, inspector->detail (preview->session added by generator)"
+  - "Implementation matches: axis pickers own projection binding, filter rail owns query predicates, canvas owns selection"
+artifacts:
+    - path: evidence/evidence.json
+      sha256: "93467db773d53127a5ebc511cedebbae7098e8fbeb5b4b247b459da791af4cb0"

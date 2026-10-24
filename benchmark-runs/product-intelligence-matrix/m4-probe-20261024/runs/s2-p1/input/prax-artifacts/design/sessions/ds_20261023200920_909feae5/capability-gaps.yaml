@@ -1,0 +1,85 @@
+needs:
+  - id: n1-dim-switch-keeps-state
+    product_action: 切换投影维度（X/Y/颜色/画像/排序）且选中/过滤/焦点跨切换保留
+    required_experience:
+      - 换维只重投影，<16ms 重绘
+      - 换维前后选中高亮与 chips 完全一致
+    capabilities:
+      - 行级状态模型：selection/filter/focus 挂在 dataset 行而非视图
+      - 单 app store + trail 快照栈
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: 纯前端单 store：projection 配置与 row 级状态分离为两个子树，换维只写 projection 子树
+  - id: n2-state-provenance-removal
+    product_action: 每条过滤/投影状态显示归属（动作+维度）且可单条移除
+    required_experience:
+      - chip 标签 = 动作+维度+影响行数
+      - 移除单 chip 后其余状态不变
+    capabilities:
+      - 状态对象 {scope, dim, action, at} 携带归属元数据
+      - chips 与 trail 双视图渲染同一状态链
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: 状态链渲染为 chips 与 trail 两个同源视图；单条移除 = 从链中摘除该状态对象
+  - id: n3-undo-redo-reset
+    product_action: undo/redo/reset 整链回退状态
+    required_experience:
+      - Ctrl+Z / Ctrl+Y / 按钮三通道
+      - 禁用态明确
+    capabilities:
+      - 不可变状态快照 + 指针回退
+      - reset 回到初始快照
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: trail 本身即快照栈，无需额外结构
+  - id: n4-first-screen-ready
+    product_action: 首屏即用：480×10 数据内联，无加载态
+    required_experience:
+      - DOMContentLoaded 后 0 个网络请求
+      - 无 spinner/skeleton
+    capabilities:
+      - JS 常量数据集随脚本加载
+      - 同步初始化后首帧即 ready
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: vanilla 脚本同步执行；数据集为生成器输出内联成 const
+  - id: n5-static-open
+    product_action: 根路径 index.html 直接静态打开（file:// 与 http:// 均可）
+    required_experience:
+      - 双击即开
+      - 零构建零请求
+    capabilities:
+      - 经典 <script> 串联（不用 ES module，规避 file:// CORS）
+      - 无外部 CDN/字体依赖
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 全部资源相对路径 + 经典脚本；canvas 自绘避免库依赖
+  - id: n6-canvas-brushing
+    product_action: scatter 框选与画像直方图区间拖刷
+    required_experience:
+      - 拖刷实时预览，松手生成 chip
+      - 命中精度对 480 行足够
+    capabilities:
+      - canvas 2D + pointer events
+      - 直方图分箱即命中区
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: pointerdown/move/up 手写刷选；无外部图表库
+  - id: n7-keyboard
+    product_action: 键盘可达：undo/redo/reset、维度轨方向键+回车换维
+    required_experience:
+      - 焦点环可见
+      - 快捷键不与浏览器冲突
+    capabilities:
+      - document keydown 绑定
+      - focus-visible 样式
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: DOM 原生键盘事件 + roving tabindex

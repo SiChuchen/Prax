@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ASTROLABE·13 · 维度星表探索台</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div class="brand">
+    <span class="logo">◈</span>
+    <div>
+      <h1>ASTROLABE·13 <span>维度星表探索台</span></h1>
+      <p>explore × dimensional-space · cell-j13-s10 · 巡天星表 <b id="hdrTotal">—</b> 样本 / <b>13</b> 维度 · 轴域固定，切换投影不重置认知</p>
+    </div>
+  </div>
+  <div class="hdr-actions">
+    <button id="undoBtn" title="回退上一步 (Ctrl+Z)">↶ 回退</button>
+    <button id="redoBtn" title="重做 (Ctrl+Y)">↷ 重做</button>
+    <button id="resetBtn" title="恢复初始状态">⟲ 重置全部</button>
+  </div>
+</header>
+
+<main id="main">
+  <aside id="dimPanel">
+    <div class="panel-title">维度 <span class="hint">点击切换投影</span></div>
+    <div id="dimList"></div>
+  </aside>
+
+  <section id="center">
+    <div id="chipsBar">
+      <div class="panel-title">状态归属 <span class="hint">每项筛选 / 投影都记录来源，可单独移除或整体回退</span></div>
+      <div id="chips"></div>
+    </div>
+
+    <div id="chartWrap">
+      <div id="chartHead">
+        <div id="projTitle"></div>
+        <div id="legend"></div>
+        <label class="colorCtl">着色维度
+          <select id="colorSel"></select>
+        </label>
+      </div>
+      <div id="canvasBox">
+        <canvas id="cv"></canvas>
+        <div id="tooltip"></div>
+      </div>
+    </div>
+
+    <div id="tray">
+      <div class="panel-title">代表样本 <span class="hint">随筛选联动 · 确定性抽取 · 点击查看完整记录</span><span id="trayCount" class="hint"></span></div>
+      <div id="trayCards"></div>
+    </div>
+  </section>
+
+  <aside id="histPanel">
+    <div class="panel-title">操作史 <button id="histToggle" title="收起 / 展开">—</button></div>
+    <ol id="histList"></ol>
+  </aside>
+</main>
+
+<footer id="statusBar"></footer>
+
+<div id="detail" hidden></div>
+<div id="toast"></div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

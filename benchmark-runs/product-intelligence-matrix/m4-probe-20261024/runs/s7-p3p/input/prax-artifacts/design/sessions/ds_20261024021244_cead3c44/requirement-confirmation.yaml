@@ -1,0 +1,28 @@
+version: "0.1"
+user_quote:
+  - 动词：explore；对象：多维数据；成功标准：维度切换不重置认知
+  - 判别：维度是主要认知负担（从单概念到无界数据），切换维度不重置认知。
+  - 验收种子：过滤/投影状态有归属且可回退
+  - 交付物必须能直接静态打开（根路径 index.html，或构建产物 dist/）
+  - 应用在页面加载完成时即处于可用状态（初始数据随首屏就绪，不得以加载态作为可测状态）
+restatement: "Build a greenfield single-page web app whose primary object is a dataset of many records described by many dimensions. The user's job is to EXPLORE this multi-dimensional data: they repeatedly change which dimension they view/project the data by (the active lens), while their cognitive state — selected records, active filters, anchored record, and the history of projection choices — must survive every dimension switch untouched (dimension switching must not reset cognition). The acceptance seed requires that every filter/projection state change has clear ownership (attributable to the action that created it, visible as a named state) and is reversible (any prior state can be restored). Deliverable is one static page (root index.html), fully usable at first paint with inlined initial data, no backend, no external services, single main screen. Note: this is a replay session (ds_20261024021244_cead3c44) of cell-j13-s10; the implementation already exists and passed a first validation run except one deterministic SDIR structure check (preview state ownership), which this session records correctly from the start."
+boundaries:
+  in_scope:
+    - "Single main screen: dimensional dataset explorer (dimension list, projection view, selection/detail, filter bar, attributable+reversible projection state journal)"
+    - "Dataset object with high dimensionality: multiple numeric + categorical dimensions per record, several hundred records inlined at load"
+    - Dimension switching that preserves selection, filters, anchor, and journal
+    - "Filter/projection state journal: each entry owned by a named user action, restorable (undo/redo + jump-to-state)"
+    - "Static delivery: root index.html, no build step required, runs locally offline"
+  out_of_scope:
+    - Backend, accounts, persistence services, deployment to external services
+    - Multiple screens / navigation hierarchy
+    - Data editing (dataset is read-only), real-time data volatility
+    - Mobile form factor
+  scope_complete: true
+open_questions: []
+confirmation:
+  status: requirement_is_sufficient
+  evidence:
+    - type: task_brief
+      ref: "brief.md — cell-j13-s10 (explore × dimensional-space), 冻结纪律: 简报由基准程序 M2 冻结，执行臂不得要求修改验收标准"
+  confirmed_at: 2026-10-24T02:16:00Z

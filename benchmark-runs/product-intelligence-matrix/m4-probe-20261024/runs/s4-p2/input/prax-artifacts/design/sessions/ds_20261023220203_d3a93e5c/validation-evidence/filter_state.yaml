@@ -1,0 +1,19 @@
+version: "1"
+check_id: filter_state
+outcome: pass
+kind: deterministic
+collected_at: "2026-10-23T22:38:00Z"
+executor: "Claude (GLM) execution arm, cell-j13-s10"
+environment: "headless Chrome --headless=new, 1680x1050, file:/// index.html, Windows 10"
+method: "State fingerprint assertions + screenshot inspection (S3/S8)"
+command: "node tools/evidence.mjs"
+observations:
+  - "Active filter explicit in three coordinated places: rail readout '空气质量 ∈ 40 – 70 分' + per-dim clear button, header live count 92/240, attributed trail step"
+  - "Fingerprint owns filters (S3 assert filters.air===[40,70] true); S8 empty state keeps filters revertible"
+artifacts:
+    - path: evidence/03-filter-air.png
+      sha256: "35b3478bed7b39a038a3bcaedd9b7fae7d18b9db1b14bd8707112554e41f60c9"
+    - path: evidence/08-empty-state.png
+      sha256: "6264a106ff3a5f08c237f8063c72316bb709b10b48fce8ed8dd2495e573b3008"
+    - path: evidence/evidence.json
+      sha256: "93467db773d53127a5ebc511cedebbae7098e8fbeb5b4b247b459da791af4cb0"

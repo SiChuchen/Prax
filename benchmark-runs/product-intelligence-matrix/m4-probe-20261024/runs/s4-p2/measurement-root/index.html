@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>维度探针 Dimension Probe — Atlas-240 城市宜居指标</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="app-header">
+  <div class="brand">
+    <h1>维度探针 <span class="en">Dimension&nbsp;Probe</span></h1>
+    <p class="meta" id="dataset-meta"></p>
+  </div>
+  <div class="header-right">
+    <div class="count-box">
+      <span class="count-label">可见记录</span>
+      <span class="count-live"><strong id="count-matched">–</strong>&nbsp;/&nbsp;<span id="count-total">–</span></span>
+    </div>
+    <div class="history-controls" role="group" aria-label="历史操作">
+      <button type="button" id="btn-undo" class="btn" title="撤销 (Ctrl+Z)">↶ 撤销</button>
+      <button type="button" id="btn-redo" class="btn" title="重做 (Ctrl+Shift+Z)">↷ 重做</button>
+    </div>
+  </div>
+</header>
+
+<main class="workspace">
+  <section class="canvas-panel panel" aria-label="投影画布">
+    <div class="canvas-toolbar">
+      <label class="axis-picker">X 轴
+        <select id="axis-x" class="select" aria-label="X 轴维度"></select>
+      </label>
+      <button type="button" id="btn-swap" class="btn btn-swap" title="交换 X / Y 轴维度">⇄ 交换</button>
+      <label class="axis-picker">Y 轴
+        <select id="axis-y" class="select" aria-label="Y 轴维度"></select>
+      </label>
+      <span class="toolbar-sep" aria-hidden="true"></span>
+      <label class="axis-picker">着色
+        <select id="color-by" class="select" aria-label="着色维度"></select>
+      </label>
+    </div>
+    <div class="canvas-wrap" id="canvas-wrap">
+      <canvas id="plot" tabindex="0"
+        aria-label="散点投影画布。方向键在可见记录间移动，回车选中，Escape 取消选中。"></canvas>
+      <div class="tooltip" id="tooltip" hidden></div>
+      <div class="empty-overlay" id="empty-overlay" hidden>
+        <p class="empty-title">当前过滤器排除了全部记录</p>
+        <p class="empty-hint">过滤器仍保留在右侧，可从探索轨迹回到任意先前状态。</p>
+        <button type="button" id="btn-clear-all" class="btn btn-accent">清除全部过滤</button>
+      </div>
+      <div class="sr-only" id="sr-live" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <aside class="rail">
+    <section class="trail-panel panel" aria-label="探索轨迹">
+      <header class="panel-head">
+        <h2>探索轨迹</h2>
+        <span class="panel-hint">每步归属可回退 · 点击回到该状态</span>
+      </header>
+      <ol id="trail" class="trail-list"></ol>
+    </section>
+
+    <section class="filter-panel panel" aria-label="过滤器">
+      <header class="panel-head">
+        <h2>过滤器</h2>
+        <button type="button" id="btn-clear-filters" class="link-btn">全部清除</button>
+      </header>
+      <div id="filters" class="filter-body"></div>
+    </section>
+
+    <section class="inspector-panel panel" aria-label="记录详情">
+      <header class="panel-head">
+        <h2>记录详情</h2>
+        <button type="button" id="btn-deselect" class="link-btn" hidden>取消选中</button>
+      </header>
+      <div id="inspector-body" class="inspector-body"></div>
+    </section>
+  </aside>
+</main>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

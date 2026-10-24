@@ -1,0 +1,73 @@
+user:
+  expertise: intermediate
+  familiarity: high
+task:
+  primary: 在多维数据集上通过切换投影维度进行探索，保持认知连续
+  modes:
+    - explore
+    - filter
+    - inspect
+    - compare-in-mind
+  frequency: high
+domain:
+  type: 数据探索 / 分析工作台
+  entities:
+    - 数据集
+    - 维度
+    - 投影
+    - 过滤器
+    - 选中集
+    - 状态轨迹
+information:
+  volume: high
+  relationship_complexity: medium
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: none
+  error_cost: low
+priorities:
+  - 维度切换不重置认知（选中/过滤/焦点跨切换保留）
+  - 过滤/投影状态有归属且可回退（状态条 + 撤销/重做/复位）
+  - 首屏即用：数据内联、无加载态
+  - 高密度信息呈现（紧凑、多面板同屏）
+density_intent: compact
+confidence:
+  overall: high
+unknowns:
+  - id: dataset-theme-unspecified
+    impact: low
+    affects:
+      - state_trail 粒度
+  - id: view-mix-unspecified
+    impact: low
+    affects:
+      - scatter 与 portrait 视图的联动方式
+classification:
+  version: "1"
+  task_type: compare_filter_records
+  domain_id: observability_analytics
+  interaction_mode: collection_with_contextual_detail
+  product_type: unknown
+  primary_object_type: dataset
+  secondary_object_types:
+    - projection
+    - dimension
+    - filter
+    - selection
+    - state_trail
+  confidence: high
+  evidence:
+    - task_type=compare_filter_records ← token 'compare' in context.task and frame.tasks
+    - domain_id=observability_analytics ← token '分析' in context.domain
+    - interaction_mode=collection_with_contextual_detail ← token 'compare' in context.task, frame.tasks, and context.priorities
+    - primary_object_type=dataset ← most referenced product object in the Product Frame
+  open_questions:
+    - product_type could not be derived; record the intended audience and product kind

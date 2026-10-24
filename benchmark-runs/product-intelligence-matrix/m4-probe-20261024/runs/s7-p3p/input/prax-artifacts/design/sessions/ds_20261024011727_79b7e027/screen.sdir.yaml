@@ -1,0 +1,179 @@
+version: "0.2"
+screen:
+  id: screen-dimension-explorer
+  intent:
+    primary_task: Explore a multi-dimensional dataset by switching the active projection dimension (lens) while selection, filters, anchor and history persist
+    secondary_tasks:
+      - Filter records by dimension values/ranges
+      - Select and anchor records to inspect across all dimensions
+      - Retrace and restore earlier filter/projection states
+      - Compare records against per-dimension distribution
+  archetype:
+    pattern_ref: PAT-DATA-EXPLORER
+  density_intent: compact
+  regions:
+    - id: header
+      role: experimental:dataset identity, live counts, undo/redo
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:dataset identity + live counts (total/visible/selected)
+        - experimental:undo/redo mirroring the journal stack
+    - id: dim-rail
+      role: experimental:dimension inventory + lens switcher + visited trail
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:mini-distribution + stats per dimension row
+        - experimental:active lens row pinned
+        - experimental:trail entries restore previous lens on click
+        - experimental:adding a filter here is an owned journal action
+    - id: lens-stage
+      role: experimental:lens projection chart (X = lens, Y = companion, color = categorical)
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:axes relabel on lens switch; same records/selection re-project
+        - experimental:selected/anchored points highlighted
+        - experimental:hover preview
+        - experimental:companion/color-by switchable without reset
+    - id: record-table
+      role: experimental:projected record table, columns led by active lens dimension (sorted by it)
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:lens switch re-sorts in place, preserving selection and scroll
+        - experimental:row click toggles selection; explicit anchor control
+        - experimental:sort by any visible column (owned journal action)
+        - experimental:empty state when no records match
+    - id: filter-bar
+      role: experimental:active filter chips + search + clear-all
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:each chip removable (owned action)
+        - experimental:clear-all with undo
+        - experimental:never resets on lens switch
+    - id: journal
+      role: experimental:state journal — attributable, restorable filter/projection entries
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:entries are the single undo/redo backbone
+        - experimental:restore preserves forward stack for redo
+        - experimental:cap length with compaction notice
+    - id: inspector
+      role: experimental:contextual inspector — anchored record across ALL dimensions
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:all dimensions listed regardless of lens
+        - experimental:click-through to re-select
+        - experimental:empty prompt when nothing anchored
+  relationships: []
+  interaction_intents:
+    - experimental:switch lens by clicking a dimension in the rail; selection, filters, anchor, journal, trail all persist
+    - experimental:filter by categorical value or numeric range via rail controls and removable chips
+    - experimental:select rows/points by click; anchor a record into the inspector
+    - experimental:inspector reads the anchored record across ALL dimensions
+    - experimental:retrace — click a journal entry to restore its exact state; undo/redo traverse the same stack
+    - experimental:text search narrows records and survives lens switches
+  required_states:
+    - ready
+    - empty
+    - selected
+    - error
+    - loading
+  decision_points:
+    - id: dp-dataset-theme
+      question: 具体数据集主题与维度集合（满足 高维度性+高密度+无界基数 即可）
+      adapter_may_choose:
+        - 具体数据集主题
+        - companion 维度默认值
+        - 分类着色默认维度
+        - 视觉风格（保持 compact 专业工具气质）
+    - id: dp-companion-axis
+      question: Y 轴 companion 维度的默认值与切换方式（同样不得重置认知状态）
+      adapter_may_choose:
+        - companion 选择器位置
+        - color-by 控件位置
+  unresolved: []
+  rejected_alternatives: []
+  user_job:
+    verb: explore
+    target: 多维数据 multi-dimensional dataset
+    success: 维度切换不重置认知
+  primary_object:
+    type: dataset
+    label: 数据集 Dataset
+  information_shape:
+    cardinality: unbounded
+    relationality: medium
+    hierarchy: medium
+    temporality: low
+    density: high
+    dimensionality: high
+    spatiality: none
+    volatility: medium
+    uncertainty: low
+    comparison_need: none
+  representation:
+    primary:
+      type: table
+      reason: Structured sortable record table is the dominant data surface (tabular alignment per PAT-DATA-EXPLORER); lens chart is the overview half of the same stage
+    supporting:
+      - type: chart
+        reason: Lens projection overview
+      - type: list
+        reason: Dimension rail
+      - type: table
+        reason: Inspector property rows
+      - type: feed
+        reason: State journal feed
+  priority:
+    primary:
+      - record-table
+      - lens-stage
+      - dim-rail
+      - inspector
+    contextual:
+      - journal
+      - filter-bar
+      - header
+  interaction:
+    preview: hover
+    inspect: select
+    navigate: none
+    locate: filter
+  state_ownership:
+    - state: selection
+      owner: session
+    - state: query
+      owner: session
+    - state: inspector
+      owner: session
+    - state: viewport
+      owner: record-table
+  complexity_budget:
+    permanent_panels: 4
+    permanent_primary_actions: 4
+    modes: 0
+    state_owners: 5
+    navigation_levels: 1
+    persistent_filters: 3
+    new_semantic_concepts: 3
+    keyboard_contracts: 2
+    mobile_conflicts: 0
+    permanent_surfaces: 1
+  acceptance:
+    - 维度切换不重置认知：切换活动维度后，选区、过滤器、锚定记录、日志与轨迹全部保持
+    - 过滤/投影状态有归属且可回退：每个状态变化归具名动作，可恢复到任一先前状态，undo/redo 可用
+    - 首屏即用：数据内联，页面加载完成即 ready，无加载态作为可测状态
+    - 静态单页交付：根 index.html 直接打开，本地离线可运行

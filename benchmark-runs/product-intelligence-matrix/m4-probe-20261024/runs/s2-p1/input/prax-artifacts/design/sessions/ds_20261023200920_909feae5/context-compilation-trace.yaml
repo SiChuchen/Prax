@@ -1,0 +1,41 @@
+version: "0.1"
+session_id: ds_20261023200920_909feae5
+task_ref: 在投影视图间切换维度（换 X/Y 轴、换画像维度、换排序维），同时保持选中/过滤/焦点不丢失
+selected:
+  - ref: product_relationships
+    reason:
+      - rel_dim_proj:dimension->projection
+      - rel_filter_rows:filter->dataset
+      - rel_sel_rows:selection->dataset
+      - rel_trail_states:state_trail->projection
+  - ref: region_relationships
+    reason:
+      - region_rel_data_detail
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-DATA-EXPLORER
+  - ref: unresolved
+    reason:
+      - dataset-theme-unspecified
+      - view-mix-unspecified
+  - ref: corrections
+    reason: []
+  - ref: validation-plan@1
+    reason:
+      - semantic_conformance
+      - state_completeness
+      - product_model_alignment
+      - keyboard
+      - hierarchy_review
+      - representation_decided
+      - state_ownership_declared
+      - acceptance_contract_present
+      - complexity_budget_declared
+      - filter_state
+      - comparison_scan
+      - requirement_alignment
+excluded:
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata

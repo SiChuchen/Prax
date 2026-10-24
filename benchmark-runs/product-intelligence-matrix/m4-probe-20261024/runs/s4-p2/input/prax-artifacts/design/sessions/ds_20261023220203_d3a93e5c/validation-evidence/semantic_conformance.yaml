@@ -1,0 +1,14 @@
+version: "1"
+check_id: semantic_conformance
+outcome: pass
+kind: deterministic
+collected_at: "2026-10-23T22:38:00Z"
+executor: "Claude (GLM) execution arm, cell-j13-s10"
+environment: "headless Chrome --headless=new, 1680x1050, file:/// index.html, Windows 10"
+method: "Prax design_sdir mode=validate linter (returned PASS, 0 schema/semantic errors) + region-id mapping audit of app.js/index.html against screen.sdir.yaml"
+observations:
+  - "SDIR screen data_explorer_screen: archetype PAT-DATA-EXPLORER, validate=PASS"
+  - "Delivered DOM regions map 1:1 to SDIR ids: canvas-panel=data, canvas-toolbar=dimension_controls, filter-panel=filter_rail, trail-panel=state_trail, inspector-panel=detail, header meta=dataset_meta"
+artifacts:
+    - path: evidence/evidence.json
+      sha256: "93467db773d53127a5ebc511cedebbae7098e8fbeb5b4b247b459da791af4cb0"

@@ -1,0 +1,98 @@
+version: "0.1"
+session_id: ds_20261023205741_2a9a445c
+task:
+  surfaces: []
+  primary: 通过切换投影维度与设定过滤条件，探索多维数据集的结构与分布
+product_relationships:
+  - id: rel-dim-ds
+    source: dataset
+    target: dimension
+    type: described_by
+    direction: forward
+    meaning: 维度是数据集的观测轴
+    importance: primary
+  - id: rel-proj-dim
+    source: projection
+    target: dimension
+    type: composed_of
+    direction: forward
+    meaning: 投影由选中的维度构成切面
+    importance: primary
+  - id: rel-filt-ds
+    source: filter
+    target: dataset
+    type: constrains
+    direction: forward
+    meaning: 过滤器裁剪参与投影与记录列表的数据范围
+    importance: primary
+  - id: rel-proj-filt
+    source: projection
+    target: filter
+    type: independent_of
+    direction: none
+    meaning: 切换投影不得影响过滤器（认知保持契约）
+    importance: primary
+  - id: rel-trail-filt
+    source: state_trail
+    target: filter
+    type: records_history_of
+    direction: forward
+    meaning: 每次过滤/投影变化作为轨迹条目记录，可回退
+    importance: primary
+  - id: rel-rec-proj
+    source: record
+    target: projection
+    type: located_in
+    direction: forward
+    meaning: 聚焦记录在投影中高亮定位（若落点可见）
+    importance: supporting
+region_relationships:
+  - id: rel_anchor_canvas
+    source: anchor_bar
+    target: projection_canvas
+    type: summarizes
+  - id: rel_trail_anchor
+    source: state_trail
+    target: anchor_bar
+    type: feeds_history_to
+  - id: rel_rail_canvas
+    source: dimension_rail
+    target: projection_canvas
+    type: controls_axes_of
+  - id: rel_record_canvas
+    source: record_panel
+    target: projection_canvas
+    type: shares_query_with
+  - id: rel_inspector_canvas
+    source: focus_inspector
+    target: projection_canvas
+    type: highlights_position_in
+decisions:
+  primary_structure: PAT-DATA-EXPLORER
+  density_intent: compact
+  major_choice_ids:
+    - choice_dataset
+    - choice_projection
+    - choice_trail
+    - choice_anchor
+must_preserve: []
+regression_points: []
+unresolved:
+  - uq-dataset-content
+corrections: []
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - filter_state
+    - comparison_scan
+    - requirement_alignment
+  regression_check_ids: []

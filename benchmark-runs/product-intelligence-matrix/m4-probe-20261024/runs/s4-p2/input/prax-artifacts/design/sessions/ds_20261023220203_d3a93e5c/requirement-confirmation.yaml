@@ -1,0 +1,28 @@
+version: "0.1"
+user_quote:
+  - 动词：explore；对象：多维数据；成功标准：维度切换不重置认知
+  - 验收种子：过滤/投影状态有归属且可回退
+  - 交付物必须能直接静态打开（根路径 index.html，或构建产物 dist/）
+  - 应用在页面加载完成时即处于可用状态（初始数据随首屏就绪，不得以加载态作为可测状态）
+restatement: Build a single-page web app for exploring a high-dimensional dataset. The user projects many-dimensional records into a 2D view by choosing which dimensions map to the axes, subsets the data with filters, and switches between dimensions freely. Success = switching projection dimensions never resets filters, selection, or the user's cognitive context; and every filter/projection change is attributed (labeled, owned in a visible state trail) and revertible (jump back to any prior state).
+boundaries:
+  in_scope:
+    - 单页 Web 应用，主屏 1 个
+    - 初始数据随首屏内联就绪（无加载态）
+    - 维度（投影轴）自由切换且不重置过滤/选择状态
+    - 过滤/投影状态有归属（可见的状态轨迹/归属标签）且可回退（回到任意先前状态）
+    - 静态打开：根路径 index.html 或 dist/ 构建产物，本地可运行
+    - WCAG 2.2 AA 底线（H-23：对比度、可见焦点、目标尺寸、字号）
+  out_of_scope:
+    - 后端服务、账号体系、持久化服务
+    - 部署到外部服务
+    - 多屏/移动端布局
+    - 真实数据接入（使用内联合成数据集）
+  scope_complete: true
+open_questions: []
+confirmation:
+  status: requirement_is_sufficient
+  evidence:
+    - type: task_brief
+      ref: brief.md — cell-j13-s10 product brief (frozen by M2, 2026-09-03)
+  confirmed_at: 2026-10-24T00:00:00Z

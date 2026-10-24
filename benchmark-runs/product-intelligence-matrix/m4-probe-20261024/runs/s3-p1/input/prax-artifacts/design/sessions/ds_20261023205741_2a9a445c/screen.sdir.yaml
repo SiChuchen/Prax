@@ -1,0 +1,186 @@
+version: "0.2"
+screen:
+  id: screen_explore_main
+  user_job:
+    verb: explore
+    target: 多维数据集
+    success: 维度切换不重置认知
+  primary_object:
+    type: dataset
+    label: 数据集
+  information_shape:
+    cardinality: unbounded
+    relationality: medium
+    hierarchy: medium
+    temporality: low
+    density: high
+    dimensionality: high
+    spatiality: none
+    volatility: medium
+    uncertainty: low
+    comparison_need: none
+  priority:
+    primary:
+      - projection_canvas
+      - anchor_bar
+      - dimension_rail
+    contextual:
+      - record_panel
+      - state_trail
+      - focus_inspector
+  intent:
+    primary_task: 在多维数据集上通过换轴投影与过滤探索结构，且维度切换不重置认知
+    secondary_tasks:
+      - 聚焦单条记录并在维度切换中保持锚定
+      - 回溯并恢复任一历史状态
+      - 定位满足条件的记录子集
+  archetype:
+    pattern_ref: PAT-DATA-EXPLORER
+  density_intent: compact
+  regions:
+    - id: anchor_bar
+      role: experimental:认知锁点条：常驻显示活动过滤器计数、聚焦记录、当前投影轴、度量与轨迹深度，跨维度切换恒定
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:维度切换前后数值不变即证明认知保持
+        - experimental:任何状态变化后即时刷新
+    - id: dimension_rail
+      role: experimental:维度轨：按族分组的可选投影轴集合，含类型徽标与覆盖迷你直方图
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:点击维度换轴，已投影维度有激活态标记
+        - experimental:悬停显示取值分布直方图
+    - id: projection_canvas
+      role: experimental:数据主工作面：当前投影维度的交叉聚合格，承载探索主任务
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:单元格可点击下钻为过滤器
+        - experimental:聚焦记录落点高亮
+        - experimental:切轴时保持度量与色标
+    - id: record_panel
+      role: experimental:匹配记录列表：当前过滤下记录，点击聚焦
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:点击行聚焦
+        - experimental:与过滤联动即时更新
+    - id: state_trail
+      role: experimental:状态轨迹：带归属的状态快照时间线，点击回退，配撤销重做
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:条目带归属元数据（操作名加时间戳）
+        - experimental:点击恢复该快照
+    - id: focus_inspector
+      role: experimental:聚焦检查器：选中记录全部维度取值及其在当前投影中的落点
+      importance: supporting
+      visibility:
+        condition: selection_driven
+      behavior_intent:
+        - experimental:无聚焦时显示引导文案而非空白
+  relationships:
+    - id: rel_anchor_canvas
+      source: anchor_bar
+      target: projection_canvas
+      type: summarizes
+    - id: rel_trail_anchor
+      source: state_trail
+      target: anchor_bar
+      type: feeds_history_to
+    - id: rel_rail_canvas
+      source: dimension_rail
+      target: projection_canvas
+      type: controls_axes_of
+    - id: rel_record_canvas
+      source: record_panel
+      target: projection_canvas
+      type: shares_query_with
+    - id: rel_inspector_canvas
+      source: focus_inspector
+      target: projection_canvas
+      type: highlights_position_in
+  interaction_intents:
+    - experimental:点击维度即换轴投影：同一聚合格框架内更换横轴或纵轴，过滤、聚焦、度量、轨迹全部保留
+    - experimental:点击聚合格单元格：以该交叉取值下钻为过滤器（有归属、可回退）
+    - experimental:点击记录行聚焦：聚焦跨维度切换保持，检查器与画布高亮同步
+    - experimental:点击轨迹条目：恢复该快照；提供撤销与重做
+    - experimental:键盘：Ctrl加Z 撤销，Ctrl加Shift加Z 重做，Esc 清除聚焦
+  required_states:
+    - ready
+    - selected
+    - empty
+    - error
+    - loading
+  representation:
+    primary:
+      type: grid
+      reason: 交叉聚合格承载高维切面，换轴不换框架
+    supporting:
+      - type: table
+        reason: 记录清单扫读定位
+      - type: list
+        reason: 维度轨分组列表
+      - type: chart
+        reason: 检查器取值高亮
+  state_ownership:
+    - state: viewport
+      owner: projection_canvas
+    - state: query
+      owner: state_trail
+    - state: selection
+      owner: session
+    - state: inspector
+      owner: focus_inspector
+    - state: preview
+      owner: projection_canvas
+    - state: mode
+      owner: session
+  acceptance:
+    - 切换投影维度后：活动过滤器、聚焦记录、度量选择、状态轨迹全部保留且计数可见，无静默重置
+    - 每次过滤或投影变化生成带归属元数据（触发操作名加时间戳）的轨迹条目
+    - 点击轨迹条目可恢复该时刻完整状态；撤销与重做可用
+    - 首屏加载完成即可用：数据内联，ready 同步到达，loading 为不可测的瞬时建模态，无网络请求
+    - 根路径 index.html 静态直接打开即可运行
+  complexity_budget:
+    permanent_panels: 5
+    permanent_primary_actions: 3
+    modes: 1
+    state_owners: 4
+    navigation_levels: 1
+    persistent_filters: 1
+    new_semantic_concepts: 3
+    keyboard_contracts: 2
+    mobile_conflicts: 0
+    permanent_surfaces: 1
+  decision_points:
+    - id: dp_axis_mapping
+      question: 投影画布如何按维度类型组合映射（分类乘分类、分类乘数量、数量乘数量）？
+      adapter_may_choose:
+        - 分箱数量
+        - 色标与刻度
+        - 单元格尺寸与留白
+    - id: dp_record_rows
+      question: 记录列表默认显示多少行、如何排序？
+      adapter_may_choose:
+        - 可见行数
+        - 排序键
+        - 滚动与截断策略
+    - id: dp_trail_granularity
+      question: 状态轨迹以什么粒度记录条目？
+      adapter_may_choose:
+        - 连续同类操作是否合并
+        - 时间戳显示精度
+  unresolved: []
+  rejected_alternatives:
+    - option: 卡片式记录展示
+      reason: 高密度对比场景下浪费密度，数据探索器反模式
+    - option: 多页签切换不同投影
+      reason: 页签间状态割裂，违背维度切换不重置认知；单屏单框架换轴才是正解

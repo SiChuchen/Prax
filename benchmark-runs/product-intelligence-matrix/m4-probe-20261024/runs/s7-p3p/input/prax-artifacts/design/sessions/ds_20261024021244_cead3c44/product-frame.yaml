@@ -1,0 +1,84 @@
+version: "0.2"
+jtbd:
+  verb: explore
+  target: multi-dimensional data (a dataset with many records × many dimensions)
+  success: 维度切换不重置认知 — dimension switching never resets cognition
+primary_object:
+  type: dataset
+  label: 数据集 Dataset
+task_model:
+  frequency: high
+  reversibility: reversible
+  consequence: low
+  expertise: mixed
+user:
+  primary_role: data analyst exploring a multi-dimensional catalog
+  expertise: intermediate
+  familiarity: medium
+goal:
+  primary: Understand how a large multi-dimensional dataset is structured by freely changing the viewing dimension, without ever losing what has already been established (selection, filters, anchored record, and the history of projection choices)
+tasks:
+  primary: Switch the active projection dimension (the lens) that arranges the dataset in the view
+  secondary:
+    - Filter the dataset by dimension values or ranges
+    - Select and anchor individual records to inspect their detail across dimensions
+    - Retrace and restore earlier projection/filter states (owned + reversible)
+    - Read per-dimension distribution and summary stats
+product_objects:
+  - id: dataset
+    user_name: 数据集 Dataset
+    purpose: The whole collection of records being explored; fixed and read-only this session
+  - id: record
+    user_name: 记录 Record
+    purpose: One data point in the dataset; can be selected, anchored, inspected across all dimensions
+  - id: dimension
+    user_name: 维度 Dimension
+    purpose: A named measurable property of every record (numeric or categorical); the unit of cognitive load
+  - id: lens
+    user_name: 投影 Lens (active dimension)
+    purpose: The currently chosen dimension that arranges records in the projection view; switching it must not disturb anything else
+  - id: filter
+    user_name: 过滤器 Filter
+    purpose: A named constraint narrowing which records are visible; survives dimension switches
+  - id: selection
+    user_name: 选区 Selection
+    purpose: Records the user has marked; survives dimension switches
+  - id: journal_entry
+    user_name: 状态条目 State entry
+    purpose: An attributable snapshot of the filter/projection state created by one user action; restorable on demand
+relationships:
+  - id: rel-lens-dim
+    source: lens
+    target: dimension
+    type: projects_by
+    direction: forward
+    meaning: The lens points at exactly one dimension at a time; switching lens re-points it
+    importance: primary
+  - id: rel-filter-dataset
+    source: filter
+    target: dataset
+    type: narrows
+    direction: forward
+    meaning: Each filter narrows the visible subset of records; independent of the lens
+    importance: primary
+  - id: rel-entry-state
+    source: journal_entry
+    target: filter
+    type: snapshots
+    direction: forward
+    meaning: Each journal entry owns the full filter+lens state after one user action and can restore it
+    importance: primary
+  - id: sel-record
+    source: selection
+    target: record
+    type: marks
+    direction: bidirectional
+    meaning: Selection marks records; anchors persist across lens switches
+    importance: supporting
+mental_model_hypothesis:
+  summary: "The dataset is a fixed cloud of records; dimensions are interchangeable lenses arranged around it. Moving from lens to lens re-arranges the same cloud but must not touch what the user has built up: selections, filters, anchored record, and the trail of past lenses. State changes are steps on a path the user owns and can walk back."
+  confidence: high
+  evidence:
+    - user_requirement
+primary_success_definition: 维度切换不重置认知：切换活动维度后，选区、过滤器、锚定记录与投影历史全部保持；且每个过滤/投影状态变化都归属到一个具名用户动作，并可一键回退到任一先前状态。
+open_questions: []

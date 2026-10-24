@@ -1,0 +1,61 @@
+version: "0.1"
+session_id: ds_20261024000046_e6648d02
+task:
+  surfaces: []
+  primary: 切换探索维度（换轴/换分面/换聚合维度）并保持选中、过滤与投影状态原样延续，继续观察同一批数据对象
+product_relationships:
+  - id: rel_dimension_dataset
+    source: dimension
+    target: dataset
+    type: projects
+    direction: forward
+    meaning: 维度是数据集上的一个投影轴；换维度=换镜头，不改数据本身
+    importance: primary
+  - id: rel_lens_dataset
+    source: lens
+    target: dataset
+    type: narrows
+    direction: forward
+    meaning: 过滤/投影限制可见记录范围；状态有归属（指明作用对象）且可回退
+    importance: primary
+  - id: rel_selection_record
+    source: selection
+    target: record
+    type: marks
+    direction: forward
+    meaning: 选中锚定具体记录的身份，跨维度切换保持不变
+    importance: primary
+region_relationships:
+  - id: region_rel_data_detail
+    source: data
+    target: detail
+    type: selection_drives_contextual_detail
+decisions:
+  primary_structure: PAT-DATA-EXPLORER
+  density_intent: compact
+  major_choice_ids:
+    - mc-dataset
+    - mc-dimension-switch
+    - mc-lens-store
+    - mc-stack
+must_preserve: []
+regression_points: []
+unresolved:
+  - oq-dataset-domain
+corrections: []
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - filter_state
+    - comparison_scan
+    - requirement_alignment
+  regression_check_ids: []

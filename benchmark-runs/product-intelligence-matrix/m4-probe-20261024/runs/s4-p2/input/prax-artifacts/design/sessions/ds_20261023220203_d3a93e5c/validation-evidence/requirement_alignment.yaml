@@ -1,0 +1,17 @@
+version: "1"
+check_id: requirement_alignment
+outcome: pass
+kind: assistive
+collected_at: "2026-10-23T22:38:00Z"
+executor: "Claude (GLM) execution arm, cell-j13-s10"
+environment: "headless Chrome --headless=new, 1680x1050, file:/// index.html, Windows 10"
+method: "Confirmed restatement + acceptance seed vs 11-step empirical journey (allPassed=true)"
+command: "node tools/evidence.mjs"
+observations:
+  - "First-paint ready: S1; dimension switch preserves cognition: S5; attributed+revertible: S3/S6/S7; static file:// open in real Chrome; AA floor: tools/contrast-check.mjs 15/15 token pairs >= 6.08:1, >=12px type, 24px+ targets, visible focus"
+  - "evidence.json: allPassed=true, 11/11 steps, consoleErrors=0"
+artifacts:
+    - path: evidence/evidence.json
+      sha256: "93467db773d53127a5ebc511cedebbae7098e8fbeb5b4b247b459da791af4cb0"
+    - path: README.md
+      sha256: "untracked-text"

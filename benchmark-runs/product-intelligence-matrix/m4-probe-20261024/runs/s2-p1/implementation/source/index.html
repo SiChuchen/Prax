@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KEPLER-EXT 480 · 多维探索台</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div id="app" data-status="loading">
+  <header id="topbar">
+    <div class="brand">KEPLER-EXT 480<span class="sub">系外行星巡天 · 多维探索台</span></div>
+    <div id="rowcount" class="count"></div>
+    <div class="hgroup" role="group" aria-label="状态回退">
+      <button id="btn-undo" title="撤销 (Ctrl+Z)" aria-keyshortcuts="Control+Z">↶ 撤销</button>
+      <button id="btn-redo" title="重做 (Ctrl+Y)" aria-keyshortcuts="Control+Y">↷ 重做</button>
+      <button id="btn-reset" title="复位到初始视图">⌂ 复位</button>
+    </div>
+  </header>
+
+  <div id="statebar" aria-label="过滤与投影状态条">
+    <span class="sb-label">状态</span>
+    <div id="chips" class="chips"></div>
+  </div>
+
+  <main id="workspace">
+    <aside id="dimrail">
+      <div class="panel-title">维度<span class="hint">Enter=X · ⇧Enter=Y · P 画像 · C 颜色 · S 排序</span></div>
+      <ul id="dimlist" role="listbox" aria-label="数据集维度"></ul>
+      <div class="rail-foot">换维只重投影：选中 / 过滤 / 缩放 / 焦点均保留</div>
+    </aside>
+
+    <section id="stage" aria-label="投影舞台">
+      <div id="scatter-wrap">
+        <canvas id="scatter"></canvas>
+        <div id="tooltip" hidden></div>
+        <div id="stage-status" hidden></div>
+      </div>
+      <div id="portrait-wrap">
+        <div class="panel-title"><span id="portrait-label">维度画像</span><span class="hint">拖刷区间 / 点击类别 = 过滤</span></div>
+        <canvas id="portrait"></canvas>
+      </div>
+      <div id="table-wrap">
+        <div class="scroll">
+          <table id="table" aria-label="明细表">
+            <thead><tr id="table-head"></tr></thead>
+            <tbody id="table-body"></tbody>
+          </table>
+        </div>
+        <div id="table-foot" class="table-foot"></div>
+      </div>
+    </section>
+
+    <aside id="inspector">
+      <div class="panel-title">记录检查</div>
+      <div id="detail" class="detail"></div>
+      <div class="panel-title">状态轨迹<span class="hint">点击条目回退</span></div>
+      <ol id="trail" aria-label="状态轨迹（最新在上）"></ol>
+    </aside>
+  </main>
+</div>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

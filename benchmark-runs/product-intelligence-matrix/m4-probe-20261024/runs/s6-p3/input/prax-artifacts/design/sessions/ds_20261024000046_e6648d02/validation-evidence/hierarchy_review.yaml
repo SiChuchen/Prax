@@ -1,0 +1,16 @@
+version: "1"
+check_id: hierarchy_review
+outcome: pass
+kind: assistive
+collected_at: "2026-10-24T02:05:00Z"
+executor: "Claude (GLM) execution arm, cell-j13-s10, session ds_20261024000046_e6648d02"
+environment: "Chrome (superpowers-chrome MCP, CDP), 1680x950, file:///E:/codex-prj/ab-worktrees/pi-matrix-m4/s6-p3/index.html, Windows 10"
+method: "CDP rendered screenshots + automated a11y audit (contrast/target-size/type-size/focus-order via Runtime.evaluate)"
+command: "mcp chrome use_browser: navigate/set_viewport/screenshot + eval audit"
+observations:
+  - "dominant projection_view occupies center 1fr band and is the visually largest region (6 stacked bars / 28-bin histogram)"
+  - "lens_bar + dimension_rail + inspector primary and permanently visible; records_table (200px row) + status_footer supporting — matches SDIR priority"
+  - "automated audit after a11y fixes: min text contrast 5.47:1, min interactive target 24px, min text 12px (SVG ≥13px projected), 113 tabbables with no visual backjumps except logical rail→center column transition"
+artifacts:
+    - path: evidence/shots/fix-01-initial-ready.png
+    - path: evidence/shots/fix-04-dimswitch-context-kept.png

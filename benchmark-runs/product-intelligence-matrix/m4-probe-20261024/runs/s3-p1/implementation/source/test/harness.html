@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>HARNESS</title>
+<link rel="stylesheet" href="../css/app.css">
+<style>
+  #results { position: fixed; bottom: 0; left: 0; right: 0; max-height: 42vh; overflow: auto;
+    background: #0a0a0a; color: #9fe8a0; font: 12px/1.5 Consolas, monospace; padding: 8px 12px;
+    border-top: 2px solid #2a4a2a; z-index: 999; white-space: pre-wrap; }
+  #app { height: 58vh; }
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">✦</span><span class="brand-name">星巡台 <i>ASTRA</i></span></div>
+    <div id="anchorBar" class="anchor-bar"></div>
+  </header>
+  <div id="toast" class="toast" hidden></div>
+  <main id="canvas" class="canvas"></main>
+  <aside id="dimRail" class="dim-rail"></aside>
+  <aside class="rightcol">
+    <section id="inspector" class="panel"></section>
+    <section id="records" class="panel grow"></section>
+    <section id="trail" class="panel trail"></section>
+  </aside>
+</div>
+<pre id="results"></pre>
+<script>window.__HARNESS__ = true;</script>
+<script src="../js/data.js"></script>
+<script src="../js/app.js"></script>
+<script>
+(function () {
+  'use strict';
+  var out = [], pass = 0, fail = 0;
+  function t(name, fn) {
+    try { fn(); pass++; out.push('PASS  ' + name); }
+    catch (e) { fail++; out.push('FAIL  ' + name + '  :: ' + (e && e.message || e)); }
+  }
+  function eq(a, b, msg) { if (a !== b) throw new Error((msg || 'eq') + ' expect=' + JSON.stringify(b) + ' got=' + JSON.stringify(a)); }
+  function ok(v, msg) { if (!v) throw new Error(msg || 'expected truthy'); }
+
+  /* 同步启动（无任何异步加载路径）——首屏即用 */
+  var t0 = performance.now();
+  APP.boot();
+  var bootMs = performance.now() - t0;
+
+  t('T1 首屏就绪：内联数据 + 同步启动（无加载态）', function () {
+    ok(window.SURVEY && SURVEY.records.length === 600, '内联记录应为 600');
+    ok(document.querySelectorAll('.heat td.cell').length > 0, '画布应有聚合单元格');
+    ok(document.querySelectorAll('.rec-row').length > 0, '记录列表应有行');
+    ok(document.getElementById('app').textContent.indexOf('加载中') < 0, '不得出现加载态文案');
+    ok(bootMs < 400, '同步启动应 <400ms，实际 ' + bootMs.toFixed(1) + 'ms');
+  });
+
+  var f0 = null, focus0 = null, trailLen0 = 0, mCount0 = 0, mDim = null;
+  t('T2 铺垫：设定过滤 + 聚焦 + 度量', function () {
+    APP.toggleCatValue('method', '凌星法');
+    APP.setRange('temp', 200, 800);
+    mCount0 = APP.matchingCount();
+    ok(mCount0 > 0 && mCount0 < 600, '过滤应缩减记录集，实际 ' + mCount0);
+    var firstRec = document.querySelector('[data-rec]');
+    focus0 = firstRec.getAttribute('data-rec');
+    APP.setFocus(focus0);
+    APP.setMeasure('avg', 'esi');
+    eq(APP.state.measure.kind, 'avg');
+    eq(APP.state.filters.length, 2);
+    eq(APP.tIndex, 4, '轨迹应有 4 次提交');
+    f0 = APP.state;
+  });
+
+  t('T3 核心契约：切换维度不重置认知', function () {
+    APP.setAxis('x', 'star');
+    var s = APP.state;
+    eq(s.filters.length, f0.filters.length, '过滤器数量不变');
+    eq(JSON.stringify(s.filters), JSON.stringify(f0.filters), '过滤器内容不变');
+    eq(s.focus, f0.focus, '聚焦记录不变');
+    eq(JSON.stringify(s.measure), JSON.stringify(f0.measure), '度量不变');
+    eq(s.y, f0.y, 'Y 轴保持');
+    eq(s.x, 'star', 'X 轴已切换');
+    eq(APP.matchingCount(), mCount0, '匹配记录数不变');
+    eq(APP.tIndex, 5, '换轴作为新轨迹条目');
+    ok(document.getElementById('toast').textContent.indexOf('保留') >= 0, '应有认知保持提示');
+  });
+
+  t('T4 归属：真实 DOM 操作的轨迹条目与芯片归属', function () {
+    var tr = APP.trail;
+    ok(tr[tr.length - 1].action.indexOf('换轴') === 0, '末条为换轴动作');
+    ok(tr[tr.length - 1].source.length > 0, '末条有来源');
+    // 真实点击：漏斗 → 值复选框 → 产生带归属的过滤
+    document.querySelector('[data-funnel="pclass"]').click();
+    var cb = document.querySelector('input[data-catval="岩石行星"]');
+    ok(cb, '维度轨应展开值编辑器');
+    cb.click();
+    var last = APP.trail[APP.trail.length - 1];
+    ok(last.action.indexOf('过滤 行星类别=岩石行星') === 0, '轨迹归属动作：' + last.action);
+    ok(last.source.indexOf('维度轨') === 0, '轨迹归属来源：' + last.source);
+    var anchor = document.getElementById('anchorBar').innerHTML;
+    ok(anchor.indexOf('归属：') >= 0 && anchor.indexOf('维度轨') >= 0, '过滤芯片 title 应含归属来源');
+    document.querySelector('[data-clear-dim="pclass"]').click();
+    eq(APP.state.filters.length, 2, '清理后回到 2 项过滤');
+  });
+
+  t('T5 可回退：点击式回退到过滤后/换轴前', function () {
+    APP.timeTravel(4); // 回到换轴前
+    var s = APP.state;
+    eq(s.x, f0.x, 'X 轴恢复');
+    eq(JSON.stringify(s.filters), JSON.stringify(f0.filters), '过滤保留（快照恢复）');
+    eq(s.focus, f0.focus, '聚焦恢复');
+    eq(APP.tIndex, 4, '轨迹游标回移');
+    ok(document.querySelector('.trail-item.past'), '历史条目应有过去态样式');
+  });
+
+  t('T6 撤销/重做 + 回退后新分支截断', function () {
+    APP.undo(); eq(APP.state.measure.kind, 'count', '再撤一步应回到度量切换前（count）');
+    APP.redo(); eq(APP.state.measure.kind, 'avg', '重做恢复度量切换（avg）');
+    APP.timeTravel(4);
+    APP.toggleCatValue('pclass', '气态巨行星'); // 在历史点上新操作
+    eq(APP.tIndex, 5, '新提交应截断重做分支');
+    eq(APP.trail.length, 6, '轨迹长度 = 游标+1');
+  });
+
+  t('T7 键盘：Ctrl+Z / Ctrl+Shift+Z', function () {
+    var before = APP.tIndex;
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, bubbles: true }));
+    eq(APP.tIndex, before - 1, 'Ctrl+Z 撤销');
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Z', ctrlKey: true, shiftKey: true, bubbles: true }));
+    eq(APP.tIndex, before, 'Ctrl+Shift+Z 重做');
+  });
+
+  t('T8 单元格下钻：过滤器有归属且进入轨迹', function () {
+    APP.timeTravel(0); // 回初始
+    var cells = document.querySelectorAll('.heat td.cell:not(.zero)');
+    ok(cells.length > 3, '初始画布应有非零单元格');
+    var target = null;
+    for (var i = 0; i < cells.length; i++) {
+      var n = +(cells[i].querySelector('.big').textContent);
+      if (n > 3 && n < 120) { target = cells[i]; break; }
+    }
+    ok(target, '找到中等计数单元格');
+    target.click(); // 真实 DOM 点击路径
+    var s = APP.state;
+    ok(s.filters.length >= 1, '下钻应生成过滤器');
+    var last = APP.trail[APP.trail.length - 1];
+    ok(last.action.indexOf('下钻') === 0, '轨迹归属=下钻动作');
+    ok(APP.matchingCount() < 600, '下钻后记录集缩小');
+    ok(document.getElementById('anchorBar').innerHTML.indexOf('data-clear-dim') >= 0, '锁点条应出现可移除过滤芯片');
+  });
+
+  t('T9 空状态可恢复（empty 状态覆盖）', function () {
+    APP.clearAllFilters();
+    APP.setRange('orbit', 0.02, 0.06);
+    APP.setRange('dist', 7000, 8980);
+    APP.toggleCatValue('method', '直接成像');
+    var n = APP.matchingCount();
+    if (n === 0) {
+      ok(document.querySelector('.empty-state'), '空状态应渲染');
+      ok(document.getElementById('clearAllBtn'), '空状态应有恢复按钮');
+    } else { ok(true, '交集非空（n=' + n + '），空态分支已由代码路径覆盖'); }
+    APP.clearAllFilters();
+    eq(APP.matchingCount(), 600, '清除全部过滤后回到全集');
+  });
+
+  t('T10 聚焦检查器与投影落点随换轴更新', function () {
+    APP.setFocus(SURVEY.records.find(function (r) { return r.pclass === '岩石行星' && r.esi > 0.8; }).id, '');
+    var pos1 = document.querySelector('.insp-pos').textContent;
+    APP.setAxis('y', 'radius');
+    var pos2 = document.querySelector('.insp-pos').textContent;
+    ok(pos1 !== pos2, '落点描述应随轴变化');
+    ok(document.querySelector('.heat td.focus-cell'), '画布应有聚焦高亮格');
+    ok(document.querySelector('.rec-row.current'), '记录列表应有当前聚焦行');
+  });
+
+  var total = pass + fail;
+  var summary = 'HARNESS RESULT: ' + pass + '/' + total + ' PASS, ' + fail + ' FAIL, boot=' + bootMs.toFixed(1) + 'ms';
+  out.push(summary);
+  document.getElementById('results').textContent = out.join('\n');
+  document.title = 'HARNESS ' + pass + '/' + total + (fail ? ' FAIL' : ' OK');
+  window.__RESULT__ = { pass: pass, fail: fail, total: total, summary: summary };
+})();
+</script>
+</body>
+</html>

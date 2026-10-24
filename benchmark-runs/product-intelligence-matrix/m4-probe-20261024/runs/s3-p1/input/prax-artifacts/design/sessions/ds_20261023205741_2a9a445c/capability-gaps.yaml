@@ -1,0 +1,86 @@
+needs:
+  - id: need_axis_switch
+    product_action: 切换投影维度且保留全部认知状态（过滤、聚焦、度量、轨迹）
+    required_experience:
+      - 同一聚合格框架内换轴
+      - 切换后锚点条计数不变
+    capabilities:
+      - 内存数据模型
+      - 客户端投影状态
+      - 派生渲染
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端状态模型：viewport 归 projection_model，换轴不触碰 query 与 selection；600 行内存聚合毫秒级完成
+  - id: need_attribution
+    product_action: 过滤与投影状态变化记录归属（触发操作名与时间戳）
+    required_experience:
+      - 每条轨迹条目可见归属来源
+      - 过滤器芯片可见来源
+    capabilities:
+      - 状态快照序列化
+      - 元数据标注
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 快照栈：每次变更压入完整状态快照并附归属元数据，轨迹条目即快照引用
+  - id: need_revert
+    product_action: 任一历史状态一键回退，撤销与重做
+    required_experience:
+      - 点击轨迹条目恢复该时刻状态
+      - Ctrl 加 Z 撤销
+    capabilities:
+      - 快照栈恢复
+      - 历史游标
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 同一快照栈支撑点选回退与撤销重做，无后端参与
+  - id: need_aggregate
+    product_action: 维度组合交叉聚合格即时渲染（分类乘分类、分类乘数量、数量乘数量）
+    required_experience:
+      - 换轴后画布即时更新
+      - 色标随度量保持
+    capabilities:
+      - 内存聚合
+      - 分箱计算
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 600 行数据全量内存聚合，无网络往返
+  - id: need_focus
+    product_action: 聚焦单条记录并在维度切换中保持锚定与落点高亮
+    required_experience:
+      - 聚焦后切轴检查器仍显示该记录
+      - 画布落点高亮跟随当前投影
+    capabilities:
+      - 选择状态持久化
+      - 落点计算
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: focus_model 独立于投影轴存储记录 id，落点按当前投影动态计算
+  - id: need_first_screen
+    product_action: 首屏加载完成即可用，无加载态
+    required_experience:
+      - 页面打开即呈现就绪界面
+      - 无骨架屏与加载指示
+    capabilities:
+      - 内联数据脚本
+      - 同步初始化
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 数据以 JS 字面量内联，DOMContentLoaded 前完成同步初始化；loading 仅建模为瞬时态，不可测
+  - id: need_offline
+    product_action: 静态直接打开 index.html，离线运行，无外部服务
+    required_experience:
+      - file 协议直接打开可用
+      - 无 CDN 与网络请求
+    capabilities:
+      - 零依赖实现
+      - 相对路径资源
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 原生 HTML/CSS/JS，系统字体，无构建依赖、无外部资源

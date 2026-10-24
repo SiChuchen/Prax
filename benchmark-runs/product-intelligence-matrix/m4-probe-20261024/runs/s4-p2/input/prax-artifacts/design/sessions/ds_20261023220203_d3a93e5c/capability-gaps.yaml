@@ -1,0 +1,86 @@
+needs:
+  - id: n-dimension-switch
+    product_action: Re-bind X/Y projection axes to any dataset dimension at any time without losing filters, selection, or trail
+    required_experience:
+      - axis rebind is instant and in-place
+      - filter/selection/trail pixel-stable across the switch
+    capabilities:
+      - single state object with orthogonal sub-spaces
+      - client-side re-render
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Pure client-side view state; projection sub-space writes never touch filter/selection sub-spaces
+  - id: n-filter-subset
+    product_action: Constrain the dataset per-dimension with range filters and see live matched counts
+    required_experience:
+      - per-dimension range control
+      - count updates without page-level reload
+    capabilities:
+      - range predicates over numeric dimensions
+      - live count aggregation
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: In-memory predicate evaluation over the inline dataset
+  - id: n-trail-revert
+    product_action: Every filter/projection change is attributed in a visible trail and any prior state is restorable in one action
+    required_experience:
+      - labeled step per action
+      - click step to restore
+      - undo/redo
+    capabilities:
+      - command history with full-state snapshots
+      - undo/redo stack
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Immutable state snapshots per action; trail renders snapshot labels
+  - id: n-select-inspect
+    product_action: Select a record in the projection and inspect its full dimension vector inline
+    required_experience:
+      - click/keyboard selects point
+      - inspector lists all dimension values
+    capabilities:
+      - hit-testing on canvas
+      - inspector bound to selection
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Canvas hit-testing + detail region bound to selection state
+  - id: n-first-paint-ready
+    product_action: Dataset is ready at first paint with no user-visible loading state
+    required_experience:
+      - ready is the initial measurable state
+    capabilities:
+      - inline data
+      - synchronous init
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Data embedded in a classic script file loaded synchronously before app init; loading state exists only as a declared schema slot and is never shown
+  - id: n-accessibility-aa
+    product_action: "Meet the WCAG 2.2 AA floor (H-23): contrast, visible focus, target size, minimum type size"
+    required_experience:
+      - AA-compliant muted tokens
+      - no stripped focus indicators
+    capabilities:
+      - contrast-checked tokens
+      - visible focus
+      - 24px targets
+      - ">=12px type"
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Design-token discipline during styling; verified in validation phase
+  - id: n-unbounded-scale
+    product_action: Represent unbounded cardinality of the dataset shape
+    required_experience:
+      - design does not assume a fixed small N
+    capabilities:
+      - virtualized rendering
+      - progressive loading
+    status: composable
+    resolution:
+      type: explicit_compromise
+      notes: "Explicit compromise: bounded inline synthetic sample (240 records) stands in for unbounded cardinality; rendering path is O(visible N) with canvas batching so larger N degrades gracefully. Full unbounded streaming is out of scope per brief (no backend)"

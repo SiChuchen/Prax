@@ -1,0 +1,377 @@
+{
+  "receipt_version": "0.2",
+  "tool": {
+    "name": "prax-measure",
+    "version": "0.2.0"
+  },
+  "target": {
+    "app_root": "E:\\codex-prj\\Prax\\Prax\\benchmark-runs\\product-intelligence-matrix\\m4-probe-20261024\\runs\\s6-p3\\measurement-root",
+    "base_url": "http://127.0.0.1:10344/",
+    "build_ref": null
+  },
+  "run_at": "2026-10-24T01:15:52.618Z",
+  "viewport_matrix": [
+    {
+      "width": 1280,
+      "height": 860
+    },
+    {
+      "width": 1440,
+      "height": 900
+    }
+  ],
+  "checks": [
+    {
+      "id": "layout.overflow",
+      "status": "pass",
+      "severity": "error",
+      "measured": {
+        "scroll_width": 1280,
+        "inner_width": 1280,
+        "overflow_px": 0,
+        "element_overflows": 0,
+        "flagged_elements": [],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "pass"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "pass"
+          }
+        ]
+      },
+      "threshold": {
+        "max_overflow_px": 0,
+        "element_overflow_tolerance_px": 1
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "layout.responsive_collision",
+      "status": "fail",
+      "severity": "error",
+      "subject": "rect[直接成像 · 32 条] ∩ rect[天体测量 · 33 条]",
+      "measured": {
+        "collisions": 1,
+        "pairs": [
+          {
+            "a": "rect[直接成像 · 32 条]",
+            "b": "rect[天体测量 · 33 条]",
+            "a_rect": {
+              "x": 846.709228515625,
+              "y": 196.03375244140625,
+              "width": 129.00714111328125,
+              "height": 372.55316162109375
+            },
+            "b_rect": {
+              "x": 975.71630859375,
+              "y": 196.03375244140625,
+              "width": 129.007080078125,
+              "height": 372.55316162109375
+            }
+          }
+        ],
+        "interactive_elements": 117,
+        "viewport": "1440x900",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "pass"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "max_collisions": 0
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/4a8208f9-22bb-491e-9e68-4d6c550028fe/viewport-1/layout.responsive_collision/responsive-collision-1440x900.png",
+          "sha256": "07eb13d467127dbd2526fe8d11ef5fdd989bb6ca1d7619f5d3c0ee793467bd82"
+        }
+      ],
+      "supported_fixes": [
+        "separate the colliding interactive elements or restructure the layout so their hit areas do not intersect at this viewport"
+      ]
+    },
+    {
+      "id": "text.truncation",
+      "status": "pass",
+      "severity": "error",
+      "measured": {
+        "truncated": 0,
+        "elements": [],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "pass"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "pass"
+          }
+        ]
+      },
+      "threshold": {
+        "max_truncated": 0
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "a11y.contrast",
+      "status": "pass",
+      "severity": "error",
+      "measured": {
+        "failing": 0,
+        "pairs": [],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "pass"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "pass"
+          }
+        ]
+      },
+      "threshold": {
+        "normal_min_ratio": 4.5,
+        "large_min_ratio": 3
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "a11y.focus_order",
+      "status": "fail",
+      "severity": "error",
+      "subject": "tab order contradicts visual order: button → button; tab order contradicts visual order: button → rect; tab order contradicts visual order: button → button; tab order contradicts visual order: button → button; tab order contradicts visual order: button → button; tab order contradicts visual order: button → button; tab order contradicts visual order: button → button; tab order contradicts visual order: button → button; tab order contradicts visual order: button → button",
+      "measured": {
+        "stops": 64,
+        "sequence": [
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "rect",
+          "rect",
+          "rect",
+          "rect",
+          "rect",
+          "rect",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button"
+        ],
+        "missing_indicators": [],
+        "inversions": [
+          {
+            "from": "button",
+            "to": "button"
+          },
+          {
+            "from": "button",
+            "to": "rect"
+          },
+          {
+            "from": "button",
+            "to": "button"
+          },
+          {
+            "from": "button",
+            "to": "button"
+          },
+          {
+            "from": "button",
+            "to": "button"
+          },
+          {
+            "from": "button",
+            "to": "button"
+          },
+          {
+            "from": "button",
+            "to": "button"
+          },
+          {
+            "from": "button",
+            "to": "button"
+          },
+          {
+            "from": "button",
+            "to": "button"
+          }
+        ],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "max_missing_focus_indicators": 0,
+        "max_order_inversions": 0
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/4a8208f9-22bb-491e-9e68-4d6c550028fe/viewport-0/a11y.focus_order/focus-order-1280x860.png",
+          "sha256": "fbf97a4e42a1fb88c86a1f7ae8d92969d63cff896ed021d3eec021c77577b204"
+        },
+        {
+          "ref": "validation-evidence/4a8208f9-22bb-491e-9e68-4d6c550028fe/viewport-1/a11y.focus_order/focus-order-1440x900.png",
+          "sha256": "9a69e25b7ff208c3708b250f86d4bf719d9af0edf61b4164e23065a56ec055af"
+        }
+      ],
+      "supported_fixes": [
+        "restore a visible focus indicator (outline or box-shadow) on the listed elements and order the tab sequence to follow the visual reading order (positive tabindex or DOM reordering)"
+      ]
+    },
+    {
+      "id": "a11y.target_size",
+      "status": "pass",
+      "severity": "error",
+      "measured": {
+        "undersized": 0,
+        "elements": [],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "pass"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "pass"
+          }
+        ]
+      },
+      "threshold": {
+        "min_target_px": 24
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "type.min_projected_size",
+      "status": "pass",
+      "severity": "warning",
+      "measured": {
+        "min_font_px": 12,
+        "undersized": 0,
+        "elements": [],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "pass"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "pass"
+          }
+        ]
+      },
+      "threshold": {
+        "min_projected_px": 12
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    }
+  ],
+  "summary": {
+    "pass": 5,
+    "fail": 2,
+    "skipped": 0,
+    "warnings": 0
+  },
+  "binding": {
+    "run_id": "4a8208f9-22bb-491e-9e68-4d6c550028fe",
+    "entry": "/",
+    "scenario": "entry",
+    "implementation": {
+      "root": "E:\\codex-prj\\Prax\\Prax\\benchmark-runs\\product-intelligence-matrix\\m4-probe-20261024\\runs\\s6-p3\\measurement-root",
+      "digest": "158363f64589332d0574723ed89d3d68959cd5a3489ee204b915967037969ebf",
+      "kind": "static_tree"
+    },
+    "session_id": null,
+    "contract_digests": {
+      "screen.sdir.yaml": null,
+      "sdir-delta.yaml": null,
+      "implementation-brief.yaml": null
+    }
+  },
+  "target_validation": {
+    "status": "valid",
+    "issues": [],
+    "readiness": "document",
+    "ready_selector": null
+  }
+}

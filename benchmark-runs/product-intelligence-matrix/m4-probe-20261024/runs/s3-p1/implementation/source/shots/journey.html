@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>JOURNEY · 维度切换后认知保持</title>
+<link rel="stylesheet" href="../css/app.css">
+<style>
+  #cap { position: fixed; left: 10px; bottom: 10px; z-index: 90;
+    background: rgba(8,12,16,.88); border: 1px solid #2a3441; border-radius: 6px;
+    color: #9fb2c4; font: 11px/1.6 Consolas, monospace; padding: 8px 12px; max-width: 460px; }
+  #cap b { color: #4cc2ff; }
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">✦</span><span class="brand-name">星巡台 <i>ASTRA</i></span><span class="brand-sub">系外行星多维探索 · 600 条 × 10 维</span></div>
+    <div id="anchorBar" class="anchor-bar" aria-label="认知锁点条"></div>
+  </header>
+  <div id="toast" class="toast" hidden></div>
+  <main id="canvas" class="canvas" aria-label="投影画布"></main>
+  <aside id="dimRail" class="dim-rail" aria-label="维度轨"></aside>
+  <aside class="rightcol">
+    <section id="inspector" class="panel" aria-label="聚焦检查器"></section>
+    <section id="records" class="panel grow" aria-label="匹配记录"></section>
+    <section id="trail" class="panel trail" aria-label="状态轨迹"></section>
+  </aside>
+</div>
+<div id="cap"></div>
+<script>window.__HARNESS__ = true;</script>
+<script src="../js/data.js"></script>
+<script src="../js/app.js"></script>
+<script>
+(function () {
+  'use strict';
+  APP.boot();
+  var cap = document.getElementById('cap');
+  var stage2 = /s=2/.test(location.search);
+  // ① 真实点击：打开「发现方法」的过滤编辑器并勾选「凌星法」
+  document.querySelector('[data-funnel="method"]').click();
+  document.querySelector('input[data-catval="凌星法"]').click();
+  // ② 真实点击：聚焦当前记录列表首行
+  var row = document.querySelector('.rec-row');
+  var focusName = row.querySelector('.rec-name').childNodes[0].textContent;
+  row.click();
+  // ③ 真实点击：把 X 轴换到「恒星光谱型」（维度切换，不重置认知）
+  document.querySelector('.ax[data-axis="x"][data-dim="star"]').click();
+  var html = '<b>真实用户旅程（DOM 实点）：</b>① 勾选过滤 发现方法=凌星法 → ② 点击聚焦记录 ' + focusName +
+    ' → ③ 点击 X 轴按钮，把投影从「发现方法」换到「恒星光谱型」。<br>' +
+    '验证点：锁点条中 <b>过滤芯片 / 聚焦 / 轨迹</b> 全部保留，轨迹条目含归属，toast 提示未重置。';
+  if (stage2) {
+    // ④ 真实点击：回退到轨迹 #1（过滤后 / 聚焦与换轴前）——完整状态恢复
+    var before = JSON.stringify(APP.state);
+    document.querySelector('[data-tidx="1"]').click();
+    var s = APP.state;
+    html = '<b>真实用户旅程 + 回退（DOM 实点）：</b>在左侧旅程之上，点击状态轨迹 #1「过滤 发现方法=凌星法」。<br>' +
+      '验证点：X 轴回到「' + (s.x === 'method' ? '发现方法' : s.x) + '」，聚焦清空（该时刻尚无聚焦），过滤保留该时刻取值，' +
+      '轨迹游标 <b>2/4</b>，#2/#3 变为可重做的过去态。<br>状态对比（回退前 JSON ≠ 回退后 JSON）：' + (before !== JSON.stringify(s) ? '已变化 ✓' : '未变化 ✗');
+    document.title = 'JOURNEY-REVERT x=' + s.x + ' filters=' + s.filters.length + ' focus=' + (s.focus ? 'pinned' : 'none');
+  } else {
+    document.title = 'JOURNEY OK filters=' + APP.state.filters.length + ' focus=' + (APP.state.focus ? 'pinned' : 'none') + ' x=' + APP.state.x;
+  }
+  cap.innerHTML = html;
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+version: "1"
+check_id: keyboard
+outcome: pass
+kind: empirical
+collected_at: "2026-10-23T22:38:00Z"
+executor: "Claude (GLM) execution arm, cell-j13-s10"
+environment: "headless Chrome --headless=new, 1680x1050, file:/// index.html, Windows 10"
+method: "CDP trusted input events (Input.dispatchKeyEvent) + document.activeElement focusability scan"
+command: "node tools/evidence.mjs"
+observations:
+  - "S10: all enabled controls natively focusable (focusables.bad=[]), Tab from canvas lands on next control (BUTTON.trail-step)"
+  - "S10: visible 2px focus ring captured on trail step (10-focus-visible.png)"
+  - "S11: canvas focus + ArrowRight x3 + Enter committed attributed selection step (len=preLen+1)"
+artifacts:
+    - path: evidence/10-focus-visible.png
+      sha256: "c9976b388e1fa60758e15859a827ce199b187795aea1a6518ebad19007c29f0e"
+    - path: evidence/11-keyboard-selected.png
+      sha256: "2014f3819518ed1c209a236da5fef0f38bfd8330a9d07596d94245c9337a0446"
+    - path: evidence/evidence.json
+      sha256: "93467db773d53127a5ebc511cedebbae7098e8fbeb5b4b247b459da791af4cb0"

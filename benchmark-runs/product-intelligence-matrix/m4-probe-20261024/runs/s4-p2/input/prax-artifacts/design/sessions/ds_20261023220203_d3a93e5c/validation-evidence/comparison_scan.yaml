@@ -1,0 +1,16 @@
+version: "1"
+check_id: comparison_scan
+outcome: pass
+kind: empirical
+collected_at: "2026-10-23T22:38:00Z"
+executor: "Claude (GLM) execution arm, cell-j13-s10"
+environment: "headless Chrome --headless=new, 1680x1050, file:/// index.html, Windows 10"
+method: "Screenshot inspection of canvas + inspector"
+observations:
+  - "All 240 records scannable on canvas for any dimension pair (colored by region, axis-anchored, fixed domains) without opening items"
+  - "Hover tooltip exposes x/y values; selected record's full 9-dimension vector with comparison bars rendered inline in inspector"
+artifacts:
+    - path: evidence/05-switch-y-with-context.png
+      sha256: "c943a33983dd38be047f70c418706fa9425b95b54d30cfeda0a7f46ab9521d02"
+    - path: evidence/01-first-paint.png
+      sha256: "ad64c763ad381557749deb581ba961765afb2d580f1720c92257e7e7be15e0ac"

@@ -1,0 +1,110 @@
+session_id: ds_20261023205741_2a9a445c
+information_shape:
+  cardinality: unbounded
+  relationality: medium
+  hierarchy: medium
+  temporality: low
+  density: high
+  dimensionality: high
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: grid
+    reason: 维度乘维度交叉聚合格是承载高维切面的最密表示；切维度即同框架换轴，认知框架恒定
+  supporting:
+    - type: table
+      reason: 记录级扫读与定位：当前过滤下的记录清单，点击聚焦
+    - type: list
+      reason: 维度轨以分组列表呈现可选轴，每轴附微型覆盖直方图
+    - type: chart
+      reason: 检查器内嵌该记录在当前投影下的取值高亮
+  rejected:
+    - option: 卡片网格
+      reason: 密集对比场景下卡片浪费密度，是数据探索器的反模式
+    - option: 关系图
+      reason: 关系性仅中等，维度间无显式关系边，图布局徒增认知负担
+    - option: 地图
+      reason: 空间性为无
+  justification_vs_shape: dimensionality=high, density=high, cardinality=unbounded require a re-axissable aggregate matrix as primary representation; relationality=medium + hierarchy=medium need only a family-grouped dimension rail (no graph, no tree); comparison_need=none excludes side-by-side compare layouts; spatiality=none excludes map; temporality=low excludes timeline.
+primary_structure:
+  pattern: PAT-DATA-EXPLORER
+  rationale:
+    - 路由候选模式本体：结构化数据面配持久过滤与按需详情，置信高；本应用中数据面由维度乘维度交叉聚合格承担，切维度即换轴不换框架，满足维度切换不重置认知
+    - 辅以路由候选中的上下文检查器模式：记录列表与检查器绑定显式选择，细节呈现不离开工作区上下文
+    - 定向不变量：过滤器、聚焦、度量、轨迹作为跨维度切换的稳定锚点常驻可见
+    - 常驻状态轨迹列落实验收种子：每条状态变化带归属且点击回退
+    - 拒绝关系图与地图：关系性中等且空间性为无，缺乏对应信息力
+  confidence: high
+information_hierarchy:
+  primary:
+    - data
+    - anchor
+    - rail
+  secondary:
+    - list
+    - trail
+    - inspector
+density:
+  intent: compact
+  strategy:
+    - 固定五区骨架：维度轨、投影画布、记录列、轨迹列、顶部锁点条；位置恒定不变以承载定向不变量
+    - 结构化密度：维度按族分组并设表头，数值等宽右对齐，聚合单元格内联计数
+    - 内联芯片表达活动过滤器与当前投影，不用弹窗
+    - 信号高于 chrome：控件弱化、数据强化
+  avoid:
+    - 以卡片网格呈现密集数据（结构化数据面反模式）
+    - 装饰性插图或大块头部区
+    - 模态弹窗打断探索流
+major_choices:
+  - id: choice_dataset
+    choice: 数据集采用系外行星巡天内容：600 条记录、10 个维度（4 分类 6 数量），以内联脚本首屏就绪
+    rationale: 维度性高且基数感真实；分类与数量维度兼备使投影映射完整；领域中性、可完全离线静态交付。解决 unknown：数据内容领域由实现者自选（简报建议 dataset 或 media）。
+    confidence: high
+    references:
+      - dataset
+      - dimension
+      - record
+  - id: choice_projection
+    choice: 投影统一为交叉聚合格：分类乘分类为热力交叉表，分类乘数量为分箱分布，数量乘数量为二维分箱热力；切换维度只换轴映射不换框架
+    rationale: 同一画布框架下换轴即切维度，直接实现成功标准：维度切换不重置认知。高维度性加高密度下，聚合格是信息密度最高的切面表示。
+    confidence: high
+    references:
+      - projection
+      - dimension
+      - dataset
+  - id: choice_trail
+    choice: 状态归属与回退采用快照栈：每次过滤或投影变化压入完整状态快照，轨迹条目即快照引用（含触发操作与时间戳的归属元数据），点击条目恢复该快照，另配撤销与重做
+    rationale: 验收种子『过滤/投影状态有归属且可回退』由单一机制承载：归属即快照元数据，回退即快照恢复；轨迹列常驻可见。
+    confidence: high
+    references:
+      - state_trail
+      - filter
+      - projection
+  - id: choice_anchor
+    choice: 顶部常驻认知锁点条：跨维度切换始终显示保留的过滤器计数、聚焦记录、度量选择与轨迹深度
+    rationale: 把定向不变量外化为可见界面：切换维度前后用户能直接看到过滤器、聚焦、轨迹未被重置，即认知保持的可验证呈现。
+    confidence: high
+    references:
+      - filter
+      - record
+      - state_trail
+rejected:
+  - option: PAT-LIST-DETAIL 单独作为主结构
+    reason: 以平铺记录列表为主面时，维度切换退化为换列显示，聚合分布不可见，维度性高的认知负担无处安放；仅保留为记录列的从属结构
+  - option: 单一图表为主面
+    reason: 分类维度与数量维度需要统一投影框架，单一散点或单一柱图无法覆盖全部维度类型组合
+unresolved: []
+complexity_budget:
+  permanent_panels: 5
+  permanent_primary_actions: 3
+  modes: 1
+  state_owners: 4
+  navigation_levels: 1
+  persistent_filters: 1
+  new_semantic_concepts: 3
+  keyboard_contracts: 1
+  mobile_conflicts: 0
+  permanent_surfaces: 1

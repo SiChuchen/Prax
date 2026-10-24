@@ -1,0 +1,72 @@
+needs:
+  - id: n-lens-switch
+    product_action: Switch the active projection dimension without resetting selection/filters/anchor/journal
+    required_experience:
+      - click a dimension → chart axes and table lead column re-lens in place
+      - selection set, filter set, anchored record, journal and trail remain byte-identical
+    capabilities:
+      - single in-memory workspace state store (selection, filters, anchor, lens, journal, trail)
+      - projection transform is a pure function of (records, lens); all other state orthogonal
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Lens is one field in a client-side state object; switching mutates only it and re-renders projections. Vanilla JS state store, no framework needed.
+  - id: n-owned-journal
+    product_action: Every filter/projection state change is owned by a named action and reversible (restore any prior state; undo/redo)
+    required_experience:
+      - journal entries list action label + what changed
+      - click entry → exact state restored
+      - undo/redo buttons traverse the same stack
+    capabilities:
+      - append-only action journal with full state snapshots
+      - restore-to-entry + undo/redo over one stack
+      - each entry carries action label = ownership
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: "Pure client-side: store {label, lens, filters, sort, search, companion, colorBy, ts} per action; restore = state replacement + re-render."
+  - id: n-unbounded-data
+    product_action: Present an unbounded-cardinality, high-density dataset (several hundred records × 13 dimensions) responsively
+    required_experience:
+      - high record count visible as counts + scrollable table
+      - chart remains interactive at full record count
+    capabilities:
+      - dataset generated deterministically inlined at parse time (no fetch, no loading state)
+      - canvas scatter render
+      - virtualized/limited table window with live counts
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: 420-record deterministic dataset inline; <canvas> point cloud; table renders a large window with counts summarizing the whole set.
+  - id: n-first-paint-ready
+    product_action: "Page is usable at first paint: initial data inlined with the first screen, no loading state"
+    required_experience:
+      - first rendered frame already shows data, counts, default lens, seeded journal entry
+    capabilities:
+      - synchronous inline data + script at end of body
+      - no network requests at startup
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: All data and code are local static assets; rendering is synchronous on DOMContentLoaded with data already in memory.
+  - id: n-static-delivery
+    product_action: Runs by opening root index.html statically (file:// or any static server), fully offline
+    required_experience:
+      - double-click index.html works; no server or network required
+    capabilities:
+      - no build step, no CDN, no external fonts/scripts
+      - classic <script> tags (file:// safe)
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Plain HTML/CSS/JS in classic scripts; no ES module CORS issues under file://.
+  - id: n-persistence
+    product_action: State persistence across page reloads
+    required_experience:
+      - "none required by brief: 不要求后端、账号体系或持久化服务"
+    capabilities:
+      - session-only state (no storage service)
+    status: gap
+    resolution:
+      type: explicit_compromise
+      notes: Out of scope per brief; journal covers in-session reversibility. localStorage deliberately avoided to keep file:// behavior deterministic.

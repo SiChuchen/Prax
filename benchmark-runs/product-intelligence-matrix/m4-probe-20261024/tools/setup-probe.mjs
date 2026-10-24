@@ -44,6 +44,10 @@ const report = { batch: "m4-probe-20261024", workspaces: [] };
 for (const s of SLOTS) {
   const promptKey = !s.prax ? "s-p0-prompt.md" : s.prompt === "b+appendix" ? "s-p2-prompt.md" : "s-p1-prompt.md";
   const dir = `${PI4}/${s.slot}-${s.arm}`;
+  if (existsSync(`${M4}/runs/${s.slot}-${s.arm}/execution/run-metadata.json`)) {
+    report.workspaces.push({ slot: s.slot, arm: s.arm, ws: `${s.slot}-${s.arm}`, brief_sha256: BRIEF_EXPECTED, prompt: s.prompt, prompt_file: promptKey, rounds: s.rounds, prompt_sha256: sha256(`${M4}/launch/${promptKey}`), status: "already_completed_skipped" });
+    continue;
+  }
   if (!existsSync(dir)) execSync(`git init -q "${dir}"`);
   const briefDst = `${dir}/brief.md`;
   if (!existsSync(briefDst)) copyFileSync(BRIEF_SRC, briefDst);

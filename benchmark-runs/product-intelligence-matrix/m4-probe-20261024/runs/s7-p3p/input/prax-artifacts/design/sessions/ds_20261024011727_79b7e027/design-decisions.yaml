@@ -1,0 +1,116 @@
+session_id: ds_20261024011727_79b7e027
+information_shape:
+  cardinality: unbounded
+  relationality: medium
+  hierarchy: medium
+  temporality: low
+  density: high
+  dimensionality: high
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: table
+    reason: "A structured, sortable record table carries the primary explore task: every visible record is one row, the active lens dimension leads the columns and the sort, and lens switching re-sorts in place without resetting anything"
+  supporting:
+    - type: chart
+      reason: "Lens projection chart: the same records plotted X = active lens, Y = companion, colored by categorical — the overview that makes lens switches legible"
+    - type: list
+      reason: "Dimension rail: full dimension inventory with stats + visited trail for cheap lens switching"
+    - type: table
+      reason: "Inspector property rows: one anchored record read across ALL dimensions at once"
+    - type: feed
+      reason: "State journal: chronological, attributable, restorable filter/projection entries"
+  rejected:
+    - option: table-first with no chart
+      reason: loses distribution legibility along the lens; the chart is kept as the overview half of the same surface
+    - option: cards/grid
+      reason: anti-pattern for dense comparison; unbounded cardinality
+  justification_vs_shape: Unbounded cardinality + high density make a dense projected table the dominant data surface (tabular alignment per PAT-DATA-EXPLORER), with the lens chart, dimension rail list, and journal feed as supporting projections of the same collection; comparison_need=none rules out comparison-first surfaces
+primary_structure:
+  pattern: PAT-DATA-EXPLORER
+  rationale:
+    - "Routed pattern PAT-DATA-EXPLORER contract: pair a structured data surface (tabular alignment, persistent filters) with detail on demand — matches unbounded/high-density/high-dimensionality shape"
+    - The dominant workspace surface is the projected record table; the lens projection chart is its overview counterpart (H-22 Overview→Filter→Detail layering)
+    - Complemented by routed PAT-LIST-DETAIL-INSPECTOR as the detail region (contextual inspector bound to explicit selection)
+    - "H-21 Orientation Invariants is the binding constraint: selection, anchors, and view state are invariants across inspection steps — codified as 'dimension switching never resets cognition'"
+  confidence: high
+information_hierarchy:
+  primary:
+    - data
+    - lens
+    - selection
+    - inspector
+  secondary:
+    - "data surface (expansion): projected record table of the collection — one row per visible record, columns led by the active lens dimension, sorted by it — with the lens projection chart above (X = lens, Y = companion, color = categorical); switching the lens re-leads this surface without touching selection, filters, anchor, or journal"
+    - "lens (expansion): active lens labeling + dimension rail with visited trail; one obvious way to switch the arranging dimension"
+    - "selection (expansion): selected + anchored records highlighted in place in table and chart"
+    - "inspector (expansion): anchored record detail across ALL dimensions"
+    - "journal (expansion): filter/projection state entries with ownership + one-click restore"
+density:
+  intent: compact
+  strategy:
+    - Dense three-region desktop workspace; every region always visible (no mode switching)
+    - Inline stats and counts in region headers (no separate status strip)
+    - Compact chips for filters and journal entries; 13px base type for data, clear grouping borders
+    - Projected table re-render <16ms per lens switch for several hundred rows
+  avoid:
+    - card grids (anti-pattern for dense comparison)
+    - decorative chrome competing with data
+    - multi-step wizards for lens switching
+major_choices:
+  - id: mc-lens-invariants
+    choice: Cognitive state (selection, filters, anchor, journal, trail) is stored OUTSIDE the lens state; switching lens re-points only the projection mapping (chart axes + table lead column) and touches nothing else
+    rationale: "Direct implementation of 维度切换不重置认知 and H-21 Orientation Invariants: the lens is a pure view transform over an unchanged working set"
+    confidence: high
+    references:
+      - lens
+      - dimension
+      - selection
+      - filter
+  - id: mc-owned-journal
+    choice: Every filter/projection action appends an owned journal entry (action name + timestamp + full state snapshot); any entry restores that exact state; undo/redo ride the same stack
+    rationale: "Acceptance seed 过滤/投影状态有归属且可回退: ownership = named action per entry; reversibility = restore + undo/redo from one stack"
+    confidence: high
+    references:
+      - journal_entry
+      - filter
+      - lens
+      - dataset
+  - id: mc-dual-axis
+    choice: "Dual projection of the lens: table lead column + chart X axis both follow the active lens dimension; Y = switchable companion, color = categorical"
+    rationale: "High dimensionality (维度性=高): one switch surfaces three dimensions at once; table and chart stay in 1:1 row/point correspondence so cognition transfers between them"
+    confidence: high
+    references:
+      - dimension
+      - lens
+      - record
+      - dataset
+  - id: mc-trail
+    choice: Dimension rail keeps a visited-dimension trail with return points
+    rationale: Unbounded dimension wandering needs a way back; the trail is the lightest cognitive bookmark
+    confidence: medium
+    references:
+      - dimension
+      - lens
+rejected:
+  - option: PAT-CANVAS-WORKSPACE (free canvas)
+    reason: Spatiality = none; no spatial topology to lay out; canvas adds free-form chaos without a spatial mental model
+  - option: Chart-primary with table demoted to a drawer
+    reason: a chart alone is not a dominant data/collection workspace surface; tabular alignment is the Data Explorer contract for systematic scanning
+  - option: Wizard/modal dimension picker
+    reason: A modal for the primary high-frequency action would reset visual context on every switch — the failure mode the brief forbids
+unresolved: []
+complexity_budget:
+  permanent_panels: 4
+  permanent_primary_actions: 4
+  modes: 0
+  state_owners: 5
+  navigation_levels: 1
+  persistent_filters: 3
+  new_semantic_concepts: 3
+  keyboard_contracts: 2
+  mobile_conflicts: 0
+  permanent_surfaces: 1

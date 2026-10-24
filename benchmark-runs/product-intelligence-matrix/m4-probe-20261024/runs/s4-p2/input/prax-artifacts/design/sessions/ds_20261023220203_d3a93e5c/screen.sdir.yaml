@@ -1,0 +1,162 @@
+version: "0.2"
+screen:
+  id: data_explorer_screen
+  intent:
+    primary_task: Explore a multivariate dataset by re-projecting records onto different dimension pairs while filters and selection persist untouched
+    secondary_tasks:
+      - Subset the dataset by constraining dimension ranges (filters)
+      - Review the attributed history of projection/filter changes and revert to any earlier state
+  archetype:
+    pattern_ref: PAT-DATA-EXPLORER
+  density_intent: compact
+  regions:
+    - id: data
+      role: collection
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - comparison_group
+        - filter_then_inspect
+    - id: collection
+      role: experimental:collection
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: data 投影画布：dataset 点云在当前投影下的分布，X/Y 各绑定一个 dimension —— 主工作面
+      role: experimental:data 投影画布：dataset 点云在当前投影下的分布，X/Y 各绑定一个 dimension —— 主工作面
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: collection：活跃 filter 命中的记录集合，内联可见样本计数
+      role: experimental:collection：活跃 filter 命中的记录集合，内联可见样本计数
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: state_trail：每步归属标签 + 一步回退
+      role: experimental:state_trail：每步归属标签 + 一步回退
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: inspector：选中记录的全维度向量
+      role: experimental:inspector：选中记录的全维度向量
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: dataset 元信息：记录总数、维度清单
+      role: experimental:dataset 元信息：记录总数、维度清单
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 维度分布摘要：轴端 min/max/单位
+      role: experimental:维度分布摘要：轴端 min/max/单位
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: detail
+      role: contextual_inspector
+      importance: contextual
+      visibility:
+        condition: selection_driven
+      behavior_intent:
+        - selection_driven
+  relationships:
+    - id: region_rel_data_detail
+      source: data
+      target: detail
+      type: selection_drives_contextual_detail
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved: []
+  rejected_alternatives:
+    - option: Parallel coordinates as primary
+      reason: Strong for >3 dims but axis clutter explodes with 9 dimensions + range filters on one screen; scatter projection communicates the dimension-switch interaction more directly
+    - option: Raw data table as primary
+      reason: Dense but hides distributions and correlation; dimension structure invisible; dense-comparison anti-pattern territory
+    - option: Tree/hierarchy as primary
+      reason: Hierarchy is medium, not the primary cognitive burden — dimensionality is
+    - option: Map/timeline representations
+      reason: Spatiality none / temporality low per shape bundle
+  user_job:
+    verb: explore
+    target: multi-dimensional dataset (unbounded records × many numeric/categorical dimensions)
+    success: Switching projection dimensions never resets filters, selection, or the user's reading position; every filter/projection change is attributed and revertible
+  primary_object:
+    type: dataset
+    label: 多维数据集 (multi-dimensional dataset)
+  information_shape:
+    cardinality: unbounded
+    relationality: medium
+    hierarchy: medium
+    temporality: low
+    density: high
+    dimensionality: high
+    spatiality: none
+    volatility: medium
+    uncertainty: low
+    comparison_need: none
+  representation:
+    primary:
+      type: chart
+      reason: Dimensionality is the main burden; a 2D scatter projection of two chosen dimensions of the dataset gives direct perceptual access to distribution/correlation and makes switching dimensions a first-class, cheap interaction
+    supporting:
+      - type: list
+        reason: Inspector shows the selected record's full 9-dimension vector as a compact list without leaving the workspace
+      - type: form
+        reason: Filter rail uses per-dimension range/slider controls bound to the state_trail
+  priority:
+    primary:
+      - data
+      - collection
+      - data 投影画布：dataset 点云在当前投影下的分布，X/Y 各绑定一个 dimension —— 主工作面
+      - collection：活跃 filter 命中的记录集合，内联可见样本计数
+      - state_trail：每步归属标签 + 一步回退
+      - inspector：选中记录的全维度向量
+    contextual:
+      - dataset 元信息：记录总数、维度清单
+      - 维度分布摘要：轴端 min/max/单位
+      - detail
+  interaction:
+    preview: none
+    inspect: select
+    navigate: none
+    locate: none
+  state_ownership:
+    - state: selection
+      owner: data
+    - state: preview
+      owner: session
+  complexity_budget:
+    permanent_panels: 4
+    permanent_primary_actions: 3
+    modes: 0
+    state_owners: 1
+    navigation_levels: 1
+    persistent_filters: 8
+    new_semantic_concepts: 2
+    keyboard_contracts: 1
+    mobile_conflicts: 0
+    permanent_surfaces: 4
+  acceptance:
+    - A user can switch the X/Y projection dimensions any number of times while their filters, selection, and reading position remain intact; every projection/filter change appears in a visible, attributed state trail and any prior state can be restored in one action.

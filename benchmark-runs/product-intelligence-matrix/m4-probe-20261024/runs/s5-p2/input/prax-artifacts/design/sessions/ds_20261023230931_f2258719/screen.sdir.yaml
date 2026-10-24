@@ -1,0 +1,156 @@
+version: "0.2"
+screen:
+  id: data_explorer_screen
+  intent:
+    primary_task: 在同一主屏上对多维数据集做投影探索：切换 X/Y/颜色编码维度、增删过滤，同时保持选中对象与过滤上下文跨维度切换稳定
+    secondary_tasks:
+      - 通过投影轨迹/撤销回退到任意先前的过滤或投影状态（状态有归属可回退）
+      - 选中数据记录，查看其全部维度的画像
+      - 在分组维度目录中发现并理解可用维度
+  archetype:
+    pattern_ref: PAT-DATA-EXPLORER
+  density_intent: compact
+  regions:
+    - id: data
+      role: collection
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - comparison_group
+        - filter_then_inspect
+    - id: dimension_catalog 维度目录（按主题分组；行内指派轴/颜色角色、开启过滤）
+      role: experimental:dimension_catalog 维度目录（按主题分组；行内指派轴/颜色角色、开启过滤）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: state_bar 状态条（过滤/选择/投影的归属芯片 + 撤销/重做）
+      role: experimental:state_bar 状态条（过滤/选择/投影的归属芯片 + 撤销/重做）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 选中记录画像（Contextual Inspector，跨投影持久）
+      role: experimental:选中记录画像（Contextual Inspector，跨投影持久）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 投影轨迹（命名快照，点击回退）
+      role: experimental:投影轨迹（命名快照，点击回退）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 颜色图例（含被过滤态）
+      role: experimental:颜色图例（含被过滤态）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: detail
+      role: contextual_inspector
+      importance: contextual
+      visibility:
+        condition: selection_driven
+      behavior_intent:
+        - selection_driven
+  relationships:
+    - id: region_rel_data_detail
+      source: data
+      target: detail
+      type: selection_drives_contextual_detail
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved:
+    - id: uq-react-brief-vs-vanilla
+      question: uq-react-brief-vs-vanilla
+      impact: low
+      affects:
+        - realization.framework
+  rejected_alternatives:
+    - option: PAT-LIST-DETAIL（纯列表-详情为主结构）
+      reason: 集合浏览型；维度切换/重投影才是本格主要认知动作，散点总览比列表更适合承载维度性=high
+    - option: table
+      reason: 偏线性逐行比较，弱于呈现非线性维度关系（pattern contract tradeoff），且比较需求=none
+    - option: map
+      reason: 信息形状空间性=none，地理隐喻引入无关认知负担
+    - option: tree
+      reason: 层级性仅中（维度分组），作为目录列表的分组即可，不需要树为主结构
+  user_job:
+    verb: explore
+    target: 多维数据（高维数据集）
+    success: 维度切换不重置认知
+  primary_object:
+    type: dataset
+    label: 城市观测数据集（240 条记录 × 15 维度）
+  information_shape:
+    cardinality: unbounded
+    relationality: medium
+    hierarchy: medium
+    temporality: low
+    density: high
+    dimensionality: high
+    spatiality: none
+    volatility: medium
+    uncertainty: low
+    comparison_need: none
+  representation:
+    primary:
+      type: chart
+      reason: 维度性高的核心交互是重投影：散点图把任意两维+颜色维映射到同一恒定点云上，是"维度切换不重置认知"最直接的载体
+    supporting:
+      - type: list
+        reason: 维度目录：15 个维度按 4 主题分组（层级性中的落点），行内完成角色指派与过滤入口
+      - type: cards
+        reason: 检查器：选中记录的全维度画像卡，跨投影持久
+      - type: list
+        reason: 投影轨迹：历史快照纵向列表，每条命名归属，点击回退
+  priority:
+    primary:
+      - data
+      - dimension_catalog 维度目录（按主题分组；行内指派轴/颜色角色、开启过滤）
+      - state_bar 状态条（过滤/选择/投影的归属芯片 + 撤销/重做）
+    contextual:
+      - 选中记录画像（Contextual Inspector，跨投影持久）
+      - 投影轨迹（命名快照，点击回退）
+      - 颜色图例（含被过滤态）
+      - detail
+  interaction:
+    preview: none
+    inspect: select
+    navigate: none
+    locate: none
+  state_ownership:
+    - state: selection
+      owner: data
+    - state: preview
+      owner: session
+  complexity_budget:
+    permanent_panels: 3
+    permanent_primary_actions: 4
+    modes: 0
+    state_owners: 4
+    navigation_levels: 1
+    persistent_filters: 15
+    new_semantic_concepts: 3
+    keyboard_contracts: 2
+    mobile_conflicts: 0
+    permanent_surfaces: 4
+  acceptance:
+    - 用户切换 X/Y/颜色维度或增删过滤器后：先前的选中对象保持高亮、过滤链仍完整可见且逐条归属维度、走过的投影可在轨迹中一键回到；全程无需重建任何上下文。

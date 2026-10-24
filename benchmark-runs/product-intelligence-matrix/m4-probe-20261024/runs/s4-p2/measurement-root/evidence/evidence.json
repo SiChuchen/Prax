@@ -1,0 +1,246 @@
+{
+  "url": "file:///E:/codex-prj/ab-worktrees/pi-matrix-m4/s4-p2/index.html",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+  "viewport": "1680x1050",
+  "consoleErrors": [],
+  "trail": [
+    "init:初始视图 · 人均 GDP × 公共交通",
+    "filter:过滤 人口 ∈ 64 – 65 万",
+    "filter:清除全部过滤（1 项）",
+    "selection:键盘 选中 Wind Meridian"
+  ],
+  "steps": [
+    {
+      "name": "S1 first-paint ready",
+      "fingerprint": {
+        "x": "gdp",
+        "y": "transit",
+        "filters": {},
+        "colorBy": "region",
+        "selection": null,
+        "cur": 0,
+        "len": 1,
+        "visible": 240
+      },
+      "asserts": {
+        "initial projection gdp×transit": true,
+        "no filters": true,
+        "all 240 visible": true,
+        "history = init step only": true
+      },
+      "note": "首屏即用：数据内联，无加载态"
+    },
+    {
+      "name": "S2 switch X -> pop",
+      "fingerprint": {
+        "x": "pop",
+        "y": "transit",
+        "filters": {},
+        "colorBy": "region",
+        "selection": null,
+        "cur": 1,
+        "len": 2,
+        "visible": 240
+      },
+      "asserts": {
+        "X now pop": true,
+        "Y unchanged": true,
+        "filters untouched": true,
+        "attributed step appended": true
+      },
+      "note": "维度切换不重置认知：只写 projection 子空间"
+    },
+    {
+      "name": "S3 filter air 40-70",
+      "fingerprint": {
+        "x": "pop",
+        "y": "transit",
+        "filters": {
+          "air": [
+            40,
+            70
+          ]
+        },
+        "colorBy": "region",
+        "selection": null,
+        "cur": 2,
+        "len": 3,
+        "visible": 92
+      },
+      "asserts": {
+        "filter owned in state": true,
+        "visible subset shrank": true,
+        "attributed step appended": true
+      },
+      "note": "过滤状态有归属"
+    },
+    {
+      "name": "S4 mouse select point",
+      "fingerprint": {
+        "x": "pop",
+        "y": "transit",
+        "filters": {
+          "air": [
+            40,
+            70
+          ]
+        },
+        "colorBy": "region",
+        "selection": 115,
+        "cur": 3,
+        "len": 4,
+        "visible": 92
+      },
+      "asserts": {
+        "click lands on canvas": true,
+        "selection = clicked record": true,
+        "filter still active": true,
+        "attributed step appended": true
+      },
+      "note": "指针选择（真实 CDP 鼠标事件）"
+    },
+    {
+      "name": "S5 dimension switch preserves cognition",
+      "fingerprint": {
+        "x": "pop",
+        "y": "air",
+        "filters": {
+          "air": [
+            40,
+            70
+          ]
+        },
+        "colorBy": "region",
+        "selection": 115,
+        "cur": 4,
+        "len": 5,
+        "visible": 92
+      },
+      "asserts": {
+        "Y now air": true,
+        "filter air survives": true,
+        "selection survives": true,
+        "visible count unchanged": true,
+        "attributed step appended": true
+      },
+      "note": "核心判据：切维度后过滤/选择/计数全部保留"
+    },
+    {
+      "name": "S6 undo x2",
+      "fingerprint": {
+        "x": "pop",
+        "y": "transit",
+        "filters": {
+          "air": [
+            40,
+            70
+          ]
+        },
+        "colorBy": "region",
+        "selection": null,
+        "cur": 2,
+        "len": 5,
+        "visible": 92
+      },
+      "asserts": {
+        "cur back to filter step": true,
+        "filter survives undo": true,
+        "selection undone": true,
+        "Y reverted": true
+      },
+      "note": "撤销只回退后续子空间，过滤保留"
+    },
+    {
+      "name": "S7 jump to step 0 reverts everything",
+      "fingerprint": {
+        "x": "gdp",
+        "y": "transit",
+        "filters": {},
+        "colorBy": "region",
+        "selection": null,
+        "cur": 0,
+        "len": 5,
+        "visible": 240
+      },
+      "asserts": {
+        "back to initial": true,
+        "filter cleared": true,
+        "projection initial": true,
+        "all visible again": true
+      },
+      "note": "可回退：单击任意轨迹步恢复完整状态"
+    },
+    {
+      "name": "S8 empty state",
+      "fingerprint": {
+        "x": "gdp",
+        "y": "transit",
+        "filters": {
+          "pop": [
+            64,
+            65
+          ]
+        },
+        "colorBy": "region",
+        "selection": null,
+        "cur": 1,
+        "len": 2,
+        "visible": 0
+      },
+      "asserts": {
+        "emptyVal found": true,
+        "visible == 0": true,
+        "empty overlay shown": true
+      },
+      "note": "空态：过滤器排除全部记录，引导保留可回退 emptyVal=64"
+    },
+    {
+      "name": "S9 clear all filters",
+      "fingerprint": {
+        "x": "gdp",
+        "y": "transit",
+        "filters": {},
+        "colorBy": "region",
+        "selection": null,
+        "cur": 2,
+        "len": 3,
+        "visible": 240
+      },
+      "asserts": {
+        "all visible": true,
+        "no filters": true,
+        "overlay hidden": true
+      },
+      "note": "一键恢复"
+    },
+    {
+      "name": "S10 keyboard focus",
+      "fingerprint": null,
+      "asserts": {
+        "all enabled controls natively focusable": true,
+        "Tab from canvas lands on next control": true
+      },
+      "note": "H-23: 键盘可达 + 可见焦点环（enabled=37, bad=[]）"
+    },
+    {
+      "name": "S11 keyboard selection",
+      "fingerprint": {
+        "x": "gdp",
+        "y": "transit",
+        "filters": {},
+        "colorBy": "region",
+        "selection": 45,
+        "cur": 3,
+        "len": 4,
+        "visible": 240
+      },
+      "asserts": {
+        "selection committed via keyboard": true,
+        "attributed selection step appended": true,
+        "no console errors so far": true
+      },
+      "note": "键盘等价：方向键浏览 + 回车选中"
+    }
+  ],
+  "allPassed": true
+}

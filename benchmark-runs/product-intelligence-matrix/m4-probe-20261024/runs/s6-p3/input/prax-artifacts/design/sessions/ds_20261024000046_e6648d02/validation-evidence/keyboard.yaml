@@ -1,0 +1,16 @@
+version: "1"
+check_id: keyboard
+outcome: pass
+kind: empirical
+collected_at: "2026-10-24T02:05:00Z"
+executor: "Claude (GLM) execution arm, cell-j13-s10, session ds_20261024000046_e6648d02"
+environment: "Chrome (superpowers-chrome MCP, CDP), 1680x950, file:///E:/codex-prj/ab-worktrees/pi-matrix-m4/s6-p3/index.html, Windows 10"
+method: "chrome MCP keyboard_press (trusted OS-level Ctrl+Z) + Runtime.evaluate state assertions + tabbable/focus-order audit"
+command: "mcp chrome use_browser: keyboard_press {key:z, modifiers:{ctrl:true}}"
+observations:
+  - "S4: click rail button 行星半径 → x=radius, histogram re-render (14 occupied bin hits), selection r16 + filter chip kept"
+  - "S5: trusted Ctrl+Z → App.state.x radius→method, undoStack 2→1, selection r16 kept, filter kept, visible=166 unchanged, bars=6"
+  - "audit: 113 tabbables, no positive tabindex, disabled controls skipped, :focus-visible 2px rule active; primary actions are native <button> (Enter/Space semantics)"
+artifacts:
+    - path: evidence/shots/fix-04-dimswitch-context-kept.png
+    - path: evidence/shots/fix-05-undo.png

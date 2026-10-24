@@ -1,0 +1,284 @@
+plan_revision: 3
+evidence:
+  submitted_by: execution-arm (Claude, session ds_20261024000046_e6648d02)
+  collected_at: 2026-10-24T02:20:00Z
+  items:
+    - check_id: hierarchy_review
+      outcome: pass
+      source: CDP 实渲染截图 + DOM/样式审计（chrome MCP use_browser）
+      notes: 视觉层级实测：dominant 投影视图居中最显著，primary/supporting 区位与 SDIR 一致；min 对比 5.47、目标 ≥24px、文本 ≥12px。
+      artifact_refs:
+        - E:/codex-prj/ab-worktrees/pi-matrix-m4/s6-p3/evidence/shots/fix-01-initial-ready.png
+        - E:/codex-prj/ab-worktrees/pi-matrix-m4/s6-p3/evidence/shots/fix-04-dimswitch-context-kept.png
+      measurement_receipt: validation-evidence/hierarchy_review.yaml
+    - check_id: keyboard
+      outcome: pass
+      source: CDP 可信键盘事件实测（keyboard_press）+ 焦点顺序审计
+      notes: 可信 Ctrl+Z 键盘事件实测撤销生效（x radius→method，undoStack 2→1，选中/过滤保持）；原生 button 语义 + :focus-visible 2px；tabbable 113 无异常回跳。
+      artifact_refs:
+        - E:/codex-prj/ab-worktrees/pi-matrix-m4/s6-p3/evidence/shots/fix-05-undo.png
+      measurement_receipt: validation-evidence/keyboard.yaml
+    - check_id: semantic_conformance
+      outcome: pass
+      source: design_sdir 0.2 validate PASS + 实渲染截图
+      notes: 截图确认六区域与 SDIR 一一对应（aria-label 即 region id）。
+      artifact_refs:
+        - E:/codex-prj/ab-worktrees/pi-matrix-m4/s6-p3/evidence/shots/fix-01-initial-ready.png
+    - check_id: state_completeness
+      outcome: pass
+      source: source audit + 实渲染截图
+      notes: ready/selected/empty/error 四态在源码确认（本旅程触发 ready/selected；empty/error 分支存在）。
+      artifact_refs:
+        - E:/codex-prj/ab-worktrees/pi-matrix-m4/s6-p3/js/app.js
+    - check_id: product_model_alignment
+      outcome: pass
+      source: 实渲染截图 + product_frame 词表比对
+      notes: 截图中五对象语言全部可见：数据集概要/维度切换栏/记录表/过滤·投影芯片/已选中检查器。
+      artifact_refs:
+        - E:/codex-prj/ab-worktrees/pi-matrix-m4/s6-p3/evidence/shots/fix-01-initial-ready.png
+        - E:/codex-prj/ab-worktrees/pi-matrix-m4/s6-p3/evidence/shots/fix-04-dimswitch-context-kept.png
+    - check_id: representation_decided
+      outcome: pass
+      source: design_sdir 0.2 payload
+      notes: chart 主表示（直方/条形/散点三态 SVG）实测渲染。
+      artifact_refs:
+        - E:/codex-prj/ab-worktrees/pi-matrix-m4/s6-p3/evidence/shots/fix-04-dimswitch-context-kept.png
+    - check_id: state_ownership_declared
+      outcome: pass
+      source: design_sdir 0.2 payload
+      notes: SDIR 0.2 state_ownership 含 selection 与 preview（owner=region id/session）；代码 setAxis/select 互不越界。
+      artifact_refs:
+        - E:/codex-prj/ab-worktrees/pi-matrix-m4/s6-p3/js/app.js
+    - check_id: acceptance_contract_present
+      outcome: pass
+      source: design_sdir 0.2 payload
+      notes: 6 条验收契约在 SDIR 0.2；核心两条已实测（fix-04 选中+过滤跨切换保持；fix-05 Ctrl+Z 回退）。
+      artifact_refs:
+        - E:/codex-prj/ab-worktrees/pi-matrix-m4/s6-p3/evidence/shots/fix-05-undo.png
+    - check_id: complexity_budget_declared
+      outcome: pass
+      source: design_sdir 0.2 payload
+      notes: SDIR 0.2 screen.complexity_budget 与实现相符。
+      artifact_refs:
+        - E:/codex-prj/ab-worktrees/pi-matrix-m4/s6-p3/js/app.js
+    - check_id: filter_state
+      outcome: pass
+      source: 实渲染截图 + source audit
+      notes: 实渲染：计数胶囊「显示 166 / 420」（过滤态琥珀色）、芯片「图表 发现方法 ∈ {凌星} ×」、页脚「过滤 1 项 · 撤销栈 2 步」。
+      artifact_refs:
+        - E:/codex-prj/ab-worktrees/pi-matrix-m4/s6-p3/evidence/shots/fix-04-dimswitch-context-kept.png
+      measurement_receipt: validation-evidence/filter_state.yaml
+    - check_id: comparison_scan
+      outcome: pass
+      source: 实渲染截图
+      notes: 记录表常驻 Top-80，列=名称/当前X/质量/距离/年份，切换 X 后列头与排序联动（发现方法→行星半径）。
+      artifact_refs:
+        - E:/codex-prj/ab-worktrees/pi-matrix-m4/s6-p3/evidence/shots/fix-01-initial-ready.png
+        - E:/codex-prj/ab-worktrees/pi-matrix-m4/s6-p3/evidence/shots/fix-04-dimswitch-context-kept.png
+      measurement_receipt: validation-evidence/comparison_scan.yaml
+    - check_id: requirement_alignment
+      outcome: pass
+      source: CDP 实测旅程（click × 2 + 维度切换 + 可信键盘 Ctrl+Z）
+      notes: 实浏览器旅程：选中+过滤后切维度 → 全部保持（fix-04）；Ctrl+Z 回退（fix-05）。成功标准与验收种子均复现。
+      artifact_refs:
+        - E:/codex-prj/ab-worktrees/pi-matrix-m4/s6-p3/evidence/shots/fix-04-dimswitch-context-kept.png
+        - E:/codex-prj/ab-worktrees/pi-matrix-m4/s6-p3/evidence/shots/fix-05-undo.png
+      measurement_receipt: validation-evidence/requirement_alignment.yaml
+evaluation:
+  status: BLOCK
+  checks:
+    - id: semantic_conformance
+      label: Semantic conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR is valid, semantic, and aligned to the approved pattern.
+      evidence_required: false
+    - id: state_completeness
+      label: State completeness
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Required loading, empty, ready, and error states exist.
+      evidence_required: false
+    - id: product_model_alignment
+      label: Product model alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: User-facing structure and language preserve the Product Frame.
+      evidence_required: true
+    - id: keyboard
+      label: Keyboard operability
+      kind: empirical
+      profile: keyboard_accessibility
+      facet: behavioral
+      requirement: Primary work and selection are operable with keyboard and visible focus.
+      evidence_required: true
+    - id: hierarchy_review
+      label: Hierarchy review
+      kind: assistive
+      profile: semantic_integrity
+      facet: visual_hierarchy
+      requirement: Visual prominence follows SDIR importance rather than implementation convenience.
+      evidence_required: true
+    - id: representation_decided
+      label: Representation decided
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares representation.primary with a non-empty reason.
+      evidence_required: false
+    - id: state_ownership_declared
+      label: State ownership declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: Selection and preview states both have declared owners.
+      evidence_required: false
+    - id: acceptance_contract_present
+      label: Acceptance contract present
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 carries at least one acceptance criterion.
+      evidence_required: false
+    - id: complexity_budget_declared
+      label: Complexity budget declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      evidence_required: false
+    - id: filter_state
+      label: Filter state
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Active filters and result state are represented explicitly.
+      evidence_required: true
+    - id: comparison_scan
+      label: Comparison scan
+      kind: empirical
+      profile: state_coverage
+      facet: behavioral
+      requirement: Comparable values can be scanned without opening every item.
+      evidence_required: true
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+  findings:
+    - check_id: semantic_conformance
+      kind: deterministic
+      outcome: pass
+      message: SDIR is valid, semantic, and aligned to the approved pattern.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_completeness
+      kind: deterministic
+      outcome: pass
+      message: Required loading, empty, ready, and error states exist.
+      source: prax-validator
+      provenance: measured
+    - check_id: representation_decided
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares representation.primary with a non-empty reason.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_ownership_declared
+      kind: deterministic
+      outcome: pass
+      message: Selection and preview states both have declared owners.
+      source: prax-validator
+      provenance: measured
+    - check_id: acceptance_contract_present
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 carries at least one acceptance criterion.
+      source: prax-validator
+      provenance: measured
+    - check_id: complexity_budget_declared
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      source: prax-validator
+      provenance: measured
+    - check_id: product_model_alignment
+      kind: assistive
+      outcome: pass
+      message: 截图中五对象语言全部可见：数据集概要/维度切换栏/记录表/过滤·投影芯片/已选中检查器。
+      source: 实渲染截图 + product_frame 词表比对
+      provenance: attested
+    - check_id: keyboard
+      kind: empirical
+      outcome: pass
+      message: 可信 Ctrl+Z 键盘事件实测撤销生效（x radius→method，undoStack 2→1，选中/过滤保持）；原生 button 语义 + :focus-visible 2px；tabbable 113 无异常回跳。
+      source: CDP 可信键盘事件实测（keyboard_press）+ 焦点顺序审计
+      provenance: attested
+    - check_id: hierarchy_review
+      kind: assistive
+      outcome: pass
+      message: 视觉层级实测：dominant 投影视图居中最显著，primary/supporting 区位与 SDIR 一致；min 对比 5.47、目标 ≥24px、文本 ≥12px。
+      source: CDP 实渲染截图 + DOM/样式审计（chrome MCP use_browser）
+      provenance: attested
+    - check_id: filter_state
+      kind: deterministic
+      outcome: pass
+      message: 实渲染：计数胶囊「显示 166 / 420」（过滤态琥珀色）、芯片「图表 发现方法 ∈ {凌星} ×」、页脚「过滤 1 项 · 撤销栈 2 步」。
+      source: 实渲染截图 + source audit
+      provenance: attested
+    - check_id: comparison_scan
+      kind: empirical
+      outcome: pass
+      message: 记录表常驻 Top-80，列=名称/当前X/质量/距离/年份，切换 X 后列头与排序联动（发现方法→行星半径）。
+      source: 实渲染截图
+      provenance: attested
+    - check_id: requirement_alignment
+      kind: assistive
+      outcome: pass
+      message: 实浏览器旅程：选中+过滤后切维度 → 全部保持（fix-04）；Ctrl+Z 回退（fix-05）。成功标准与验收种子均复现。
+      source: CDP 实测旅程（click × 2 + 维度切换 + 可信键盘 Ctrl+Z）
+      provenance: attested
+  missing_evidence:
+    - keyboard
+  warnings: []
+  codes:
+    - MEASUREMENT_RECEIPT_INVALID
+    - MEASUREMENT_RECEIPT_MISSING
+  readiness:
+    deterministic_passed: true
+    measurement:
+      receipt_ref: null
+      binding:
+        validation-evidence/hierarchy_review.yaml: invalid
+        validation-evidence/keyboard.yaml: invalid
+        validation-evidence/filter_state.yaml: invalid
+        validation-evidence/comparison_scan.yaml: invalid
+        validation-evidence/requirement_alignment.yaml: invalid
+      error_failures_open: 0
+      warning_dispositions: []
+    convergence:
+      stalled: false
+      unresolved: []
+    evidence_current: false
+    claims:
+      measured:
+        - semantic_conformance
+        - state_completeness
+        - representation_decided
+        - state_ownership_declared
+        - acceptance_contract_present
+        - complexity_budget_declared
+      attested:
+        - product_model_alignment
+        - keyboard
+        - hierarchy_review
+        - filter_state
+        - comparison_scan
+        - requirement_alignment
+      skipped: []

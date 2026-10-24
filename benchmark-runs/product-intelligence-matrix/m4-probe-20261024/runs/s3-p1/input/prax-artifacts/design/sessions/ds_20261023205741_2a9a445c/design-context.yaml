@@ -1,0 +1,69 @@
+user:
+  expertise: mixed
+  familiarity: high
+task:
+  primary: 在多维数据集上切换投影维度、设定过滤并聚焦记录，理解数据结构与分布
+  modes:
+    - explore
+    - filter
+    - inspect
+    - locate
+  frequency: high
+domain:
+  type: 科学观测型多维数据（数值+分类型维度）
+  entities:
+    - 数据集
+    - 维度
+    - 投影
+    - 过滤器
+    - 记录
+    - 状态轨迹
+information:
+  volume: high
+  relationship_complexity: medium
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: none
+  error_cost: low
+priorities:
+  - 维度切换不重置认知（过滤/聚焦/度量/轨迹跨切换保留）
+  - 过滤/投影状态有归属且可回退
+  - 高密度信息呈现（无界基数下的可扫读性）
+  - 首屏即用（内联数据、无加载态）
+density_intent: compact
+confidence:
+  overall: high
+unknowns:
+  - id: uq-dataset-content
+    impact: low
+    affects:
+      - dataset 领域内容选择
+classification:
+  version: "1"
+  task_type: compare_filter_records
+  domain_id: observability_analytics
+  interaction_mode: collection_with_contextual_detail
+  product_type: unknown
+  primary_object_type: projection
+  secondary_object_types:
+    - filter
+    - dataset
+    - dimension
+    - record
+    - state_trail
+  confidence: high
+  evidence:
+    - task_type=compare_filter_records ← token 'filter' in context.task and frame.tasks
+    - domain_id=observability_analytics ← token '观测' in context.domain
+    - interaction_mode=collection_with_contextual_detail ← token 'filter' in context.task, frame.tasks, and context.priorities
+    - primary_object_type=projection ← most referenced product object in the Product Frame
+  open_questions:
+    - product_type could not be derived; record the intended audience and product kind

@@ -1,0 +1,71 @@
+version: "0.2"
+jtbd:
+  verb: explore
+  target: 多维数据（无界记录 × 高维属性的数据集）
+  success: 维度切换不重置认知：选中、过滤、投影在切换后保留且可见，过滤/投影状态有归属且可回退
+primary_object:
+  type: dataset
+  label: 多维数据集（dataset）
+task_model:
+  frequency: high
+  reversibility: reversible
+  consequence: low
+  expertise: mixed
+user:
+  primary_role: 数据分析师 / 数据导向知识工作者（探索自有多维数据集）
+  expertise: mixed
+  familiarity: medium
+goal:
+  primary: 让用户在维度间自由切换以探索多维数据集，且每次切换都保留其认知上下文（选中、过滤、投影、聚焦），做到「维度切换不重置认知」。
+tasks:
+  primary: 切换探索维度（换轴/换分面/换聚合维度）并保持选中、过滤与投影状态原样延续，继续观察同一批数据对象
+  secondary:
+    - 按分类或数值条件过滤记录
+    - 选中并查看单条记录的完整维度值
+    - 移除单个过滤/投影或整体回退到默认状态
+    - 按当前维度读分布与聚合，定位异常/感兴趣区域
+product_objects:
+  - id: dataset
+    user_name: 数据集
+    purpose: 被探索的无界多维记录集合；所有维度的公共实体，是认知连续性的锚
+  - id: dimension
+    user_name: 维度
+    purpose: 数据集的一个可投影属性；用户在维度间切换，维度是主要认知负担
+  - id: record
+    user_name: 记录
+    purpose: 单条数据点；可被选中、可跨维度切换保持身份与位置
+  - id: lens
+    user_name: 过滤/投影（镜头）
+    purpose: 对数据集的有归属的过滤与投影状态；可见、可单独移除、可整体回退
+  - id: selection
+    user_name: 选中
+    purpose: 当前聚焦的记录（可跨维度保持），是切换后认知不重置的核心载体
+relationships:
+  - source: dimension
+    target: dataset
+    type: projects
+    direction: forward
+    meaning: 维度是数据集上的一个投影轴；换维度=换镜头，不改数据本身
+    importance: primary
+    id: rel_dimension_dataset
+  - source: lens
+    target: dataset
+    type: narrows
+    direction: forward
+    meaning: 过滤/投影限制可见记录范围；状态有归属（指明作用对象）且可回退
+    importance: primary
+    id: rel_lens_dataset
+  - source: selection
+    target: record
+    type: marks
+    direction: forward
+    meaning: 选中锚定具体记录的身份，跨维度切换保持不变
+    importance: primary
+    id: rel_selection_record
+mental_model_hypothesis:
+  summary: 用户对数据集本身持有稳定的心智地图（我选了哪条、我过滤了什么、我看过哪里）；维度只是套在同一数据上的镜头。切换镜头时视野重绘，但地图锚点（选中、过滤、投影）必须原位保留并持续可见，认知才不重置。
+  confidence: high
+  evidence:
+    - user_requirement
+primary_success_definition: 切换任意维度后：选中记录的身份与高亮保持、活跃过滤/投影原样保留且以可见状态芯片显示归属、可一键回退；用户无需重建任何上下文即可继续探索。
+open_questions: []

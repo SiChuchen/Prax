@@ -1,0 +1,119 @@
+session_id: ds_20261023200920_909feae5
+information_shape:
+  cardinality: unbounded
+  relationality: medium
+  hierarchy: medium
+  temporality: low
+  density: high
+  dimensionality: high
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: canvas
+    reason: 散点画布支持任意维度对即时重投影且保留选中高亮，是 explore×dimensional-space 的主表征
+  supporting:
+    - type: list
+      reason: 维度轨用带类型徽标与迷你分布的列表呈现可选维度
+    - type: chart
+      reason: 维度画像区以直方图/类别条展示当前聚焦维度的分布
+    - type: table
+      reason: 明细表提供行的精确值与选中态
+  rejected:
+    - option: grid/cards
+      reason: "卡片网格是高密度多维比较的反模式（myth-card-grid-default 已证伪；PAT-DATA-EXPLORER anti_patterns: card-grid-for-dense-comparison）"
+    - option: graph/tree
+      reason: 关系性仅中等，无拓扑主导
+  justification_vs_shape: 对抗 card-grid 默认（myth-card-grid-default 已证伪）：cardinality=unbounded 的行集无法用有限卡片枚举，dimensionality=high 要求任意维度对即时重投影，density=high 要求 canvas 散点+直方图+表的紧凑叠层，而卡片网格只能枚举、不能表达连续二维投影与刷选，PAT-DATA-EXPLORER 的 anti_patterns 明确列出 card-grid-for-dense-comparison。故主表征选 canvas（散点投影舞台），supporting 用 list（维度轨）/chart（维度画像直方图）/table（明细）逐项映射 shape 束（temporality=low 故无时间轴，spatiality=none 故无地图，comparison_need=none 故不做并排对比布局）。
+primary_structure:
+  pattern: PAT-DATA-EXPLORER
+  rationale:
+    - 路由返回 PAT-DATA-EXPLORER（confidence high，web_desktop+compact 命中）并已 L2 检查，其契约 = 大结构化集合上的过滤/比较/按需明细，与本格 user_job explore×多维数据一致
+    - 组合 PAT-LIST-DETAIL-INSPECTOR（同批路由返回、L2 已查）：选中驱动的检查器不离开工作台（P-19 Preserve Context）
+    - 三栏工作台（维度轨|投影舞台|检查器+状态轨迹）+ 顶部常驻状态条是 PAT-DATA-EXPLORER 在“维度是主要认知负担”约束下的具体化：维度轨把维度显性化为常驻对象，状态条把归属+可回退落为永久表面（P-28）
+    - H-21 Orientation Invariants / H-22 Overview-Filter-Detail：概览（scatter）→ 过滤（刷选/chips）→ 明细（检查器+表）分层，选中与视图锚点跨切换保留
+  confidence: high
+information_hierarchy:
+  primary:
+    - data
+    - collection
+    - state bar
+    - inspector
+  secondary:
+    - data = 投影舞台（dominant，scatter canvas，数据集行集的二维投影，探索主任务在此发生）
+    - collection = 维度轨（维度列表 + 迷你分布，把 dimensionality=high 的主要认知负担显性化）
+    - state bar = 状态条（过滤/投影 chips + 撤销/重做/复位，高密度常驻）
+    - inspector = 检查器（选中明细 + 状态轨迹）
+density:
+  intent: compact
+  strategy:
+    - 全视口固定网格：左维度轨（220px）/ 中投影舞台（弹性）/ 右检查器（300px），顶部状态条 40px
+    - 12–13px 基准字号 + 等宽数字，小间距多面板
+    - 图表 chrome 最小化：轴标签即 chrome，无多余边框
+  avoid:
+    - 装饰性 chrome、大面积留白
+    - 把过滤/投影状态藏进下拉或对话框
+major_choices:
+  - id: mc-stack
+    choice: 纯 vanilla HTML/CSS/JS，无构建步骤；数据集以 JS 常量内联（480 行 × 10 维）
+    rationale: 交付物必须根路径 index.html 直接静态打开且首屏即用；vanilla 使根目录即 dist，数据内联消除加载态
+    confidence: high
+    references:
+      - dataset
+  - id: mc-state-rows
+    choice: 过滤器/选中集/焦点附着在行（数据集级），不附着在视图；全部视图绑定同一 filtered rowset + selection
+    rationale: 直接落实“维度切换不重置认知”：换轴/换画像维/换排序维只改投影配置，行级状态天然保留
+    confidence: high
+    references:
+      - dataset
+      - dimension
+      - projection
+      - filter
+      - selection
+  - id: mc-trail
+    choice: 单栈状态轨迹（trail）：每条变更带归属标签（动作+维度），支持单条 chip 移除、undo/redo、一键 reset
+    rationale: 落实验收种子“过滤/投影状态有归属且可回退”；P-28 Recoverable Action
+    confidence: high
+    references:
+      - state_trail
+      - filter
+      - projection
+  - id: mc-canvas
+    choice: 中央 scatter 用 <canvas> 自绘；维度画像用每维一个迷你直方图/类别条；明细表用简单 DOM 表
+    rationale: 换维只需重投影，重绘 <16ms；不引外部图表库，避免静态打开风险
+    confidence: high
+    references:
+      - projection
+      - dimension
+      - dataset
+rejected:
+  - option: React/Vite 构建产物
+    reason: 引入构建链与 node_modules；根路径直开静态文件的交付约束用 vanilla 更稳
+  - option: 外部图表库（D3/Plotly/Chart.js）
+    reason: 自绘 canvas 即可满足散点/直方图；换维重投影逻辑简单，库反而增加静态打开与许可面
+  - option: 过滤条件用模态对话框编辑
+    reason: 状态归属必须常驻可见，对话框隐藏状态违背验收种子
+  - option: 每视图独立过滤状态
+    reason: 会造成换维重置认知，直接违背成功标准；行级共享状态是判别式要求的
+unresolved:
+  - id: dataset-theme-unspecified
+    impact: low
+    affects:
+      - dataset 主题命名与量纲
+  - id: view-mix-unspecified
+    impact: low
+    affects:
+      - 默认投影配置
+complexity_budget:
+  permanent_panels: 4
+  permanent_primary_actions: 3
+  modes: 1
+  state_owners: 1
+  navigation_levels: 1
+  persistent_filters: 8
+  new_semantic_concepts: 3
+  keyboard_contracts: 2
+  mobile_conflicts: 0
+  permanent_surfaces: 4

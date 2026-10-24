@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>维象 · 多维数据探索 — cell-j13-s10</title>
+<meta name="description" content="单屏多维数据集投影探索：切换 X/Y/颜色维度不重置认知；过滤/投影状态有归属且可回退。">
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%231c5cab'/%3E%3Ccircle cx='5.5' cy='10.5' r='2.2' fill='%23fff'/%3E%3Ccircle cx='10.5' cy='5.5' r='2.2' fill='%23eb6834'/%3E%3C/svg%3E">
+</head>
+<body>
+<a class="skip" href="#chart">跳到数据总览</a>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true">◈</span>
+    <h1>维象 <span class="brand-sub">多维数据探索</span></h1>
+  </div>
+  <p class="dataset-meta">城市观测集 · <strong>240</strong> 条记录 × <strong>15</strong> 个维度 · 合成数据（本地内联，加载即就绪）</p>
+  <div class="topbar-actions">
+    <span class="kbd-hint" aria-hidden="true">Ctrl+Z 撤销 · 方向键+回车选点</span>
+    <button id="btn-reset" type="button" title="恢复初始视图（可通过撤销回退）">重置视图</button>
+  </div>
+</header>
+
+<main class="layout">
+
+  <!-- 维度目录：按主题分组；行内指派轴/颜色角色、开启过滤 -->
+  <aside class="panel catalog-panel" aria-label="维度目录">
+    <div class="panel-head">
+      <h2>维度目录</h2>
+      <p class="panel-hint">指派角色（X / Y / 颜色）或开启过滤；角色与过滤都有归属、可撤销</p>
+    </div>
+    <nav id="catalog" aria-label="维度分组列表"><!-- JS 构建 --></nav>
+  </aside>
+
+  <!-- data：承载数据集主任务的主工作面 -->
+  <section class="stage" aria-label="数据总览">
+    <div class="statebar" id="statebar">
+      <div class="chips" id="chips" aria-label="当前状态（过滤 / 选择，逐条归属）"><!-- JS --></div>
+      <div class="state-actions">
+        <span id="visible-count" class="visible-count">—</span>
+        <button id="btn-undo" type="button" title="撤销上一次视图变更（Ctrl+Z）">↶ 撤销</button>
+        <button id="btn-redo" type="button" title="重做（Ctrl+Y）">↷ 重做</button>
+      </div>
+    </div>
+
+    <p class="proj-title" id="proj-title" aria-live="off"><!-- JS --></p>
+
+    <div class="chartwrap" id="chartwrap">
+      <svg id="chart" role="application" tabindex="0"
+           aria-roledescription="散点投影"
+           aria-label="散点投影图。左右方向键在记录间移动光标，回车切换选中，Esc 取消全部选择。"><!-- JS --></svg>
+      <div id="tooltip" class="tooltip" hidden></div>
+    </div>
+
+    <details class="datatable" id="datatable">
+      <summary>可见记录表（扫描数值，无需逐个打开）</summary>
+      <div class="table-scroll"><table id="table" tabindex="0" aria-label="可见记录数值表"><!-- JS --></table></div>
+    </details>
+
+    <div class="legend" id="legend" aria-label="颜色图例"><!-- JS --></div>
+  </section>
+
+  <!-- 检查器 + 投影轨迹 -->
+  <aside class="side" aria-label="检查器与投影轨迹">
+    <section class="panel inspector-panel" aria-label="选中记录画像">
+      <div class="panel-head"><h2>记录画像</h2><p class="panel-hint">选择跨投影保持；切换维度后仍高亮</p></div>
+      <div id="inspector"><!-- JS --></div>
+    </section>
+    <section class="panel trail-panel" aria-label="投影轨迹">
+      <div class="panel-head"><h2>投影轨迹</h2><p class="panel-hint">每次变更都有命名快照，点击任意一步回退</p></div>
+      <ol id="trail" class="trail" aria-label="视图状态历史"><!-- JS --></ol>
+    </section>
+  </aside>
+
+</main>
+
+<div id="live" class="visually-hidden" aria-live="polite"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

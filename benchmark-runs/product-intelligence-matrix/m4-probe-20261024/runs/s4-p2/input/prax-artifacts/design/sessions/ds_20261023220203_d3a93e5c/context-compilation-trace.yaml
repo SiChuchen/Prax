@@ -1,0 +1,40 @@
+version: "0.1"
+session_id: ds_20261023220203_d3a93e5c
+task_ref: Explore a multivariate dataset by re-projecting records onto different dimension pairs while filters and selection persist untouched
+selected:
+  - ref: product_relationships
+    reason:
+      - rel_dimension_projection:dimension->projection
+      - rel_filter_dimension:filter->dimension
+      - rel_state_trail_projection:state_trail->projection
+      - rel_state_trail_filter:state_trail->filter
+  - ref: region_relationships
+    reason:
+      - region_rel_data_detail
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-DATA-EXPLORER
+  - ref: unresolved
+    reason:
+      - u1-dataset-theme
+  - ref: corrections
+    reason: []
+  - ref: validation-plan@1
+    reason:
+      - semantic_conformance
+      - state_completeness
+      - product_model_alignment
+      - keyboard
+      - hierarchy_review
+      - representation_decided
+      - state_ownership_declared
+      - acceptance_contract_present
+      - complexity_budget_declared
+      - filter_state
+      - comparison_scan
+      - requirement_alignment
+excluded:
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata

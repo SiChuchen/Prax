@@ -1,0 +1,17 @@
+version: "0.1"
+realization_mode: direct_code
+conditions:
+  - id: defect_fix_fit
+    holds: true
+    basis: 本会话为 greenfield 从零构建，无既有缺陷面；回归面全部新建，direct code 可完整控制
+  - id: visual_polish_fit
+    holds: true
+    basis: 视觉系统小而自治：CSS 变量 token + canvas 自绘，无外部设计系统依赖，直编码即可保证紧凑工作台观感
+  - id: small_modification
+    holds: true
+    basis: 单屏 1 个、4 永久面板、vanilla 无构建，规模 ≤ ~1k LOC，属小规模直接实现
+  - id: mature_design_system
+    holds: true
+    basis: 应用自带最小 token 集（颜色/间距/字号 CSS variables）并遵循 PAT-DATA-EXPLORER 契约；不依赖外部设计系统即可保持一致
+proposed_at: 2026-10-23T20:17:14.769Z
+overridden: false

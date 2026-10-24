@@ -1,0 +1,20 @@
+version: "1"
+check_id: state_completeness
+outcome: pass
+kind: deterministic
+collected_at: "2026-10-23T22:38:00Z"
+executor: "Claude (GLM) execution arm, cell-j13-s10"
+environment: "headless Chrome --headless=new, 1680x1050, file:/// index.html, Windows 10"
+method: "11-step headless-Chrome journey with state fingerprints and console-exception monitor"
+command: "node tools/evidence.mjs"
+observations:
+  - "S1: ready is the initial measurable state (240/240 visible, hist len=1, zero interactions, no loading state ever shown - data inline)"
+  - "S8: empty state - filter excludes all records, guided overlay shown, filters kept revertible"
+  - "Error: no async/parse failure paths exist in the zero-dependency inline app; consoleExceptions=0 across all steps"
+artifacts:
+    - path: evidence/01-first-paint.png
+      sha256: "ad64c763ad381557749deb581ba961765afb2d580f1720c92257e7e7be15e0ac"
+    - path: evidence/08-empty-state.png
+      sha256: "6264a106ff3a5f08c237f8063c72316bb709b10b48fce8ed8dd2495e573b3008"
+    - path: evidence/evidence.json
+      sha256: "93467db773d53127a5ebc511cedebbae7098e8fbeb5b4b247b459da791af4cb0"

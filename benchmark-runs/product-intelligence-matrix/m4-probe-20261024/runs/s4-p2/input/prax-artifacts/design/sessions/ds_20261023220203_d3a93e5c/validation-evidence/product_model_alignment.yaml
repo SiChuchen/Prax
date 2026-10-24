@@ -1,0 +1,17 @@
+version: "1"
+check_id: product_model_alignment
+outcome: pass
+kind: assistive
+collected_at: "2026-10-23T22:38:00Z"
+executor: "Claude (GLM) execution arm, cell-j13-s10"
+environment: "headless Chrome --headless=new, 1680x1050, file:/// index.html, Windows 10"
+method: "Product Frame object vocabulary vs rendered UI text + fingerprint semantics of S5"
+command: "node tools/evidence.mjs"
+observations:
+  - "UI nouns = frame objects: 数据集/维度/投影(X轴·Y轴)/过滤器/探索轨迹/记录详情"
+  - "S5 fingerprint: switching Y to air changed ONLY projection; filters.air===[40,70] and selection survived; visible count unchanged (rel_dimension_projection: rebinding preserves all other state)"
+artifacts:
+    - path: evidence/05-switch-y-with-context.png
+      sha256: "c943a33983dd38be047f70c418706fa9425b95b54d30cfeda0a7f46ab9521d02"
+    - path: evidence/evidence.json
+      sha256: "93467db773d53127a5ebc511cedebbae7098e8fbeb5b4b247b459da791af4cb0"

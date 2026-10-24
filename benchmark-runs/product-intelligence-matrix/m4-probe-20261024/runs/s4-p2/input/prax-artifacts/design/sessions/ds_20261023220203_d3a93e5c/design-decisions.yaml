@@ -1,0 +1,121 @@
+session_id: ds_20261023220203_d3a93e5c
+version: "0.2"
+information_shape:
+  cardinality: unbounded
+  relationality: medium
+  hierarchy: medium
+  temporality: low
+  density: high
+  dimensionality: high
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: chart
+    reason: Dimensionality is the main burden; a 2D scatter projection of two chosen dimensions of the dataset gives direct perceptual access to distribution/correlation and makes switching dimensions a first-class, cheap interaction
+  supporting:
+    - type: list
+      reason: Inspector shows the selected record's full 9-dimension vector as a compact list without leaving the workspace
+    - type: form
+      reason: Filter rail uses per-dimension range/slider controls bound to the state_trail
+  rejected:
+    - option: parallel coordinates
+      reason: axis clutter at 9 dims + range brushes on a single screen
+    - option: table
+      reason: no geometric reading of dimension structure
+primary_structure:
+  pattern: PAT-DATA-EXPLORER
+  rationale:
+    - "Routed pattern contract: large structured set + persistent narrowing + detail on demand — matches explore×dimensional-space on the dataset object, composed with PAT-LIST-DETAIL-INSPECTOR as a subordinate inspector region"
+    - "H-21/P-19: projection canvas is the stable anchor; switching dimensions re-renders in place while filters/selection/state_trail stay fixed — cognition preserved structurally, not promised"
+    - "H-22 overview→filter→detail: overview = scatter; filter = range rail; detail = inspector on selection"
+    - "H-07: ready/empty(filtered-out)/selected states defined up front"
+    - Inspector as subordinate region avoids navigation for detail — context never leaves the screen
+  confidence: high
+information_hierarchy:
+  primary:
+    - data
+    - collection
+    - data 投影画布：dataset 点云在当前投影下的分布，X/Y 各绑定一个 dimension —— 主工作面
+    - collection：活跃 filter 命中的记录集合，内联可见样本计数
+    - state_trail：每步归属标签 + 一步回退
+    - inspector：选中记录的全维度向量
+  secondary:
+    - dataset 元信息：记录总数、维度清单
+    - 维度分布摘要：轴端 min/max/单位
+density:
+  intent: compact
+  strategy:
+    - 结构承载密度（H-13）：四区各有明确边界与标题，画布占主导
+    - Signal over Chrome（P-22）：控件与装饰安静于信息；次级文本用 ≥4.5:1 暗灰而非浅灰
+    - 计数、轴标签、过滤器状态全部内联可见，不藏进 tooltip
+    - 24px 最小交互目标 + 可见焦点（H-23）
+  avoid:
+    - card-grid-for-dense-comparison (named anti-pattern of PAT-DATA-EXPLORER)
+    - 浅灰低对比次级文本（H-23 禁止）
+    - 仅 tooltip 可见的隐藏信息
+major_choices:
+  - id: mc-scatter
+    choice: Primary representation is a 2D scatter canvas over the dataset; each axis rebinds to any dimension via X/Y selectors, changing only the projection object
+    rationale: High dimensionality is resolved by projection onto dimension pairs (explore task); switching = rebinding axis↔dimension, a pure view change on the projection object of the dataset
+    confidence: high
+    references:
+      - dataset
+      - dimension
+      - projection
+  - id: mc-trail
+    choice: "Attributed state_trail: every action on projection or filter appends a labeled step; clicking any step restores that exact full state (projection+filters+selection); undo/redo also supported"
+    rationale: Directly implements the acceptance seed 过滤/投影状态有归属且可回退 for the filter and projection objects
+    confidence: high
+    references:
+      - state_trail
+      - projection
+      - filter
+  - id: mc-state-orthogonality
+    choice: Single state object {projection:{x,y}, filters:{}, selection} with orthogonal sub-spaces; switching a dimension writes only the projection sub-space and never touches filter or selection sub-spaces
+    rationale: Mechanical guarantee of 维度切换不重置认知 for the dataset view, not a UI promise
+    confidence: high
+    references:
+      - projection
+      - filter
+      - dataset
+      - dimension
+  - id: mc-dataset
+    choice: "Synthetic inline dataset: 240 records × 9 dimensions embedded in a classic-script data file (u1 resolved: dataset theme chosen per 主对象建议)"
+    rationale: Satisfies 首屏即用/内联数据 constraint; unbounded cardinality represented by scaling-safe design, not literal infinity
+    confidence: high
+    references:
+      - dataset
+      - dimension
+  - id: mc-stack
+    choice: Vanilla classic scripts + Canvas 2D + hand-written CSS, no build step; renders the dataset into the projection canvas and the filter/state_trail rail
+    rationale: Guarantees static open via file:// (ES modules and http fetch are blocked there); zero dependencies
+    confidence: high
+    references:
+      - dataset
+      - projection
+      - filter
+      - state_trail
+rejected:
+  - option: Parallel coordinates as primary
+    reason: Strong for >3 dims but axis clutter explodes with 9 dimensions + range filters on one screen; scatter projection communicates the dimension-switch interaction more directly
+  - option: Raw data table as primary
+    reason: Dense but hides distributions and correlation; dimension structure invisible; dense-comparison anti-pattern territory
+  - option: Tree/hierarchy as primary
+    reason: Hierarchy is medium, not the primary cognitive burden — dimensionality is
+  - option: Map/timeline representations
+    reason: Spatiality none / temporality low per shape bundle
+unresolved: []
+complexity_budget:
+  permanent_panels: 4
+  permanent_primary_actions: 3
+  modes: 0
+  state_owners: 1
+  navigation_levels: 1
+  persistent_filters: 8
+  new_semantic_concepts: 2
+  keyboard_contracts: 1
+  mobile_conflicts: 0
+  permanent_surfaces: 4

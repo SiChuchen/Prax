@@ -1,0 +1,16 @@
+version: "1"
+check_id: comparison_scan
+outcome: pass
+kind: empirical
+collected_at: "2026-10-24T02:05:00Z"
+executor: "Claude (GLM) execution arm, cell-j13-s10, session ds_20261024000046_e6648d02"
+environment: "Chrome (superpowers-chrome MCP, CDP), 1680x950, file:///E:/codex-prj/ab-worktrees/pi-matrix-m4/s6-p3/index.html, Windows 10"
+method: "CDP rendered screenshots + DOM audit of records_table region"
+command: "mcp chrome use_browser: navigate + screenshot; eval column/sort assertions"
+observations:
+  - "records_table always rendered (not collapsed/on-demand): Top-80 rows of filtered set, columns 名称 / X·当前维度 / 质量 M⊕ / 距离 光年 / 年份"
+  - "X switch 发现方法→行星半径 updates column header (X · 行星半径 R⊕) and sort order (numeric desc) — screenshots fix-01 vs fix-04"
+  - "tabular-nums monospaced numerics; no item needs opening to scan comparable values"
+artifacts:
+    - path: evidence/shots/fix-01-initial-ready.png
+    - path: evidence/shots/fix-04-dimswitch-context-kept.png

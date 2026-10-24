@@ -1,0 +1,90 @@
+version: "0.1"
+session_id: ds_20261023220203_d3a93e5c
+task:
+  surfaces: []
+  primary: Explore a multivariate dataset by re-projecting records onto different dimension pairs while filters and selection persist untouched
+product_relationships:
+  - id: rel_dimension_projection
+    source: dimension
+    target: projection
+    type: mapped_to_axis
+    direction: forward
+    meaning: Each axis of the projection is bound to exactly one dimension; rebinding preserves all other state
+    importance: primary
+  - id: rel_filter_dimension
+    source: filter
+    target: dimension
+    type: constrains
+    direction: forward
+    meaning: A filter restricts which values of a dimension are included in the visible subset
+    importance: primary
+  - id: rel_state_trail_projection
+    source: state_trail
+    target: projection
+    type: records_change
+    direction: forward
+    meaning: Every projection change is appended to the trail with an attributed label
+    importance: primary
+  - id: rel_state_trail_filter
+    source: state_trail
+    target: filter
+    type: records_change
+    direction: forward
+    meaning: Every filter add/adjust/remove is appended to the trail with an attributed label
+    importance: primary
+region_relationships:
+  - id: region_rel_data_detail
+    source: data
+    target: detail
+    type: selection_drives_contextual_detail
+decisions:
+  primary_structure: PAT-DATA-EXPLORER
+  density_intent: compact
+  major_choice_ids:
+    - mc-scatter
+    - mc-trail
+    - mc-state-orthogonality
+    - mc-dataset
+    - mc-stack
+must_preserve: []
+regression_points: []
+unresolved:
+  - u1-dataset-theme
+corrections: []
+representation_portfolio:
+  primary:
+    type: chart
+    reason: Dimensionality is the main burden; a 2D scatter projection of two chosen dimensions of the dataset gives direct perceptual access to distribution/correlation and makes switching dimensions a first-class, cheap interaction
+  supporting:
+    - type: list
+      reason: Inspector shows the selected record's full 9-dimension vector as a compact list without leaving the workspace
+    - type: form
+      reason: Filter rail uses per-dimension range/slider controls bound to the state_trail
+  rejected:
+    - option: parallel coordinates
+      reason: axis clutter at 9 dims + range brushes on a single screen
+    - option: table
+      reason: no geometric reading of dimension structure
+state_ownership:
+  - state: selection
+    owner: data
+  - state: preview
+    owner: session
+acceptance:
+  - A user can switch the X/Y projection dimensions any number of times while their filters, selection, and reading position remain intact; every projection/filter change appears in a visible, attributed state trail and any prior state can be restored in one action.
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - filter_state
+    - comparison_scan
+    - requirement_alignment
+  regression_check_ids: []

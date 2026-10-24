@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lenscope · 多维透镜 — 城市观测 2026</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6' fill='none' stroke='%234a3aa7' stroke-width='2'/%3E%3Ccircle cx='8' cy='8' r='2' fill='%23eb6834'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app" class="viz-root">
+
+  <!-- ── Region: header ── 数据集身份 · 实时计数 · 撤销/重做 ───────────── -->
+  <header id="region-header" class="region-header">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-name">Lenscope <span class="brand-sub">多维透镜</span></span>
+      <span class="dataset-name">城市观测 2026 <span class="muted">· 合成数据集 · 14 维度</span></span>
+    </div>
+    <div class="live-counts" id="live-counts" role="status" aria-live="polite">
+      <span class="count"><b id="count-total">–</b> 共</span>
+      <span class="count"><b id="count-visible">–</b> 可见</span>
+      <span class="count count-sel"><b id="count-selected">–</b> 已选</span>
+    </div>
+    <div class="header-actions">
+      <span class="kbd-hint" title="键盘操作">[ ] 切换透镜 · Ctrl+Z 撤销</span>
+      <button id="btn-undo" class="btn" title="撤销 (Ctrl+Z)" aria-label="撤销">↶ 撤销</button>
+      <button id="btn-redo" class="btn" title="重做 (Ctrl+Shift+Z)" aria-label="重做">↷ 重做</button>
+    </div>
+  </header>
+
+  <!-- ── Region: filter-bar ── 活动过滤器 chips + 搜索 ─────────────────── -->
+  <div id="region-filter-bar" class="region-filter-bar">
+    <span class="fb-label">过滤器</span>
+    <input id="search-input" type="search" placeholder="搜索城市名称…" aria-label="搜索城市名称">
+    <div id="chip-tray" class="chip-tray" aria-label="活动过滤器"></div>
+    <button id="btn-clear-filters" class="btn btn-ghost" disabled>清除全部</button>
+  </div>
+
+  <!-- ── Main: dim-rail | lens-stage + record-table | inspector + journal ── -->
+  <main class="main-grid">
+
+    <!-- Region: dim-rail — 维度清单 · 透镜切换 · 足迹 -->
+    <nav id="region-dim-rail" class="region-rail" aria-label="维度清单与透镜切换">
+      <div class="rail-section">
+        <div class="rail-head">足迹 <span class="rail-head-sub">最近浏览的透镜</span></div>
+        <div id="trail" class="trail"></div>
+      </div>
+      <div class="rail-section rail-section-grow">
+        <div class="rail-head">维度 <span class="rail-head-sub">点击 = 设为透镜 · ▸ = 筛选</span></div>
+        <div id="dim-list" class="dim-list"></div>
+      </div>
+    </nav>
+
+    <section class="center-col">
+      <!-- Region: lens-stage — 透镜投影图 -->
+      <div id="region-lens-stage" class="region-stage">
+        <div class="stage-head">
+          <div class="stage-title">
+            <span class="lens-tag">透镜</span>
+            <h1 id="stage-lens-name">–</h1>
+            <span id="stage-lens-stats" class="stage-stats"></span>
+          </div>
+          <div class="stage-controls">
+            <label>对比轴 <select id="sel-companion" class="sel"></select></label>
+            <label>着色 <select id="sel-colorby" class="sel"></select></label>
+            <div id="legend" class="legend" aria-hidden="false"></div>
+          </div>
+        </div>
+        <div class="stage-body">
+          <canvas id="chart" aria-label="透镜投影散点图"></canvas>
+          <div id="tooltip" class="tooltip" hidden></div>
+        </div>
+      </div>
+
+      <!-- Region: record-table — 投影记录表（主导数据面） -->
+      <div id="region-record-table" class="region-table">
+        <div class="table-head-info">
+          <span id="table-count-line" class="muted"></span>
+          <span class="muted">点击行 = 选中/取消 · ☆ = 锚定到检查器 · 点击表头排序</span>
+        </div>
+        <div class="table-scroll" id="table-scroll" tabindex="0" role="grid" aria-label="记录表：上下键在行间移动，回车选中">
+          <table class="rtable" aria-label="记录表">
+            <thead id="table-head"></thead>
+            <tbody id="table-body"></tbody>
+          </table>
+          <div id="table-empty" class="table-empty" hidden>
+            <p>没有记录匹配当前过滤器。</p>
+            <button id="btn-empty-clear" class="btn">清除过滤器</button>
+            <span class="muted">或按 Ctrl+Z 撤销最近一步</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right column -->
+    <aside class="right-col">
+      <!-- Region: inspector — 上下文检查器 -->
+      <section id="region-inspector" class="region-inspector" aria-label="检查器">
+        <div class="panel-head">检查器 <span class="rail-head-sub">锚定记录 × 全维度</span></div>
+        <div id="inspector-body" class="inspector-body"></div>
+      </section>
+      <!-- Region: journal — 状态日志（归属 + 可回退） -->
+      <section id="region-journal" class="region-journal" aria-label="状态日志">
+        <div class="panel-head">状态日志 <span class="rail-head-sub">每步归属具名动作 · 点击恢复</span></div>
+        <div id="journal-fold-note" class="fold-note" hidden></div>
+        <div id="journal-list" class="journal-list"></div>
+      </section>
+    </aside>
+  </main>
+
+  <!-- loading 状态：数据内联，同步渲染，本元素永不进入可测状态 -->
+  <div id="loading" class="loading" hidden>加载中…</div>
+  <!-- error 状态 -->
+  <div id="error-banner" class="error-banner" role="alert" hidden></div>
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

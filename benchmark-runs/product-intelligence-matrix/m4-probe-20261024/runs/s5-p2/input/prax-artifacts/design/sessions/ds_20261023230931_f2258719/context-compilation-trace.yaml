@@ -1,0 +1,40 @@
+version: "0.1"
+session_id: ds_20261023230931_f2258719
+task_ref: 在同一主屏上对多维数据集做投影探索：切换 X/Y/颜色编码维度、增删过滤，同时保持选中对象与过滤上下文跨维度切换稳定
+selected:
+  - ref: product_relationships
+    reason:
+      - rel-dim-proj:obj-dimension->obj-projection
+      - rel-filter-dim:obj-projection->obj-dimension
+      - rel-record-sel:obj-record->obj-projection
+  - ref: region_relationships
+    reason:
+      - region_rel_data_detail
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-DATA-EXPLORER
+  - ref: unresolved
+    reason:
+      - uq-react-brief-vs-vanilla
+  - ref: corrections
+    reason: []
+  - ref: validation-plan@1
+    reason:
+      - semantic_conformance
+      - state_completeness
+      - product_model_alignment
+      - keyboard
+      - hierarchy_review
+      - representation_decided
+      - state_ownership_declared
+      - acceptance_contract_present
+      - complexity_budget_declared
+      - filter_state
+      - comparison_scan
+      - destructive_recovery
+      - requirement_alignment
+excluded:
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata

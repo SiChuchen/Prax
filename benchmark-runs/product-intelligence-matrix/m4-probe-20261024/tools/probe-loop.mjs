@@ -86,7 +86,7 @@ else if (gt(P.p2, P.p1) && winningTrace) { row = 1; reading = "content IS suffic
 else if (gt(P.p2, P.p1)) { row = 2; reading = "weak content-effect without trace — treat as noise; escalate n before any mechanism change"; }
 else if (gt(P.p3, P.p2)) { row = 3; reading = `content insufficient, closed loop works → prioritize measure→fix loop${gt(P.p3p, P.p2) || (P.p3p.c >= P.p3.c && P.p3p.t >= P.p3.t) ? "; WARNING P3p≈P3 — gain may be extra-pass effort, not feedback" : "; P3>P3p — feedback signal, not just effort"}`; }
 else if (P.p3.c + P.p3.t < P.p2.c + P.p2.t) { row = 5; reading = "feedback round harms → breakpoint-4 evidence (applied-then-overwritten); investigate round-2 diffs"; }
-else if (!gt(P.p2, P.p1) && !gt(P.p3, P.p2)) { row = 4; reading = "entry inert as authored → rewrite H-23 (palette-level dos/don'ts) and re-probe on a second cell; retirement NOT permitted from this batch"; }
+else if (!gt(P.p2, P.p1) && !gt(P.p3, P.p2) && !gt(P.p3, P.p3p)) { row = 4; reading = "entry inert as authored → rewrite H-23 (palette-level dos/don'ts) and re-probe on a second cell; retirement NOT permitted from this batch"; }
 if (row === null) { row = 7; reading = "residual pattern — read paired transcripts manually; matrix rows exhausted"; }
 if (P.p1.c >= 1) reading += " | NOTE row-7 signal: P1 contrast pass in-batch while r3 had 0/9 on this cell — replication gap, hypothesis only";
 

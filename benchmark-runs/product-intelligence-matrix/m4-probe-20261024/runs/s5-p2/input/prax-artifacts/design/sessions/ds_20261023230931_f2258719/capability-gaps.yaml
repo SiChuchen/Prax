@@ -1,0 +1,98 @@
+needs:
+  - id: n-reproject
+    product_action: 切换 X/Y/颜色维度并即时重投影点云
+    required_experience:
+      - 用户在维度目录或轴控件上指派维度角色，图表在原地更新轴与点位置
+      - 切换不重建页面区域，data 面保持稳定
+    capabilities:
+      - 散点投影渲染（SVG）
+      - 维度角色指派状态
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端：状态→渲染函数，维度切换仅重算映射
+  - id: n-persist-context
+    product_action: 维度切换时保持选中集、过滤器、撤销栈
+    required_experience:
+      - 换轴后选中点仍高亮并显示身份标签
+      - 过滤器芯片不受投影切换影响
+    capabilities:
+      - 全局视图状态（selection/filters/history）与投影解耦
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 视图状态为独立于投影维度的单一状态树
+  - id: n-attributed-filters
+    product_action: 过滤器以维度归属芯片展示并支持逐条移除/清空
+    required_experience:
+      - 每条芯片带所属维度名
+      - 单条移除与一键清空
+    capabilities:
+      - 过滤器状态结构 {维度, 范围/类别} + 芯片渲染
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 过滤状态以维度 id 为键，天然可归属
+  - id: n-undo-trail
+    product_action: 视图状态撤销/重做与投影轨迹点击回退
+    required_experience:
+      - 每次维度/过滤变更产生命名快照
+      - 轨迹点击回到该状态
+      - Ctrl+Z/Ctrl+Y 键盘等效
+    capabilities:
+      - 快照栈（undo/redo）+ 轨迹列表
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 历史栈与轨迹共用同一快照序列
+  - id: n-inspector
+    product_action: 选中记录的全维度画像（检查器）
+    required_experience:
+      - 点击散点后检查器显示该记录全部 15 维取值与相对位置
+      - 跨投影持久
+    capabilities:
+      - 记录全维度取值 + 分组条形渲染
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 画像按维度分组归一化条形呈现
+  - id: n-inline-data
+    product_action: 首屏即就绪的 240×15 内联数据集
+    required_experience:
+      - 页面加载完成即渲染完整点云，无任何加载指示
+    capabilities:
+      - 构建期生成 data.js 内联数组
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 数据由脚本预生成并以经典 script 内联，同步可用
+  - id: n-static-open
+    product_action: file:// 或静态 http 直接打开可用
+    required_experience:
+      - 双击 index.html 即用，无网络请求
+    capabilities:
+      - 经典 script、无模块、无外部资源
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 不用 ES module 以规避 file:// CORS；字体/图标全部内联或系统栈
+  - id: n-keyboard
+    product_action: 关键状态操作的键盘等效（撤销/重做/清选）
+    required_experience:
+      - Ctrl+Z / Ctrl+Y / Esc 可用且有可见焦点
+    capabilities:
+      - 键盘事件绑定 + aria 属性
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 原生 button/input + 全局快捷键
+  - id: n-a11y-evidence
+    product_action: H-23 AA 底线四项检查的证据采集
+    required_experience:
+      - 对比度/字号/目标尺寸/焦点可见性有可核查证据
+    capabilities:
+      - 真实浏览器截图 + 对比度核查
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 设计期选定达标色板（代码内注释对比比值），验证门用浏览器证据核验

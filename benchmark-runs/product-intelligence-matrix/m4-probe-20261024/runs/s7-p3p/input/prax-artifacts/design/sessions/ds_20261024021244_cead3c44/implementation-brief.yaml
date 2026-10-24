@@ -1,0 +1,52 @@
+version: "0.1"
+platform_profile: WEB-DESKTOP
+framework: react
+measurement_target:
+  app_root: .
+  entry: /index.html
+  scenario: "Dimensional dataset exploration: user switches the active lens dimension repeatedly — selection, filters, anchored record, journal and trail persist (维度切换不重置认知); every filter/projection action is owned by a named journal entry and restorable via click/undo/redo (过滤/投影状态有归属且可回退); first paint is ready with inlined data"
+sdir_ref: screen.sdir.yaml
+decision_ref: design-decisions.yaml
+approved_patterns:
+  - PAT-DATA-EXPLORER
+approved_component_contracts:
+  - DATA-SURFACE
+  - FILTER-CONTROLS
+  - CONTEXTUAL-DETAIL
+states_required:
+  - ready
+  - empty
+  - selected
+  - error
+  - loading
+capability_gaps:
+  - id: n-persistence
+    product_action: State persistence across page reloads
+    required_experience:
+      - "none required by brief: 不要求后端、账号体系或持久化服务"
+    capabilities:
+      - session-only state (no storage service)
+    status: gap
+    resolution:
+      type: explicit_compromise
+      notes: Out of scope per brief; journal covers in-session reversibility. localStorage deliberately avoided to keep file:// behavior deterministic.
+validation_plan_ref:
+  artifact: validation-plan.yaml
+  revision: 1
+validation_requirements:
+  - semantic_conformance
+  - state_completeness
+  - product_model_alignment
+  - keyboard
+  - hierarchy_review
+  - representation_decided
+  - state_ownership_declared
+  - acceptance_contract_present
+  - complexity_budget_declared
+  - filter_state
+  - comparison_scan
+  - requirement_alignment
+state_ownership_ref: compiled-context.yaml#state_ownership
+acceptance_ref: compiled-context.yaml#acceptance
+realization:
+  mode: direct_code
