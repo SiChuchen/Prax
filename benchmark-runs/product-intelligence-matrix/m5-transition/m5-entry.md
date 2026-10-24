@@ -111,3 +111,38 @@ ledger:
 - **m4 contrastive probe batch in flight** (`m4-probe-20261024/protocol.md`,
   frozen before runs; readout matrix pre-registered). Its report supersedes
   the "candidate" rows above when it lands.
+
+## 7. m4 contrastive probe update (2026-10-24)
+
+Batch `m4-probe-20261024` complete (7/7 slots, $97.37 — ceiling deviation
+recorded). Full record: `../m4-probe-20261024/probe-report.md` +
+operator-events (4 freeze-tracked tool fixes; all readout-semantics-preserving).
+
+- **Mechanical verdict: matrix row 7 (residual pattern)** — none of the
+  pre-registered rows matched. The measured shape:
+  P0 0/0 · P1 c=1 t=1 · P2 c=1 t=1 · P3 c=1 t=1 (2-round, F1) · P3p 0/0
+  (2-round, placebo).
+- **H-23 full-text injection (P2) shows no increment over standard Prax (P1)**:
+  with content delivery guaranteed, behavior distribution is unchanged —
+  supports "entry as authored is near-inert" (row-4 direction), but…
+- **…the feedback loop shows a real signal (P3 > P3p)**: the F1 round
+  (check-results-only feedback) took s6 from 5 mid-flight fails to 2 final
+  fails (contrast/type/target all fixed), while the placebo second round
+  (P3p) changed nothing (6→6). Effort alone does not do this; measurement
+  content does.
+- **Variance dominates this cell**: same config produces all-pass (s3/s4) and
+  all-fail (s2/s5) runs; P1's in-batch 1/2 vs r3's 0/9 on this cell is a
+  replication gap. n=1–2 arms cannot resolve these effects further.
+
+Three-way 回流 updates:
+
+| item | action | basis |
+|---|---|---|
+| disclosure-layer auto-expansion | **deprioritized** | P2≈P1: guaranteed delivery of H-23 content produced no increment |
+| measure→fix loop in design_validate | **promoted to engineering candidate #1** | P3>P3p with s6 mechanism evidence (5-fail→2-fail in one round) |
+| H-23 lifecycle | **keep draft; rewrite is now evidence-backed** (palette-level dos/don'ts, per a11y-root-cause) but re-probe must use multi-cell or higher-n design given cell variance | this batch |
+| probe mode | **not adopted as standard** (protocol cap); its readout tooling (parseChecks/skipped-vs-pass/partial-pass) needed 3 fixes — harden before reuse | this batch |
+
+Engineering implication: the highest-value change surfaced by M3–M4 is
+**closing the measure→fix loop inside Prax** (feed prax-measure results back
+at design_validate time), not knowledge-entry expansion.
