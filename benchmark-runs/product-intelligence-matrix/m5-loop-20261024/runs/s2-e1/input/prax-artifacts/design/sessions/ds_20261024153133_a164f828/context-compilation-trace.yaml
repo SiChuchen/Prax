@@ -1,0 +1,41 @@
+version: "0.1"
+session_id: ds_20261024153133_a164f828
+task_ref: Switch the dimension the dataset is projected/grouped by while keeping a stable sense of the record pool and one's own exploration trail
+selected:
+  - ref: product_relationships
+    reason:
+      - dim-of:dimension->dataset
+      - proj-by:projection->dimension
+      - filter-on:filter->dimension
+      - trail-steps:trail->projection
+  - ref: region_relationships
+    reason:
+      - region_rel_data_detail
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-DATA-EXPLORER
+  - ref: unresolved
+    reason:
+      - dataset_theme_unspecified
+      - dimension_count_target
+  - ref: corrections
+    reason: []
+  - ref: validation-plan@1
+    reason:
+      - semantic_conformance
+      - state_completeness
+      - product_model_alignment
+      - keyboard
+      - hierarchy_review
+      - representation_decided
+      - state_ownership_declared
+      - acceptance_contract_present
+      - complexity_budget_declared
+      - filter_state
+      - comparison_scan
+      - requirement_alignment
+excluded:
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata

@@ -1,0 +1,81 @@
+needs:
+  - id: dim-switch-preserve
+    product_action: 切换维度透镜时保留 filter、查询与 selection
+    required_experience:
+      - 维度切换后过滤 chips、搜索词、选中记录全部原样保留
+      - 连续性提示条显示保留的计数
+    capabilities:
+      - lens state 独立于 filter/query/selection 存储
+      - 单页内存状态，无路由跳转
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端：状态模型分槽（lens ≠ filters ≠ query ≠ selection），切换透镜只改 lens 槽位
+  - id: attributed-state
+    product_action: 每个过滤/投影状态变更显示归属（来源操作）
+    required_experience:
+      - 每个 filter chip 与 ledger 条目都带来源徽标（哪个控件、哪类操作）
+      - hover/查看条目可见完整来源描述
+    capabilities:
+      - 状态变更统一经由 commit(action) 入口
+      - ledger 条目含 origin 控件/语义标签
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 前端数据模型：所有状态变更走统一 commit(action, origin) 通道，origin 随条目持久
+  - id: state-revert
+    product_action: 过滤/投影状态逐项移除、逐步 undo/redo、回滚到任意检查点
+    required_experience:
+      - chip 上 × 移除单个过滤
+      - undo/redo 按钮与快捷键
+      - ledger 条目『回到此处』时间旅行
+    capabilities:
+      - 快照栈 + 指针式 undo/redo
+      - chips 与 ledger 同源渲染
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 不可变状态快照栈；每个快照可按键寻址，回滚即重放渲染
+  - id: cross-dim-reanchor
+    product_action: 选中记录在新维度下显示归属分组（re-anchor）
+    required_experience:
+      - 详情面板显示选中记录在当前维度下的分组路径
+      - 投影中对应分组条目高亮
+    capabilities:
+      - 选中记录在任一维度投影中显示所属分组
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 投影函数为纯函数，任意维度下即时计算选中记录的分组
+  - id: inline-first-screen
+    product_action: 首屏即用：初始数据内联，无加载态
+    required_experience:
+      - 页面加载完成即可交互
+      - 无 fetch/无 spinner
+    capabilities:
+      - 构建期种子随机生成并烘焙为 JS 字面量
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 数据烘焙进 data.js（JS 字面量，file:// 可加载），脚本同步执行后立即渲染
+  - id: hierarchical-groups
+    product_action: 层级维度（medium hierarchy）在投影中父子展开
+    required_experience:
+      - 部分维度取值有父级（如 星座→象限），投影行可展开子分组
+    capabilities:
+      - 维度元数据声明父子取值关系
+      - 投影聚合支持两级展开
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 维度定义中带 parent 字段，投影时构建两级树
+  - id: static-open
+    product_action: file:// 直接静态打开交付物
+    required_experience:
+      - 双击 index.html 即可运行，全部资源本地相对路径
+    capabilities:
+      - 无模块打包、无外部 CDN、无字体/图片外链
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 零依赖 vanilla JS，多脚本标签按序加载

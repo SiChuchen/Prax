@@ -1,0 +1,91 @@
+version: "0.1"
+screen:
+  id: runbook-executor
+  intent:
+    primary_task: 零失误走完 orders-primary 生产库下线流程：依序执行步骤，不可逆步骤先确认后执行、恢复窗口内可撤销
+    secondary_tasks:
+      - 回看已完成步骤的执行记录
+      - 在恢复窗口内撤销或确认保留
+      - 重置流程重新演练
+  archetype:
+    pattern_ref: PAT-RESOURCE-MANAGEMENT
+  density_intent: spacious
+  regions:
+    - id: header-runbook-meta
+      role: experimental:runbook 元信息与全局进度
+      importance: contextual
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:常显全局进度与计时
+        - experimental:资源标识持续可见防误操作
+    - id: recovery-banner
+      role: experimental:打开中的恢复窗口聚合横幅
+      importance: primary
+      visibility:
+        condition: task_driven
+      behavior_intent:
+        - experimental:倒计时实时刷新
+        - experimental:撤销立即回滚步骤状态并关闭窗口
+        - experimental:确认保留立即关闭窗口并留记录
+        - experimental:到期自动转保留态
+    - id: phase-rail
+      role: experimental:阶段/步骤两层级轨道与步骤生命周期状态
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:当前步高亮
+        - experimental:锁定步骤不可点入执行
+        - experimental:已完成步骤可回看只读
+    - id: step-detail
+      role: experimental:当前步骤主区——说明、前置检查清单、动作区
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:检查全勾解锁动作
+        - experimental:不可逆动作走两段式确认门
+        - experimental:执行后显示执行记录与恢复窗口卡片
+    - id: final-summary
+      role: experimental:完成摘要——零失误结论与全部执行记录
+      importance: supporting
+      visibility:
+        condition: task_driven
+      behavior_intent:
+        - experimental:列出全部执行记录
+        - experimental:确认所有不可逆步骤处于保留或恢复终态
+  relationships: []
+  interaction_intents:
+    - experimental:门控推进——检查未全勾则动作禁用，未完成步骤不可进入执行
+    - experimental:不可逆步骤两段式确认——解锁→后果面板→手输资源名→执行
+    - experimental:恢复窗口内可撤销恢复或确认保留，倒计时到期自动转保留态
+    - experimental:左轨可点击回看已完成步骤（只读，含执行记录）
+    - experimental:全部完成后展示零失误摘要与执行记录
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: dp-confirm-style
+      question: 不可逆动作的强确认方式
+      adapter_may_choose:
+        - 手输资源名匹配
+        - 按住式确认
+        - 双击二次确认
+    - id: dp-recovery-window-duration
+      question: 恢复窗口时长与到期行为
+      adapter_may_choose:
+        - 30–60 秒短窗
+        - 2–5 分钟长窗
+        - 无倒计时手动关闭
+    - id: dp-recovery-placement
+      question: 恢复窗口的可见位置
+      adapter_may_choose:
+        - 全局横幅 + 步骤内联双落位
+        - 仅横幅
+        - 仅内联
+  unresolved: []
+  rejected_alternatives: []

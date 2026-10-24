@@ -1,0 +1,89 @@
+version: "0.2"
+jtbd:
+  verb: explore
+  target: 多维数据（无界、高维、高密度的目录型数据集）
+  success: 维度切换不重置认知：过滤器、选中与投影上下文在切换后原样保留，且状态有归属、可回退
+primary_object:
+  type: dataset
+  label: 巡天行星目录（多维数据集快照）
+task_model:
+  frequency: high
+  reversibility: reversible
+  consequence: low
+  expertise: mixed
+user:
+  primary_role: 数据分析师 / 科研数据探索者
+  expertise: mixed
+  familiarity: medium
+goal:
+  primary: 让用户在无界、高维、高密度数据集中持续探索：切换维度与投影不丢失过滤与选中等认知上下文，且每一步过滤/投影状态有归属、可回退。
+tasks:
+  primary: 在散点投影上探索数据集：切换 X/Y/颜色/尺寸维度，按维度过滤，框选记录
+  secondary:
+    - 在检查器查看选中记录的全维度详情
+    - 在状态轨迹中审查每步过滤/投影的归属并回退
+product_objects:
+  - id: dataset
+    user_name: 巡天目录
+    purpose: 承载全部行星记录与维度定义；数据无界增长，本地为快照
+  - id: record
+    user_name: 行星记录
+    purpose: 探索的最小对象；可被选中并在检查器中查看全维度
+  - id: dimension
+    user_name: 维度
+    purpose: 认知的主要杠杆：可被装入投影通道或被过滤约束
+  - id: projection
+    user_name: 投影
+    purpose: 把维度映射到散点画布的 X/Y/颜色/尺寸通道；切换投影不重置认知
+  - id: filter
+    user_name: 过滤器
+    purpose: 按维度值收窄数据范围；有来源归属
+  - id: selection
+    user_name: 选中集
+    purpose: 跨投影、跨过滤保留的高亮记录集合
+  - id: state_trail
+    user_name: 状态轨迹
+    purpose: 记录每次过滤/投影操作：来源归属 + 可撤销/可回退到任意步
+relationships:
+  - id: planet_of_star
+    source: record
+    target: dataset
+    type: belongs_to
+    direction: forward
+    meaning: 每条行星记录归属一颗恒星（记录名内含恒星系名）
+    importance: supporting
+  - id: proj_uses_dim
+    source: projection
+    target: dimension
+    type: maps_to
+    direction: bidirectional
+    meaning: 投影将维度映射到视觉通道；通道可换维度而其余状态保留
+    importance: primary
+  - id: filter_on_dim
+    source: filter
+    target: dimension
+    type: constrains
+    direction: forward
+    meaning: 过滤器约束某维度的取值范围/集合
+    importance: primary
+  - id: op_in_trail
+    source: filter
+    target: state_trail
+    type: attributed_to
+    direction: forward
+    meaning: 每个过滤/投影操作在轨迹中有来源归属条目，可回退
+    importance: primary
+mental_model_hypothesis:
+  summary: 用户把维度理解为可装到视觉通道（X/Y/颜色/尺寸）上的镜头：探索 = 换镜头（改投影）+ 收窄范围（加过滤）。换镜头绝不重置范围与选中；每一次收窄与换镜头都进入一条有来源归属的状态轨迹，可逐步撤销或回退到任一步。
+  confidence: high
+  evidence:
+    - user_requirement
+primary_success_definition: 用户任意切换 X/Y/颜色/尺寸维度后：已应用的过滤器与选中记录原样保留（认知不重置）；状态轨迹中每条过滤/投影操作均标注来源（哪个控件、作用于哪个维度），支持撤销/重做与回退到任意历史步。
+open_questions: []
+existing_product:
+  stable_user_concepts: []
+  stable_patterns: []
+  current_user_pain_points: []
+  current_constraints:
+    - 静态单页交付，无后端
+  legacy_debt: []

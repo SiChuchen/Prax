@@ -1,0 +1,76 @@
+user:
+  expertise: intermediate
+  familiarity: medium
+task:
+  primary: 零失误走完生产数据库下线流程（complete × consequential-flow）
+  modes:
+    - guided_stepwise_execution
+    - confirmation_gate
+    - recovery_window_management
+    - final_review
+  frequency: low
+domain:
+  type: 生产运维 / 关键操作（production database decommissioning）
+  entities:
+    - Runbook（流程）
+    - Phase（阶段）
+    - Step（步骤）
+    - 前置检查
+    - 确认门
+    - 恢复窗口
+    - 执行记录
+information:
+  volume: low
+  relationship_complexity: low
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: high
+  error_cost: high
+priorities:
+  - 不可逆步骤执行前显式确认（验收种子核心）
+  - 不可逆步骤执行后限时恢复路径（撤销/确认保留）
+  - 步骤门控推进，防跳步防误序
+  - 当前步骤一目了然，全局进度与打开中的恢复窗口常显
+  - 零失误导向：检查未过则动作不可用
+density_intent: spacious
+confidence:
+  overall: high
+unknowns:
+  - id: u1-domain-flavor
+    impact: low
+    affects:
+      - 流程内容文案
+      - 恢复窗口时长设定
+  - id: u2-visual-direction
+    impact: low
+    affects:
+      - 视觉风格、布局密度
+classification:
+  version: "1"
+  task_type: manage_lifecycle
+  domain_id: data_exploration
+  interaction_mode: inventory_with_lifecycle_actions
+  product_type: unknown
+  primary_object_type: step
+  secondary_object_types:
+    - runbook
+    - phase
+    - recovery_window
+    - check
+    - confirm_gate
+  confidence: high
+  evidence:
+    - task_type=manage_lifecycle ← token 'manage' in context.task and frame.tasks
+    - domain_id=data_exploration ← token 'data' in context.domain
+    - interaction_mode=inventory_with_lifecycle_actions ← token 'manage' in context.task, frame.tasks, and context.priorities
+    - primary_object_type=step ← most referenced product object in the Product Frame
+  open_questions:
+    - product_type could not be derived; record the intended audience and product kind

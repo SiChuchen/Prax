@@ -1,0 +1,73 @@
+user:
+  expertise: mixed
+  familiarity: medium
+task:
+  primary: Explore a high-dimensional dataset by repeatedly switching the grouping dimension without losing filters, selection, or exploration trail
+  modes:
+    - explore
+    - filter
+    - switch_projection
+    - inspect
+    - revert
+  frequency: medium
+domain:
+  type: data exploration / faceted (OLAP-like) browsing
+  entities:
+    - dataset record
+    - dimension
+    - facet value
+    - filter
+    - projection
+    - trail step
+information:
+  volume: high
+  relationship_complexity: medium
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: none
+  error_cost: low
+priorities:
+  - dimension switch preserves selection, filters, and trail (no cognitive reset)
+  - filter/projection state is attributed to its dimension and individually revertible
+  - high information density at first paint with inline data
+  - handle unbounded record counts via aggregation, not raw listing
+density_intent: compact
+confidence:
+  overall: high
+unknowns:
+  - id: dataset_theme_unspecified
+    impact: low
+    affects:
+      - initial seed data
+  - id: dimension_count_target
+    impact: low
+    affects:
+      - projection layout
+classification:
+  version: "1"
+  task_type: compare_filter_records
+  domain_id: data_exploration
+  interaction_mode: collection_with_contextual_detail
+  product_type: unknown
+  primary_object_type: dimension
+  secondary_object_types:
+    - projection
+    - dataset
+    - filter
+    - trail
+  confidence: high
+  evidence:
+    - task_type=compare_filter_records ← token 'filter' in context.task and frame.tasks
+    - domain_id=data_exploration ← token 'data' in context.domain
+    - interaction_mode=collection_with_contextual_detail ← token 'filter' in context.task, frame.tasks, and context.priorities
+    - primary_object_type=dimension ← most referenced product object in the Product Frame
+  open_questions:
+    - product_type could not be derived; record the intended audience and product kind

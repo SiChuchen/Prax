@@ -1,0 +1,91 @@
+version: "0.1"
+session_id: ds_20261024140203_c06f7b5e
+task:
+  surfaces: []
+  primary: 在多个维度之间切换对同一数据集的投影/分组浏览，持续缩小范围并定位感兴趣的记录（切换不丢失过滤/选择）
+product_relationships:
+  - id: rel-dim-proj
+    source: dimension
+    target: projection
+    type: projects_into
+    direction: forward
+    meaning: 主视图内容完全由当前激活维度决定
+    importance: primary
+  - id: rel-filter-proj
+    source: filter
+    target: projection
+    type: constrains
+    direction: forward
+    meaning: 过滤器改变投影视图中的计数与可见记录，且在维度切换后保留
+    importance: primary
+  - id: rel-sel-dim
+    source: selection
+    target: dimension
+    type: persists_across
+    direction: bidirectional
+    meaning: 选中记录不属于任何单一维度，切换维度后仍然成立并可重新定位
+    importance: primary
+  - id: rel-ledger-state
+    source: ledger_entry
+    target: filter
+    type: records
+    direction: forward
+    meaning: 每次过滤/投影/选择变更生成一条有归属的台账条目，可单独回退
+    importance: primary
+region_relationships:
+  - id: region_rel_data_detail
+    source: data
+    target: detail
+    type: selection_drives_contextual_detail
+decisions:
+  primary_structure: PAT-DATA-EXPLORER
+  density_intent: compact
+  major_choice_ids:
+    - lens-projection-model
+    - attributed-ledger
+    - cross-dimension-selection
+    - no-build-static
+    - synthetic-dataset
+must_preserve: []
+regression_points: []
+unresolved: []
+corrections: []
+representation_portfolio:
+  primary:
+    type: chart
+    reason: 高维度性的主认知操作是『换投影轴看分布』：分组条形把当前维度的取值结构压缩为一屏可扫的形态，且每行可直接点选为过滤，是 overview→filter→detail 的第一环
+  supporting:
+    - type: list
+      reason: 当前过滤范围内的记录列表是 drill 的第二环，支持选中锚定
+    - type: tree
+      reason: 分组维度（medium 层级）在投影条目内以可展开父子分组呈现
+  rejected:
+    - option: table-only 主视图
+      reason: 高维数据直接平铺成表会让维度结构不可见，切换维度只是换列，认知负担不降
+    - option: graph 力导向
+      reason: 关系性仅 medium，图布局引入空间隐喻与抖动，违背 spatiality=none
+    - option: calendar/timeline
+      reason: 时间性 low，非主要轴
+state_ownership:
+  - state: selection
+    owner: data
+  - state: preview
+    owner: session
+acceptance:
+  - 首屏即用后，用户能在维度之间任意切换而过滤器/查询/选择原样保留（连续性可见），且每个过滤/投影状态都能看到归属来源并支持逐项回退与整体回滚——『维度切换不重置认知』与『过滤/投影状态有归属且可回退』同时成立。
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - filter_state
+    - comparison_scan
+    - requirement_alignment
+  regression_check_ids: []

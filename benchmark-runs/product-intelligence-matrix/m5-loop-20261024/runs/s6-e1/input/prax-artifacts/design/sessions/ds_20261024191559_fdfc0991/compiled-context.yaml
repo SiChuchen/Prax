@@ -1,0 +1,66 @@
+version: "0.1"
+session_id: ds_20261024191559_fdfc0991
+task:
+  surfaces: []
+  primary: 依序执行 4 个阶段的下线步骤：核验前置、切流、不可逆拆除（确认+恢复）、收尾完成
+product_relationships:
+  - id: r1
+    source: runbook
+    target: phase
+    type: contains
+    direction: forward
+    meaning: 阶段按序启用，前一阶段完成解锁后一阶段
+  - id: r2
+    source: phase
+    target: step
+    type: contains
+    direction: forward
+    meaning: 阶段包含有序步骤，步骤门控推进
+  - id: r3
+    source: step
+    target: check
+    type: gated_by
+    direction: forward
+    meaning: 步骤的全部检查通过后才允许执行动作
+  - id: r4
+    source: step
+    target: recovery_window
+    type: opens
+    direction: forward
+    meaning: 不可逆步骤执行后打开限时恢复窗口
+  - id: r5
+    source: recovery_window
+    target: runbook
+    type: alerts
+    direction: forward
+    meaning: 打开中的恢复窗口在全局横幅中聚合展示
+region_relationships: []
+decisions:
+  primary_structure: PAT-RESOURCE-MANAGEMENT
+  density_intent: spacious
+  major_choice_ids:
+    - c1-scenario
+    - c2-confirm-gate
+    - c3-recovery-window
+    - c4-stack
+must_preserve: []
+regression_points: []
+unresolved:
+  - u1-domain-flavor
+  - u2-visual-direction
+corrections: []
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - destructive_recovery
+    - requirement_alignment
+  regression_check_ids: []

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>发布执行台 · 生产发布 RB-2027-042</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">⇢</span>发布执行台<span class="brand-sub">Runway</span></div>
+    <div class="meta" id="meta"></div>
+    <div class="progress-wrap">
+      <div class="progress-bar" role="progressbar" aria-label="发布进度" aria-valuemin="0" aria-valuemax="100" id="progressBar"><div id="progressFill"></div></div>
+      <span id="progressText"></span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <nav class="rail panel" id="rail" aria-label="流程步骤清单"></nav>
+    <section class="detail" id="detail" aria-label="当前步骤详情" aria-live="polite"></section>
+    <aside class="logpanel panel" id="logPanel" aria-label="执行日志"></aside>
+  </main>
+
+  <!-- 全局工具按钮：视觉固定于右下角，DOM 置于主内容之后，使 Tab 顺序与自上而下的视觉顺序一致 -->
+  <div class="global-actions">
+    <button id="exportBtn" class="btn footer-btn" type="button">导出纪要</button>
+    <button id="resetBtn" class="btn footer-btn" type="button" title="将演练重置回初始状态">重置演练</button>
+  </div>
+
+  <div id="modalRoot"></div>
+  <div id="toastRoot"></div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

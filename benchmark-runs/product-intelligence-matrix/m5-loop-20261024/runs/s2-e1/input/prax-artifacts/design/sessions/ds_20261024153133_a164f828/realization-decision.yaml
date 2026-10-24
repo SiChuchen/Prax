@@ -1,0 +1,17 @@
+version: "0.1"
+realization_mode: direct_code
+conditions:
+  - id: defect_fix_fit
+    holds: true
+    basis: Greenfield build; no defect remediation is in scope, so nothing conflicts with direct coding
+  - id: visual_polish_fit
+    holds: true
+    basis: One compact screen with custom CSS and inline bars; direct code gives full visual control without a design-tool round trip
+  - id: small_modification
+    holds: true
+    basis: Single screen, no backend, ~1k LOC of vanilla JS/CSS — small enough to author and review directly
+  - id: mature_design_system
+    holds: true
+    basis: A self-contained token set (color/type/spacing variables) is defined in the project's own stylesheet; no external design system is needed for one screen
+proposed_at: 2026-10-24T15:39:49.434Z
+overridden: false

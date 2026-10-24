@@ -1,0 +1,120 @@
+session_id: ds_20261024140203_c06f7b5e
+version: "0.2"
+information_shape:
+  cardinality: unbounded
+  relationality: medium
+  hierarchy: medium
+  temporality: low
+  density: high
+  dimensionality: high
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: chart
+    reason: 高维度性的主认知操作是『换投影轴看分布』：分组条形把当前维度的取值结构压缩为一屏可扫的形态，且每行可直接点选为过滤，是 overview→filter→detail 的第一环
+  supporting:
+    - type: list
+      reason: 当前过滤范围内的记录列表是 drill 的第二环，支持选中锚定
+    - type: tree
+      reason: 分组维度（medium 层级）在投影条目内以可展开父子分组呈现
+  rejected:
+    - option: table-only 主视图
+      reason: 高维数据直接平铺成表会让维度结构不可见，切换维度只是换列，认知负担不降
+    - option: graph 力导向
+      reason: 关系性仅 medium，图布局引入空间隐喻与抖动，违背 spatiality=none
+    - option: calendar/timeline
+      reason: 时间性 low，非主要轴
+  justification_vs_shape: unbounded 基数由分组条形+滚动列表消化；高维度性由维度轨+透镜切换表达；层级性（medium）由维度内父/子分组展开表达；高密度由紧凑条形+多列微度量呈现；时间性低→不做时间轴；比较需求 none→不做对比多图
+primary_structure:
+  pattern: PAT-DATA-EXPLORER
+  rationale:
+    - PAT-DATA-EXPLORER 的合同：结构化数据面 + 持久收窄（persistent narrowing）+ 按需详情；过滤器天然跨维度持久，直接满足『切换维度不重置认知』
+    - 组合 PAT-LIST-DETAIL-INSPECTOR：选中记录详情绑定在选择上（H-19/H-21 方位不变量），维度切换后保持并可重新定位
+    - P-28 Recoverable Action + 验收种子要求每个过滤/投影变更可归属、可回退 → 显式 ledger（操作历史 + chips 双呈现）
+    - H-22 Overview-Filter-Detail：投影总览 → 点选过滤 → 详情，单屏闭环；H-13 Structured Density 支撑高密度紧凑布局
+  confidence: high
+information_hierarchy:
+  primary:
+    - data
+    - collection
+    - filter/projection 状态条（chips，含归属徽标）
+    - ledger_entry 操作台账（归属+回退）
+  secondary:
+    - data 面细节：当前维度分组投影（条形+计数+度量，可点选过滤）
+    - collection 面细节：记录列表与 selection 详情
+    - 维度切换连续性提示（保留的过滤/选择计数）
+density:
+  intent: compact
+  strategy:
+    - data 面 = dataset 投影主视图（当前 dimension 分组条形，含计数/度量，可点选过滤）
+    - collection 面 = 过滤范围内记录列表 + selection 详情 inspector
+    - 四区一屏：维度轨（左）+ 投影主视图（中）+ 记录/详情（右）+ 台账（右下）
+    - 过滤 chips 与台账条目同源，chip 即 ledger 入口
+  avoid:
+    - 多图表仪表盘并列
+    - 无归属的隐形过滤状态
+    - 切换维度时的全屏重绘/空白
+major_choices:
+  - id: lens-projection-model
+    choice: lens 模型：主视图是当前维度 dimension 的投影，切换透镜只改变分组轴；filter、查询、selection 独立于透镜存储，不受维度切换影响
+    rationale: 直接实现 user_job 成功标准『维度切换不重置认知』：认知状态与维度解耦
+    confidence: high
+    references:
+      - dimension
+      - projection
+      - filter
+      - selection
+      - dataset
+  - id: attributed-ledger
+    choice: 状态台账：对 filter / projection 的每次变更生成 ledger_entry，记录来源控件与语义归属，支持逐步 undo/redo、逐项移除、回滚到任意检查点
+    rationale: 满足验收种子『过滤/投影状态有归属且可回退』；对应 P-28 Recoverable Action
+    confidence: high
+    references:
+      - filter
+      - projection
+      - ledger_entry
+  - id: cross-dimension-selection
+    choice: 选择是跨维度锚点：selection 在切换维度后保持，projection 详情给出选中记录在新维度下的落点（re-anchor）
+    rationale: 『不重置认知』最强形式：不仅保留状态，还在新投影中显示选中记录的归属分组；对应 H-21 Orientation Invariants 与 H-19 Contextual Inspector
+    confidence: high
+    references:
+      - selection
+      - dimension
+      - projection
+  - id: no-build-static
+    choice: 零构建 vanilla JS 单 index.html（+内联 data.js），数据以 JS 字面量内联，file:// 直接打开
+    rationale: 交付约束『静态可开、首屏即用』；dataset 随首屏就绪，无加载态
+    confidence: high
+    references:
+      - dataset
+  - id: synthetic-dataset
+    choice: 合成数据集：~960 条科研观测记录 dataset × 12 维度 dimension（含层级维度与数值度量），种子随机生成后烘焙为字面量
+    rationale: shape 束 unbounded/high-dimensionality/high-density 需要足够大的数据才真实；无外部服务依赖
+    confidence: high
+    references:
+      - dataset
+      - dimension
+rejected:
+  - option: PAT-CANVAS-WORKSPACE（画布空间布局）
+    reason: spatiality=none，空间性不成立；路由亦排除
+  - option: 多图联动 dashboard（多投影并排联动）
+    reason: 比较需求 none；多主视图违反单屏预算与『单一投影轴』认知模型
+  - option: 纯表格 + 列排序
+    reason: 无法表达『维度作为主要认知负担』的投影切换；表格无分组结构可点
+  - option: React/Vite 构建产物
+    reason: 规模上限单屏，零依赖 vanilla 足够且直接满足 file:// 静态打开
+unresolved: []
+complexity_budget:
+  permanent_panels: 4
+  permanent_primary_actions: 3
+  modes: 0
+  state_owners: 1
+  navigation_levels: 1
+  persistent_filters: 8
+  new_semantic_concepts: 3
+  keyboard_contracts: 1
+  mobile_conflicts: 0
+  permanent_surfaces: 4

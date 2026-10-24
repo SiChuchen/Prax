@@ -1,0 +1,72 @@
+version: "0.1"
+session_id: ds_20261024181435_3fb05d73
+task:
+  surfaces: []
+  primary: 在散点投影上探索数据集：切换 X/Y/颜色/尺寸维度，按维度过滤，框选记录
+product_relationships:
+  - id: planet_of_star
+    source: record
+    target: dataset
+    type: belongs_to
+    direction: forward
+    meaning: 每条行星记录归属一颗恒星（记录名内含恒星系名）
+    importance: supporting
+  - id: proj_uses_dim
+    source: projection
+    target: dimension
+    type: maps_to
+    direction: bidirectional
+    meaning: 投影将维度映射到视觉通道；通道可换维度而其余状态保留
+    importance: primary
+  - id: filter_on_dim
+    source: filter
+    target: dimension
+    type: constrains
+    direction: forward
+    meaning: 过滤器约束某维度的取值范围/集合
+    importance: primary
+  - id: op_in_trail
+    source: filter
+    target: state_trail
+    type: attributed_to
+    direction: forward
+    meaning: 每个过滤/投影操作在轨迹中有来源归属条目，可回退
+    importance: primary
+region_relationships:
+  - id: region_rel_data_detail
+    source: data
+    target: detail
+    type: selection_drives_contextual_detail
+decisions:
+  primary_structure: PAT-DATA-EXPLORER
+  density_intent: compact
+  major_choice_ids:
+    - dataset_domain
+    - state_model
+    - attribution_design
+    - cognition_preservation
+    - tech_stack
+must_preserve: []
+regression_points: []
+unresolved:
+  - trail_interaction_granularity
+  - brush_to_filter_vs_select
+  - synthetic_domain_choice
+corrections: []
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - filter_state
+    - comparison_scan
+    - destructive_recovery
+    - requirement_alignment
+  regression_check_ids: []

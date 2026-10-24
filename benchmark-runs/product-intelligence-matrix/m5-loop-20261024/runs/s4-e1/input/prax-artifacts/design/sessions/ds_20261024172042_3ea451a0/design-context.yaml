@@ -1,0 +1,65 @@
+user:
+  expertise: expert
+  familiarity: high
+task:
+  primary: 零失误走完一个高后果流程（生产发布 runbook）
+  modes:
+    - execute
+    - verify
+    - confirm
+    - recover
+  frequency: low
+domain:
+  type: 运维发布执行（DevOps release runbook execution）
+  entities:
+    - workflow（runbook）
+    - phase 阶段
+    - step 步骤
+    - gate 验证门/确认门
+    - recovery_path 恢复路径
+    - execution_log 执行日志
+information:
+  volume: low
+  relationship_complexity: low
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: high
+  error_cost: high
+priorities:
+  - 防失误：顺序强制 + 验证门 + 不可跳步
+  - 不可逆步骤的确认路径（输入式确认）与恢复路径（回滚指引）始终可见
+  - 当前步骤唯一焦点与整体进度反馈
+  - 全程执行留痕可追溯
+density_intent: spacious
+confidence:
+  overall: high
+unknowns: []
+classification:
+  version: "1"
+  task_type: compare_filter_records
+  domain_id: data_exploration
+  interaction_mode: unknown
+  product_type: internal_engineering_tool
+  primary_object_type: step
+  secondary_object_types:
+    - phase
+    - workflow
+    - gate
+    - recovery
+    - log
+  confidence: medium
+  evidence:
+    - task_type=compare_filter_records ← token '日志' in context.task and frame.tasks
+    - domain_id=data_exploration ← token 'log' in context.domain
+    - product_type=internal_engineering_tool ← expert user in an engineering domain
+    - primary_object_type=step ← most referenced product object in the Product Frame
+  open_questions:
+    - interaction_mode could not be classified from the provided context; refine the context fields or record a custom classification

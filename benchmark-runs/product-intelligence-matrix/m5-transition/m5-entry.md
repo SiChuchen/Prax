@@ -146,3 +146,42 @@ Three-way 回流 updates:
 Engineering implication: the highest-value change surfaced by M3–M4 is
 **closing the measure→fix loop inside Prax** (feed prax-measure results back
 at design_validate time), not knowledge-entry expansion.
+
+## 8. m5 loop-validation update (2026-10-24)
+
+Batch `m5-loop-20261024` complete (6/6 slots, freeze commit 4e9b370 before
+any run; $45.68 observed + $15 D-1 allowance ≈ $60.7 / $120 ceiling). Full
+record: `../m5-loop-20261024/m5-report.md` (+ operator addendum) ·
+protocol.md (pre-registered matrix) · operator-events (D-0 snapshot-test
+fixtures, D-1 unobservable-cost allowance).
+
+Design: E1 = m5 frozen runtime `fbf222e1` (ADR-006, commit 2ccb60e; sole
+packages/ delta vs r3 snapshot, manifest-verified; prax-measure/prax-knowledge
+byte-identical) vs E0 = r3 frozen runtime `681653b4`; cells j13-s10 + j10-s09,
+interleaved; 90-min/1.2M single-round budget; MCP_TIMEOUT=180000 both arms.
+
+- **G1 (Gate F closing) verdict: row 3 NEGATIVE at n=4** — C(E1)=1/4 vs
+  C(E0)=0/2 (historical 30%). The loop did not reliably flip phase to
+  COMPLETE. Both pre-registered row-3 branch labels misdescribe the data
+  (unavailable=0/4 — not infra; fix_required≥2 in 4/4 — not ignored):
+  recorded as a branch-text residual.
+- **G2 (a11y objective): large positive** — contrast 4/4 vs 0/2, target_size
+  4/4 vs 0/2, focus 4/4 vs 1/2 (no regression); blind spot =
+  type.min_projected_size (1/4 vs 1/2; smallest-px feedback does not convert).
+  s6: all 7 checks green yet still VALIDATION.
+- **Mechanism (transcripts)**: the loop converts non-measurement into
+  measurement (validate calls 15/11/8/9 vs 0/6; 4–5 self-run receipts per E1
+  session), then the bottleneck moves downstream: `MEASUREMENT_RECEIPT_MISSING`
+  / `MEASUREMENT_BINDING_INVALID` cycles ending in
+  `VALIDATION_CONVERGENCE_STALLED` (REVIEW) in all three non-completing E1
+  runs. The closing wall is now the B3 convergence history × receipt-binding
+  interaction, not agent unwillingness to measure.
+
+Three-way 回流 updates:
+
+| item | action | basis |
+|---|---|---|
+| ADR-006 lifecycle | **keep; iterate implementation** (row-3 action cap) — candidate fix #1: exclude measurement-loop-adjacent re-submits from the B3 convergence history (ADR-006 §4 intent vs observed stalls); candidate #2: lighten stall→REVIEW recovery ("lighter completion ack", §3) | this batch |
+| measure→fix loop value | **re-scoped**: proven for measured a11y conversion (G2), NOT yet for session closing (G1) | this batch |
+| H-23 lifecycle | **unchanged**: rewrite-and-reprobe still deferred (pre-registered in m5 protocol §1; needs multi-cell batch) | m5 protocol |
+| type.min_projected_size | **new blind-spot entry**: feedback carries measured px but 3/4 E1 runs still shipped sub-12px text — investigate feedback phrasing vs check semantics before next batch | this batch |

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prism — Dimension Explorer</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <h1>Prism</h1>
+      <span class="brand-sub">Dimension Explorer</span>
+    </div>
+    <div class="dataset-meta" id="dataset-meta" aria-label="dataset meta"></div>
+    <div class="header-actions">
+      <span class="kbd-hint" title="Keyboard"><kbd>Ctrl</kbd>+<kbd>Z</kbd> undo · <kbd>Esc</kbd> clear selection · <kbd>Tab</kbd> next panel, <kbd>↑↓</kbd>+<kbd>Enter</kbd> inside</span>
+      <button class="btn" id="btn-undo" title="Undo last step (Ctrl+Z)">↶ Undo</button>
+      <button class="btn btn-danger-ghost" id="btn-reset" title="Reset projection, filters and selection">Reset all</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <!-- Region: dimension rail (collection of lenses) -->
+    <nav class="rail panel" id="dim-rail" tabindex="0" aria-label="Dimensions — ↑↓ move, Enter groups by a dimension">
+      <div class="rail-head">Dimensions <span class="rail-count" id="dim-count"></span></div>
+      <div class="rail-list" id="dim-list"></div>
+      <div class="rail-foot">Switching the lens keeps filters,<br>selection and trail.</div>
+    </nav>
+
+    <!-- Region: data (dominant projection grid) -->
+    <section class="center" aria-label="Projection">
+      <div class="state-strip" id="state-strip" aria-label="Active state — attributed chips"></div>
+      <div class="grid-head" id="grid-head"></div>
+      <div class="grid-scroll panel" id="grid-scroll" tabindex="0" aria-label="Projection rows — ↑↓ move, Enter pins a value, F filters only it">
+        <table class="proj-grid" id="proj-grid" aria-label="Dataset grouped by active dimension">
+          <thead>
+            <tr>
+              <th class="col-val">Value</th>
+              <th class="col-num">Orders</th>
+              <th class="col-bar">Share</th>
+              <th class="col-num">Share %</th>
+              <th class="col-num">Revenue</th>
+              <th class="col-num">AOV</th>
+              <th class="col-act" aria-label="filter actions"></th>
+            </tr>
+          </thead>
+          <tbody id="proj-body"></tbody>
+        </table>
+        <div class="grid-empty" id="grid-empty" hidden>
+          <div class="empty-title">No orders match the current filters</div>
+          <div class="empty-sub">The projection is empty — every record was filtered out.</div>
+          <button class="btn" id="btn-empty-clear">Clear all filters</button>
+        </div>
+        <div class="grid-error" id="grid-error" hidden>
+          <div class="empty-title">Something went wrong rendering this projection</div>
+          <div class="empty-sub" id="grid-error-msg"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Region: detail (contextual inspector) + trail -->
+    <aside class="side">
+      <section class="panel inspector" id="inspector" aria-label="Inspector — selection across the active dimension"></section>
+      <section class="panel trail" id="trail-panel" tabindex="0" aria-label="Exploration trail — ↑↓ move, Enter reverts to a step">
+        <div class="trail-head">Trail <span class="rail-count" id="trail-count"></span>
+          <button class="btn btn-mini" id="btn-trail-undo" title="Undo last step">↶ undo</button>
+        </div>
+        <ol class="trail-list" id="trail-list"></ol>
+      </section>
+    </aside>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+version: "0.2"
+jtbd:
+  verb: complete
+  target: 一个高后果流程（生产发布执行 runbook）
+  success: 零失误走完全程；每个不可逆步骤都经确认门执行且始终可见恢复路径
+primary_object:
+  type: workflow
+  label: 生产发布执行流程（runbook）
+task_model:
+  frequency: low
+  reversibility: irreversible
+  consequence: high
+  expertise: expert
+user:
+  primary_role: 发布值班长（Release Captain，唯一执行人）
+  expertise: expert
+  familiarity: high
+goal:
+  primary: 引导发布值班长按既定 runbook 顺序零失误完成一次生产发布，任何不可逆动作都有确认与恢复路径
+tasks:
+  primary: 按阶段→步骤顺序执行发布流程：完成常规步骤、通过验证门、经输入式确认执行不可逆步骤
+  secondary:
+    - 随时查看整体进度与当前应做的唯一步骤
+    - 在异常或误操作时按恢复路径回滚
+    - 回看执行日志（时间戳+操作记录）并在终点导出发布纪要
+product_objects:
+  - id: workflow
+    user_name: 发布流程（runbook）
+    purpose: 唯一的高后果流程对象：阶段化步骤序列与整体进度
+  - id: phase
+    user_name: 阶段
+    purpose: 流程的高层级分组（预检→构建→迁移→切流→观察→收尾）
+  - id: step
+    user_name: 步骤
+    purpose: 最小可执行单元，带风险类型（常规/验证/不可逆）、操作指令与 contingency 分支
+  - id: gate
+    user_name: 验证门/确认门
+    purpose: 验证步骤的通过条件清单；不可逆步骤的输入式确认
+  - id: recovery
+    user_name: 恢复路径
+    purpose: 不可逆步骤执行前承诺、执行后可用的回滚指引
+  - id: log
+    user_name: 执行日志
+    purpose: 带时间戳的全程操作留痕，支持追溯与导出
+relationships:
+  - source: workflow
+    target: phase
+    type: contains
+    direction: forward
+    meaning: 流程由有序阶段组成，顺序不可跳越
+    importance: primary
+    id: rel_workflow_phase
+  - source: phase
+    target: step
+    type: contains
+    direction: forward
+    meaning: 阶段内步骤按序执行，前置未完成则后续锁定
+    importance: primary
+    id: rel_phase_step
+  - source: step
+    target: gate
+    type: guarded_by
+    direction: forward
+    meaning: 验证/不可逆步骤必须通过门才能标记完成
+    condition: step.risk = verification | irreversible
+    importance: primary
+    id: rel_step_gate
+  - source: step
+    target: recovery
+    type: recovers
+    direction: forward
+    meaning: 不可逆步骤内置恢复路径：执行前明示，执行后保留入口
+    condition: step.risk = irreversible
+    importance: primary
+    id: rel_step_recovery
+mental_model_hypothesis:
+  summary: 值班长把发布理解为一条线性但分阶段的检查单：任一时刻只关注一个当前步骤；不可逆步骤以强警示+输入确认+回滚指引呈现；日志提供事后追溯。
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: 首屏即呈现完整可执行流程；用户按序走完全部 6 阶段步骤，所有验证门逐一通过，3 个不可逆步骤全部经输入式确认执行且各自恢复路径在执行前后均可见；支持从中断/回滚状态恢复并最终到达完成态，全程零跳步。
+open_questions: []

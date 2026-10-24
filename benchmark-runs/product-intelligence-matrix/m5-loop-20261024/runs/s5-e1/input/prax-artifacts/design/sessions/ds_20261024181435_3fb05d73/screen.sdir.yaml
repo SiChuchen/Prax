@@ -1,0 +1,96 @@
+version: "0.1"
+screen:
+  id: data_explorer_screen
+  intent:
+    primary_task: 在散点投影上探索数据集：切换 X/Y/颜色/尺寸维度，按维度过滤，框选记录
+    secondary_tasks:
+      - 在检查器查看选中记录的全维度详情
+      - 在状态轨迹中审查每步过滤/投影的归属并回退
+  archetype:
+    pattern_ref: PAT-DATA-EXPLORER
+  density_intent: compact
+  regions:
+    - id: data
+      role: collection
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - comparison_group
+        - filter_then_inspect
+    - id: collection · 维度架（dimension 集合：维度=镜头，可装通道可过滤）
+      role: experimental:collection · 维度架（dimension 集合：维度=镜头，可装通道可过滤）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: state_trail · 状态轨迹（底部常驻：归属 chips + 撤销/重做/回退）
+      role: experimental:state_trail · 状态轨迹（底部常驻：归属 chips + 撤销/重做/回退）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: data 主面展开：数据投影画布（全量散点投影，dominant，承载 explore 主任务）
+      role: experimental:data 主面展开：数据投影画布（全量散点投影，dominant，承载 explore 主任务）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: record · 记录检查器（选中驱动）
+      role: experimental:record · 记录检查器（选中驱动）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 顶栏：dataset 体量、当前可见计数、上下文保留指示
+      role: experimental:顶栏：dataset 体量、当前可见计数、上下文保留指示
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: detail
+      role: contextual_inspector
+      importance: contextual
+      visibility:
+        condition: selection_driven
+      behavior_intent:
+        - selection_driven
+  relationships:
+    - id: region_rel_data_detail
+      source: data
+      target: detail
+      type: selection_drives_contextual_detail
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved:
+    - id: trail_interaction_granularity
+      question: trail_interaction_granularity
+      impact: medium
+      affects:
+        - interaction
+    - id: brush_to_filter_vs_select
+      question: brush_to_filter_vs_select
+      impact: medium
+      affects:
+        - interaction
+  rejected_alternatives:
+    - option: PAT-LIST-DETAIL（列表+详情为主结构）
+      reason: 列表主结构在高维无界数据上丢分布形态；换维度=重排列/重排序，认知重置感强；检查器部分仍以 PAT-LIST-DETAIL-INSPECTOR 形式保留
+    - option: PAT-CANVAS-WORKSPACE（自由画布）
+      reason: spatiality none：数据无空间拓扑语义，自由画布把认知负担错误地转到空间布置上
+    - option: timeline / graph 为主结构
+      reason: temporality low、relationality medium：时间轴与关系网都不是本格的主要认知负担，维度才是

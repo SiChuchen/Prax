@@ -1,0 +1,128 @@
+session_id: ds_20261024181435_3fb05d73
+information_shape:
+  cardinality: unbounded
+  relationality: medium
+  hierarchy: medium
+  temporality: low
+  density: high
+  dimensionality: high
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: chart
+    reason: 维度性高：散点是最直接的投影容器——X/Y/颜色/尺寸四通道各绑一个维度，换维度即换镜头且画布语法不变，认知不重置；密度高由 canvas 全量渲染 + 透明度抗重叠承接
+  supporting:
+    - type: list
+      reason: 维度架：12 个维度按类别/数值/层级分组列出，每个维度可装入通道或展开过滤器
+    - type: list
+      reason: 状态轨迹条：chips 线性列出每步操作（过滤/投影），归属+可回退
+    - type: table
+      reason: 记录检查器：选中行星的全维度键值明细
+  rejected:
+    - option: table 为主
+      reason: 无界+高维下表格丢分布形态，换维度=换列重排，认知重置感强
+    - option: map
+      reason: spatiality none，无地理/空间语义
+    - option: timeline
+      reason: temporality low，时间不是主要轴
+    - option: graph/关系网
+      reason: relationality medium，行星-恒星仅一层归属，关系网开销大于收益
+    - option: tree 浏览器
+      reason: hierarchy medium 且维度探索是横向切面，树形把无界数据切成路径，丢跨维度模式
+  justification_vs_shape: dimensionality high → 主表现必须是『维度可换』的投影（chart/散点），而非固定列的 table；density high + cardinality unbounded → canvas 全量点 + 过滤收窄；hierarchy/relationality medium → 行星-恒星系仅作检查器上下文，不强行图关系（graph 被拒）；temporality low → 无 timeline；spatiality none → 无 map/自由画布。
+primary_structure:
+  pattern: PAT-DATA-EXPLORER
+  rationale:
+    - 路由命中的 PAT-DATA-EXPLORER 为主骨架（可过滤可比较的数据面 + 按需细节），组合路由的 PAT-LIST-DETAIL-INSPECTOR 作选中检查器
+    - 实例化为『投影探索台』：左维度架（维度即镜头，可装入 X/Y/颜色/尺寸通道，也可展开过滤）→ 中散点投影画布（canvas 全量点）→ 右记录检查器（选中驱动）→ 底部常驻状态轨迹条
+    - 维度切换不重置认知：通道绑定与过滤/选中分属独立状态 owner，切通道不动范围与选中，选中锚点跨投影保留（H-21）
+    - 归属且可回退：轨迹条把 op log 显式化为 chips——来源控件+目标维度+取值；undo/redo/回退到任意步三种回退粒度
+    - Overview-Filter-Detail（H-22）：散点全量概览 → 维度过滤收窄 → 检查器细节；结构化密度（H-13）+ 桌面惯例（WEB-DESKTOP）
+  confidence: high
+information_hierarchy:
+  primary:
+    - data
+    - collection · 维度架（dimension 集合：维度=镜头，可装通道可过滤）
+    - state_trail · 状态轨迹（底部常驻：归属 chips + 撤销/重做/回退）
+  secondary:
+    - data 主面展开：数据投影画布（全量散点投影，dominant，承载 explore 主任务）
+    - record · 记录检查器（选中驱动）
+    - 顶栏：dataset 体量、当前可见计数、上下文保留指示
+density:
+  intent: compact
+  strategy:
+    - 四区一屏：左维度架 / 中散点画布 / 右检查器 / 底状态轨迹，无页面切换
+    - 画布用 canvas 渲染数百点：透明度抗重叠、选中高亮描边
+    - 轨迹条单行 chips 折叠，悬停展开归属详情（来源控件+目标维度+取值）
+    - 紧凑行高、11–13px 字号、低 chrome（P-22/H-13）
+    - 首屏内联全部数据与维度定义，无加载态
+  avoid:
+    - 卡片网格
+    - 装饰性图表
+    - 插画空状态
+    - 多级导航
+major_choices:
+  - id: dataset_domain
+    choice: 系外行星目录（合成但真实形状的数据集：480 行内联快照，12 维度，类别/数值/层级三类）
+    rationale: 无界目录（真实目录数千且持续增长）、维度天然高维、行星→恒星系给中层级、密度高适合散点；时间维度存在但不是主轴，符合 temporality low
+    confidence: high
+    references:
+      - dataset
+      - dimension
+  - id: state_model
+    choice: 状态模型 = 线性操作日志（op log）+ 全量快照；undo 弹栈、redo 压回、任意 chip 可『回退到此步』
+    rationale: 快照数组使回退 O(1) 且无重放歧义；单页静态应用无并发，线性日志足够；直接满足验收种子『可回退』的强解释（时间旅行式回退）
+    confidence: high
+    references:
+      - state_trail
+      - filter
+  - id: attribution_design
+    choice: 归属 = 每条 op 记录 source（创建它的控件：维度面板/散点框选/通道选择器/初始）+ target（维度）+ 明确短语，悬停展开完整归属
+    rationale: 把『过滤/投影状态有归属』落成可见 UI：轨迹 chip 三元组来源→目标维度→取值
+    confidence: high
+    references:
+      - state_trail
+      - projection
+  - id: cognition_preservation
+    choice: 维度切换 = 仅改投影通道绑定；filters、selection、trail 全部不动，并显示『上下文已保留』指示
+    rationale: 成功标准『维度切换不重置认知』的实现机制：投影状态与范围/选中状态分属两个独立 owner，切换通道只写投影 owner，画布语法不变
+    confidence: high
+    references:
+      - projection
+      - selection
+  - id: tech_stack
+    choice: 无构建步骤：单文件 index.html（内联 CSS/JS，vanilla + canvas），file:// 直接打开
+    rationale: 交付要求静态直开 + 本地无外部服务；单文件消除模块 CORS 与依赖问题，dataset 首屏内联天然满足『加载即可用』
+    confidence: high
+    references:
+      - dataset
+rejected:
+  - option: PAT-LIST-DETAIL（列表+详情为主结构）
+    reason: 列表主结构在高维无界数据上丢分布形态；换维度=重排列/重排序，认知重置感强；检查器部分仍以 PAT-LIST-DETAIL-INSPECTOR 形式保留
+  - option: PAT-CANVAS-WORKSPACE（自由画布）
+    reason: spatiality none：数据无空间拓扑语义，自由画布把认知负担错误地转到空间布置上
+  - option: timeline / graph 为主结构
+    reason: temporality low、relationality medium：时间轴与关系网都不是本格的主要认知负担，维度才是
+unresolved:
+  - id: trail_interaction_granularity
+    impact: medium
+    affects:
+      - interaction
+  - id: brush_to_filter_vs_select
+    impact: medium
+    affects:
+      - interaction
+complexity_budget:
+  permanent_panels: 4
+  permanent_primary_actions: 3
+  modes: 1
+  state_owners: 2
+  navigation_levels: 1
+  persistent_filters: 1
+  new_semantic_concepts: 3
+  keyboard_contracts: 2
+  mobile_conflicts: 0
+  permanent_surfaces: 5

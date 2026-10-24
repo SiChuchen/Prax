@@ -1,0 +1,96 @@
+version: "0.2"
+jtbd:
+  verb: complete
+  target: 一次生产数据库下线流程（runbook）
+  success: 从阶段 1 到阶段 4 依序走完，所有前置检查通过，每个不可逆步骤先确认后执行且恢复窗口内可撤销，最终达成完成状态
+primary_object:
+  type: workflow
+  label: 生产数据库下线 Runbook
+task_model:
+  frequency: low
+  reversibility: irreversible
+  consequence: high
+  expertise: mixed
+user:
+  primary_role: 值班平台工程师（执行生产数据库下线的操作者）
+  expertise: intermediate
+  familiarity: medium
+goal:
+  primary: 零失误走完「生产数据库下线」这一高后果流程：每个不可逆步骤执行前有显式确认、执行后有恢复路径
+tasks:
+  primary: 依序执行 4 个阶段的下线步骤：核验前置、切流、不可逆拆除（确认+恢复）、收尾完成
+  secondary:
+    - 查看任一已完成步骤的执行记录
+    - 在恢复窗口内撤销或确认保留不可逆操作
+    - 重置流程重新演练
+product_objects:
+  - id: runbook
+    user_name: 下线 Runbook
+    purpose: 承载整个高后果流程：阶段、顺序、全局状态与完成条件
+  - id: phase
+    user_name: 阶段（Phase）
+    purpose: 把流程分成可理解的大块，高层级结构的第一层
+  - id: step
+    user_name: 步骤（Step）
+    purpose: 最小可执行单元；可逆或不可逆；含说明、前置检查与动作
+  - id: check
+    user_name: 前置检查（Check）
+    purpose: 步骤动作可执行前必须逐条确认的验证项
+  - id: confirm_gate
+    user_name: 确认门（Confirm）
+    purpose: 不可逆步骤执行前的显式确认（后果陈述 + 强确认动作）
+  - id: recovery_window
+    user_name: 恢复窗口（Recovery）
+    purpose: 不可逆步骤执行后的限时恢复路径（撤销或确认保留）
+relationships:
+  - id: r1
+    source: runbook
+    target: phase
+    type: contains
+    direction: forward
+    meaning: 阶段按序启用，前一阶段完成解锁后一阶段
+    condition: runbook 未开始时全部 phase 锁定
+  - id: r2
+    source: phase
+    target: step
+    type: contains
+    direction: forward
+    meaning: 阶段包含有序步骤，步骤门控推进
+    condition: 前置步骤未完成时步骤锁定
+  - id: r3
+    source: step
+    target: check
+    type: gated_by
+    direction: forward
+    meaning: 步骤的全部检查通过后才允许执行动作
+    condition: 全部 check 勾选后动作可用
+  - id: r4
+    source: step
+    target: recovery_window
+    type: opens
+    direction: forward
+    meaning: 不可逆步骤执行后打开限时恢复窗口
+    condition: 仅不可逆步骤且已执行时存在
+  - id: r5
+    source: recovery_window
+    target: runbook
+    type: alerts
+    direction: forward
+    meaning: 打开中的恢复窗口在全局横幅中聚合展示
+    condition: 存在打开的窗口时显示
+mental_model_hypothesis:
+  summary: 用户把该产品理解为「关键程序执行器」（类飞行检查单）：一眼看清自己在哪一步、下一步是什么；推进被前置条件门控、不可跳步；不可逆动作被双重护栏保护——执行前确认、执行后限时恢复。
+  confidence: high
+  evidence:
+    - user_requirement
+primary_success_definition: 全部 4 个阶段按序完成；每个不可逆步骤都有执行前确认且执行后处于「已恢复」或「确认保留」二态之一；全程无跳过门控；完成页显示零失误摘要。
+open_questions: []
+existing_product:
+  stable_user_concepts: []
+  stable_patterns: []
+  current_user_pain_points: []
+  current_constraints:
+    - 静态可打开：根路径 index.html 或 dist/，无外部服务
+    - 首屏即就绪：流程数据内联，无加载态
+    - 单主屏，无导航层级扩展
+  legacy_debt: []

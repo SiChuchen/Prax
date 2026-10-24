@@ -1,0 +1,70 @@
+needs:
+  - id: guided_sequential_execution
+    product_action: 按序执行：前置未完成则锁定，单步聚焦推进
+    required_experience:
+      - 清单上可见顺序与锁定状态
+      - 完成动作仅对当前可执行步骤开放
+    capabilities: []
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端状态机：扁平步骤序列 + 状态推导（完成/当前/锁定），无后端
+  - id: verification_gate
+    product_action: 验证步骤的门断言逐项勾选，全过才解锁完成
+    required_experience:
+      - 断言清单勾选
+      - 未全过时给出明确错误反馈
+    capabilities: []
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 客户端表单状态 + 完成前置校验
+  - id: typed_confirmation
+    product_action: 不可逆步骤执行前键入确认短语
+    required_experience:
+      - 模态复述后果与恢复预告
+      - 短语不匹配禁用执行
+    capabilities: []
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 客户端模态 + 字符串匹配校验
+  - id: recovery_path
+    product_action: 不可逆步骤回滚：状态回退到待重做并记录恢复事件
+    required_experience:
+      - 恢复路径执行前后可见
+      - 回滚后流程可重新走该步骤
+    capabilities: []
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 客户端动作回退状态 + 日志事件；『执行』为模拟语义（无真实生产系统），回滚状态转换真实可走
+  - id: audit_log_export
+    product_action: 时间戳日志留痕并导出发布纪要
+    required_experience:
+      - 全程操作按时间倒序可查
+      - 一键导出 txt
+    capabilities: []
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: 内存数组渲染 + Blob 下载，无持久化服务（约束允许）
+  - id: first_screen_ready
+    product_action: 页面加载完成即处于可用状态
+    required_experience:
+      - 首屏内联全部流程数据
+      - 无加载态作为可测状态
+    capabilities: []
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 静态 index.html 内联 data+js，DOMContentLoaded 前数据已就绪
+  - id: cross_session_persistence
+    product_action: 执行状态跨刷新保留
+    required_experience:
+      - 刷新后回到上次进度
+    capabilities: []
+    status: gap
+    resolution:
+      type: explicit_compromise
+      notes: 交付约束明确不要求持久化服务；如实呈现为单次执行会话语义，纪要导出作离线留痕

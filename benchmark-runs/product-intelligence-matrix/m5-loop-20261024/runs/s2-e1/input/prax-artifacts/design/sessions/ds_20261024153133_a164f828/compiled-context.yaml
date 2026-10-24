@@ -1,0 +1,70 @@
+version: "0.1"
+session_id: ds_20261024153133_a164f828
+task:
+  surfaces: []
+  primary: Switch the dimension the dataset is projected/grouped by while keeping a stable sense of the record pool and one's own exploration trail
+product_relationships:
+  - id: dim-of
+    source: dimension
+    target: dataset
+    type: attribute_of
+    direction: forward
+    meaning: Each dimension is one attribute/facet of every record in the dataset
+    importance: primary
+  - id: proj-by
+    source: projection
+    target: dimension
+    type: grouped_by
+    direction: forward
+    meaning: The projection groups the dataset by the active dimension
+    importance: primary
+  - id: filter-on
+    source: filter
+    target: dimension
+    type: constrains
+    direction: forward
+    meaning: Each filter is attributed to a specific dimension and restricts the pool
+    importance: primary
+  - id: trail-steps
+    source: trail
+    target: projection
+    type: records_history_of
+    direction: forward
+    meaning: The trail logs each projection/filter change so it can be revisited or undone
+    importance: supporting
+region_relationships:
+  - id: region_rel_data_detail
+    source: data
+    target: detail
+    type: selection_drives_contextual_detail
+decisions:
+  primary_structure: PAT-DATA-EXPLORER
+  density_intent: compact
+  major_choice_ids:
+    - pool-lens-separation
+    - command-store
+    - seeded-inline-data
+    - selection-as-entity
+    - static-classic
+must_preserve: []
+regression_points: []
+unresolved:
+  - dataset_theme_unspecified
+  - dimension_count_target
+corrections: []
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - filter_state
+    - comparison_scan
+    - requirement_alignment
+  regression_check_ids: []

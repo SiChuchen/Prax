@@ -1,0 +1,259 @@
+plan_revision: 2
+evidence:
+  submitted_by: executing arm — Claude Agent SDK (GLM), cell-j10-s09
+  collected_at: 2026-10-24T17:30:00Z
+  items:
+    - check_id: semantic_conformance
+      outcome: pass
+      source: Prax SDIR gate + 实现文件结构核对
+      notes: SDIR 经 design_sdir(generate_from_decisions) lint 通过并归一化为 list_detail_screen（PAT-LIST-DETAIL）；实现按 SDIR 区域结构落地：左栏序导航 / 中栏工作卡 / 右栏恢复中心+审计 / 顶壳。
+      artifact_refs:
+        - .prax/design/sessions/ds_20261024162025_fb317991
+    - check_id: state_completeness
+      outcome: pass
+      source: app.js 状态机 + styles.css + index.html（静态可核）
+      notes: ready=首屏同步渲染（app.js 末尾同步 init+render，无任何异步取数）；selected=左栏 .is-current 且 aria-current=step；error=验证失败 .deviate 异常分支面板与 chip 异常处理中；empty=恢复中心 .side .empty 空态。loading 依简报『不得以加载态作为可测状态』被有意排除：全代码库不存在 spinner/skeleton/loading 渲染路径（可 grep 复核），加载态不是本应用的可测状态。
+      artifact_refs:
+        - app.js
+        - styles.css
+        - index.html
+    - check_id: product_model_alignment
+      outcome: pass
+      source: data.js 对象模型 vs Product Frame（结构性核对，无需浏览器）
+      notes: Frame 六对象全部落地为用户可见结构：runbook（唯一流程本体 CHG-2026-1024）、phase（5 阶段左栏分组）、step（12 步序导航+工作卡）、irreversible_action（s7/s9/s11 红色警示+确认门）、recovery_plan（每个不可逆步骤配对预案：执行前预览、执行后恢复中心可走通）、audit_log（右栏时间戳事件流+JSON 导出）。用户可见语言与 frame user_name 一致。
+      artifact_refs:
+        - data.js
+        - app.js
+        - index.html
+    - check_id: keyboard
+      outcome: inconclusive
+      source: 环境阻断（如实记录）；取证脚本已就绪
+      notes: "静态可核部分：全部交互为原生 button/input[checkbox]，样式含 :focus-visible 焦点环（styles.css 末尾）。但真实 Tab 焦点环截图未能采集——本 harness 经穷尽验证不存在 shell 与浏览器工具（ToolSearch select: 所有命名变体、general-purpose/browser-user 两类 subagent、Skill 授权路径均无 exec/browser 能力）。已备一键取证脚本 scripts/capture.js（会话 C：Input.dispatchKeyEvent Tab×5 + 截图 09-keyboard-focus-ring.png + activeElement 断言），在具备 shell 的环境中单命令产出。"
+      artifact_refs:
+        - scripts/capture.js
+        - styles.css
+    - check_id: hierarchy_review
+      outcome: inconclusive
+      source: 环境阻断（如实记录）；CSS 结构性证据已列
+      notes: CSS 按 SDIR importance 实现：工作卡 dominant（max-width 780 白卡、spacious 留白）、左/右栏 primary/supporting（紧凑面板）、不可逆步骤 border-top 3px 红条+警示块形成视觉减速带。但『显著度跟随重要性』的最终判断需视觉证据，同 keyboard 项受环境阻断，截图脚本 01/03/08 号位即为此设计。
+      artifact_refs:
+        - styles.css
+        - scripts/capture.js
+    - check_id: representation_decided
+      outcome: pass
+      source: Prax decide/sdir 记录
+      notes: design_decisions.representation.primary=wizard（reason：受控顺序推进与零失误目标同构），supporting=list+feed；dashboard 默认壳已按 DECISION_DEFAULT_SHELL_UNJUSTIFIED 要求以 information_shape 变量逐项论证排除。
+      artifact_refs:
+        - .prax/design/sessions/ds_20261024162025_fb317991
+    - check_id: state_ownership_declared
+      outcome: pass
+      source: Prax SDIR state_ownership + app.js 单一 state store
+      notes: SDIR 声明 selection=左栏（由序约束派生）、mode/inspector=应用全局唯一 store；实现侧为单一 state 对象（app.js freshState），ui.modal 为唯一非持久 UI 态，与声明一致。
+      artifact_refs:
+        - .prax/design/sessions/ds_20261024162025_fb317991
+        - app.js
+    - check_id: acceptance_contract_present
+      outcome: pass
+      source: Prax SDIR acceptance 契约
+      notes: 首条即验收种子：不可逆步骤有恢复/确认路径（执行前确认门+预案预览，执行后恢复中心可走通回滚）；另有零失误全程、首屏就绪、静态直开、单主屏共 5 条。
+      artifact_refs:
+        - .prax/design/sessions/ds_20261024162025_fb317991
+    - check_id: complexity_budget_declared
+      outcome: pass
+      source: Prax decide/sdir complexity_budget 块
+      notes: permanent_panels=3、primary_actions=2、modes=1、navigation_levels=2、new_semantic_concepts=5 等；与实现一致（顶壳/左栏/右栏三常驻面板；主行动=完成步骤/执行不可逆+全局中止）。
+      artifact_refs:
+        - .prax/design/sessions/ds_20261024162025_fb317991
+    - check_id: destructive_recovery
+      outcome: pass
+      source: app.js 确认门/回滚/中止状态机 + data.js 三对 irrev/recovery 绑定（静态可核）
+      notes: 实现级证据：①确认路径——每个不可逆步骤（s7 MIGRATE-2410 / s9 CUTOVER-2410 / s11 RETIRE-239）前置确认项全勾后才开确认门，门内后果清单+恢复预案预览+键入步骤专属确认码，执行落审计；②恢复路径——执行后恢复中心列出已执行未回滚项，回滚走恢复预案检查单+确认，多步骤按执行倒序引导回滚，异常分支提供 重试/回滚最近/安全中止 三分支且禁止带病前行。运行时截图取证同 keyboard 项受环境阻断（已备脚本 03/04/05/06/07 号位）。
+      artifact_refs:
+        - app.js
+        - data.js
+        - scripts/capture.js
+    - check_id: requirement_alignment
+      outcome: pass
+      source: 交付物核对 vs requirement_confirmation restatement
+      notes: 对确认 restatement 逐项：根路径 index.html 静态直开（经典脚本无模块无构建）；初始数据 data.js 内联、DOMContentLoaded 前同步渲染（无加载态）；单页单主屏（wizard 工作卡+序导航+审计栏）；不可逆步骤均有确认+恢复双路径；无后端/账号/持久化服务（localStorage 为可选降级项，非服务）；未部署任何外部服务。预算：wall-clock 与 token 如实记录于 README。
+      artifact_refs:
+        - index.html
+        - data.js
+        - app.js
+        - styles.css
+        - README.md
+evaluation:
+  status: WARN
+  checks:
+    - id: semantic_conformance
+      label: Semantic conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR is valid, semantic, and aligned to the approved pattern.
+      evidence_required: false
+    - id: state_completeness
+      label: State completeness
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Required loading, empty, ready, and error states exist.
+      evidence_required: false
+    - id: product_model_alignment
+      label: Product model alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: User-facing structure and language preserve the Product Frame.
+      evidence_required: true
+    - id: keyboard
+      label: Keyboard operability
+      kind: empirical
+      profile: keyboard_accessibility
+      facet: behavioral
+      requirement: Primary work and selection are operable with keyboard and visible focus.
+      evidence_required: true
+    - id: hierarchy_review
+      label: Hierarchy review
+      kind: assistive
+      profile: semantic_integrity
+      facet: visual_hierarchy
+      requirement: Visual prominence follows SDIR importance rather than implementation convenience.
+      evidence_required: true
+    - id: representation_decided
+      label: Representation decided
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares representation.primary with a non-empty reason.
+      evidence_required: false
+    - id: state_ownership_declared
+      label: State ownership declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: Selection and preview states both have declared owners.
+      evidence_required: false
+    - id: acceptance_contract_present
+      label: Acceptance contract present
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 carries at least one acceptance criterion.
+      evidence_required: false
+    - id: complexity_budget_declared
+      label: Complexity budget declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      evidence_required: false
+    - id: destructive_recovery
+      label: Destructive recovery
+      kind: deterministic
+      profile: runtime_degradation
+      facet: behavioral
+      requirement: Destructive actions match error cost with prevention or recovery.
+      evidence_required: true
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+  findings:
+    - check_id: semantic_conformance
+      kind: deterministic
+      outcome: pass
+      message: SDIR is valid, semantic, and aligned to the approved pattern.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_completeness
+      kind: deterministic
+      outcome: pass
+      message: Required loading, empty, ready, and error states exist.
+      source: prax-validator
+      provenance: measured
+    - check_id: representation_decided
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares representation.primary with a non-empty reason.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_ownership_declared
+      kind: deterministic
+      outcome: pass
+      message: Selection and preview states both have declared owners.
+      source: prax-validator
+      provenance: measured
+    - check_id: acceptance_contract_present
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 carries at least one acceptance criterion.
+      source: prax-validator
+      provenance: measured
+    - check_id: complexity_budget_declared
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      source: prax-validator
+      provenance: measured
+    - check_id: product_model_alignment
+      kind: assistive
+      outcome: pass
+      message: Frame 六对象全部落地为用户可见结构：runbook（唯一流程本体 CHG-2026-1024）、phase（5 阶段左栏分组）、step（12 步序导航+工作卡）、irreversible_action（s7/s9/s11 红色警示+确认门）、recovery_plan（每个不可逆步骤配对预案：执行前预览、执行后恢复中心可走通）、audit_log（右栏时间戳事件流+JSON 导出）。用户可见语言与 frame user_name 一致。
+      source: data.js 对象模型 vs Product Frame（结构性核对，无需浏览器）
+      provenance: attested
+    - check_id: keyboard
+      kind: empirical
+      outcome: inconclusive
+      message: "静态可核部分：全部交互为原生 button/input[checkbox]，样式含 :focus-visible 焦点环（styles.css 末尾）。但真实 Tab 焦点环截图未能采集——本 harness 经穷尽验证不存在 shell 与浏览器工具（ToolSearch select: 所有命名变体、general-purpose/browser-user 两类 subagent、Skill 授权路径均无 exec/browser 能力）。已备一键取证脚本 scripts/capture.js（会话 C：Input.dispatchKeyEvent Tab×5 + 截图 09-keyboard-focus-ring.png + activeElement 断言），在具备 shell 的环境中单命令产出。"
+      source: 环境阻断（如实记录）；取证脚本已就绪
+      provenance: attested
+    - check_id: hierarchy_review
+      kind: assistive
+      outcome: inconclusive
+      message: CSS 按 SDIR importance 实现：工作卡 dominant（max-width 780 白卡、spacious 留白）、左/右栏 primary/supporting（紧凑面板）、不可逆步骤 border-top 3px 红条+警示块形成视觉减速带。但『显著度跟随重要性』的最终判断需视觉证据，同 keyboard 项受环境阻断，截图脚本 01/03/08 号位即为此设计。
+      source: 环境阻断（如实记录）；CSS 结构性证据已列
+      provenance: attested
+    - check_id: destructive_recovery
+      kind: deterministic
+      outcome: pass
+      message: 实现级证据：①确认路径——每个不可逆步骤（s7 MIGRATE-2410 / s9 CUTOVER-2410 / s11 RETIRE-239）前置确认项全勾后才开确认门，门内后果清单+恢复预案预览+键入步骤专属确认码，执行落审计；②恢复路径——执行后恢复中心列出已执行未回滚项，回滚走恢复预案检查单+确认，多步骤按执行倒序引导回滚，异常分支提供 重试/回滚最近/安全中止 三分支且禁止带病前行。运行时截图取证同 keyboard 项受环境阻断（已备脚本 03/04/05/06/07 号位）。
+      source: app.js 确认门/回滚/中止状态机 + data.js 三对 irrev/recovery 绑定（静态可核）
+      provenance: attested
+    - check_id: requirement_alignment
+      kind: assistive
+      outcome: pass
+      message: 对确认 restatement 逐项：根路径 index.html 静态直开（经典脚本无模块无构建）；初始数据 data.js 内联、DOMContentLoaded 前同步渲染（无加载态）；单页单主屏（wizard 工作卡+序导航+审计栏）；不可逆步骤均有确认+恢复双路径；无后端/账号/持久化服务（localStorage 为可选降级项，非服务）；未部署任何外部服务。预算：wall-clock 与 token 如实记录于 README。
+      source: 交付物核对 vs requirement_confirmation restatement
+      provenance: attested
+  missing_evidence: []
+  warnings: []
+  readiness:
+    deterministic_passed: true
+    measurement:
+      receipt_ref: null
+      binding: {}
+      error_failures_open: 0
+      warning_dispositions: []
+    convergence:
+      stalled: false
+      unresolved: []
+    evidence_current: true
+    claims:
+      measured:
+        - semantic_conformance
+        - state_completeness
+        - representation_decided
+        - state_ownership_declared
+        - acceptance_contract_present
+        - complexity_budget_declared
+      attested:
+        - product_model_alignment
+        - keyboard
+        - hierarchy_review
+        - destructive_recovery
+        - requirement_alignment
+      skipped: []

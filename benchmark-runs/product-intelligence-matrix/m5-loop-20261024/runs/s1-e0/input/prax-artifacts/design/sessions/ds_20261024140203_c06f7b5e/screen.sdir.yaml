@@ -1,0 +1,156 @@
+version: "0.2"
+screen:
+  id: data_explorer_screen
+  intent:
+    primary_task: 在多个维度之间切换对同一数据集的投影/分组浏览，持续缩小范围并定位感兴趣的记录（切换不丢失过滤/选择）
+    secondary_tasks:
+      - 点击投影分组将其变为过滤器，逐步收窄数据
+      - 查看选中记录详情并在其他维度下重新定位它
+      - 在台账中检查每个过滤/投影状态的归属并回退
+  archetype:
+    pattern_ref: PAT-DATA-EXPLORER
+  density_intent: compact
+  regions:
+    - id: data
+      role: collection
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - comparison_group
+        - filter_then_inspect
+    - id: collection
+      role: experimental:collection
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: filter/projection 状态条（chips，含归属徽标）
+      role: experimental:filter/projection 状态条（chips，含归属徽标）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: ledger_entry 操作台账（归属+回退）
+      role: experimental:ledger_entry 操作台账（归属+回退）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: data 面细节：当前维度分组投影（条形+计数+度量，可点选过滤）
+      role: experimental:data 面细节：当前维度分组投影（条形+计数+度量，可点选过滤）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: collection 面细节：记录列表与 selection 详情
+      role: experimental:collection 面细节：记录列表与 selection 详情
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 维度切换连续性提示（保留的过滤/选择计数）
+      role: experimental:维度切换连续性提示（保留的过滤/选择计数）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: detail
+      role: contextual_inspector
+      importance: contextual
+      visibility:
+        condition: selection_driven
+      behavior_intent:
+        - selection_driven
+  relationships:
+    - id: region_rel_data_detail
+      source: data
+      target: detail
+      type: selection_drives_contextual_detail
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved: []
+  rejected_alternatives:
+    - option: PAT-CANVAS-WORKSPACE（画布空间布局）
+      reason: spatiality=none，空间性不成立；路由亦排除
+    - option: 多图联动 dashboard（多投影并排联动）
+      reason: 比较需求 none；多主视图违反单屏预算与『单一投影轴』认知模型
+    - option: 纯表格 + 列排序
+      reason: 无法表达『维度作为主要认知负担』的投影切换；表格无分组结构可点
+    - option: React/Vite 构建产物
+      reason: 规模上限单屏，零依赖 vanilla 足够且直接满足 file:// 静态打开
+  user_job:
+    verb: explore
+    target: 多维数据集（dataset，维度是主要认知负担）
+    success: 维度切换不重置认知：过滤、查询、选择在切换后原样保留并有可见的连续性提示；任何过滤/投影变更在 ledger 中有归属且可回退。
+  primary_object:
+    type: dataset
+    label: 探索中的数据集
+  information_shape:
+    cardinality: unbounded
+    relationality: medium
+    hierarchy: medium
+    temporality: low
+    density: high
+    dimensionality: high
+    spatiality: none
+    volatility: medium
+    uncertainty: low
+    comparison_need: none
+  representation:
+    primary:
+      type: chart
+      reason: 高维度性的主认知操作是『换投影轴看分布』：分组条形把当前维度的取值结构压缩为一屏可扫的形态，且每行可直接点选为过滤，是 overview→filter→detail 的第一环
+    supporting:
+      - type: list
+        reason: 当前过滤范围内的记录列表是 drill 的第二环，支持选中锚定
+      - type: tree
+        reason: 分组维度（medium 层级）在投影条目内以可展开父子分组呈现
+  priority:
+    primary:
+      - data
+      - collection
+      - filter/projection 状态条（chips，含归属徽标）
+      - ledger_entry 操作台账（归属+回退）
+    contextual:
+      - data 面细节：当前维度分组投影（条形+计数+度量，可点选过滤）
+      - collection 面细节：记录列表与 selection 详情
+      - 维度切换连续性提示（保留的过滤/选择计数）
+      - detail
+  interaction:
+    preview: none
+    inspect: select
+    navigate: none
+    locate: none
+  state_ownership:
+    - state: selection
+      owner: data
+    - state: preview
+      owner: session
+  complexity_budget:
+    permanent_panels: 4
+    permanent_primary_actions: 3
+    modes: 0
+    state_owners: 1
+    navigation_levels: 1
+    persistent_filters: 8
+    new_semantic_concepts: 3
+    keyboard_contracts: 1
+    mobile_conflicts: 0
+    permanent_surfaces: 4
+  acceptance:
+    - 首屏即用后，用户能在维度之间任意切换而过滤器/查询/选择原样保留（连续性可见），且每个过滤/投影状态都能看到归属来源并支持逐项回退与整体回滚——『维度切换不重置认知』与『过滤/投影状态有归属且可回退』同时成立。

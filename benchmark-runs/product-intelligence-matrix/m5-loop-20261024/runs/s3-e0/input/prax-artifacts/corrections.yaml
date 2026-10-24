@@ -1,0 +1,39 @@
+version: "0.1"
+corrections:
+  - id: corr-001-no-shell-no-browser-in-harness
+    scope:
+      project: cell-j10-s09（E:\codex-prj\ab-worktrees\pi-matrix-m5\s3-e0）
+      surfaces:
+        - runbook-executor
+    finding:
+      type: environment_blocker
+      observed: "执行臂所在 harness 会话（含全部可用 subagent 形态）不存在 shell 执行与浏览器驱动工具：内置 Bash
+        缺失（ToolSearch select: 无匹配且直接调用不存在）；superpowers-chrome 插件的 use_browser
+        MCP 工具未接入会话（ToolSearch select:
+        mcp__chrome__use_browser、mcp__superpowers-chrome__use_browser、mcp__chro\
+        me-mcp-server__use_browser 均无匹配；browser-user subagent 实际函数集仅
+        Read/Grep/Glob/Skill，经 Skill 加载 browsing 技能后仍无法调用）。导致
+        scripts/capture.js（真实浏览器截图取证）无法在会话内执行，evidence/ 无截图产物。"
+    intended:
+      statement: 视觉/键盘类经验证据（截图、Tab 焦点环）必须由真实浏览器产出；在具备 shell 的环境中单命令运行 node
+        scripts/capture.js 即可产出 evidence/01..09 共 9 张截图 + assertions.json +
+        capture-log.txt，覆盖 Prax validation plan 的 keyboard 与 hierarchy_review 两个
+        inconclusive 项。
+    evidence_refs:
+      - ToolSearch select:mcp__chrome__use_browser /
+        mcp__superpowers-chrome__use_browser /
+        mcp__chrome-mcp-server__use_browser → 均 No matching deferred tools found
+      - general-purpose subagent 实测：无 Bash（ToolSearch select:Bash 无匹配）
+      - "superpowers-chrome:browser-user subagent 实测：函数集仅
+        Read/Grep/Glob/Skill，Skill 授权不生效（Unknown skill:
+        mcp__chrome__use_browser）"
+      - scripts/capture.js（已备未执行的一键取证脚本）
+    regression:
+      check_id: keyboard
+      requirement: keyboard 与 hierarchy_review 的经验证据：真实浏览器 Tab 焦点环截图与首屏/确认门/完成态截图，由
+        scripts/capture.js 会话 A/B/C 产出（01-first-screen-ready.png …
+        09-keyboard-focus-ring.png）
+    supersedes: []
+    promotion:
+      candidate: false
+    created_at: 2026-10-24T17:17:34.393Z

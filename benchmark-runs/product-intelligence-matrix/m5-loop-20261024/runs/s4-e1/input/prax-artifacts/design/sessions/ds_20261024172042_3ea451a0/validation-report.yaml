@@ -1,0 +1,238 @@
+plan_revision: 1
+evidence:
+  submitted_by: Claude (implementation arm)
+  collected_at: 2026-10-25T00:00:00Z
+  items:
+    - check_id: keyboard
+      outcome: pass
+      source: real-browser CDP key events (Input.dispatchKeyEvent)
+      notes: 真实按键实测（Input.dispatchKeyEvent，最终样式下重新采集）：Tab 序列=清单选中项（roving tabindex listbox）→当前步骤主按钮→导出纪要→重置演练；自检 1280x860 与 1440x900 下 Tab 序 y 单调、0 反转、清单无内部滚动；ArrowDown 实测清单选中 s1→s2→s3；Space 勾选验证门断言 checked=true（11）；Tab 到『打开确认门』Space 激活模态（12）；Esc 关闭（13）。Prax 最近两轮自测 receipt 中 a11y.focus_order / a11y.contrast / a11y.target_size 全部 pass、error_failures_open=0。注记：headless CDP 下 Enter 按钮激活未传播（CDP 按键投递局限），Space 为同一原生激活机制的等效路径。
+      artifact_refs:
+        - artifacts/keyboard-drive.log
+        - artifacts/10-keyboard-focus-ring.png
+        - artifacts/11-keyboard-gate-check.png
+        - artifacts/12-keyboard-modal-open.png
+        - artifacts/13-keyboard-modal-esc-closed.png
+        - artifacts/run-journey.log
+    - check_id: product_model_alignment
+      outcome: pass
+      source: real-browser CDP screenshots
+      notes: 最终样式下重新截图：界面语言与结构对应 Product Frame 产品对象（流程/阶段/步骤/验证门/恢复路径/执行日志），无后端概念泄漏；selection 由清单 listbox 持有、inspector 语义由详情区承担。
+      artifact_refs:
+        - artifacts/01-initial-first-screen.png
+        - artifacts/03-irreversible-step-card.png
+        - artifacts/06-after-irreversible-exec.png
+        - artifacts/09-done-hero.png
+    - check_id: hierarchy_review
+      outcome: pass
+      source: real-browser CDP screenshots
+      notes: 详情区 dominant、清单与恢复路径 primary（不可逆红色横幅+恢复路径黄色子区，色/图标/文案三重编码）、顶栏与日志 supporting；spacious 单焦点，与 density_intent 一致。
+      artifact_refs:
+        - artifacts/01-initial-first-screen.png
+        - artifacts/03-irreversible-step-card.png
+        - artifacts/04-confirm-modal.png
+        - artifacts/09-done-hero.png
+    - check_id: destructive_recovery
+      outcome: pass
+      source: real-browser CDP full-journey run
+      notes: 3 个不可逆步骤各具备输入式确认门（错误短语→错误态+按钮禁用，05）与执行前后常驻恢复路径（03/04）；恢复路径真实可走（ROLLBACK 确认→回退待重做→后续重锁→日志记录，08）；重做后走完全程（09：17/17、8/8 验证门、4 次不可逆执行含重做、1 次回滚）。pointer 状态机顺序强制，破坏性动作不可跳步。
+      artifact_refs:
+        - artifacts/03-irreversible-step-card.png
+        - artifacts/04-confirm-modal.png
+        - artifacts/05-confirm-error-state.png
+        - artifacts/06-after-irreversible-exec.png
+        - artifacts/07-recover-modal.png
+        - artifacts/08-after-rollback.png
+        - artifacts/09-done-hero.png
+        - artifacts/run-journey.log
+    - check_id: requirement_alignment
+      outcome: pass
+      source: code inspection + real-browser run
+      notes: complete×consequential-flow：单一高后果生产发布 runbook；零失误走完全程（顺序强制+验证门+确认门，真实浏览器 17/17 走通）；不可逆步骤有恢复/确认路径（验收种子）；首屏即用（内联数据同步渲染，无加载态）；根路径 index.html 静态可开；无后端、无部署、本地运行。
+      artifact_refs:
+        - artifacts/01-initial-first-screen.png
+        - artifacts/09-done-hero.png
+        - artifacts/run-journey.log
+        - index.html
+        - data.js
+measurement_loop:
+  attempts: 1
+  last_receipt_ref: validation-evidence/receipt-2026-10-24T18-11-40-604Z-98d5f6fe-8aa8-4a95-ad43-d42b781a8e3a.json
+evaluation:
+  status: REVIEW
+  checks:
+    - id: semantic_conformance
+      label: Semantic conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR is valid, semantic, and aligned to the approved pattern.
+      evidence_required: false
+    - id: state_completeness
+      label: State completeness
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Required loading, empty, ready, and error states exist.
+      evidence_required: false
+    - id: product_model_alignment
+      label: Product model alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: User-facing structure and language preserve the Product Frame.
+      evidence_required: true
+    - id: keyboard
+      label: Keyboard operability
+      kind: empirical
+      profile: keyboard_accessibility
+      facet: behavioral
+      requirement: Primary work and selection are operable with keyboard and visible focus.
+      evidence_required: true
+    - id: hierarchy_review
+      label: Hierarchy review
+      kind: assistive
+      profile: semantic_integrity
+      facet: visual_hierarchy
+      requirement: Visual prominence follows SDIR importance rather than implementation convenience.
+      evidence_required: true
+    - id: representation_decided
+      label: Representation decided
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares representation.primary with a non-empty reason.
+      evidence_required: false
+    - id: state_ownership_declared
+      label: State ownership declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: Selection and preview states both have declared owners.
+      evidence_required: false
+    - id: acceptance_contract_present
+      label: Acceptance contract present
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 carries at least one acceptance criterion.
+      evidence_required: false
+    - id: complexity_budget_declared
+      label: Complexity budget declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      evidence_required: false
+    - id: destructive_recovery
+      label: Destructive recovery
+      kind: deterministic
+      profile: runtime_degradation
+      facet: behavioral
+      requirement: Destructive actions match error cost with prevention or recovery.
+      evidence_required: true
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+  findings:
+    - check_id: semantic_conformance
+      kind: deterministic
+      outcome: pass
+      message: SDIR is valid, semantic, and aligned to the approved pattern.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_completeness
+      kind: deterministic
+      outcome: pass
+      message: Required loading, empty, ready, and error states exist.
+      source: prax-validator
+      provenance: measured
+    - check_id: representation_decided
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares representation.primary with a non-empty reason.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_ownership_declared
+      kind: deterministic
+      outcome: pass
+      message: Selection and preview states both have declared owners.
+      source: prax-validator
+      provenance: measured
+    - check_id: acceptance_contract_present
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 carries at least one acceptance criterion.
+      source: prax-validator
+      provenance: measured
+    - check_id: complexity_budget_declared
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      source: prax-validator
+      provenance: measured
+    - check_id: product_model_alignment
+      kind: assistive
+      outcome: pass
+      message: 最终样式下重新截图：界面语言与结构对应 Product Frame 产品对象（流程/阶段/步骤/验证门/恢复路径/执行日志），无后端概念泄漏；selection 由清单 listbox 持有、inspector 语义由详情区承担。
+      source: real-browser CDP screenshots
+      provenance: attested
+    - check_id: keyboard
+      kind: empirical
+      outcome: pass
+      message: 真实按键实测（Input.dispatchKeyEvent，最终样式下重新采集）：Tab 序列=清单选中项（roving tabindex listbox）→当前步骤主按钮→导出纪要→重置演练；自检 1280x860 与 1440x900 下 Tab 序 y 单调、0 反转、清单无内部滚动；ArrowDown 实测清单选中 s1→s2→s3；Space 勾选验证门断言 checked=true（11）；Tab 到『打开确认门』Space 激活模态（12）；Esc 关闭（13）。Prax 最近两轮自测 receipt 中 a11y.focus_order / a11y.contrast / a11y.target_size 全部 pass、error_failures_open=0。注记：headless CDP 下 Enter 按钮激活未传播（CDP 按键投递局限），Space 为同一原生激活机制的等效路径。
+      source: real-browser CDP key events (Input.dispatchKeyEvent)
+      provenance: attested
+    - check_id: hierarchy_review
+      kind: assistive
+      outcome: pass
+      message: 详情区 dominant、清单与恢复路径 primary（不可逆红色横幅+恢复路径黄色子区，色/图标/文案三重编码）、顶栏与日志 supporting；spacious 单焦点，与 density_intent 一致。
+      source: real-browser CDP screenshots
+      provenance: attested
+    - check_id: destructive_recovery
+      kind: deterministic
+      outcome: pass
+      message: 3 个不可逆步骤各具备输入式确认门（错误短语→错误态+按钮禁用，05）与执行前后常驻恢复路径（03/04）；恢复路径真实可走（ROLLBACK 确认→回退待重做→后续重锁→日志记录，08）；重做后走完全程（09：17/17、8/8 验证门、4 次不可逆执行含重做、1 次回滚）。pointer 状态机顺序强制，破坏性动作不可跳步。
+      source: real-browser CDP full-journey run
+      provenance: attested
+    - check_id: requirement_alignment
+      kind: assistive
+      outcome: pass
+      message: complete×consequential-flow：单一高后果生产发布 runbook；零失误走完全程（顺序强制+验证门+确认门，真实浏览器 17/17 走通）；不可逆步骤有恢复/确认路径（验收种子）；首屏即用（内联数据同步渲染，无加载态）；根路径 index.html 静态可开；无后端、无部署、本地运行。
+      source: code inspection + real-browser run
+      provenance: attested
+  missing_evidence:
+    - keyboard
+  warnings: []
+  codes:
+    - MEASUREMENT_RECEIPT_MISSING
+  readiness:
+    deterministic_passed: true
+    measurement:
+      receipt_ref: null
+      binding: {}
+      error_failures_open: 0
+      warning_dispositions: []
+    convergence:
+      stalled: true
+      unresolved: []
+    evidence_current: true
+    claims:
+      measured:
+        - semantic_conformance
+        - state_completeness
+        - representation_decided
+        - state_ownership_declared
+        - acceptance_contract_present
+        - complexity_budget_declared
+      attested:
+        - product_model_alignment
+        - keyboard
+        - hierarchy_review
+        - destructive_recovery
+        - requirement_alignment
+      skipped: []

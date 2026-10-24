@@ -1,0 +1,26 @@
+version: "0.1"
+user_quote:
+  - 成功标准：维度切换不重置认知
+  - 验收种子：过滤/投影状态有归属且可回退
+  - 交付物必须能直接静态打开（根路径 index.html，或构建产物 dist/）
+restatement: 从零构建一个单页多维数据探索应用（dataset 主对象）：用户可在多个维度（lens）之间切换对同一数据集做投影/分组浏览，维度切换必须保留过滤器、查询、选择等认知状态；每个过滤/投影状态变更有明确归属（来源/操作记录）且可逐项回退或整体回滚。交付物为可静态打开的 index.html，初始数据内联、首屏即用，本地运行，不部署。
+boundaries:
+  in_scope:
+    - 单页 Web 应用，主屏 1 个
+    - 内联初始数据的多维 dataset 探索（维度切换/投影/过滤）
+    - 过滤与投影状态的操作归属（ledger）与回退（undo/逐项移除/回滚到任意历史点）
+    - 维度切换时保留过滤、查询与选择状态
+    - 静态打开 index.html 即可用，无加载态
+  out_of_scope:
+    - 后端、账号体系、持久化服务
+    - 部署到外部服务
+    - 多屏/移动端
+    - 比较需求（comparison_need=none）
+  scope_complete: true
+open_questions: []
+confirmation:
+  status: requirement_is_sufficient
+  evidence:
+    - type: task_brief
+      ref: brief.md（产品简报 cell-j13-s10，M2 冻结）
+  confirmed_at: 2026-10-24T00:00:00Z

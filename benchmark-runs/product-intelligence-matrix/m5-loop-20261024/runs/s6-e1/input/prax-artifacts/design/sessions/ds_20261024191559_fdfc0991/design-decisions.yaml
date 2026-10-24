@@ -1,0 +1,108 @@
+session_id: ds_20261024191559_fdfc0991
+information_shape:
+  cardinality: one
+  relationality: low
+  hierarchy: high
+  temporality: low
+  density: low
+  dimensionality: medium
+  spatiality: none
+  volatility: medium
+  uncertainty: medium
+  comparison_need: none
+representation:
+  primary:
+    type: wizard
+    reason: 单流程、高层级、门控推进、零失误目标——向导聚焦当前步且天然支持前置检查与确认门
+  supporting:
+    - type: list
+      reason: 左轨以列表呈现阶段/步骤两层级与状态（锁定/就绪/完成/恢复中），提供全程位置感
+  rejected:
+    - option: table
+      reason: 密度低、基数为 one，表格过重且弱化顺序
+    - option: cards（默认卡片壳）
+      reason: 卡片栅格适合多对象并行概览；单流程门控执行是严格序列，卡壳引入虚假并行自由度
+    - option: canvas/diagram
+      reason: 空间性 none，无需空间表征
+    - option: chat/feed
+      reason: 无对话性与时间流语义
+  justification_vs_shape: 逐变量论证非默认壳：cardinality=one——只有一个 runbook，不需要多对象仪表盘/卡片栅格；hierarchy=high——phase→step 两层级由「步骤状态轨 + 单步主区」承载，而非平铺卡片网格；density=low——单列向导主区充裕留白即可容纳全部信息，无需多面板仪表盘；comparison_need=none——不存在对象间比较，排除表格/图表；spatiality=none——排除 canvas/map；temporality=low——排除时间线/日历；volatility=medium + uncertainty=medium——状态随时变化且需检查消解不确定，表征必须实时反映步骤生命周期状态。综上主表征为 wizard（向导式单步推进），辅表征为 list（步骤状态轨），均非默认卡片壳
+primary_structure:
+  pattern: PAT-RESOURCE-MANAGEMENT
+  rationale:
+    - 采用路由返回且已经 L2 检视的 PAT-RESOURCE-MANAGEMENT：其核心「status-rich inventory + scoped lifecycle actions」恰好刻画 runbook 步骤轨——每一步都是被管对象，带显式生命周期状态（锁定/就绪/确认中/完成/恢复中），动作严格限定在当前步骤范围
+    - 适配：本任务 cardinality=one，清单退化为单一 runbook 的步骤轨（两层级 phase→step），不再是对等对象集合；遵循其「requires product-language discipline」避免 backend 形状
+    - "PAT-APPLICATION-SHELL 被自身契约否定（does_not_apply_when: single workspace）；PAT-LIST-DETAIL 系被路由排除（task scope 不匹配）"
+    - complete 任务动词 + 验收种子：不可逆步骤内联确认门（执行前）+ 恢复窗口横幅（执行后），落在步骤生命周期状态上（Recoverable Action / Visibility of System Status 原则）
+  confidence: high
+information_hierarchy:
+  primary:
+    - 当前步骤任务与执行动作（含确认门/恢复窗口）
+    - 流程位置：阶段轨道与步骤状态（左轨）
+    - 全局状态横幅：进度、打开中的恢复窗口
+  secondary:
+    - 已完成步骤的执行记录
+    - runbook 元信息与完成摘要
+density:
+  intent: spacious
+  strategy:
+    - 低密度单列主区，每屏聚焦一个步骤
+    - 大字号步骤标题 + 短说明 + 逐条检查清单
+    - 留白分隔阶段，强调顺序感与当前感
+    - 确认门与恢复提示用充裕留白与高对比警示色，不用小字堆叠
+  avoid:
+    - 多列表格/密集清单
+    - 多屏导航
+    - 比较视图
+    - 卡片仪表盘默认壳
+major_choices:
+  - id: c1-scenario
+    choice: 领域情景取「生产数据库 orders-primary 下线」runbook：4 阶段 10 步，其中 3 个不可逆步骤（吊销凭据/销毁密钥/删除备份）
+    rationale: 真实领域下不可逆动作天然存在（数据不可恢复类），能无造作地满足验收种子「不可逆步骤有恢复/确认路径」
+    confidence: high
+    references:
+      - runbook
+      - phase
+      - step
+      - check
+  - id: c2-confirm-gate
+    choice: 确认门为两段式：检查全勾后「解锁危险动作」→ 展开后果面板 → 手输资源名（如 ORDERS-PRIMARY）强确认 → 执行
+    rationale: Recoverable Action 原则：高代价不可逆动作需要刻意摩擦；后果陈述 + 输入匹配使误触概率趋零，同时保留键盘可达性
+    confidence: high
+    references:
+      - confirm_gate
+      - step
+      - check
+  - id: c3-recovery-window
+    choice: 恢复窗口为限时横幅 + 步骤内联卡片：窗口内可「撤销恢复」或「确认保留」，倒计时结束自动转为保留态并留执行记录
+    rationale: 验收种子要求执行后有恢复路径；全局横幅聚合所有打开的窗口（Visibility of System Status 原则），防止带着未决危险状态走完全程
+    confidence: high
+    references:
+      - recovery_window
+      - runbook
+  - id: c4-stack
+    choice: 技术栈为原生 HTML/CSS/JS（无框架、无构建、无外部依赖），根路径 index.html 直接静态打开
+    rationale: 交付约束要求静态直开、首屏即就绪、本地无外部服务；原生方案消除构建链风险，file:// 与任意静态服务器均可运行，数据内联 data.js
+    confidence: high
+    references:
+      - runbook
+      - recovery_window
+rejected:
+  - option: PAT-APPLICATION-SHELL
+    reason: "单工作区产品，无多个持久区域；模式自述 does_not_apply_when: the product is a single workspace"
+  - option: PAT-LIST-DETAIL(-INSPECTOR)
+    reason: 路由已排除（task scope browse/inspect 不匹配 manage_lifecycle）；浏览检视语义无门控推进
+  - option: 自由画布/看板（默认卡片壳方向）
+    reason: spatiality=none、comparison_need=none；卡片栅格适合多对象并行概览，单流程门控执行是严格序列，卡壳引入虚假并行自由度
+unresolved: []
+complexity_budget:
+  permanent_panels: 3
+  permanent_primary_actions: 1
+  modes: 2
+  state_owners: 1
+  navigation_levels: 1
+  persistent_filters: 0
+  new_semantic_concepts: 3
+  keyboard_contracts: 0
+  mobile_conflicts: 0
+  permanent_surfaces: 1

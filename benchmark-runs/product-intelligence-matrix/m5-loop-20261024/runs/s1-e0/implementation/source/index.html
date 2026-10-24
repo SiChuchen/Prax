@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PRISM · 多维透镜探索台 — 深空巡天观测目录</title>
+<style>
+  :root{
+    --bg:#101319; --panel:#161a21; --panel2:#1c222b; --track:#242c37;
+    --line:#262e39; --line2:#303a47;
+    --ink:#e7ebf1; --ink2:#9aa5b4; --ink3:#68737f;
+    --accent:#5aa7e0; --accent-soft:rgba(90,167,224,.14);
+    --good:#46b388; --good-soft:rgba(70,179,136,.13);
+    --warn:#d9a24a; --danger:#d97b7b;
+    --radius:6px;
+    font-size:13px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font:400 13px/1.45 "Segoe UI","Microsoft YaHei","PingFang SC",system-ui,sans-serif;
+    display:flex; flex-direction:column; overflow:hidden;
+  }
+  button{font:inherit; color:inherit; background:none; border:none; cursor:pointer; padding:0}
+  input{font:inherit; color:inherit}
+  :focus-visible{outline:2px solid var(--accent); outline-offset:1px; border-radius:4px}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:#2c3542;border-radius:5px;border:2px solid var(--bg)}
+  ::-webkit-scrollbar-track{background:transparent}
+
+  /* ── 顶栏 ── */
+  .topbar{
+    display:flex; align-items:center; gap:14px; padding:0 14px; height:46px; flex:none;
+    background:var(--panel); border-bottom:1px solid var(--line);
+  }
+  .brand{font-weight:600; font-size:14px; letter-spacing:.2px; white-space:nowrap}
+  .brand b{color:var(--accent)}
+  .dataset-meta{color:var(--ink2); font-size:12px; white-space:nowrap}
+  .search{margin-left:auto; position:relative}
+  .search input{
+    width:250px; background:var(--panel2); border:1px solid var(--line2); border-radius:var(--radius);
+    padding:5px 26px 5px 10px; color:var(--ink);
+  }
+  .search input::placeholder{color:var(--ink3)}
+  .search kbd{position:absolute; right:7px; top:6px; color:var(--ink3); font:11px/1.4 monospace}
+  .histbtns{display:flex; gap:6px}
+  .hbtn{
+    background:var(--panel2); border:1px solid var(--line2); border-radius:var(--radius);
+    padding:4px 10px; color:var(--ink2); white-space:nowrap;
+  }
+  .hbtn:hover:not(:disabled){color:var(--ink); border-color:#3d4a5a}
+  .hbtn:disabled{opacity:.35; cursor:default}
+  .hbtn.danger:hover:not(:disabled){color:var(--danger); border-color:var(--danger)}
+  .orientation{display:flex; gap:10px; font-size:12px; color:var(--ink2); white-space:nowrap}
+  .orientation b{color:var(--ink); font-weight:600}
+
+  /* ── 连续性条 ── */
+  .continuity{
+    flex:none; display:flex; align-items:center; gap:8px; padding:5px 14px; min-height:29px;
+    background:linear-gradient(90deg, rgba(90,167,224,.08), rgba(90,167,224,0) 55%);
+    border-bottom:1px solid var(--line); color:var(--ink2); font-size:12px;
+  }
+  .continuity .tag{
+    color:var(--accent); border:1px solid rgba(90,167,224,.4); border-radius:99px;
+    padding:0 8px; font-size:11px; white-space:nowrap;
+  }
+  .continuity b{color:var(--ink); font-weight:600}
+  .continuity .kept{color:var(--good)}
+
+  /* ── 主布局 ── */
+  .layout{flex:1; display:grid; grid-template-columns:212px minmax(0,1fr) 384px; min-height:0}
+  .col{min-height:0; display:flex; flex-direction:column; background:var(--panel)}
+  .col + .col{border-left:1px solid var(--line)}
+  .panel-head{
+    flex:none; display:flex; align-items:baseline; gap:8px; padding:8px 12px 6px;
+    font-size:11px; color:var(--ink3); text-transform:uppercase; letter-spacing:.6px;
+  }
+  .panel-head .grow{flex:1}
+  .scroll{overflow-y:auto; min-height:0}
+
+  /* ── 维度轨 ── */
+  .dimrail{padding:2px 8px 12px}
+  .dimbtn{
+    display:flex; align-items:center; gap:8px; width:100%; text-align:left;
+    padding:6px 9px; border-radius:var(--radius); color:var(--ink2); border:1px solid transparent;
+    border-left:2px solid transparent;
+  }
+  .dimbtn:hover{background:var(--panel2); color:var(--ink)}
+  .dimbtn.active{
+    background:var(--accent-soft); color:var(--ink); font-weight:600;
+    border-color:rgba(90,167,224,.35); border-left:2px solid var(--accent);
+  }
+  .dimbtn .n{flex:1}
+  .dimbtn .cnt{font-size:11px; color:var(--ink3)}
+  .dimbtn .fbadge{
+    min-width:16px; height:16px; border-radius:8px; background:var(--good); color:#0c1512;
+    font-size:10px; font-weight:700; display:inline-flex; align-items:center; justify-content:center; padding:0 4px;
+  }
+  .railhint{padding:8px 12px 0; color:var(--ink3); font-size:11px; border-top:1px solid var(--line); margin:6px 8px 0}
+
+  /* ── 投影主视图 ── */
+  .proj-head{padding:10px 16px 8px; border-bottom:1px solid var(--line); flex:none}
+  .proj-title{font-size:15px; font-weight:600}
+  .proj-title .dim{color:var(--accent)}
+  .proj-sub{color:var(--ink2); font-size:12px; margin-top:2px}
+  .proj-controls{display:flex; gap:6px; margin-top:8px; align-items:center}
+  .seg{display:inline-flex; border:1px solid var(--line2); border-radius:var(--radius); overflow:hidden}
+  .seg button{padding:3px 10px; color:var(--ink2); font-size:12px}
+  .seg button.on{background:var(--accent-soft); color:var(--ink)}
+  .proj-rows{padding:8px 16px 20px}
+  .prow{
+    display:grid; grid-template-columns:16px minmax(120px,168px) 1fr 40px 96px;
+    gap:10px; align-items:center; padding:4px 8px; border-radius:var(--radius);
+    border:1px solid transparent; cursor:pointer; position:relative;
+  }
+  .prow:hover{background:var(--panel2)}
+  .prow.filtered{border-color:rgba(70,179,136,.45); background:var(--good-soft)}
+  .prow.anchored{box-shadow:0 0 0 1px var(--warn) inset}
+  .prow .mark{color:var(--ink3); text-align:center; font-size:11px}
+  .prow.filtered .mark{color:var(--good)}
+  .prow.anchored .mark{color:var(--warn)}
+  .prow .lbl{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .prow .lbl .parent{color:var(--ink3); font-size:11px; margin-right:5px}
+  .prow .bar{height:13px; background:var(--track); border-radius:0 4px 4px 0; overflow:hidden}
+  .prow .bar i{display:block; height:100%; background:var(--accent); border-radius:0 4px 4px 0; min-width:1px}
+  .prow.zero .bar i{background:#3a4656}
+  .prow .num{text-align:right; font-variant-numeric:tabular-nums}
+  .prow .mini{color:var(--ink2); font-size:11px; font-variant-numeric:tabular-nums; white-space:nowrap; overflow:hidden}
+  .pgroup{margin:10px 0 2px; padding:3px 8px; color:var(--ink2); font-size:11px; letter-spacing:.5px;
+    border-bottom:1px dashed var(--line2); display:flex; justify-content:space-between; cursor:pointer}
+  .pgroup:hover{color:var(--ink)}
+  .pgroup .gfilter{opacity:0; color:var(--good)}
+  .pgroup:hover .gfilter{opacity:1}
+  .pgroup.gfiltered{color:var(--good)}
+
+  /* ── 过滤 chips ── */
+  .chiprow{display:flex; flex-wrap:wrap; gap:6px; padding:2px 12px 10px}
+  .chip{
+    display:inline-flex; align-items:center; gap:6px; max-width:100%;
+    background:var(--good-soft); border:1px solid rgba(70,179,136,.4); border-radius:99px;
+    padding:2px 6px 2px 9px; font-size:12px;
+  }
+  .chip .src{color:var(--good); font-size:11px}
+  .chip .x{
+    width:15px; height:15px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center;
+    color:var(--ink2); font-size:11px; background:rgba(255,255,255,.06);
+  }
+  .chip .x:hover{background:var(--danger); color:#fff}
+  .nochip{padding:0 12px 10px; color:var(--ink3); font-size:12px}
+
+  /* ── 记录列表 ── */
+  .rec{
+    display:block; width:100%; text-align:left; padding:5px 12px; border-left:2px solid transparent;
+  }
+  .rec:hover{background:var(--panel2)}
+  .rec.sel{background:var(--accent-soft); border-left-color:var(--accent)}
+  .rec .r1{display:flex; gap:8px; align-items:baseline}
+  .rec .nm{font-weight:600}
+  .rec .id{color:var(--ink3); font-size:11px}
+  .rec .cls{margin-left:auto; color:var(--accent); font-size:11px}
+  .rec .r2{color:var(--ink2); font-size:11px; margin-top:1px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+
+  /* ── 详情 ── */
+  .detail{padding:4px 12px 12px; border-top:1px solid var(--line); max-height:46%; overflow-y:auto; flex:none}
+  .kv{display:grid; grid-template-columns:76px 1fr; gap:3px 10px; font-size:12px}
+  .kv dt{color:var(--ink3)}
+  .kv dd{margin:0; font-variant-numeric:tabular-nums}
+  .anchor-note{
+    margin-top:8px; padding:6px 8px; border:1px dashed rgba(217,162,74,.5); border-radius:var(--radius);
+    color:var(--warn); font-size:12px;
+  }
+  .empty{padding:18px 14px; color:var(--ink3); font-size:12px; line-height:1.7}
+  .empty .act{color:var(--accent); cursor:pointer; text-decoration:underline}
+
+  /* ── 台账 ── */
+  .ledger{border-top:1px solid var(--line); flex:1.2; display:flex; flex-direction:column; min-height:120px}
+  .lrow{
+    display:grid; grid-template-columns:52px 20px 1fr auto; gap:8px; align-items:center;
+    padding:4px 12px; color:var(--ink2); font-size:12px; width:100%; text-align:left;
+    border-left:2px solid transparent;
+  }
+  .lrow:hover{background:var(--panel2)}
+  .lrow.cur{background:var(--accent-soft); border-left-color:var(--accent)}
+  .lrow .t{color:var(--ink3); font-size:11px; font-variant-numeric:tabular-nums}
+  .lrow .v{text-align:center}
+  .lrow .o{
+    font-size:10px; border:1px solid var(--line2); border-radius:4px; padding:0 5px;
+    color:var(--ink3); white-space:nowrap;
+  }
+  .lrow .rb{opacity:0; color:var(--accent); font-size:11px; white-space:nowrap}
+  .lrow:hover .rb{opacity:1}
+  .ledger-cap{padding:4px 12px 8px; color:var(--ink3); font-size:11px}
+
+  /* ── tooltip ── */
+  .tip{
+    position:fixed; z-index:9; pointer-events:none; display:none; max-width:260px;
+    background:#0c0f14; border:1px solid var(--line2); border-radius:var(--radius);
+    padding:8px 10px; font-size:12px; color:var(--ink); box-shadow:0 6px 18px rgba(0,0,0,.45);
+  }
+  .tip .tt{color:var(--ink2); font-size:11px; margin-bottom:4px}
+  .tip b{font-variant-numeric:tabular-nums}
+
+  .boot-error{margin:auto; max-width:420px; text-align:center; color:var(--danger); padding:40px}
+  .hidden{display:none !important}
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><b>PRISM</b> · 多维透镜探索台</div>
+    <div class="dataset-meta" id="meta"></div>
+    <div class="orientation" id="orientation"></div>
+    <div class="search">
+      <input id="search" type="search" placeholder="搜索名称 / 编号 / 备注…" aria-label="搜索记录">
+      <kbd>/</kbd>
+    </div>
+    <div class="histbtns">
+      <button class="hbtn" id="undoBtn" title="撤销 (Ctrl+Z)">↶ 撤销</button>
+      <button class="hbtn" id="redoBtn" title="重做 (Ctrl+Y)">↷ 重做</button>
+      <button class="hbtn danger" id="clearBtn" title="移除全部过滤器">⌫ 清空筛选</button>
+    </div>
+  </header>
+
+  <div class="continuity" id="continuity" role="status" aria-live="polite"></div>
+
+  <main class="layout">
+    <nav class="col" aria-label="维度轨">
+      <div class="panel-head">维度 · 投影透镜 <span class="grow"></span><span id="dimCount"></span></div>
+      <div class="scroll">
+        <div class="dimrail" id="dimrail"></div>
+        <div class="railhint">↑/↓ 切换透镜 · 切换不重置过滤与选中</div>
+      </div>
+    </nav>
+
+    <section class="col" aria-label="投影视图">
+      <div class="proj-head">
+        <div class="proj-title">投影：<span class="dim" id="projDim"></span></div>
+        <div class="proj-sub" id="projSub"></div>
+        <div class="proj-controls">
+          <span style="color:var(--ink3);font-size:12px">排序</span>
+          <span class="seg" id="sortSeg">
+            <button data-sort="count" class="on">按计数</button>
+            <button data-sort="name">按名称</button>
+          </span>
+          <span class="seg" id="groupSeg">
+            <button data-group="1" class="on">层级分组</button>
+            <button data-group="0">平铺</button>
+          </span>
+          <span style="color:var(--ink3);font-size:12px">点击行 = 过滤该取值</span>
+        </div>
+      </div>
+      <div class="scroll" id="projScroll">
+        <div class="proj-rows" id="projRows"></div>
+      </div>
+    </section>
+
+    <aside class="col" aria-label="状态与详情">
+      <div class="panel-head">过滤状态 <span class="grow"></span><span id="chipCount"></span></div>
+      <div id="chips"></div>
+
+      <div class="detail" id="detail"></div>
+
+      <div class="panel-head" style="border-top:1px solid var(--line)">记录 <span class="grow"></span><span id="recCount"></span></div>
+      <div class="scroll" id="recScroll" style="flex:1"></div>
+
+      <div class="ledger">
+        <div class="panel-head">操作台账 · 归属与回退 <span class="grow"></span><span id="ledCount"></span></div>
+        <div class="scroll" id="ledScroll" style="flex:1">
+          <div id="ledger"></div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <div class="tip" id="tip" role="tooltip"></div>
+  <div id="boot"></div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

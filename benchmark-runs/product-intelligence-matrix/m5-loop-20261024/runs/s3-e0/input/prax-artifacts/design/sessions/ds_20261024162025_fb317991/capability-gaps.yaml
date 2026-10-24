@@ -1,0 +1,92 @@
+needs:
+  - id: n1
+    product_action: 顺序推进并结构性禁止跳步（未来步骤锁定，仅当前/已完成可看）
+    required_experience:
+      - 当前步骤唯一可见且高亮
+      - 未来步骤在左栏锁定并给出不可点击反馈
+    capabilities:
+      - 顺序状态机（唯一当前步骤指针）
+      - 步骤锁定渲染
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯客户端状态机即可，无后端依赖
+  - id: n2
+    product_action: 检查项强制勾选完成后才能完成步骤
+    required_experience:
+      - 逐项勾选与 n/m 计数
+      - 未满足时主按钮禁用并说明缺什么
+    capabilities:
+      - 检查项状态集合 + 完成条件谓词
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 表单状态推导布尔谓词
+  - id: n3
+    product_action: 不可逆操作确认门：后果预览+恢复预案预览+键入确认码后执行
+    required_experience:
+      - 确认码不匹配时执行按钮禁用
+      - 执行落带时间戳审计
+    capabilities:
+      - 模态确认门 + 输入比对 + 事件审计
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 模态即该产品的确认门语义（非装饰性弹窗），实现于 workcard 上下文
+  - id: n4
+    product_action: 恢复路径：执行前预案预览；执行后恢复中心发起引导式回滚（回滚检查单+确认）
+    required_experience:
+      - 恢复中心倒序列出已执行未回滚步骤
+      - 回滚走完落审计并进入安全中止流
+    capabilities:
+      - 不可逆步骤执行登记表
+      - 回滚子流程状态机
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 与 n3 共用确认门组件，回滚顺序为执行顺序的反序
+  - id: n5
+    product_action: 验证失败进入异常分支：重试 / 回滚最近不可逆步骤 / 安全中止
+    required_experience:
+      - 分支门必须做出选择或重试，不可带病前行
+      - 选择回滚/中止时进入引导式回滚
+    capabilities:
+      - 验证谓词（通过/不通过）
+      - 分支模态
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: modal 捕获焦点直至解除
+  - id: n6
+    product_action: 全程审计日志（时间戳事件流）与本地 JSON 导出
+    required_experience:
+      - 右栏倒序事件流
+      - 导出文件可在本地打开核验
+    capabilities:
+      - Blob + URL.createObjectURL + <a download>
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: 浏览器原生下载能力，无服务端
+  - id: n7
+    product_action: 首屏就绪：runbook 数据以 JS 常量内联，静态打开无加载态
+    required_experience:
+      - DOMContentLoaded 即呈现完整首屏
+      - 无骨架屏/spinner 作为可测状态
+    capabilities:
+      - 同步渲染（无异步取数）
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 经典 script 标签按序加载，file:// 直开兼容
+  - id: n8
+    product_action: 刷新后进度恢复（同步恢复，不产生加载态）
+    required_experience:
+      - 恢复后状态与刷新前一致并提示已恢复
+      - 重新开始可清空
+    capabilities:
+      - localStorage 同步读写
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: 同步 parse，渲染前完成，不引入加载态；不可用时静默降级为内存态

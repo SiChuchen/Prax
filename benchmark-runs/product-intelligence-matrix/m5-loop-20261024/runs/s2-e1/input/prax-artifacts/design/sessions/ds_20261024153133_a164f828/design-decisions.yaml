@@ -1,0 +1,124 @@
+session_id: ds_20261024153133_a164f828
+information_shape:
+  cardinality: unbounded
+  relationality: medium
+  hierarchy: medium
+  temporality: low
+  density: high
+  dimensionality: high
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: grid
+    reason: The active projection is a dense grouped table — one row per facet value with count/share/measure bars; a grid carries high density and unbounded values while remaining scannable
+  supporting:
+    - type: chart
+      reason: Inline share/measure bars visualize each facet value's weight without leaving the grid
+    - type: list
+      reason: Dimension rail and exploration trail are persistent lists of lenses and commands
+  rejected:
+    - option: tree
+      reason: medium hierarchy is not the primary cognitive act; a tree locks one drill path
+    - option: map
+      reason: spatiality none
+    - option: timeline
+      reason: temporality low
+    - option: document
+      reason: no narrative object
+  justification_vs_shape: High dimensionality + high density + unbounded cardinality demand a dense aggregate grid whose grouping key is switchable at zero context cost; medium relationality/hierarchy are served by secondary surfaces (inspector cross-projection, trail), not by the primary structure
+primary_structure:
+  pattern: PAT-DATA-EXPLORER
+  rationale:
+    - "Router-selected PAT-DATA-EXPLORER (inspected L2): structured aggregate surface + persistent narrowing, composed with the router-selected complement PAT-LIST-DETAIL-INSPECTOR"
+    - "The dominant data surface is the projection grid: the dataset re-grouped by the active dimension (H-22 overview-first); aggregates not raw rows keep unbounded cardinality tractable (H-13 structured density)"
+    - Dimension switch is the primary verb, so the lens list is a permanent rail with current lens always visible — orientation invariant (H-21)
+    - Filters/selection persist as attributed chips owned by their dimension; the pool they constrain is lens-independent, so switching lenses never resets them (P-19 preserve context)
+    - Every projection/filter change is a command in a visible trail with per-step revert and undo — acceptance seed 过滤/投影状态有归属且可回退 (P-28 recoverable action)
+    - Inspector shows the current selection re-projected across the new dimension, so a followed entity survives lens switches (H-19 contextual inspector)
+  confidence: high
+information_hierarchy:
+  primary:
+    - data
+    - dimension rail
+    - active state strip
+    - inspector
+    - trail
+  secondary:
+    - Dataset meta (pool size, filtered count, seed) in header
+    - "Per-row measures: count, share, revenue, avg order value"
+density:
+  intent: compact
+  strategy:
+    - single fixed screen, no page scroll — panels scroll internally
+    - tight table rows (24px) with monospace tabular numerals for measures
+    - inline share bars instead of separate chart panels
+    - chrome (header, rails) visually quieter than the projection cells (P-22)
+    - all state surfaces (chips, trail, dimension rail) always visible — nothing hidden behind toggles
+  avoid:
+    - card-grid-for-dense-comparison (anti-pattern)
+    - decorative imagery/hero
+    - modal dialogs for state that must stay visible
+    - scroll-based navigation away from the single screen
+major_choices:
+  - id: pool-lens-separation
+    choice: "Separate the record pool from the lens: filters/selection live on the pool; only the grouping changes on dimension switch"
+    rationale: "Direct implementation of 判别: the dimension is a lens; cognition (pool, constraints, selection) is lens-independent, so switching cannot reset it (P-19, H-21)"
+    confidence: high
+    references:
+      - dataset
+      - dimension
+      - projection
+      - filter
+  - id: command-store
+    choice: "Command-pattern state store: every user action (switch dimension, toggle filter, select value) is a logged command with undo; trail renders the log"
+    rationale: Gives filter/projection state explicit ownership (command → dimension) and per-step revertibility; trail is the log, undo pops it (P-28, acceptance seed)
+    confidence: high
+    references:
+      - trail
+      - filter
+      - projection
+  - id: seeded-inline-data
+    choice: "Deterministic inline dataset: 6,400 order records generated synchronously at load by a seeded PRNG; 9 dimensions, 2 measures"
+    rationale: Satisfies unbounded-scale feel + first-paint readiness without a network fetch or multi-MB inline JSON; deterministic seed keeps every load identical
+    confidence: high
+    references:
+      - dataset
+  - id: selection-as-entity
+    choice: Selection is pinned to the facet value (dimension+value pair), not to screen position
+    rationale: "A value selected under one dimension remains meaningful after switching: inspector re-projects it across the new active dimension — the continuity mechanism for 维度切换不重置认知"
+    confidence: high
+    references:
+      - dimension
+      - projection
+  - id: static-classic
+    choice: "No build step: index.html + classic scripts/CSS relative links so the app opens directly from file://"
+    rationale: ES modules are CORS-blocked on file:// in Chromium; classic scripts keep the deliverable double-click-openable per the brief
+    confidence: high
+    references:
+      - dataset
+rejected:
+  - option: tree (pivot/drill-down hierarchy)
+    reason: hierarchy is only medium; a fixed tree forces one drill path and makes lateral dimension switching a context reset
+  - option: graph/network view
+    reason: relationality is medium, not high; edges would add chrome without carrying the primary task
+  - option: map/spatial canvas
+    reason: spatiality is none — spatial layout would encode no dimension
+  - option: timeline view
+    reason: temporality is low; time is just one of nine dimensions
+  - option: raw record table with sorting
+    reason: cardinality unbounded — raw rows drown the projection; aggregates carry the explore verb
+unresolved: []
+complexity_budget:
+  permanent_panels: 4
+  permanent_primary_actions: 3
+  modes: 1
+  state_owners: 4
+  navigation_levels: 1
+  persistent_filters: 8
+  new_semantic_concepts: 4
+  keyboard_contracts: 1
+  mobile_conflicts: 0
+  permanent_surfaces: 1

@@ -1,0 +1,110 @@
+session_id: ds_20261024172042_3ea451a0
+version: "0.2"
+information_shape:
+  cardinality: one
+  relationality: low
+  hierarchy: high
+  temporality: low
+  density: low
+  dimensionality: medium
+  spatiality: none
+  volatility: medium
+  uncertainty: medium
+  comparison_need: none
+representation:
+  primary:
+    type: list
+    reason: 阶段→步骤有序清单是 workflow 的直接表征：顺序强制、进度、不可逆标记全部落在清单骨架上
+  supporting:
+    - type: wizard
+      reason: 顺序强制推进、单步聚焦完成，是引导式执行的交互内核
+    - type: form
+      reason: 验证门逐项断言勾选与不可逆步骤输入式确认都是表单式交互
+    - type: feed
+      reason: 执行日志按时间倒序的留痕流，支撑事后追溯与纪要导出
+  rejected:
+    - option: wizard 全屏单步
+      reason: 失去整体进度与位置感，阶段层级无处安放，回看恢复路径需翻页
+    - option: table 指标墙
+      reason: shape 密度 low、比较 none，密集并置违背零失误单焦点
+primary_structure:
+  pattern: PAT-LIST-DETAIL
+  rationale:
+    - PAT-LIST-DETAIL contract『items are naturally ordered』直接命中 runbook：阶段→步骤天然有序，顺序与锁定状态在清单上一眼可见，支撑零跳步
+    - 相邻详情区让当前步骤的指令、验证门、恢复路径无需导航即达（P-19 Preserve Context）；反模式 detail-without-visible-selection 由当前步骤高亮规避
+    - PAT-APPLICATION-SHELL 的 contract 明言 single workspace 不适用，本应用只有一个工作区，仅保留极简顶栏
+    - PAT-LIST-DETAIL-INSPECTOR 作为补充语义：详情区绑定当前/选中步骤，选中反馈明确
+  confidence: high
+information_hierarchy:
+  primary:
+    - 当前步骤（唯一焦点：指令、风险类型、门）
+    - 不可逆警示 + 确认路径 + 恢复路径
+    - 阶段→步骤有序骨架与整体进度
+    - 执行日志（时间戳留痕）
+  secondary:
+    - 流程元信息（版本、变更窗口、执行人）
+    - 步骤内 contingency 分支（若…则…）
+density:
+  intent: spacious
+  strategy:
+    - 单步卡片大留白：每屏唯一强焦点是当前步骤
+    - 清单窄列承载阶段→步骤骨架与状态点
+    - 不可逆警示用颜色+图标+文案三重编码，不靠堆叠文本
+  avoid:
+    - 多栏并置比较视图
+    - 指标墙/仪表盘式密集信息
+    - 非当前步骤的长文展开
+major_choices:
+  - id: domain_scenario
+    choice: 以『生产发布 runbook』为具体流程：6 阶段（预检→构建→数据库迁移→切流→观察→收尾），含 3 个不可逆步骤
+    rationale: 高后果领域有天然不可逆步骤与成熟恢复路径，domain_convention 证据充分；对应 P-28 Recoverable Action
+    confidence: high
+    references:
+      - workflow
+      - phase
+      - step
+  - id: enforcement_model
+    choice: 顺序强制：前置步骤未完成则后续锁定；验证门（逐项勾选断言）通过才能完成步骤
+    rationale: 零失误的第一机制是不提供犯错路径：不可跳步、门未过不可完成；对应 H-01 Task-first Entry 与 H-23 Accessibility AA Floor
+    confidence: high
+    references:
+      - step
+      - gate
+  - id: irreversible_confirm
+    choice: 不可逆步骤：执行前输入式确认（键入确认短语）+ 恢复路径在步骤卡内常驻展示；执行后恢复入口保留并记录日志
+    rationale: 验收种子要求恢复/确认两条路径并存且执行前后均可见；对应 P-28 Recoverable Action
+    confidence: high
+    references:
+      - gate
+      - recovery
+  - id: recovery_semantics
+    choice: 恢复路径是可执行动作而非静态说明：执行回滚后流程回到该不可逆步骤待重做状态，日志记录恢复事件
+    rationale: 恢复路径必须真实可走，否则只是装饰；对应 P-19 Preserve Context
+    confidence: high
+    references:
+      - recovery
+      - log
+  - id: no_persistence
+    choice: 状态仅存于会话内存，刷新回到初始态；提供发布纪要导出（下载 txt）作离线留痕
+    rationale: 交付约束无后端无持久化服务；如实呈现为单次执行会话语义
+    confidence: high
+    references:
+      - log
+      - workflow
+rejected:
+  - option: PAT-APPLICATION-SHELL 多区导航
+    reason: pattern contract 明言 single workspace 不适用；多余导航徒增失误面
+  - option: PAT-LIST-DETAIL-INSPECTOR 独立选中检查器（第二面板）
+    reason: 本应用检查对象恒为当前步骤，独立 inspector 徒增面板；由详情区兼任
+unresolved: []
+complexity_budget:
+  permanent_panels: 3
+  permanent_primary_actions: 2
+  modes: 1
+  state_owners: 1
+  navigation_levels: 1
+  persistent_filters: 0
+  new_semantic_concepts: 4
+  keyboard_contracts: 1
+  mobile_conflicts: 0
+  permanent_surfaces: 3

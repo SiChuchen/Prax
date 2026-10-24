@@ -1,0 +1,208 @@
+# NOTE(transcription): this file persists the SDIR 0.2 content that passed
+# design_sdir(mode=validate) with 0 schema_errors / 0 semantic_errors /
+# 0 semantic_issues at 2026-10-24. Validate mode lints but does not persist,
+# and design_sdir mutations are gate-locked at VALIDATION phase, so the
+# gate-approved content is transcribed here verbatim by the executing arm.
+version: "0.2"
+screen:
+  id: runbook-executor
+  intent:
+    primary_task: 按序走完单一高后果发布流程：完成检查项、通过验证、确认并执行不可逆操作，零失误到达完成
+    secondary_tasks:
+      - 预览/执行恢复预案（回滚）
+      - 异常分支处理（重试/回滚/安全中止）
+      - 查看审计日志并导出
+  archetype:
+    pattern_ref: PAT-LIST-DETAIL
+  density_intent: spacious
+  user_job:
+    verb: complete
+    target: 高后果流程（生产发布 runbook）
+    success: 零失误走完全程；不可逆步骤均有确认路径与可走通的恢复路径
+  primary_object:
+    type: workflow
+    label: 生产发布流程（runbook）
+  information_shape:
+    cardinality: one
+    relationality: low
+    hierarchy: high
+    temporality: low
+    density: low
+    dimensionality: medium
+    spatiality: none
+    volatility: medium
+    uncertainty: medium
+    comparison_need: none
+  representation:
+    primary:
+      type: wizard
+      reason: 受控顺序推进、一次一步不可跳步，与零失误目标同构；complete×consequential-flow 的核心交互即向导式单步推进
+    supporting:
+      - type: list
+        reason: 左栏阶段×步骤总览，序导航（List-Detail 列表侧）
+      - type: feed
+        reason: 右栏审计日志，带时间戳事件流
+    justification_vs_shape: 非 dashboard 默认壳：cardinality=one 只有一个 workflow 对象，无多对象聚合面；density=low 无指标墙容量理由；comparison_need=none 无 tabs 对象；hierarchy=high 由左栏序导航+中栏工作卡表达；temporality=low 无时间轴。三常驻区各司单一职责：序导航/唯一工作区/审计事件流；唯一『卡』是 Detail 侧工作卡本体。
+  priority:
+    primary:
+      - workcard
+      - nav-rail
+      - confirm-gate
+      - deviation-gate
+      - recovery-center
+      - audit-log
+    contextual:
+      - topbar
+      - summary-card
+  regions:
+    - id: topbar
+      role: "experimental:稳定顶壳（流程标识/总进度/风险状态/全局动作）"
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - "experimental:常显 runbook 标题/变更单号/风险等级"
+        - "experimental:进度：步骤 n/12 + 当前阶段"
+        - "experimental:风险状态 chip：进行中/异常处理中/回滚中/已完成/已安全中止"
+        - "experimental:全局动作：导出审计日志、重新开始（确认）"
+    - id: nav-rail
+      role: "experimental:阶段×步骤序导航（List-Detail 列表侧，序不可变）"
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - "experimental:阶段分组列表，步骤状态图标（锁定/待办/进行中/完成/已回滚）"
+        - "experimental:当前步骤高亮 aria-current；已完成可只读回看"
+    - id: workcard
+      role: "experimental:当前步骤工作卡（Detail 侧，wizard 语义一次一步）"
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - "experimental:标题+为什么重要（后果说明）"
+        - "experimental:执行确认项逐项勾选 n/m 计数"
+        - "experimental:验证门：通过/不通过二选，不通过触发异常分支"
+        - "experimental:不可逆步骤：红色警示条+恢复预案预览+执行按钮"
+        - "experimental:完成后自动推进"
+    - id: confirm-gate
+      role: "experimental:不可逆操作确认门"
+      importance: primary
+      visibility:
+        condition: task_driven
+      behavior_intent:
+        - experimental:后果清单
+        - experimental:恢复预案预览
+        - "experimental:键入步骤专属确认码后执行按钮可用"
+        - experimental:执行落审计
+    - id: deviation-gate
+      role: "experimental:异常分支处理面板"
+      importance: primary
+      visibility:
+        condition: task_driven
+      behavior_intent:
+        - "experimental:三分支：重试验证/回滚最近不可逆步骤/安全中止"
+        - experimental:禁止带病前行
+    - id: recovery-center
+      role: "experimental:恢复中心（已执行不可逆步骤的回滚入口，含空态）"
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent:
+        - "experimental:倒序列出已执行未回滚的不可逆步骤"
+        - "experimental:每项提供执行回滚入口"
+    - id: audit-log
+      role: "experimental:审计日志（带时间戳的操作事件流）"
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent:
+        - "experimental:倒序时间线，含确认门/执行/回滚/验证事件"
+        - "experimental:导出 JSON"
+    - id: summary-card
+      role: "experimental:完成/安全中止总结卡"
+      importance: dominant
+      visibility:
+        condition: task_driven
+      behavior_intent:
+        - "experimental:完成：步骤/确认/回滚统计+零失误宣告+导出入口"
+        - "experimental:中止：已回滚清单+安全状态宣告"
+  interaction:
+    preview: focus
+    inspect: select
+    navigate: none
+    locate: none
+  interaction_intents:
+    - "experimental:顺序推进：当前步骤完成后自动聚焦下一步，禁止跳步"
+    - "experimental:左栏仅已完成与当前步骤可点击回看，未来步骤锁定"
+    - "experimental:不可逆步骤：后果预览+恢复预案预览 → 键入确认码 → 执行，全程落审计"
+    - "experimental:恢复中心：对已执行未回滚的不可逆步骤发起引导式回滚（回滚检查单+确认）"
+    - "experimental:验证失败：异常分支（重试/回滚最近不可逆步骤/安全中止），禁止带病前行"
+    - "experimental:审计日志本地 JSON 导出；重新开始需确认"
+  required_states:
+    - loading
+    - ready
+    - selected
+    - error
+    - empty
+  required_states_note: loading 依简报『不得以加载态作为可测状态』仅为状态机名义态，数据内联同步渲染，代码库无 spinner/skeleton 路径，永不渲染
+  state_ownership:
+    - state: selection
+      owner: nav-rail
+    - state: preview
+      owner: workcard
+    - state: mode
+      owner: session
+    - state: inspector
+      owner: session
+  complexity_budget:
+    permanent_panels: 3
+    permanent_primary_actions: 2
+    modes: 1
+    state_owners: 1
+    navigation_levels: 2
+    persistent_filters: 0
+    new_semantic_concepts: 5
+    keyboard_contracts: 1
+    mobile_conflicts: 0
+    permanent_surfaces: 1
+  acceptance:
+    - 不可逆步骤有恢复/确认路径（执行前确认门+预案预览，执行后恢复中心可走通回滚）——验收种子
+    - 零失误走完全程：不可跳步+检查项强制+验证门+全程审计
+    - 页面加载完成即可用：数据内联同步渲染，无加载态作为可测状态（loading 仅为状态机名义态，永不渲染）
+    - 静态直开根路径 index.html，本地无外部服务
+    - 单页应用，主屏 1 个
+  decision_points:
+    - id: dp1
+      question: 不可逆确认门的确认强度与呈现（保留三要素：后果预览+恢复预案预览+键入确认码）
+      adapter_may_choose:
+        - 确认码文案与长度
+        - 确认模态布局
+        - 警告色样式
+    - id: dp2
+      question: 验证失败的异常分支呈现（保留三分支：重试/回滚最近不可逆步骤/安全中止）
+      adapter_may_choose:
+        - 内联面板 vs 模态
+        - 三分支排序与措辞
+    - id: dp3
+      question: 视觉主题（色彩/字体/留白），需满足 WCAG 2.2 AA（H-23）
+      adapter_may_choose:
+        - 浅色主题色板
+        - 字体
+        - 强调色
+  unresolved:
+    - id: u1
+      question: 确认码具体文案实现期已定（MIGRATE-2410/CUTOVER-2410/RETIRE-239）
+      impact: low
+      affects:
+        - confirm-gate 视觉强度
+  rejected_alternatives:
+    - option: 纯 wizard（一屏一步、无总览）
+      reason: 层级高要求阶段结构始终可见，纯 wizard 丢失方位感（违背 P-19 Preserve Context）
+    - option: 单页长文检查单
+      reason: 无法承载确认门/恢复中心等状态机行为，零失误依赖的强制顺序无法表达
+    - option: 仪表盘/监控形态
+      reason: 动词是 complete 不是 monitor；比较需求 none，密度低
+    - option: 时间线形态
+      reason: 时间性低，时间轴隐喻与『顺序约束』不匹配
+    - option: PAT-APPLICATION-SHELL 全量采纳
+      reason: "pattern 自述 does_not_apply_when: the product is a single workspace；只保留其顶壳成分"

@@ -1,0 +1,70 @@
+user:
+  expertise: expert
+  familiarity: high
+task:
+  primary: 按序执行发布 runbook 全部步骤，含验证与不可逆操作确认，零失误走完全程
+  modes:
+    - execute
+    - verify
+    - confirm
+    - recover
+  frequency: low
+domain:
+  type: 生产变更管理 / 发布工程
+  entities:
+    - runbook（发布流程）
+    - phase（阶段）
+    - step（步骤）
+    - checklist item（检查项）
+    - irreversible action（不可逆操作）
+    - recovery plan（恢复预案）
+    - audit log（审计日志）
+information:
+  volume: low
+  relationship_complexity: low
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: high
+  error_cost: high
+priorities:
+  - 顺序不可跳步：当前步骤唯一且明确
+  - 不可逆步骤：后果预览 → 二次确认 → 执行
+  - 恢复路径始终可达：执行前预案可见，执行后可走通回滚
+  - 零失误证明：全程审计日志与完成/中止总结
+density_intent: spacious
+confidence:
+  overall: high
+unknowns:
+  - id: u1
+    impact: low
+    affects:
+      - irreversible step 的确认强度设计
+classification:
+  version: "1"
+  task_type: compare_filter_records
+  domain_id: data_exploration
+  interaction_mode: unknown
+  product_type: internal_engineering_tool
+  primary_object_type: step
+  secondary_object_types:
+    - phase
+    - runbook
+    - recovery_plan
+    - audit_log
+    - irreversible_action
+  confidence: medium
+  evidence:
+    - task_type=compare_filter_records ← token '日志' in context.task and frame.tasks
+    - domain_id=data_exploration ← token 'log' in context.domain
+    - product_type=internal_engineering_tool ← expert user in an engineering domain
+    - primary_object_type=step ← most referenced product object in the Product Frame
+  open_questions:
+    - interaction_mode could not be classified from the provided context; refine the context fields or record a custom classification

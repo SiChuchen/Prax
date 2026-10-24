@@ -1,0 +1,40 @@
+version: "0.1"
+session_id: ds_20261024191559_fdfc0991
+task_ref: 依序执行 4 个阶段的下线步骤：核验前置、切流、不可逆拆除（确认+恢复）、收尾完成
+selected:
+  - ref: product_relationships
+    reason:
+      - r1:runbook->phase
+      - r2:phase->step
+      - r3:step->check
+      - r4:step->recovery_window
+      - r5:recovery_window->runbook
+  - ref: region_relationships
+    reason: []
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-RESOURCE-MANAGEMENT
+  - ref: unresolved
+    reason:
+      - u1-domain-flavor
+      - u2-visual-direction
+  - ref: corrections
+    reason: []
+  - ref: validation-plan@1
+    reason:
+      - semantic_conformance
+      - state_completeness
+      - product_model_alignment
+      - keyboard
+      - hierarchy_review
+      - representation_decided
+      - state_ownership_declared
+      - acceptance_contract_present
+      - complexity_budget_declared
+      - destructive_recovery
+      - requirement_alignment
+excluded:
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata

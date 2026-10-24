@@ -1,0 +1,17 @@
+version: "0.1"
+realization_mode: direct_code
+conditions:
+  - id: defect_fix_fit
+    holds: true
+    basis: 本会话不涉及任何缺陷修复路径，无回归面，直接编码无历史行为风险
+  - id: visual_polish_fit
+    holds: true
+    basis: 视觉不确定性低：compact 数据工具、成熟浏览器约定（SDIR 已定区域层级与密度意图），无需设计稿先行
+  - id: small_modification
+    holds: true
+    basis: 单屏、四区域、无后端、无路由，改动面即全新单页
+  - id: mature_design_system
+    holds: false
+    basis: greenfield 无既有设计系统，但 SDIR/decide 已给出完整 token 级约定（compact/structured density、browser 原生控件），本次交付以代码内设计 token 实现
+proposed_at: 2026-10-24T14:08:51.911Z
+overridden: false

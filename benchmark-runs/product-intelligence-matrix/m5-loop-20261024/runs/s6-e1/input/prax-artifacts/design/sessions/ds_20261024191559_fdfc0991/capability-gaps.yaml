@@ -1,0 +1,83 @@
+needs:
+  - id: n1-gated-advance
+    product_action: 门控推进：前置检查未全勾则动作禁用，未完成步骤锁定不可执行
+    required_experience:
+      - 检查清单未完成时动作按钮禁用并给出原因
+      - 后续步骤在轨道上呈锁定态
+    capabilities:
+      - inline workflow data
+      - deterministic state machine
+      - disabled-action styling
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端状态机即可表达；无后端依赖
+  - id: n2-irreversible-confirm
+    product_action: 不可逆步骤执行前的显式确认门（后果陈述 + 手输资源名强确认）
+    required_experience:
+      - 解锁危险动作后展开后果面板
+      - 手输 ORDERS-PRIMARY 匹配后执行按钮才可用
+    capabilities:
+      - two-stage confirm interaction
+      - input-match verification
+      - consequence disclosure panel
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 确认门为纯 UI 状态（mode），无外部能力需求
+  - id: n3-recovery-window
+    product_action: 不可逆步骤执行后的限时恢复窗口（撤销恢复 / 确认保留，到期自动转保留）
+    required_experience:
+      - 执行后横幅与步骤内联同时出现倒计时
+      - 撤销立即回滚该步骤；保留或到期后转保留态并留记录
+    capabilities:
+      - countdown timer
+      - state rollback
+      - aggregated status banner
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: 由 setInterval 计时器 + 步骤状态回滚组合而成；无真实副作用需要网关
+  - id: n4-records-summary
+    product_action: 执行记录与零失误完成摘要
+    required_experience:
+      - 已完成步骤可回看执行记录
+      - 全部完成后显示摘要与所有不可逆步骤终态
+    capabilities:
+      - in-memory action log
+      - summary aggregation
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 执行记录存于会话内存并随首屏渲染
+  - id: n5-instant-ready
+    product_action: 首屏加载即就绪：流程数据内联、无加载态
+    required_experience:
+      - 页面打开即见完整 runbook 与首步内容
+    capabilities:
+      - inlined data module
+      - no network fetch
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: data.js 随脚本同步加载，渲染在 DOMContentLoaded 即完成
+  - id: n6-reset
+    product_action: 重置流程重新演练
+    required_experience:
+      - 一键回到初始态（含确认）
+    capabilities:
+      - state reset
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 重置为破坏性动作，走同一确认门机制
+  - id: n7-session-only-state
+    product_action: 流程状态跨会话持久化（超出简报范围的补充项）
+    required_experience:
+      - 刷新后保留进度（非验收要求）
+    capabilities:
+      - inlined data module
+    status: gap
+    resolution:
+      type: explicit_compromise
+      notes: 简报明确「不要求后端、账号体系或持久化服务」——该补充项不在验收范围，作为显式妥协记录：状态仅存会话内存，刷新后重置由重置演练路径覆盖

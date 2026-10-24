@@ -1,0 +1,77 @@
+version: "0.2"
+jtbd:
+  verb: explore
+  target: multi-dimensional dataset
+  success: 维度切换不重置认知 — switching the organizing dimension preserves selection, filters, and projection state so cognition accumulates instead of resetting
+primary_object:
+  type: dataset
+  label: 多维数据集
+task_model:
+  frequency: medium
+  reversibility: reversible
+  consequence: low
+  expertise: mixed
+user:
+  primary_role: data analyst / knowledge worker investigating a multi-dimensional dataset
+  expertise: mixed
+  familiarity: medium
+goal:
+  primary: Understand the structure of an unbounded, high-dimensional dataset by viewing it through different dimensions without losing accumulated context
+tasks:
+  primary: Switch the dimension the dataset is projected/grouped by while keeping a stable sense of the record pool and one's own exploration trail
+  secondary:
+    - Narrow the dataset with filters that persist across dimension switches
+    - Select an entity/facet value and follow it across projections
+    - Attribute and revert any filter/projection step (undo, history)
+product_objects:
+  - id: dataset
+    user_name: 数据集 (the record pool)
+    purpose: The fixed pool of records being explored; everything else is a lens onto it
+  - id: dimension
+    user_name: 维度 (lens)
+    purpose: An attribute of records used to group/project the pool; the primary switching target
+  - id: projection
+    user_name: 投影 (current view)
+    purpose: The current grouping of records by the active dimension, shown with values and counts
+  - id: filter
+    user_name: 过滤 (state chip)
+    purpose: A user-applied constraint attributed to a dimension, visible as a chip and individually revertible
+  - id: trail
+    user_name: 探索轨迹 (history)
+    purpose: The ordered record of dimension switches and filter changes the user made, enabling cognitive continuity and rollback
+relationships:
+  - id: dim-of
+    source: dimension
+    target: dataset
+    type: attribute_of
+    direction: forward
+    meaning: Each dimension is one attribute/facet of every record in the dataset
+    importance: primary
+  - id: proj-by
+    source: projection
+    target: dimension
+    type: grouped_by
+    direction: forward
+    meaning: The projection groups the dataset by the active dimension
+    importance: primary
+  - id: filter-on
+    source: filter
+    target: dimension
+    type: constrains
+    direction: forward
+    meaning: Each filter is attributed to a specific dimension and restricts the pool
+    importance: primary
+  - id: trail-steps
+    source: trail
+    target: projection
+    type: records_history_of
+    direction: forward
+    meaning: The trail logs each projection/filter change so it can be revisited or undone
+    importance: supporting
+mental_model_hypothesis:
+  summary: The dataset is one fixed pool; a dimension is a reversible lens that regroups the same pool. Switching lenses changes grouping and visible aggregates but must not change the underlying record pool, the user's filters, or their selection — the user's place in the exploration (trail) survives the switch.
+  confidence: high
+  evidence:
+    - user_requirement
+primary_success_definition: A user repeatedly switches the organizing dimension; after each switch their active filters, current selection, and switch history remain visible, attributed to their source, and revertible — no cognitive reset occurs.
+open_questions: []

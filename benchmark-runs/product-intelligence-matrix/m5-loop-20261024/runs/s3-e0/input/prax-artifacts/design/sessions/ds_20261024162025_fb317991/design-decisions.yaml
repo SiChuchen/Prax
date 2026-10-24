@@ -1,0 +1,126 @@
+session_id: ds_20261024162025_fb317991
+information_shape:
+  cardinality: one
+  relationality: low
+  hierarchy: high
+  temporality: low
+  density: low
+  dimensionality: medium
+  spatiality: none
+  volatility: medium
+  uncertainty: medium
+  comparison_need: none
+representation:
+  primary:
+    type: wizard
+    reason: complete×consequential-flow 的核心是受控顺序推进；中栏工作卡以 wizard 方式表达『一次一步、不可跳步』，与零失误目标同构
+  supporting:
+    - type: list
+      reason: 左栏阶段×步骤总览是序导航（List-Detail 的列表侧），支撑高层级方位感
+    - type: feed
+      reason: 审计日志是带时间戳的事件流，右栏常驻
+  rejected:
+    - option: table / dashboard 形态
+      reason: 密度低且比较需求 none，表格化违背 shape 束
+    - option: canvas / diagram
+      reason: 空间性 none，无空间关系可画
+  justification_vs_shape: 本形态不是 dashboard 默认壳。information_shape 变量逐项推导：cardinality=one —— 整个产品只有一个 workflow 对象，不存在 dashboard 赖以成立的多对象聚合面；density=low —— 无指标墙/卡片网格的容量理由；comparison_need=none —— 没有并排比较需求，tabs 无对象；hierarchy=high —— 唯一的结构诉求是阶段→步骤→检查项，由左栏序导航+中栏工作卡承担，而非卡片流；temporality=low —— 无时间轴。三个常驻区各自承担不可替代的单一职责：左栏是序导航（层级高的直接表达），中栏是唯一工作区（一次一步，wizard 语义），右栏是审计事件流（零失误的证明材料）。唯一出现的『卡』是当前步骤工作卡本身，它是 List-Detail 的 Detail 侧，不是装饰性卡片布局。该结构由 shape 束推导而来，而非默认壳惯性。
+primary_structure:
+  pattern: PAT-LIST-DETAIL
+  rationale:
+    - "基数 one + 单工作区：Application Shell 退化为稳定顶壳（进度/风险状态/全局动作），无多区导航（该 pattern 自述 does_not_apply_when: single workspace，故只取顶壳）"
+    - 左栏 = List-Detail 的列表侧：不可重排的阶段×步骤序导航（collection order matters 的特化），跳步被结构性禁止
+    - 中栏 = Detail 侧：当前步骤工作卡，即 wizard 式的单步聚焦推进
+    - 右栏 = PAT-LIST-DETAIL-INSPECTOR 变体：审计日志+恢复中心绑定当前流程状态（Contextual Inspector 的『detail is contextual』适用）
+    - 密度低 → spacious 单步聚焦；P-28 Recoverable Action：确认与恢复在上下文中呈现（P-19 Preserve Context）
+  confidence: high
+information_hierarchy:
+  primary:
+    - 当前步骤与它的完成条件（工作卡，dominant）
+    - 流程推进位置：阶段×步骤总览（左栏，primary）
+    - 不可逆警示 / 确认门 / 恢复预案入口（primary）
+    - 审计日志与恢复中心（右栏，supporting）
+  secondary:
+    - runbook 元信息（版本、风险等级、进度统计）
+    - 完成/安全中止总结卡
+density:
+  intent: spacious
+  strategy:
+    - 单步聚焦：中栏一次只呈现当前步骤及其单一主行动
+    - 检查项逐行大目标，完成条件显式计数（3/3）
+    - 不可逆步骤用高对比警示条与留白隔离，制造『减速带』
+    - 左栏导航紧凑、右栏日志紧凑，把留白集中给工作卡
+  avoid:
+    - 表格/仪表盘等高密度形态（密度低、比较需求 none）
+    - 多屏跳转（单主屏约束）
+    - 时间轴隐喻（时间性低）
+major_choices:
+  - id: mc1
+    choice: 以『支付服务 v2.4.1 生产发布』runbook 作为高后果流程实例：5 阶段 12 步，含 3 个不可逆操作（数据库迁移 / 全量切流 / 旧版下线），每个绑定恢复预案
+    rationale: 发布运维是典型 consequential-flow：顺序强约束、后果高、不可逆步骤天然配对恢复预案（备份快照/切回旧池/镜像归档）
+    confidence: high
+    references:
+      - runbook
+      - phase
+      - step
+      - irreversible_action
+      - recovery_plan
+  - id: mc2
+    choice: 不可逆确认采用两段式：后果预览（含恢复预案预览）+ 键入步骤专属确认码
+    rationale: 满足『确认路径』验收种子；键入确认码是可审计、可截图验证的强确认，优于单纯点击
+    confidence: high
+    references:
+      - irreversible_action
+      - confirm
+  - id: mc3
+    choice: 恢复路径双入口：执行前工作卡内可见『恢复预案预览』；执行后常驻『恢复中心』可真正走通回滚（含回滚检查单+确认）
+    rationale: 满足『恢复路径』验收种子：不是文案承诺，而是可执行流程
+    confidence: high
+    references:
+      - recovery_plan
+      - audit_log
+      - recover
+  - id: mc4
+    choice: 验证不通过进入异常分支模式：重试验证 / 回滚最近不可逆步骤 / 安全中止（引导式反向回滚），不允许带病前行
+    rationale: 不确定性=中 的处理方式：给分支而非堵死；安全中止也是『零失误』的一种完成
+    confidence: high
+    references:
+      - step
+      - irreversible_action
+      - verify
+      - recover
+  - id: mc5
+    choice: 技术栈：原生 HTML/CSS/JS（经典脚本、无构建、无 ES modules），数据以 JS 常量内联随首屏就绪，审计日志支持本地导出
+    rationale: 满足『静态打开即用 + 首屏就绪 + 无加载态』；file:// 直开无 CORS 风险，90 分钟预算内最可靠
+    confidence: high
+    references:
+      - runbook
+      - audit_log
+      - recover
+rejected:
+  - option: 纯 wizard（一屏一步、无总览）
+    reason: 层级高要求阶段结构始终可见，纯 wizard 丢失方位感（违背 P-19 Preserve Context）
+  - option: 单页长文检查单
+    reason: 无法承载确认门/恢复中心等状态机行为，零失误依赖的强制顺序无法表达
+  - option: 仪表盘/监控形态
+    reason: 动词是 complete 不是 monitor；比较需求 none，密度低
+  - option: 时间线形态
+    reason: 时间性低，时间轴隐喻与『顺序约束』不匹配
+  - option: PAT-APPLICATION-SHELL 全量采纳
+    reason: "pattern 自述 does_not_apply_when: the product is a single workspace；只保留其顶壳成分"
+unresolved:
+  - id: u1
+    impact: low
+    affects:
+      - irreversible step 确认强度
+complexity_budget:
+  permanent_panels: 3
+  permanent_primary_actions: 2
+  modes: 1
+  state_owners: 1
+  navigation_levels: 2
+  persistent_filters: 0
+  new_semantic_concepts: 5
+  keyboard_contracts: 1
+  mobile_conflicts: 0
+  permanent_surfaces: 1

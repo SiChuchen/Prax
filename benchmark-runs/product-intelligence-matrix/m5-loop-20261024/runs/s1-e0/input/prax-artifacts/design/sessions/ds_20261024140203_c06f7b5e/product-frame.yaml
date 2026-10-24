@@ -1,0 +1,84 @@
+version: "0.2"
+jtbd:
+  verb: explore
+  target: 多维数据集（dataset，维度是主要认知负担）
+  success: 维度切换不重置认知：过滤、查询、选择在切换后原样保留并有可见的连续性提示；任何过滤/投影变更在 ledger 中有归属且可回退。
+primary_object:
+  type: dataset
+  label: 探索中的数据集
+task_model:
+  frequency: medium
+  reversibility: reversible
+  consequence: low
+  expertise: mixed
+user:
+  primary_role: 数据分析/研究型用户（在陌生的大数据集中发现结构）
+  expertise: intermediate
+  familiarity: medium
+goal:
+  primary: 让用户在无界多维数据中持续探索：切换维度（投影/分组）时过滤器、查询与选择全部保留，认知不重置；且每一步状态变更可归属、可回退。
+tasks:
+  primary: 在多个维度之间切换对同一数据集的投影/分组浏览，持续缩小范围并定位感兴趣的记录（切换不丢失过滤/选择）
+  secondary:
+    - 点击投影分组将其变为过滤器，逐步收窄数据
+    - 查看选中记录详情并在其他维度下重新定位它
+    - 在台账中检查每个过滤/投影状态的归属并回退
+product_objects:
+  - id: dataset
+    user_name: 数据集
+    purpose: 唯一的数据源：首屏内联就绪的记录集合，所有投影/过滤都作用在其上
+  - id: dimension
+    user_name: 维度（透镜）
+    purpose: 可切换的投影轴（lens）：决定主视图按哪个维度分组/汇总
+  - id: projection
+    user_name: 投影视图
+    purpose: 当前维度下的分组投影视图：每个取值一个分组条目（含计数与度量），可点选为过滤
+  - id: filter
+    user_name: 过滤器
+    purpose: 作用于所有维度之上的记录过滤；有归属（来源操作）且可逐项移除
+  - id: selection
+    user_name: 选中记录
+    purpose: 跨维度持久的记录锚点：选中记录在切换维度后仍保持选中并展示详情
+  - id: ledger_entry
+    user_name: 操作台账
+    purpose: 状态变更台账条目：记录每次过滤/投影/选择操作的来源归属，可回退到该点
+relationships:
+  - id: rel-dim-proj
+    source: dimension
+    target: projection
+    type: projects_into
+    direction: forward
+    meaning: 主视图内容完全由当前激活维度决定
+    condition: 始终
+    importance: primary
+  - id: rel-filter-proj
+    source: filter
+    target: projection
+    type: constrains
+    direction: forward
+    meaning: 过滤器改变投影视图中的计数与可见记录，且在维度切换后保留
+    condition: 始终
+    importance: primary
+  - id: rel-sel-dim
+    source: selection
+    target: dimension
+    type: persists_across
+    direction: bidirectional
+    meaning: 选中记录不属于任何单一维度，切换维度后仍然成立并可重新定位
+    condition: 始终
+    importance: primary
+  - id: rel-ledger-state
+    source: ledger_entry
+    target: filter
+    type: records
+    direction: forward
+    meaning: 每次过滤/投影/选择变更生成一条有归属的台账条目，可单独回退
+    condition: 每次状态变更
+    importance: primary
+mental_model_hypothesis:
+  summary: 用户把数据集看作一块可以被不同『透镜』重新投影的固定整体：换透镜只改变分组/投影方式，不改变底下的数据，也不该丢弃已经建立的过滤、搜索与选择。过滤与投影是有历史的：每一步操作像台账（ledger）一样有出处，可以撤销或回到之前的某个检查点。
+  confidence: high
+  evidence:
+    - user_requirement
+primary_success_definition: 首屏即用后，用户能在维度之间任意切换而过滤器/查询/选择原样保留（连续性可见），且每个过滤/投影状态都能看到归属来源并支持逐项回退与整体回滚——『维度切换不重置认知』与『过滤/投影状态有归属且可回退』同时成立。
+open_questions: []

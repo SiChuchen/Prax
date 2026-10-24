@@ -1,0 +1,37 @@
+version: "0.1"
+corrections:
+  - id: cell-j13-s10-sdir-binding-stale
+    scope:
+      project: E:\codex-prj\ab-worktrees\pi-matrix-m5\s5-e1
+      surfaces:
+        - data_explorer_screen
+    finding:
+      type: validation_artifact_binding_stale
+      observed: cell-j13-s10 (ExoLens) 交付中，design_validate
+        的三个确定性检查（representation_decided / state_ownership_declared /
+        acceptance_contract_present）持续 fail，原因不是工件缺失：包含
+        representation.primary+reason、selection+preview owner、acceptance 条目的
+        SDIR 0.2 已在 design_sdir validate 中 lint PASS（screen 与 sdir
+        根两级均含声明），但该检查读取的是 prepare_implementation 时绑定的旧版
+        screen.sdir.yaml（0.1，无这些字段）；validate 门禁下
+        design_sdir（validate/apply_delta）与 design_prepare_implementation 均被
+        GATE_NOT_SATISFIED 拒绝，无法重绑工件。判定为工件绑定陈旧，而非交付物语义缺失。
+    intended:
+      statement: 交付物语义不受影响：SDIR 0.2 的 representation / state_ownership / acceptance /
+        complexity_budget 声明完整存在且 lint 通过；后续会话（新 session、可重新走 prepare→validate
+        门）绑定最新 0.2 SDIR 后，这三个检查应直接 pass，无需改动应用。
+    evidence_refs:
+      - session ds_20261024181435_3fb05d73 design_sdir validate 0.2
+        PASS（representation.primary=chart + reason、state_ownership 5 条含
+        selection/preview、acceptance 6 条、complexity_budget 均已在 screen 与 sdir
+        根两级声明）
+      - validation-evidence/receipt-2026-10-24T18-53-00-765Z-b79654f3-5892-4a96-93f1-cfb39c193f06.json
+      - validation-evidence/receipt-2026-10-24T18-59-39-498Z-49838fd2-5f47-48bc-a621-3a27de719517.json
+      - 第三轮 design_validate evaluate：measurement_feedback 为空（浏览器实测无失败项）
+    regression:
+      check_id: acceptance_contract_present
+      requirement: SDIR 0.2 carries at least one acceptance criterion
+    supersedes: []
+    promotion:
+      candidate: false
+    created_at: 2026-10-24T19:14:16.142Z

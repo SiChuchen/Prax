@@ -1,0 +1,141 @@
+version: "0.2"
+screen:
+  id: list_detail_screen
+  intent:
+    primary_task: 按阶段→步骤顺序执行发布流程：完成常规步骤、通过验证门、经输入式确认执行不可逆步骤
+    secondary_tasks:
+      - 随时查看整体进度与当前应做的唯一步骤
+      - 在异常或误操作时按恢复路径回滚
+      - 回看执行日志（时间戳+操作记录）并在终点导出发布纪要
+  archetype:
+    pattern_ref: PAT-LIST-DETAIL
+  density_intent: spacious
+  regions:
+    - id: 当前步骤（唯一焦点：指令、风险类型、门）
+      role: experimental:当前步骤（唯一焦点：指令、风险类型、门）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 不可逆警示 + 确认路径 + 恢复路径
+      role: experimental:不可逆警示 + 确认路径 + 恢复路径
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 阶段→步骤有序骨架与整体进度
+      role: experimental:阶段→步骤有序骨架与整体进度
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 执行日志（时间戳留痕）
+      role: experimental:执行日志（时间戳留痕）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 流程元信息（版本、变更窗口、执行人）
+      role: experimental:流程元信息（版本、变更窗口、执行人）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 步骤内 contingency 分支（若…则…）
+      role: experimental:步骤内 contingency 分支（若…则…）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: workspace
+      role: dominant_workspace
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - preserve_context
+  relationships: []
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved: []
+  rejected_alternatives:
+    - option: PAT-APPLICATION-SHELL 多区导航
+      reason: pattern contract 明言 single workspace 不适用；多余导航徒增失误面
+    - option: PAT-LIST-DETAIL-INSPECTOR 独立选中检查器（第二面板）
+      reason: 本应用检查对象恒为当前步骤，独立 inspector 徒增面板；由详情区兼任
+  user_job:
+    verb: complete
+    target: 一个高后果流程（生产发布执行 runbook）
+    success: 零失误走完全程；每个不可逆步骤都经确认门执行且始终可见恢复路径
+  primary_object:
+    type: workflow
+    label: 生产发布执行流程（runbook）
+  information_shape:
+    cardinality: one
+    relationality: low
+    hierarchy: high
+    temporality: low
+    density: low
+    dimensionality: medium
+    spatiality: none
+    volatility: medium
+    uncertainty: medium
+    comparison_need: none
+  representation:
+    primary:
+      type: list
+      reason: 阶段→步骤有序清单是 workflow 的直接表征：顺序强制、进度、不可逆标记全部落在清单骨架上
+    supporting:
+      - type: wizard
+        reason: 顺序强制推进、单步聚焦完成，是引导式执行的交互内核
+      - type: form
+        reason: 验证门逐项断言勾选与不可逆步骤输入式确认都是表单式交互
+      - type: feed
+        reason: 执行日志按时间倒序的留痕流，支撑事后追溯与纪要导出
+  priority:
+    primary:
+      - 当前步骤（唯一焦点：指令、风险类型、门）
+      - 不可逆警示 + 确认路径 + 恢复路径
+      - 阶段→步骤有序骨架与整体进度
+      - 执行日志（时间戳留痕）
+      - workspace
+    contextual:
+      - 流程元信息（版本、变更窗口、执行人）
+      - 步骤内 contingency 分支（若…则…）
+  interaction:
+    preview: none
+    inspect: select
+    navigate: none
+    locate: none
+  state_ownership:
+    - state: selection
+      owner: 当前步骤（唯一焦点：指令、风险类型、门）
+    - state: preview
+      owner: session
+  complexity_budget:
+    permanent_panels: 3
+    permanent_primary_actions: 2
+    modes: 1
+    state_owners: 1
+    navigation_levels: 1
+    persistent_filters: 0
+    new_semantic_concepts: 4
+    keyboard_contracts: 1
+    mobile_conflicts: 0
+    permanent_surfaces: 3
+  acceptance:
+    - 首屏即呈现完整可执行流程；用户按序走完全部 6 阶段步骤，所有验证门逐一通过，3 个不可逆步骤全部经输入式确认执行且各自恢复路径在执行前后均可见；支持从中断/回滚状态恢复并最终到达完成态，全程零跳步。

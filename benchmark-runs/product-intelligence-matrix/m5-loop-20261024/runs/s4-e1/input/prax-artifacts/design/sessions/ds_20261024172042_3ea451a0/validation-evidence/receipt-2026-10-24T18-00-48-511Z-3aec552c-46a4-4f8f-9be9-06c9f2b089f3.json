@@ -1,0 +1,370 @@
+{
+  "receipt_version": "0.2",
+  "tool": {
+    "name": "prax-measure",
+    "version": "0.2.0"
+  },
+  "target": {
+    "app_root": "E:\\codex-prj\\ab-worktrees\\pi-matrix-m5\\s4-e1",
+    "base_url": "http://127.0.0.1:10752/",
+    "build_ref": null
+  },
+  "run_at": "2026-10-24T18:00:48.511Z",
+  "viewport_matrix": [
+    {
+      "width": 1280,
+      "height": 860
+    },
+    {
+      "width": 1440,
+      "height": 900
+    }
+  ],
+  "checks": [
+    {
+      "id": "layout.overflow",
+      "status": "pass",
+      "severity": "error",
+      "measured": {
+        "scroll_width": 1280,
+        "inner_width": 1280,
+        "overflow_px": 0,
+        "element_overflows": 0,
+        "flagged_elements": [],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "pass"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "pass"
+          }
+        ]
+      },
+      "threshold": {
+        "max_overflow_px": 0,
+        "element_overflow_tolerance_px": 1
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "layout.responsive_collision",
+      "status": "pass",
+      "severity": "error",
+      "measured": {
+        "collisions": 0,
+        "pairs": [],
+        "interactive_elements": 20,
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "pass"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "pass"
+          }
+        ]
+      },
+      "threshold": {
+        "max_collisions": 0
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "text.truncation",
+      "status": "pass",
+      "severity": "error",
+      "measured": {
+        "truncated": 0,
+        "elements": [],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "pass"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "pass"
+          }
+        ]
+      },
+      "threshold": {
+        "max_truncated": 0
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "a11y.contrast",
+      "status": "fail",
+      "severity": "error",
+      "subject": "button#exportBtn; button#resetBtn",
+      "measured": {
+        "failing": 2,
+        "pairs": [
+          {
+            "selector": "button#exportBtn",
+            "ratio": 1.36,
+            "required": 4.5,
+            "font_px": 13.5,
+            "bold": false,
+            "foreground": "rgb(203, 213, 225)",
+            "background": "rgb(243,245,249)"
+          },
+          {
+            "selector": "button#resetBtn",
+            "ratio": 1.36,
+            "required": 4.5,
+            "font_px": 13.5,
+            "bold": false,
+            "foreground": "rgb(203, 213, 225)",
+            "background": "rgb(243,245,249)"
+          }
+        ],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "normal_min_ratio": 4.5,
+        "large_min_ratio": 3
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/60b3f414-d43b-4d59-a741-5a8ddde81d95/viewport-0/a11y.contrast/contrast-1280x860.png",
+          "sha256": "020935d0dcc6db4f7e97c411c64d2a9ee1f3227e00dc79191b3c1cb0137dda1f"
+        },
+        {
+          "ref": "validation-evidence/60b3f414-d43b-4d59-a741-5a8ddde81d95/viewport-1/a11y.contrast/contrast-1440x900.png",
+          "sha256": "e4d7a6735e7c324cad7db714d9ff502b6061e4e246936e799a6118bcf6eb834d"
+        }
+      ],
+      "supported_fixes": [
+        "darken the failing text color (or lighten it against a dark background) until the measured ratio meets the required minimum"
+      ]
+    },
+    {
+      "id": "a11y.focus_order",
+      "status": "fail",
+      "severity": "error",
+      "subject": "tab order contradicts visual order: button → button; tab order contradicts visual order: button → button; tab order contradicts visual order: button → button#exportBtn",
+      "measured": {
+        "stops": 20,
+        "sequence": [
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button#exportBtn",
+          "button#resetBtn"
+        ],
+        "missing_indicators": [],
+        "inversions": [
+          {
+            "from": "button",
+            "to": "button"
+          },
+          {
+            "from": "button",
+            "to": "button"
+          },
+          {
+            "from": "button",
+            "to": "button#exportBtn"
+          }
+        ],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "max_missing_focus_indicators": 0,
+        "max_order_inversions": 0
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/60b3f414-d43b-4d59-a741-5a8ddde81d95/viewport-0/a11y.focus_order/focus-order-1280x860.png",
+          "sha256": "4f0bddb1692e817853402ab290572c9b4c792bf46c8a8632463343bd1c5c87e1"
+        },
+        {
+          "ref": "validation-evidence/60b3f414-d43b-4d59-a741-5a8ddde81d95/viewport-1/a11y.focus_order/focus-order-1440x900.png",
+          "sha256": "55f76ef23baf153d16e373727efd2b54e1d8db5d62c2aed3da559fe46aad5275"
+        }
+      ],
+      "supported_fixes": [
+        "restore a visible focus indicator (outline or box-shadow) on the listed elements and order the tab sequence to follow the visual reading order (positive tabindex or DOM reordering)"
+      ]
+    },
+    {
+      "id": "a11y.target_size",
+      "status": "pass",
+      "severity": "error",
+      "measured": {
+        "undersized": 0,
+        "elements": [],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "pass"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "pass"
+          }
+        ]
+      },
+      "threshold": {
+        "min_target_px": 24
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "type.min_projected_size",
+      "status": "fail",
+      "severity": "warning",
+      "subject": "span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; span; span",
+      "measured": {
+        "min_font_px": 10.5,
+        "undersized": 42,
+        "elements": [
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span",
+          "span"
+        ],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "min_projected_px": 12
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/60b3f414-d43b-4d59-a741-5a8ddde81d95/viewport-0/type.min_projected_size/min-projected-size-1280x860.png",
+          "sha256": "020935d0dcc6db4f7e97c411c64d2a9ee1f3227e00dc79191b3c1cb0137dda1f"
+        },
+        {
+          "ref": "validation-evidence/60b3f414-d43b-4d59-a741-5a8ddde81d95/viewport-1/type.min_projected_size/min-projected-size-1440x900.png",
+          "sha256": "e4d7a6735e7c324cad7db714d9ff502b6061e4e246936e799a6118bcf6eb834d"
+        }
+      ],
+      "supported_fixes": [
+        "raise the listed primary-content text to at least 12px, or declare a density intent that justifies the smaller projection"
+      ]
+    }
+  ],
+  "summary": {
+    "pass": 4,
+    "fail": 3,
+    "skipped": 0,
+    "warnings": 1
+  },
+  "binding": {
+    "run_id": "60b3f414-d43b-4d59-a741-5a8ddde81d95",
+    "entry": "/index.html",
+    "scenario": "首屏即用的生产发布 runbook：顺序执行→验证门→输入式确认不可逆步骤→恢复路径回滚→完成并导出纪要（零失误走完全程，不可逆步骤有恢复/确认路径）",
+    "implementation": {
+      "root": "E:\\codex-prj\\ab-worktrees\\pi-matrix-m5\\s4-e1",
+      "digest": "f37c6b53f513fcb622744bc491a61bae568e5b7475cf73aa129fac29dd7690c3",
+      "kind": "static_tree"
+    },
+    "session_id": "ds_20261024172042_3ea451a0",
+    "contract_digests": {
+      "screen.sdir.yaml": "6f1326e053a7b2c3199e61d07f3e5b3203b783beb980e6f3715fe37e0f85d038",
+      "sdir-delta.yaml": null,
+      "implementation-brief.yaml": "0b2468e457494c39987c627b00476aa60e83279e904b3ec659d5b780219a697f"
+    }
+  },
+  "target_validation": {
+    "status": "valid",
+    "issues": [],
+    "readiness": "document",
+    "ready_selector": null
+  }
+}

@@ -1,0 +1,73 @@
+needs:
+  - id: dim-switch
+    product_action: Switch the active projection dimension instantly, preserving pool state
+    required_experience:
+      - click a lens in the dimension rail → projection grid regroups in place
+      - no navigation, no loading state, filters and selection survive
+    capabilities:
+      - in-memory aggregation over records
+      - dimension registry
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Pure client-side aggregation over the inline record array; grid re-render is synchronous
+  - id: state-attribution
+    product_action: Every filter/projection state element is visibly attributed to its owning dimension
+    required_experience:
+      - each chip shows its dimension via label + dimension accent color
+      - projection attribution shown as 'Projected by <dimension>' in the grid header
+    capabilities:
+      - attributed filter model (dimension+value owner on every constraint)
+      - persistent chip strip
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Filter objects carry dimId; rendering reads owner metadata
+  - id: per-step-revert
+    product_action: Any filter/projection step is individually revertible (chip remove, trail click, undo)
+    required_experience:
+      - each trail entry click-to-revert to that point
+      - undo pops last command; reset clears all state
+    capabilities:
+      - command log with inverse ops
+      - trail list rendering
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: "Command-pattern store: apply/invert per command; trail = log"
+  - id: inline-first-paint
+    product_action: Dataset ready at first paint with no loading state
+    required_experience:
+      - 6,400 deterministic records generated synchronously on load
+      - all panels populated before user input
+    capabilities:
+      - seeded PRNG record generation
+      - synchronous first-paint render
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: No fetch; generation is O(n) µs-scale
+  - id: selection-follows
+    product_action: A selected facet value stays selected and meaningful after dimension switches
+    required_experience:
+      - selection stored as (dimension, value) pair
+      - inspector shows that value's composition across the currently active dimension
+    capabilities:
+      - cross-tab of selection over sibling dimensions
+      - inspector panel
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Selection decoupled from active dimension; inspector computes intersection counts
+  - id: unbounded-aggregation
+    product_action: Unbounded record cardinality handled without raw listing
+    required_experience:
+      - grid shows facet values aggregated with counts/shares
+      - long-tail values collapse into a residual row
+    capabilities:
+      - aggregate-only primary surface
+      - value cap with overflow aggregation
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Aggregation + top-N with residual bucket

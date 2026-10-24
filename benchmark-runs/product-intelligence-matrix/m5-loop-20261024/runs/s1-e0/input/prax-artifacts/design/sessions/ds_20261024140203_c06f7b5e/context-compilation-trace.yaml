@@ -1,0 +1,39 @@
+version: "0.1"
+session_id: ds_20261024140203_c06f7b5e
+task_ref: 在多个维度之间切换对同一数据集的投影/分组浏览，持续缩小范围并定位感兴趣的记录（切换不丢失过滤/选择）
+selected:
+  - ref: product_relationships
+    reason:
+      - rel-dim-proj:dimension->projection
+      - rel-filter-proj:filter->projection
+      - rel-sel-dim:selection->dimension
+      - rel-ledger-state:ledger_entry->filter
+  - ref: region_relationships
+    reason:
+      - region_rel_data_detail
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-DATA-EXPLORER
+  - ref: unresolved
+    reason: []
+  - ref: corrections
+    reason: []
+  - ref: validation-plan@1
+    reason:
+      - semantic_conformance
+      - state_completeness
+      - product_model_alignment
+      - keyboard
+      - hierarchy_review
+      - representation_decided
+      - state_ownership_declared
+      - acceptance_contract_present
+      - complexity_budget_declared
+      - filter_state
+      - comparison_scan
+      - requirement_alignment
+excluded:
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata

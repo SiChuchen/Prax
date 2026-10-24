@@ -1,0 +1,17 @@
+version: "0.1"
+realization_mode: direct_code
+conditions:
+  - id: defect_fix_fit
+    holds: true
+    basis: 全新代码库，无既有缺陷清单需要先修复；实现不与缺陷修复冲突
+  - id: visual_polish_fit
+    holds: true
+    basis: 单一 spacious list-detail 屏，视觉复杂度低：一套自包含 design token（CSS 自定义属性）即可保证一致性，无需设计工具往返
+  - id: small_modification
+    holds: true
+    basis: 范围小：单屏、3 个常驻面板、约 16 个步骤的数据模型，一次直写代码可控
+  - id: mature_design_system
+    holds: true
+    basis: 本项目以仓库内 token 表（语义色/间距/字号）作为自成熟设计系统，组件仅 6-7 种（rail item、step card、gate checklist、banner、modal、log feed），直写不失控
+proposed_at: 2026-10-24T17:26:58.681Z
+overridden: false

@@ -1,0 +1,86 @@
+version: "0.1"
+session_id: ds_20261024172042_3ea451a0
+task:
+  surfaces: []
+  primary: 按阶段→步骤顺序执行发布流程：完成常规步骤、通过验证门、经输入式确认执行不可逆步骤
+product_relationships:
+  - id: rel_workflow_phase
+    source: workflow
+    target: phase
+    type: contains
+    direction: forward
+    meaning: 流程由有序阶段组成，顺序不可跳越
+    importance: primary
+  - id: rel_phase_step
+    source: phase
+    target: step
+    type: contains
+    direction: forward
+    meaning: 阶段内步骤按序执行，前置未完成则后续锁定
+    importance: primary
+  - id: rel_step_gate
+    source: step
+    target: gate
+    type: guarded_by
+    direction: forward
+    meaning: 验证/不可逆步骤必须通过门才能标记完成
+    importance: primary
+  - id: rel_step_recovery
+    source: step
+    target: recovery
+    type: recovers
+    direction: forward
+    meaning: 不可逆步骤内置恢复路径：执行前明示，执行后保留入口
+    importance: primary
+region_relationships: []
+decisions:
+  primary_structure: PAT-LIST-DETAIL
+  density_intent: spacious
+  major_choice_ids:
+    - domain_scenario
+    - enforcement_model
+    - irreversible_confirm
+    - recovery_semantics
+    - no_persistence
+must_preserve: []
+regression_points: []
+unresolved: []
+corrections: []
+representation_portfolio:
+  primary:
+    type: list
+    reason: 阶段→步骤有序清单是 workflow 的直接表征：顺序强制、进度、不可逆标记全部落在清单骨架上
+  supporting:
+    - type: wizard
+      reason: 顺序强制推进、单步聚焦完成，是引导式执行的交互内核
+    - type: form
+      reason: 验证门逐项断言勾选与不可逆步骤输入式确认都是表单式交互
+    - type: feed
+      reason: 执行日志按时间倒序的留痕流，支撑事后追溯与纪要导出
+  rejected:
+    - option: wizard 全屏单步
+      reason: 失去整体进度与位置感，阶段层级无处安放，回看恢复路径需翻页
+    - option: table 指标墙
+      reason: shape 密度 low、比较 none，密集并置违背零失误单焦点
+state_ownership:
+  - state: selection
+    owner: 当前步骤（唯一焦点：指令、风险类型、门）
+  - state: preview
+    owner: session
+acceptance:
+  - 首屏即呈现完整可执行流程；用户按序走完全部 6 阶段步骤，所有验证门逐一通过，3 个不可逆步骤全部经输入式确认执行且各自恢复路径在执行前后均可见；支持从中断/回滚状态恢复并最终到达完成态，全程零跳步。
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - destructive_recovery
+    - requirement_alignment
+  regression_check_ids: []

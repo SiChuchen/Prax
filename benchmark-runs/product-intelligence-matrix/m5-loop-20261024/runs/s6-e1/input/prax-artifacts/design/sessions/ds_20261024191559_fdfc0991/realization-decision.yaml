@@ -1,0 +1,17 @@
+version: "0.1"
+realization_mode: direct_code
+conditions:
+  - id: defect_fix_fit
+    holds: true
+    basis: 无既有产品与缺陷场景，直接编码不存在修复错位风险
+  - id: visual_polish_fit
+    holds: true
+    basis: 单主屏、spacious 低密度布局，视觉质量用自包含 CSS（设计令牌内聚定义）即可控制，无需设计工具往返
+  - id: small_modification
+    holds: true
+    basis: 单屏单流程 10 步，代码量小且自包含；交付约束要求根路径 index.html 静态直开、首屏即就绪、无外部服务，直接编码是最短且最稳路径（无构建链风险）
+  - id: mature_design_system
+    holds: true
+    basis: 项目自带轻量设计令牌（色彩/间距/字阶在 styles.css 内聚定义），规模无需外部设计系统；直接编码可保证令牌一致性
+proposed_at: 2026-10-24T19:25:04.227Z
+overridden: false

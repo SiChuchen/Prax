@@ -1,0 +1,82 @@
+version: "0.2"
+jtbd:
+  verb: complete
+  target: 高后果流程（生产发布 runbook：一次性走完、含不可逆步骤）
+  success: 零失误走完全程；每个不可逆步骤都有确认路径与可执行的恢复/回滚路径
+primary_object:
+  type: workflow
+  label: 生产发布流程（单一 runbook）
+task_model:
+  frequency: low
+  reversibility: irreversible
+  consequence: high
+  expertise: expert
+user:
+  primary_role: 值班发布负责人（发布工程师，执行生产变更 runbook 的人）
+  expertise: expert
+  familiarity: high
+goal:
+  primary: 在一次会话内，按正确顺序零失误地走完一条高后果发布流程的全部步骤
+tasks:
+  primary: 按序执行 runbook：完成每个阶段内的检查项与验证，触发并确认不可逆操作，直至流程完成
+  secondary:
+    - 在执行不可逆步骤前阅读后果并完成显式确认
+    - 在验证失败时进入异常分支：重试、回滚最近不可逆步骤或安全中止
+    - 随时查看恢复中心与全程审计日志
+product_objects:
+  - id: runbook
+    user_name: 发布流程（Runbook）
+    purpose: 被 complete 的唯一高后果流程本体：本次会话只面对这一条流程
+  - id: phase
+    user_name: 阶段
+    purpose: runbook 的一级分段（预检/灰度/数据迁移/全量切换/收尾），表达高层级推进
+  - id: step
+    user_name: 步骤
+    purpose: 最小可执行单元，含检查项、验证问题或不可逆操作
+  - id: irreversible_action
+    user_name: 不可逆操作
+    purpose: 执行后无法直接撤销的高后果动作；必须先确认，且绑定一份恢复预案
+  - id: recovery_plan
+    user_name: 恢复预案
+    purpose: 每个不可逆步骤配对的回滚路径：执行前可预览，执行后可真正走完
+  - id: audit_log
+    user_name: 审计日志
+    purpose: 全程操作的带时间戳记录，支撑零失误证明与事后追溯
+relationships:
+  - id: r1
+    source: runbook
+    target: phase
+    type: contains
+    direction: forward
+    meaning: 流程由 3–5 个阶段顺序组成
+    importance: primary
+  - id: r2
+    source: phase
+    target: step
+    type: contains
+    direction: forward
+    meaning: 每阶段含 2–3 个步骤，按序推进不可跳步
+    importance: primary
+  - id: r3
+    source: step
+    target: recovery_plan
+    type: paired_with
+    direction: bidirectional
+    meaning: 仅不可逆步骤携带恢复预案；执行前预览、执行后启用
+    condition: step.kind = irreversible
+    importance: primary
+  - id: r4
+    source: audit_log
+    target: step
+    type: records
+    direction: forward
+    meaning: 每次状态变更与确认都落一条日志
+    importance: supporting
+mental_model_hypothesis:
+  summary: 用户把这次发布理解为『一条必须一次走对的通道』：按阶段推进、逐项打勾、在红灯处停下；对不可逆步骤的默认期待是『先告诉我后果→让我确认→执行后随时能按预案回滚』。界面应像一张可执行的检查单，而非仪表盘。
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: 从首步骤到末步骤全部完成、零失误：无跳步、无漏检；每个不可逆步骤均经二次确认执行，且其恢复预案在执行前后都可达、可走通；异常时能走恢复/中止路径安全收场。
+open_questions: []

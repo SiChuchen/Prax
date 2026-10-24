@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>ExoLens data generator (dev only)</title>
+</head>
+<body>
+<p>dev-only：生成 480 条确定性快照数据，输出到下方文本框。</p>
+<textarea id="out" style="width:95%;height:70vh;font-family:Consolas,monospace;font-size:11px"></textarea>
+<script>
+'use strict';
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+var rnd = mulberry32(20260902);
+function R() { return rnd(); }
+function ri(lo, hi) { return lo + Math.floor(rnd() * (hi - lo + 1)); }
+function rf(lo, hi) { return lo + rnd() * (hi - lo); }
+function pick(arr) { return arr[Math.floor(rnd() * arr.length)]; }
+function r2(v) { return Math.round(v * 100) / 100; }
+
+var METHODS = ['凌星法', '视向速度法', '凌星时间变幅法', '微引力透镜法', '直接成像法', '天体测量法'];
+var METHOD_W = [0.44, 0.24, 0.08, 0.06, 0.10, 0.08];
+var STARS = ['M型', 'K型', 'G型', 'F型', 'A型'];
+var STAR_W = [0.40, 0.22, 0.21, 0.12, 0.05];
+var MISSIONS = [
+  { name: 'Kepler', y0: 2009, y1: 2013, dist: [200, 1600] },
+  { name: 'K2', y0: 2014, y1: 2018, dist: [40, 900] },
+  { name: 'TESS', y0: 2018, y1: 2025, dist: [20, 640] },
+  { name: 'CoRoT', y0: 2007, y1: 2012, dist: [150, 1200] },
+  { name: '地基巡天', y0: 2004, y1: 2025, dist: [10, 2600] }
+];
+var MISSION_W = [0.34, 0.12, 0.28, 0.05, 0.21];
+var CLASSES = ['类地', '超级地球', '海王星级', '木星级'];
+var SUFFIX = ['b', 'c', 'd', 'e', 'f', 'g'];
+
+function pickW(values, weights) {
+  var x = rnd(), acc = 0;
+  for (var i = 0; i < values.length; i++) { acc += weights[i]; if (x < acc) return values[i]; }
+  return values[values.length - 1];
+}
+var usedStars = {};
+function makeStar(mission) {
+  for (var tries = 0; tries < 200; tries++) {
+    var name;
+    if (mission === 'Kepler') name = 'Kepler-' + ri(4, 1900);
+    else if (mission === 'K2') name = 'K2-' + ri(1, 400);
+    else if (mission === 'TESS') name = 'TOI-' + ri(2, 860);
+    else if (mission === 'CoRoT') name = 'CoRoT-' + ri(1, 36);
+    else name = (R() < 0.5 ? 'HD ' + ri(2000, 220000) : 'GJ ' + ri(1, 1210));
+    if (!usedStars[name]) { usedStars[name] = 1; return name; }
+  }
+  return mission + '-' + ri(10000, 99999);
+}
+function starTemp(type) {
+  var t = { 'M型': [2500, 3800], 'K型': [3900, 5200], 'G型': [5300, 5900], 'F型': [6000, 7200], 'A型': [7500, 9800] }[type];
+  return rf(t[0], t[1]);
+}
+
+var records = [], id = 0, N = 480;
+while (records.length < N) {
+  var mission = pickW(MISSIONS, MISSION_W);
+  var host = makeStar(mission.name);
+  var nPlanets = R() < 0.30 ? ri(2, 3) : 1;
+  var starType = pickW(STARS, STAR_W);
+  var tStar = starTemp(starType);
+  var metal = r2(Math.max(-0.62, Math.min(0.55, rf(-0.32, 0.26) + (rnd() < 0.18 ? rf(0.08, 0.3) : 0))));
+  var year = ri(mission.y0, mission.y1);
+  for (var p = 0; p < nPlanets && records.length < N; p++) {
+    var pclass = pickW(CLASSES, [0.30, 0.22, 0.27, 0.21]);
+    var radius = {
+      '类地': rf(0.42, 1.55), '超级地球': rf(1.55, 3.1),
+      '海王星级': rf(3.1, 6.9), '木星级': Math.exp(rf(Math.log(6.9), Math.log(15.5)))
+    }[pclass];
+    var logp = rf(Math.log(0.8), Math.log(3200));
+    if (pclass === '木星级' && R() < 0.35) logp = rf(Math.log(1.2), Math.log(30));
+    if (pclass === '类地') logp = Math.max(logp, rf(Math.log(1.5), Math.log(8)));
+    var period = Math.round(Math.exp(logp) * 10) / 10;
+    var aAU = r2(Math.cbrt((period / 365) * (period / 365) * (0.8 + tStar / 5800 * 0.4)));
+    var tempK = Math.round(tStar * Math.sqrt(0.9 / Math.max(aAU, 0.011)) * rf(0.88, 1.12));
+    tempK = Math.max(28, Math.min(2600, tempK));
+    var dens = pclass === '木星级' ? rf(0.18, 1.5) : rf(0.5, 1.6);
+    var mass = Math.max(0.06, r2(dens * Math.pow(radius, 3)));
+    var ecc = r2(Math.min(0.92, Math.abs(rnd() * rnd() * 0.85) * (period < 12 ? 0.25 : 1)));
+    var distLy = Math.round(rf(mission.dist[0], mission.dist[1]) * (starType === 'M型' ? 0.45 : 1));
+    var method;
+    if (mission.name === '地基巡天') method = pickW(METHODS, [0.34, 0.44, 0.04, 0.06, 0.08, 0.04]);
+    else method = pickW(METHODS, METHOD_W);
+    records.push({ i: id++, n: host + ' ' + SUFFIX[p], ms: mission.name, yr: year, me: method, ty: starType, pc: pclass, r: r2(radius), p: period, t: tempK, m: mass, d: distLy, f: metal, e: ecc });
+  }
+}
+window.EXO_GEN = { seed: 20260902, count: records.length, records: records };
+document.getElementById('out').value = 'window.EXO_DATA=' + JSON.stringify(window.EXO_GEN) + ';';
+document.title = 'GEN-OK ' + records.length;
+</script>
+</body>
+</html>

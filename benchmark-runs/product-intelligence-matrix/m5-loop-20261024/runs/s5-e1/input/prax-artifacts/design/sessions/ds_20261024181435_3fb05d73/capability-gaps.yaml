@@ -1,0 +1,91 @@
+needs:
+  - id: n1
+    product_action: 首屏即用：480 行数据集 + 维度定义内联 HTML，无加载态
+    required_experience:
+      - 页面加载完成即可探索，数据随首屏就绪
+    capabilities:
+      - 静态单文件内联数据
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 数据以 JSON 内联在 index.html，同步初始化后首帧即渲染
+  - id: n2
+    product_action: 按类别维度值勾选过滤（发现方法/恒星类型/行星类别/任务）
+    required_experience:
+      - 点击值即过滤并即时反映到画布与计数
+    capabilities:
+      - 集合过滤、勾选交互
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯客户端集合过滤
+  - id: n3
+    product_action: 按数值维度范围过滤（半径/周期/温度/质量等）
+    required_experience:
+      - 双端范围控制，过滤即时生效
+    capabilities:
+      - 数值范围控制
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 双输入范围滑杆 + min/max
+  - id: n4
+    product_action: 切换 X/Y/颜色/尺寸通道绑定的维度，不重置过滤与选中
+    required_experience:
+      - 换维度即换镜头，过滤器/选中/轨迹原样保留并有可见指示
+    capabilities:
+      - 投影通道绑定与状态分离
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 投影状态与范围/选中状态分属独立 owner；通道切换只写投影
+  - id: n5
+    product_action: 画布框选创建选中集，可转为过滤器
+    required_experience:
+      - 拖拽框选高亮多个点，一键转为过滤 chip（归属=散点框选）
+    capabilities:
+      - canvas 命中测试与框选
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: canvas 2D 命中测试
+  - id: n6
+    product_action: 状态轨迹：每步过滤/投影有来源归属 chip，支持撤销/重做/回退到此步
+    required_experience:
+      - chip 显示来源控件+目标维度+取值；undo/redo/回退到任意步
+    capabilities:
+      - op log + 快照栈
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 线性 op log + 全量快照数组，回退即截断
+  - id: n7
+    product_action: Ctrl+Z / Ctrl+Y（+Ctrl+Shift+Z）全局撤销重做
+    required_experience:
+      - 键盘等价操作
+    capabilities:
+      - 键盘快捷键
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: keydown 监听
+  - id: n8
+    product_action: 检查器显示选中行星全维度明细与恒星系上下文
+    required_experience:
+      - 选中即显示，无页面跳转
+    capabilities:
+      - 选中驱动的键值明细
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 选中派生渲染
+  - id: n9
+    product_action: WCAG 2.2 AA：文本对比度、可见焦点、目标尺寸
+    required_experience:
+      - 可达性下限
+    capabilities:
+      - 对比度与焦点样式
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: 深色底高对比 token + :focus-visible

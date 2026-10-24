@@ -1,0 +1,38 @@
+version: "0.1"
+session_id: ds_20261024162025_fb317991
+task_ref: 按序执行 runbook：完成每个阶段内的检查项与验证，触发并确认不可逆操作，直至流程完成
+selected:
+  - ref: product_relationships
+    reason:
+      - r1:runbook->phase
+      - r2:phase->step
+      - r3:step->recovery_plan
+      - r4:audit_log->step
+  - ref: region_relationships
+    reason: []
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-LIST-DETAIL
+  - ref: unresolved
+    reason:
+      - u1
+  - ref: corrections
+    reason: []
+  - ref: validation-plan@1
+    reason:
+      - semantic_conformance
+      - state_completeness
+      - product_model_alignment
+      - keyboard
+      - hierarchy_review
+      - representation_decided
+      - state_ownership_declared
+      - acceptance_contract_present
+      - complexity_budget_declared
+      - destructive_recovery
+      - requirement_alignment
+excluded:
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata

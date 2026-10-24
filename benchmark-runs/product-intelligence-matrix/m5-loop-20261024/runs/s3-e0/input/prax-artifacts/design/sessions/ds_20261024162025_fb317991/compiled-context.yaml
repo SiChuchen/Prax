@@ -1,0 +1,64 @@
+version: "0.1"
+session_id: ds_20261024162025_fb317991
+task:
+  surfaces: []
+  primary: 按序执行 runbook：完成每个阶段内的检查项与验证，触发并确认不可逆操作，直至流程完成
+product_relationships:
+  - id: r1
+    source: runbook
+    target: phase
+    type: contains
+    direction: forward
+    meaning: 流程由 3–5 个阶段顺序组成
+    importance: primary
+  - id: r2
+    source: phase
+    target: step
+    type: contains
+    direction: forward
+    meaning: 每阶段含 2–3 个步骤，按序推进不可跳步
+    importance: primary
+  - id: r3
+    source: step
+    target: recovery_plan
+    type: paired_with
+    direction: bidirectional
+    meaning: 仅不可逆步骤携带恢复预案；执行前预览、执行后启用
+    importance: primary
+  - id: r4
+    source: audit_log
+    target: step
+    type: records
+    direction: forward
+    meaning: 每次状态变更与确认都落一条日志
+    importance: supporting
+region_relationships: []
+decisions:
+  primary_structure: PAT-LIST-DETAIL
+  density_intent: spacious
+  major_choice_ids:
+    - mc1
+    - mc2
+    - mc3
+    - mc4
+    - mc5
+must_preserve: []
+regression_points: []
+unresolved:
+  - u1
+corrections: []
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - destructive_recovery
+    - requirement_alignment
+  regression_check_ids: []

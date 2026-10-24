@@ -1,0 +1,77 @@
+user:
+  expertise: mixed
+  familiarity: medium
+task:
+  primary: 探索多维数据集：换投影、加过滤、框选、检查、回退
+  modes:
+    - 浏览投影 browse projection
+    - 切换维度 switch dimension
+    - 过滤 filter
+    - 框选 brush select
+    - 回退 revert
+  frequency: high
+domain:
+  type: astronomy catalog / multidimensional numeric dataset
+  entities:
+    - 数据集 dataset
+    - 行星记录 record
+    - 恒星系 star system
+    - 维度 dimension
+    - 投影 projection
+    - 过滤器 filter
+    - 选中集 selection
+    - 状态轨迹 state trail
+information:
+  volume: high
+  relationship_complexity: medium
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: low
+  error_cost: low
+priorities:
+  - 维度切换不重置认知（最高优先）
+  - 过滤/投影状态有来源归属
+  - 状态可回退（撤销/重做/回退到任意步）
+  - 高密度信息一屏呈现、首屏即用
+density_intent: compact
+confidence:
+  overall: high
+unknowns:
+  - id: synthetic_domain_choice
+    impact: low
+    affects:
+      - representation
+  - id: trail_interaction_granularity
+    impact: medium
+    affects:
+      - interaction
+classification:
+  version: "1"
+  task_type: compare_filter_records
+  domain_id: data_exploration
+  interaction_mode: collection_with_contextual_detail
+  product_type: unknown
+  primary_object_type: dimension
+  secondary_object_types:
+    - filter
+    - dataset
+    - record
+    - projection
+    - state_trail
+    - selection
+  confidence: high
+  evidence:
+    - task_type=compare_filter_records ← token 'filter' in context.task and frame.tasks
+    - domain_id=data_exploration ← token 'data' in context.domain
+    - interaction_mode=collection_with_contextual_detail ← token 'filter' in context.task, frame.tasks, and context.priorities
+    - primary_object_type=dimension ← most referenced product object in the Product Frame
+  open_questions:
+    - product_type could not be derived; record the intended audience and product kind

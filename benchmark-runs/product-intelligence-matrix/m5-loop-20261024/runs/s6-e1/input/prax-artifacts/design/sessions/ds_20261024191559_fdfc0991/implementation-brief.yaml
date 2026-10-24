@@ -1,0 +1,48 @@
+version: "0.1"
+platform_profile: WEB-DESKTOP
+framework: react
+measurement_target:
+  app_root: .
+  entry: /index.html
+  scenario: complete × consequential-flow：零失误走完 orders-primary 生产库下线 runbook——门控推进、不可逆步骤确认门（手输强确认）、恢复窗口（撤销/保留+倒计时）、零失误完成摘要
+sdir_ref: screen.sdir.yaml
+decision_ref: design-decisions.yaml
+approved_patterns:
+  - PAT-RESOURCE-MANAGEMENT
+approved_component_contracts:
+  - WORKSPACE
+  - STATE-FEEDBACK
+states_required:
+  - loading
+  - empty
+  - ready
+  - selected
+  - error
+capability_gaps:
+  - id: n7-session-only-state
+    product_action: 流程状态跨会话持久化（超出简报范围的补充项）
+    required_experience:
+      - 刷新后保留进度（非验收要求）
+    capabilities:
+      - inlined data module
+    status: gap
+    resolution:
+      type: explicit_compromise
+      notes: 简报明确「不要求后端、账号体系或持久化服务」——该补充项不在验收范围，作为显式妥协记录：状态仅存会话内存，刷新后重置由重置演练路径覆盖
+validation_plan_ref:
+  artifact: validation-plan.yaml
+  revision: 1
+validation_requirements:
+  - semantic_conformance
+  - state_completeness
+  - product_model_alignment
+  - keyboard
+  - hierarchy_review
+  - representation_decided
+  - state_ownership_declared
+  - acceptance_contract_present
+  - complexity_budget_declared
+  - destructive_recovery
+  - requirement_alignment
+realization:
+  mode: direct_code

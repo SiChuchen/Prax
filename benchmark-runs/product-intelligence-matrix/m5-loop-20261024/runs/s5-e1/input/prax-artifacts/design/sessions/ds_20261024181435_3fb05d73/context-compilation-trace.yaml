@@ -1,0 +1,43 @@
+version: "0.1"
+session_id: ds_20261024181435_3fb05d73
+task_ref: 在散点投影上探索数据集：切换 X/Y/颜色/尺寸维度，按维度过滤，框选记录
+selected:
+  - ref: product_relationships
+    reason:
+      - planet_of_star:record->dataset
+      - proj_uses_dim:projection->dimension
+      - filter_on_dim:filter->dimension
+      - op_in_trail:filter->state_trail
+  - ref: region_relationships
+    reason:
+      - region_rel_data_detail
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-DATA-EXPLORER
+  - ref: unresolved
+    reason:
+      - trail_interaction_granularity
+      - brush_to_filter_vs_select
+      - synthetic_domain_choice
+  - ref: corrections
+    reason: []
+  - ref: validation-plan@1
+    reason:
+      - semantic_conformance
+      - state_completeness
+      - product_model_alignment
+      - keyboard
+      - hierarchy_review
+      - representation_decided
+      - state_ownership_declared
+      - acceptance_contract_present
+      - complexity_budget_declared
+      - filter_state
+      - comparison_scan
+      - destructive_recovery
+      - requirement_alignment
+excluded:
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata

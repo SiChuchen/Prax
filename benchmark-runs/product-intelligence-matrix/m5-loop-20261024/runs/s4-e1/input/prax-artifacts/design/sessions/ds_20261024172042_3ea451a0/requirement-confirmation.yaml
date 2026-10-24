@@ -1,0 +1,28 @@
+version: "0.1"
+user_quote:
+  - 动词：complete / 对象：高后果流程 / 成功标准：零失误走完全程
+  - 判别：单一高后果流程，零失误走完全程、不可逆步骤有恢复/确认路径。
+  - 验收种子：不可逆步骤有恢复/确认路径
+  - 交付物必须能直接静态打开（根路径 index.html，或构建产物 dist/）
+  - 应用在页面加载完成时即处于可用状态（初始数据随首屏就绪，不得以加载态作为可测状态）
+restatement: 从零实现一个单页 Web 应用：引导用户零失误地走完一个单一高后果工作流（object_type=workflow）。信息形状为 consequential-flow：单流程、高层级（阶段→步骤）、低密度、中等易变性/不确定性。每个不可逆步骤必须同时具备确认路径（执行前的显式确认门）与恢复路径（执行后的回滚/恢复指引）。交付为根路径 index.html 静态可开、首屏数据内联即用、本地运行、不部署、无后端。
+boundaries:
+  in_scope:
+    - 单一高后果流程的引导式执行界面（阶段→步骤层级）
+    - 不可逆步骤的确认门（含输入式确认）与恢复路径展示
+    - 验证型步骤（执行前后校验、通过门）
+    - 执行进度状态、执行日志（含时间与操作记录）
+    - 首屏内联初始数据、静态 index.html 交付、本地无后端
+  out_of_scope:
+    - 多流程/流程管理后台
+    - 后端、账号体系、持久化服务
+    - 对外部署或发布
+    - 移动端适配（单页桌面优先）
+  scope_complete: true
+open_questions: []
+confirmation:
+  status: requirement_is_sufficient
+  evidence:
+    - type: task_brief
+      ref: brief.md (cell-j10-s09 product brief, frozen by M2)
+  confirmed_at: 2026-10-25T00:00:00Z

@@ -1,0 +1,155 @@
+version: "0.2"
+screen:
+  id: data_explorer_screen
+  intent:
+    primary_task: Switch the dimension the dataset is projected/grouped by while keeping a stable sense of the record pool and one's own exploration trail
+    secondary_tasks:
+      - Narrow the dataset with filters that persist across dimension switches
+      - Select an entity/facet value and follow it across projections
+      - Attribute and revert any filter/projection step (undo, history)
+  archetype:
+    pattern_ref: PAT-DATA-EXPLORER
+  density_intent: compact
+  user_job:
+    verb: explore
+    target: 多维数据
+    success: 维度切换不重置认知
+  primary_object:
+    type: dataset
+    label: 多维数据集
+  information_shape:
+    cardinality: unbounded
+    relationality: medium
+    hierarchy: medium
+    temporality: low
+    density: high
+    dimensionality: high
+    spatiality: none
+    volatility: medium
+    uncertainty: low
+    comparison_need: none
+  representation:
+    primary:
+      type: grid
+      reason: The active projection is a dense grouped grid — one row per facet value with orders/share-bar/share %/revenue/AOV; a grid carries high density and unbounded value counts while staying scannable, and its grouping key is the switchable lens
+    supporting:
+      - type: chart
+        reason: Inline share bars and inspector cross-projection bars visualize weights without leaving the screen
+      - type: list
+        reason: Dimension rail and exploration trail are persistent lists of lenses and commands
+  regions:
+    - id: data
+      role: collection
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - comparison_group
+        - filter_then_inspect
+    - id: dimension rail
+      role: experimental:lens collection
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: active state strip
+      role: experimental:state attribution
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:attributed_state
+    - id: inspector
+      role: contextual_inspector
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - selection_driven
+    - id: trail
+      role: experimental:command history
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:revertible_history
+    - id: detail
+      role: contextual_inspector
+      importance: contextual
+      visibility:
+        condition: selection_driven
+      behavior_intent:
+        - selection_driven
+  relationships:
+    - id: region_rel_data_detail
+      source: data
+      target: detail
+      type: selection_drives_contextual_detail
+  priority:
+    primary:
+      - data
+      - dimension rail
+      - active state strip
+      - inspector
+    contextual:
+      - trail
+  interaction:
+    preview: none
+    inspect: select
+    navigate: none
+    locate: filter
+  state_ownership:
+    - state: selection
+      owner: session
+    - state: preview
+      owner: inspector
+    - state: query
+      owner: trail
+    - state: viewport
+      owner: session
+    - state: mode
+      owner: active state strip
+  complexity_budget:
+    permanent_panels: 4
+    permanent_primary_actions: 3
+    modes: 1
+    state_owners: 4
+    navigation_levels: 1
+    persistent_filters: 8
+    new_semantic_concepts: 4
+    keyboard_contracts: 3
+    mobile_conflicts: 0
+    permanent_surfaces: 1
+  acceptance:
+    - 维度切换不重置认知：切换 lens 后，filter chips、pin chip 与 trail 全部保留，inspector 以新 lens 重新投影选中值（CDP 断言通过）
+    - 过滤/投影状态有归属：每个 chip 标注所有维度（owner label + 维度色），trail 每步标注所属维度
+    - 过滤/投影状态可回退：chip ✕ 单独移除、trail ↩ 回退到任一步、Ctrl+Z 撤销、Reset all 全部还原（CDP 断言通过）
+    - 首屏即可用：6,400 条种子记录同步生成，页面加载完成即处于 ready 状态，无 loading 态
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - ready
+    - selected
+    - empty
+    - error
+    - loading
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved: []
+  rejected_alternatives:
+    - option: tree (pivot/drill-down hierarchy)
+      reason: hierarchy is only medium; a fixed tree forces one drill path and makes lateral dimension switching a context reset
+    - option: graph/network view
+      reason: relationality is medium, not high; edges would add chrome without carrying the primary task
+    - option: map/spatial canvas
+      reason: spatiality is none — spatial layout would encode no dimension
+    - option: timeline view
+      reason: temporality is low; time is just one of nine dimensions
+    - option: raw record table with sorting
+      reason: cardinality unbounded — raw rows drown the projection; aggregates carry the explore verb

@@ -1,0 +1,146 @@
+{
+  "results": [
+    {
+      "step": "initial: grid populated at first paint (8 category rows, no loading state)",
+      "pass": true,
+      "got": [
+        "Electronics",
+        "Apparel",
+        "Home",
+        "Beauty",
+        "Sports",
+        "Grocery",
+        "Toys",
+        "Books"
+      ]
+    },
+    {
+      "step": "initial: lens chip = Category",
+      "pass": true,
+      "got": [
+        "lensCategory"
+      ]
+    },
+    {
+      "step": "initial: trail has base step only",
+      "pass": true,
+      "got": [
+        "initial — by Category"
+      ]
+    },
+    {
+      "step": "lens switch: header → Region, 6 rows, trail logs \"lens → Region\"",
+      "pass": true,
+      "got": {
+        "head1": "Orderstream · grouped by Region",
+        "n": 6,
+        "trail1": [
+          "initial — by Category",
+          "lens → Region"
+        ]
+      }
+    },
+    {
+      "step": "select West: pin chip + inspector \"West · Region\" + cross \"Across Region\"",
+      "pass": true,
+      "got": {
+        "chips": [
+          "lensRegion",
+          "pinRegionWest✕"
+        ],
+        "insp": "West· Region",
+        "cross": "Across Region"
+      }
+    },
+    {
+      "step": "filter only-West: attributed chip \"Region 1/6 · West\", scope narrowed, trail logs filter",
+      "pass": true,
+      "got": {
+        "chips": [
+          "lensRegion",
+          "filterRegion1/6 · West✕",
+          "pinRegionWest✕"
+        ],
+        "trail": 3,
+        "scope": "1,005 of 6,400 records"
+      }
+    },
+    {
+      "step": "CONTINUITY: after lens switch to Channel, filter chip + pin chip survive, inspector re-projects West \"Across Channel\", trail intact",
+      "pass": true,
+      "got": {
+        "head": "Orderstream · grouped by Channel",
+        "chips": [
+          "lensChannel",
+          "filterRegion1/6 · West✕",
+          "pinRegionWest✕"
+        ],
+        "cross": "Across Channel",
+        "trail": [
+          "initial — by Category",
+          "lens → Region",
+          "filter + Region ⊂ West",
+          "lens → Channel"
+        ]
+      }
+    },
+    {
+      "step": "undo (Ctrl+Z): back to Region lens, filter+pin still owned by Region",
+      "pass": true,
+      "got": {
+        "head": "Orderstream · grouped by Region",
+        "trail": 3,
+        "chips": [
+          "lensRegion",
+          "filterRegion1/6 · West✕",
+          "pinRegionWest✕"
+        ]
+      }
+    },
+    {
+      "step": "trail revert-to-step: reverting to \"lens → Region\" removes the later filter step and its chip",
+      "pass": true,
+      "got": {
+        "chips": [
+          "lensRegion",
+          "pinRegionWest✕"
+        ],
+        "trail": [
+          "initial — by Category",
+          "lens → Region"
+        ]
+      }
+    },
+    {
+      "step": "Escape: pin released, inspector back to hint",
+      "pass": true,
+      "got": {
+        "chips": [
+          "lensRegion"
+        ],
+        "hint": "No selection. Click any value in the projection to pin it — the pin survives lens switches, so you can follow one entity across every dimension."
+      }
+    },
+    {
+      "step": "Reset all: back to initial Category view, full pool, trail logs reset",
+      "pass": true,
+      "got": {
+        "head": "Orderstream · grouped by Category",
+        "trail": [
+          "initial — by Category",
+          "lens → Region",
+          "reset all state"
+        ],
+        "chips": [
+          "lensCategory"
+        ]
+      }
+    },
+    {
+      "step": "console: no errors during entire session",
+      "pass": true,
+      "got": []
+    }
+  ],
+  "consoleErrors": []
+}
