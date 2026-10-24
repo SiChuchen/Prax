@@ -174,6 +174,16 @@ is checked. HTTP errors, blank pages, runtime errors, failed script/style
 loads, unexpected dialogs, and unexpected redirects invalidate the target.
 The scenario is a label, not an executed user journey.
 
+**Measure→fix loop (ADR-006).** When a `measurement_target` is prepared and the
+validation evidence cites no receipt, `design_validate` runs the browser
+checks itself and returns per-check failures as `measurement_feedback`
+(check id + measured values) — fix the app and call `design_validate` again,
+up to 3 measurement rounds; an all-green run weaves the server-generated
+receipt in automatically. The first such call can take up to ~2 minutes; if
+your MCP client times out tool calls, raise it (claude-code: `MCP_TIMEOUT`
+environment variable). Measurement infrastructure failure never blocks the
+gate — it degrades to the self-run CLI path above.
+
 Each run writes uniquely named receipts and screenshots under
 `validation-evidence/<run-id>/viewport-<index>/<check-id>/`; later runs do not
 overwrite earlier evidence. Receipt 0.2 binds implementation content and the

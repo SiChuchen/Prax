@@ -107,7 +107,7 @@ export function createPraxMcpServer(service: PraxService): McpServer {
 
   server.registerTool("design_validate", {
     title: "Plan and evaluate validation",
-    description: "Return context-routed checks, accept real evidence, and evaluate without fabricating user evidence.",
+    description: "Return context-routed checks, accept real evidence, and evaluate without fabricating user evidence. When a measurement_target is prepared and no receipt is referenced, Prax runs the browser checks itself and returns per-check failures (measurement_feedback) for fixing — fix the app and call again until checks pass (max 3 measure rounds).",
     inputSchema: DesignValidateInputSchema,
   }, (input) => invoke(() => service.designValidate(input)));
 

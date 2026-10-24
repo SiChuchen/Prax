@@ -1,5 +1,6 @@
-import { isAbsolute, join } from "node:path";
+import { isAbsolute, join, relative } from "node:path";
 import { readFile } from "node:fs/promises";
+import { runMeasurement, type RunMeasurementOptions } from "prax-measure";
 import {
   KnowledgeStore,
   loadBuiltInKnowledgeStore,
@@ -89,9 +90,29 @@ import type {
 
 export type PraxOutput = Record<string, unknown> & { status: GateStatus };
 
+/** Injectable measurement executor (receipt path out) — ADR-006 measure→fix loop. */
+export type MeasureRunner = (options: RunMeasurementOptions) => Promise<string>;
+const MEASURE_LOOP_MAX_ATTEMPTS = 3;
+const MEASURE_TIMEOUT_MS = 120_000;
+
+/** Flatten a check's measured block for the fix-feedback payload: scalars kept,
+ * long arrays summarized, nested objects elided (ADR-006; m4 F1 lesson: check
+ * id + measured values only, no remediation advice). */
+function sanitizeMeasured(measured: unknown): Record<string, unknown> {
+  if (measured === null || typeof measured !== "object") return {};
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(measured as Record<string, unknown>)) {
+    if (value === null || typeof value !== "object") out[key] = value;
+    else if (Array.isArray(value)) out[key] = value.length > 5 ? { count: value.length, first_5: value.slice(0, 5) } : value;
+    else out[key] = "[object]";
+  }
+  return out;
+}
+
 interface ValidationReportArtifact {
   plan: unknown;
   evidence?: ValidationEvidence;
+  measurement_loop?: { attempts: number; last_receipt_ref?: string };
   evaluation?: unknown;
 }
 
@@ -115,14 +136,16 @@ export class PraxService {
   private readonly disclosureGate = new DisclosureGate();
   private readonly sdirEngine = new SdirEngine();
   private readonly validator = new PraxValidator();
+  private readonly measureRunner: MeasureRunner;
 
-  public constructor(options: { knowledge: KnowledgeStore; sessions?: FileSessionStore }) {
+  public constructor(options: { knowledge: KnowledgeStore; sessions?: FileSessionStore; measureRunner?: MeasureRunner }) {
     this.knowledge = options.knowledge;
     this.sessions = options.sessions ?? new FileSessionStore();
     this.router = new DesignRouter(options.knowledge);
+    this.measureRunner = options.measureRunner ?? runMeasurement;
   }
 
-  public static async create(options: { sessions?: FileSessionStore } = {}): Promise<PraxService> {
+  public static async create(options: { sessions?: FileSessionStore; measureRunner?: MeasureRunner } = {}): Promise<PraxService> {
     return new PraxService({ knowledge: await loadBuiltInKnowledgeStore(), ...options });
   }
 
@@ -1429,7 +1452,7 @@ export class PraxService {
       return { status: "PASS", checks: plan.checks, findings: [], missing_evidence: [], next: nextTool("design_validate") };
     }
 
-    const evidence = input.evidence ?? prior?.evidence;
+    let evidence = input.evidence ?? prior?.evidence;
     const sdirArtifact = (await this.sessions.readArtifact<Sdir>(session, "sdir")) ?? undefined;
     const sdirDeltaArtifact = (await this.sessions.readArtifact<SdirDelta>(session, "sdirDelta")) ?? undefined;
     const decisionsArtifact = (await this.sessions.readArtifact<DesignDecisions>(session, "designDecisions")) ?? undefined;
@@ -1445,6 +1468,61 @@ export class PraxService {
         expectedTarget = await resolveMeasurementTarget(session.project_root, MeasurementTargetSchema.parse(preparedBrief.measurement_target), session.id);
       } catch (error) {
         return { status: "BLOCK", code: "MEASUREMENT_TARGET_INVALID", issues: [error instanceof Error ? error.message : String(error)], phase: session.phase };
+      }
+    }
+    // ── ADR-006 measure→fix loop ────────────────────────────────────────────
+    // When the agent has not referenced any measurement receipt, Prax runs the
+    // browser checks itself (operator-grade receipt, spec §5.4 measured >
+    // attested) and feeds structured per-check failures back for fixing. The
+    // loop is capped; feedback rounds do not enter the B3 convergence history.
+    const evidenceCitesReceipt = evidence?.items.some((item) => item.measurement_receipt !== undefined) ?? false;
+    let measurementLoop: { attempts: number; last_receipt_ref: string } | undefined;
+    if (expectedTarget !== undefined && !evidenceCitesReceipt) {
+      const loopState = prior?.measurement_loop ?? { attempts: 0 };
+      const attemptsLeft = MEASURE_LOOP_MAX_ATTEMPTS - loopState.attempts;
+      if (attemptsLeft > 0) {
+        const measured = await this.runMeasureLoop(expectedTarget, evaluationSessionDirectory);
+        if (!measured.ok) {
+          return {
+            status: "EXPAND", code: "MEASUREMENT_UNAVAILABLE", issues: [measured.error],
+            hint: "Prax-side measurement failed; run packages/prax-measure/bin/prax-measure.mjs --app <app_root> --out <session dir> yourself and reference the receipt in evidence",
+            checks: plan.checks, findings: [], missing_evidence: [], next: nextTool("design_validate"),
+          };
+        }
+        if (measured.failures.length > 0) {
+          await this.sessions.commit(touch(session, this.sessions.nowIso()), [
+            {
+              key: "validationReport",
+              value: {
+                plan_revision: persistedPlan.revision,
+                ...(prior?.evidence === undefined ? {} : { evidence: prior.evidence }),
+                measurement_loop: { attempts: loopState.attempts + 1, last_receipt_ref: measured.receiptRef },
+              },
+            },
+            ...(planChanged ? [{ key: "validationPlan" as const, value: persistedPlan }] : []),
+          ]);
+          return {
+            status: "EXPAND", code: "MEASUREMENT_FIX_REQUIRED",
+            measurement_feedback: measured.failures,
+            measurement_receipt: measured.receiptRef,
+            attempts_left: attemptsLeft - 1,
+            checks: plan.checks, findings: [], missing_evidence: [], next: nextTool("design_validate"),
+          };
+        }
+        // All checks green: weave the server-generated receipt into the evidence
+        // so the final evaluation binds it as measured provenance. The loop
+        // state rides the conventional final commit (single revision bump).
+        measurementLoop = { attempts: loopState.attempts + 1, last_receipt_ref: measured.receiptRef };
+        if (evidence !== undefined) {
+          evidence = {
+            ...evidence,
+            items: evidence.items.map((item) =>
+              item.check_id === "untouched_surface_regression" && item.measurement_receipt === undefined
+                ? { ...item, measurement_receipt: measured.receiptRef }
+                : item,
+            ),
+          };
+        }
       }
     }
     const evaluation = await this.validator.evaluate({
@@ -1550,6 +1628,7 @@ export class PraxService {
         value: {
           plan_revision: persistedPlan.revision,
           ...(evidence === undefined ? {} : { evidence }),
+          ...(measurementLoop === undefined ? {} : { measurement_loop: measurementLoop }),
           evaluation: {
             ...evaluation,
             ...(status !== evaluation.status ? { status } : {}),
@@ -1591,6 +1670,55 @@ export class PraxService {
       phase: updated.phase,
       ...(complete ? {} : { next: nextTool("design_validate") }),
     };
+  }
+
+  /**
+   * ADR-006 measure→fix loop (m4 probe P3 evidence: check-result feedback —
+   * not extra effort, not knowledge injection — is what fixed failures).
+   * Runs the 7 browser checks server-side against the prepared target and
+   * returns sanitized per-check failures. The receipt is written into the
+   * session's validation-evidence directory with operator-grade provenance.
+   */
+  private async runMeasureLoop(
+    target: ExpectedMeasurementTarget,
+    sessionDirectory: string,
+  ): Promise<{ ok: true; receiptRef: string; failures: Array<Record<string, unknown>> } | { ok: false; error: string }> {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      const receiptPath = await Promise.race([
+        this.measureRunner({
+          appDir: target.appRoot,
+          outDir: sessionDirectory,
+          viewports: [
+            { width: 1280, height: 860 },
+            { width: 1440, height: 900 },
+          ],
+          entry: target.entry,
+          scenario: target.scenario,
+          ...(target.sessionId === null ? {} : { sessionId: target.sessionId }),
+        }),
+        new Promise<never>((_, reject) => {
+          timer = setTimeout(() => reject(new Error(`measurement timed out after ${MEASURE_TIMEOUT_MS / 1000}s`)), MEASURE_TIMEOUT_MS);
+        }),
+      ]);
+      const receipt = JSON.parse(await readFile(receiptPath, "utf8")) as {
+        checks: Array<{ id: string; status: string; severity?: string; reason?: string; measured?: unknown }>;
+      };
+      const receiptRef = relative(sessionDirectory, receiptPath).replaceAll("\\", "/");
+      const failures = receipt.checks
+        .filter((check) => check.status === "fail" && (check.severity ?? "error") !== "warning")
+        .map((check) => ({
+          check_id: check.id,
+          status: check.status,
+          ...(check.reason === undefined ? {} : { reason: check.reason }),
+          measured: sanitizeMeasured(check.measured),
+        }));
+      return { ok: true, receiptRef, failures };
+    } catch (error) {
+      return { ok: false, error: error instanceof Error ? error.message : String(error) };
+    } finally {
+      if (timer !== undefined) clearTimeout(timer);
+    }
   }
 
   private async adjudicateCorrectionEvidence(
