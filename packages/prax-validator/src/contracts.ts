@@ -70,6 +70,10 @@ export interface ValidationFinding {
   message: string;
   source: string;
   provenance: "measured" | "attested";
+  /** m5.2: concrete fix path (tool + inputs) for failing checks whose ids
+   * alone did not produce agent action (m5 s5/s6: 8× design_sdir mode=validate
+   * on a 0.1 SDIR, never regenerated). Absent = no known one-call path. */
+  fix_hint?: string;
 }
 
 export interface ReviewReadiness {

@@ -109,6 +109,34 @@ function sanitizeMeasured(measured: unknown): Record<string, unknown> {
   return out;
 }
 
+/** m5.2 fix-path hints (m5-loop-20261024 s5/s6): agents read failing check
+ * ids repeatedly without acting — the checks read only a 0.2 SDIR while the
+ * engine had silently fallen back to 0.1, and nothing said which tool
+ * regenerates what. Hints name the tool and the missing inputs; checks with
+ * no known one-call path stay unhinted rather than guessing. */
+function fixHintFor(checkId: string, sdirVersion: string | undefined): string | undefined {
+  const CHAIN_02 =
+    "regenerate the 0.2 SDIR via design_sdir (mode generate_from_decisions) after the upstream artifacts carry 0.2: design_frame with jtbd + primary_object, design_decisions with information_shape + representation";
+  switch (checkId) {
+    case "representation_decided":
+      return sdirVersion === "0.2"
+        ? "design_sdir (mode apply_delta): add a non-empty screen.representation.primary.reason"
+        : `the session SDIR is ${sdirVersion ?? "absent"}; this check reads only a 0.2 SDIR — ${CHAIN_02}`;
+    case "state_ownership_declared":
+      return sdirVersion === "0.2"
+        ? "design_sdir (mode apply_delta): add screen.state_ownership owners for both 'selection' and 'preview'"
+        : `the session SDIR is ${sdirVersion ?? "absent"}; this check reads only a 0.2 SDIR — ${CHAIN_02}`;
+    case "acceptance_contract_present":
+      return sdirVersion === "0.2"
+        ? "design_sdir (mode apply_delta): add at least one screen.acceptance criterion"
+        : `the session SDIR is ${sdirVersion ?? "absent"}; this check reads only a 0.2 SDIR — ${CHAIN_02}`;
+    case "untouched_surface_regression":
+      return "cite a measurement receipt on the item (run packages/prax-measure/bin/prax-measure.mjs and set measurement_receipt), or submit evidence without receipts and let the server-side loop weave one when all checks are green";
+    default:
+      return undefined;
+  }
+}
+
 interface ValidationReportArtifact {
   plan: unknown;
   evidence?: ValidationEvidence;
@@ -782,11 +810,28 @@ export class PraxService {
     }
     const updated = advanceSession(session, "sdir", this.sessions.nowIso());
     await this.sessions.commit(updated, [{ key: "sdir", value: validation.value }]);
+    // m5.2 (s5/s6): the engine silently degrades to a 0.1 SDIR when the
+    // upstream artifacts lack the 0.2 fields; the validation structure checks
+    // then fail with no visible reason. Surface the fallback with its causes.
+    const sdirWarnings: string[] = [];
+    if (input.mode === "generate_from_decisions" && validation.value.version === "0.1") {
+      const missing: string[] = [];
+      if (frame.version !== "0.2" || frame.jtbd === undefined || frame.primary_object === undefined) {
+        missing.push("design_frame is not 0.2-complete (needs jtbd + primary_object)");
+      }
+      if (decisions.version !== "0.2" || decisions.information_shape === undefined || decisions.representation === undefined) {
+        missing.push("design_decisions is not 0.2-complete (needs information_shape + representation)");
+      }
+      sdirWarnings.push(
+        `SDIR generated at version 0.1 (${missing.join("; ")}); validation structure checks (representation_decided, state_ownership_declared, acceptance_contract_present) read only a 0.2 SDIR. Update the upstream artifacts and regenerate to satisfy them.`,
+      );
+    }
     return {
       status: "PASS",
       schema_errors: [],
       semantic_errors: [],
       sdir: validation.value,
+      ...(sdirWarnings.length === 0 ? {} : { warnings: sdirWarnings }),
       phase: updated.phase,
       next: nextTool("design_reconcile"),
     };
@@ -1551,7 +1596,14 @@ export class PraxService {
     let status = evaluation.status;
     if (adjudication?.outcome === "fail") status = "BLOCK";
     else if (adjudication !== undefined && adjudication.outcome !== "pass" && status === "PASS") status = "EXPAND";
-    const mergedFindings = [...evaluation.findings, ...(adjudication?.findings ?? [])];
+    const mergedFindings = [...evaluation.findings, ...(adjudication?.findings ?? [])].map((finding) =>
+      finding.outcome === "fail"
+        ? (() => {
+            const hint = fixHintFor(finding.check_id, sdirArtifact?.version);
+            return hint === undefined ? finding : { ...finding, fix_hint: hint };
+          })()
+        : finding,
+    );
     const now = this.sessions.nowIso();
     const complete = evaluation.status === "PASS" && finalMissing.length === 0;
 
@@ -1654,6 +1706,13 @@ export class PraxService {
             code: "VALIDATION_CONVERGENCE_STALLED",
             message: `Convergence stalled: open findings did not reach a new minimum for two consecutive evaluations. Report unresolved findings truthfully instead of retrying indefinitely. Unresolved: [${unresolvedFindings.join(", ")}]`,
             unresolved: unresolvedFindings,
+            fix_paths: [
+              ...new Set(
+                unresolvedFindings
+                  .map((id) => fixHintFor(id, sdirArtifact?.version))
+                  .filter((hint): hint is string => hint !== undefined),
+              ),
+            ],
             warnings: [...(evaluation.warnings ?? []), ...(stallWarning === undefined ? [] : [stallWarning])],
           }
         : {}),
