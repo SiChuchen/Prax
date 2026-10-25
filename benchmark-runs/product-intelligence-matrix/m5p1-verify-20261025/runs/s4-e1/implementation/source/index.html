@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ledger v2 Cutover — Runbook</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app" class="app">
+  <!-- Rendered synchronously by app.js at parse time. No loading state ever appears:
+       the runbook data is inlined (data.js) and the first paint is the complete screen. -->
+
+  <header class="runbook-header" id="runbook-header">
+    <div class="rh-left">
+      <p class="rh-eyebrow" id="rh-eyebrow"></p>
+      <h1 class="rh-title" id="rh-title"></h1>
+      <p class="rh-meta" id="rh-meta"></p>
+    </div>
+    <div class="rh-right">
+      <div class="rh-status-row">
+        <span class="status-pill" id="status-pill" data-state="not-started">Not started</span>
+        <span class="progress-label" id="progress-label" aria-hidden="true"></span>
+      </div>
+      <div class="meter" role="progressbar" id="progress-bar" aria-label="Runbook progress"
+           aria-valuemin="0" aria-valuemax="0" aria-valuenow="0">
+        <div class="meter-fill" id="progress-fill"></div>
+      </div>
+      <div class="rh-actions">
+        <button type="button" class="btn btn-ghost btn-small" id="log-toggle" aria-expanded="false"
+                aria-controls="log-drawer" data-action="toggle-log">
+          <svg class="ic" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 2h10M3 5.5h10M3 9h7M3 12.5h5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          Activity log
+        </button>
+        <button type="button" class="btn btn-ghost btn-small" id="reset-btn" data-action="reset">Reset runbook</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="completion" id="completion" hidden aria-labelledby="completion-title"></section>
+
+  <main class="ladder" id="ladder" aria-label="Runbook phases and steps"></main>
+
+  <footer class="app-foot">
+    <p>Rehearsal environment — steps simulate outcomes; nothing outside this page is touched.
+       Irreversible steps always show their consequence and rollback plan before you can proceed.</p>
+  </footer>
+</div>
+
+<!-- Confirm gate (task-driven region) -->
+<div class="scrim" id="gate-scrim" hidden>
+  <div class="gate" role="dialog" aria-modal="true" aria-labelledby="gate-title" id="gate"></div>
+</div>
+
+<!-- Activity log drawer (supporting region) -->
+<aside class="log-drawer" id="log-drawer" aria-label="Activity log" aria-hidden="true">
+  <div class="log-head">
+    <h2>Activity log</h2>
+    <p class="log-sub">Append-only record for this rehearsal — entries are never edited or removed.</p>
+    <button type="button" class="btn btn-ghost btn-small" data-action="close-log" id="log-close">Close</button>
+  </div>
+  <ol class="log-list" id="log-list" aria-live="polite"></ol>
+  <p class="log-empty" id="log-empty" hidden>No activity yet — entries appear as you execute steps.</p>
+</aside>
+
+<div id="toast" role="alert" aria-live="assertive" hidden></div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

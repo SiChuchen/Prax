@@ -1,0 +1,116 @@
+session_id: ds_20261025061600_34e1162d
+information_shape:
+  cardinality: unbounded
+  relationality: medium
+  hierarchy: medium
+  temporality: low
+  density: high
+  dimensionality: high
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: table
+    reason: "The Data Explorer's dominant data surface: the filtered working set as dense sortable record rows over all 9 dimensions. High density and unbounded cardinality live here; sorting by the active dimension makes the lens read through the table as well"
+  supporting:
+    - type: chart
+      reason: Dimensionality is the main cognitive burden, so the lens chart projects the working set over the active dimension (histogram for numeric, bars for categorical), directly filterable by clicking bins
+    - type: list
+      reason: Dimension rail lists every dimension with per-dimension filter-count ownership and mini distribution — the stable anchor across lens switches
+  rejected:
+    - option: map
+      reason: spatiality=none
+    - option: timeline
+      reason: temporality=low
+    - option: graph
+      reason: relationality only medium; no topology to encode
+  justification_vs_shape: "High dimensionality + high density with medium relationality: the table is the dominant structured data surface carrying the unbounded working set, the lens chart carries the dimensional projection (the cell's defining burden), the rail carries filter ownership; no spatial or temporal encoding is warranted (spatiality none, temporality low), and comparison_need=none argues against side-by-side multi-lens."
+primary_structure:
+  pattern: PAT-DATA-EXPLORER
+  rationale:
+    - "Routed and inspected to L2: Data Explorer covers the dense, filterable, unbounded working set — its structured data surface (table) is the dominant region, paired with persistent narrowing (per-dimension filters) and detail on demand (inspector)"
+    - "Composed with PAT-LIST-DETAIL-INSPECTOR (also inspected to L2): a subordinate inspector shows the selected record across ALL dimensions, so selection stays meaningful under any lens"
+    - "Governed by heuristics H-21 Orientation Invariants and H-22 Overview-Filter-Detail (both inspected to L2): dimension rail positions, selection, filters, and history are stable anchors while only the lens region swaps"
+    - A per-dimension filter model + revertible history ledger is the structural answer to the acceptance seed (state ownership + revertibility)
+  confidence: high
+information_hierarchy:
+  primary:
+    - data
+    - "collection — the working-set table (dominant surface): every surviving record as a dense sortable row, sorted by the active lens dimension"
+    - "lens chart over the data collection: distribution of the working set by the active dimension — histogram for numeric, bars for categorical, click-to-filter bins"
+    - "dimension rail: every dimension with its filter-ownership state visible"
+    - "state ledger: attributed filter chips + revertible change history"
+  secondary:
+    - Record inspector showing the selected record across ALL dimensions (stable anchor across lens switches)
+    - "Header: dataset identity, live working-set count, global undo/reset"
+density:
+  intent: compact
+  strategy:
+    - "single non-scrolling screen: header bar, dimension rail, lens chart + working-set table, inspector, ledger bar"
+    - dense 12–13px data typography with hairline rows
+    - mini distribution bars inside the dimension rail as at-a-glance filter state
+    - filter chips + history entries packed into one ledger strip
+  avoid:
+    - card-grid-for-dense-comparison
+    - page-level scrolling chrome
+    - marketing whitespace
+major_choices:
+  - id: MC-1-state-ownership
+    choice: Query state is stored per dimension, never in the lens. Switching the active dimension only swaps the projection; filters of other dimensions remain applied and visible (owned by their dimension in rail + ledger).
+    rationale: "Directly implements the acceptance seed: filter/projection state has an owner (the dimension) and the lens is a separate state owner. This is the mechanism that makes dimension switching not reset cognition."
+    confidence: high
+    references:
+      - dimension
+      - filter
+      - projection
+  - id: MC-2-revertibility
+    choice: Every mutating action (add/remove filter, switch lens) pushes a labeled, invertible history entry; global Undo (button + Ctrl+Z) pops the latest; each history entry is individually revertible; each active filter chip is individually removable.
+    rationale: "Makes revertibility first-class at three granularities: single chip removal, per-entry revert, global undo — covering both filter and projection state."
+    confidence: high
+    references:
+      - filter
+      - projection
+      - selection
+  - id: MC-3-bin-filtering
+    choice: "Lens chart bins are clickable: click a histogram bin or category bar to add that dimension's filter; click the owning chip (or same bin) to remove. Bin highlight reflects current filter."
+    rationale: Filtering happens in the projection itself, so the filter's provenance (which dimension, which range) is self-evident.
+    confidence: high
+    references:
+      - dimension
+      - filter
+      - projection
+  - id: MC-4-dataset
+    choice: Deterministic synthetic dataset (mulberry32 PRNG) of 720 fleet-sensor records × 9 dimensions (6 numeric, 3 categorical), generated by a one-off build script and shipped as a static data.js loaded synchronously — page is ready at first paint with zero fetches (file:// safe).
+    rationale: Satisfies unbounded-feel cardinality with high density while keeping the deliverable fully static and instant; dataset is the primary product object.
+    confidence: high
+    references:
+      - dataset
+  - id: MC-5-stack
+    choice: Pure vanilla HTML/CSS/JS + inline SVG, no build step; index.html at repo root opens directly.
+    rationale: Static-open and zero-dependency requirements; no framework overhead for a single screen.
+    confidence: high
+    references:
+      - dataset
+rejected:
+  - option: Parallel coordinates plot as the primary surface
+    reason: Best-known high-dimensional view, but medium relationality doesn't require it; heavier to implement well inside the 90-min budget and adds brushing interactions beyond the seed's needs
+  - option: Scatter matrix (SPLOM)
+    reason: O(n²) panels explode density and screen area for 9 dimensions
+  - option: Pivot-table-only explorer
+    reason: Dense but buries the lens-switching gesture that defines this cell; distribution shape is harder to read in pivots
+  - option: Map-based view
+    reason: spatiality=none in the shape bundle
+unresolved: []
+complexity_budget:
+  permanent_panels: 6
+  permanent_primary_actions: 2
+  modes: 0
+  state_owners: 4
+  navigation_levels: 1
+  persistent_filters: 9
+  new_semantic_concepts: 2
+  keyboard_contracts: 1
+  mobile_conflicts: 0
+  permanent_surfaces: 6

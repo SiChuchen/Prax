@@ -1,0 +1,35 @@
+version: "0.1"
+session_id: ds_20261025092630_d2ab0b08
+task_ref: 按既定顺序执行发布流程的全部步骤：核对项逐一确认，操作项触发执行，不可逆项走二次确认后执行
+selected:
+  - ref: product_relationships
+    reason:
+      - flow_has_steps:release_flow->step
+      - flow_appends_audit:release_flow->audit_entry
+  - ref: region_relationships
+    reason: []
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-LIST-DETAIL
+  - ref: unresolved
+    reason: []
+  - ref: corrections
+    reason: []
+  - ref: validation-plan@1
+    reason:
+      - semantic_conformance
+      - state_completeness
+      - product_model_alignment
+      - keyboard
+      - hierarchy_review
+      - representation_decided
+      - state_ownership_declared
+      - acceptance_contract_present
+      - complexity_budget_declared
+      - destructive_recovery
+      - requirement_alignment
+excluded:
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata

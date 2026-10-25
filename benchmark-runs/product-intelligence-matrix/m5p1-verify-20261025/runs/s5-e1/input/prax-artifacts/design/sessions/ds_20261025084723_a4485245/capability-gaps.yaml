@@ -1,0 +1,96 @@
+needs:
+  - id: cap-dimension-switch-preserves-context
+    product_action: 切换观察维度（focus_dimension）时保持 selection/filters/projection/revision 全部不变
+    required_experience:
+      - 切换维度仅改变网格组织轴与维度面板焦点
+      - 选中行、生效过滤 chips、revision 轨迹在切换前后完全一致
+      - 无任何加载或闪烁
+    capabilities:
+      - "state model: focus_dimension 独立于 filters/projection/selection"
+      - selection 持久化于 lens，跨维度保留
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: lens 状态模型将 focus_dimension 与 filters/projection/selection 分离存储；维度切换不产生破坏性副作用，仅追加一条 revision 记录
+  - id: cap-owned-revertible-state
+    product_action: 过滤/投影状态归属展示与多级回退（逐条移除/undo/redo/轨迹任意步回退/reset）
+    required_experience:
+      - 每条生效过滤/投影在 lens-bar 有 chips：维度名+值+来源操作+移除按钮
+      - undo/redo 逐步回退，revision-trail 点击任意步跳转，reset 一键回初始
+      - 计数与网格即时同步
+    capabilities:
+      - revision 数组时间旅行
+      - lens-bar chips 带 per-chip 移除
+      - undo/redo/reset 键盘与按钮双通道
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 单一 lens store + immutable revision 数组实现时间旅行；每条 revision 记录 op/target/ts/序号，UI 全量呈现
+  - id: cap-inline-first-screen
+    product_action: 页面加载完成即处于 ready 可用状态（480 条 record + 14 维度随首屏内联）
+    required_experience:
+      - 无 loading 态、无运行时 fetch
+      - 首帧即可交互、可过滤、可切换维度
+    capabilities:
+      - 静态数据模块随 bundle 内联
+      - 首屏直出 ready 态
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 数据在构建期内联为静态 JS 模块，无任何运行时数据获取；初始渲染即 ready
+  - id: cap-unbounded-cardinality-browsing
+    product_action: 无界基数的行集浏览：滚动、实时匹配计数、列投影
+    required_experience:
+      - 480 行全量流畅滚动
+      - 匹配计数实时
+      - 投影列随投影选择变化
+    capabilities:
+      - 表格原生滚动
+      - 计数聚合 O(n) 每次透镜变更
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: 480 行在原生表格渲染性能预算内；若数据规模增长至数千行以上再引入虚拟滚动（当前规模不引入，避免复杂度超预算）
+  - id: cap-dimension-distribution
+    product_action: 维度值分布迷你条形（维度面板内）
+    required_experience:
+      - 当前焦点维度的值分布可见，支撑收窄方向决策
+    capabilities:
+      - SVG/CSS 迷你条形
+      - 维度值计数聚合
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯 CSS/SVG 渲染，无图表库依赖
+  - id: cap-keyboard-undo
+    product_action: 键盘撤销/重做（Ctrl+Z / Ctrl+Shift+Z）
+    required_experience:
+      - 键盘与按钮行为一致
+    capabilities:
+      - 全局键盘监听
+      - 与浏览器默认行为协调
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: document 级 keydown 监听；仅在非输入焦点时拦截
+  - id: cap-cross-dimension-search
+    product_action: 跨维度文本搜索定位条目
+    required_experience:
+      - 搜索词与维度过滤一致地出现在 lens-bar 并可回退
+    capabilities:
+      - 全字段子串匹配
+      - 搜索词纳入 lens 归属与回退
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: 搜索作为 query 的一部分纳入 lens 与 revision，与维度过滤同构
+  - id: cap-session-persistence
+    product_action: 探索状态跨会话持久化
+    required_experience:
+      - 刷新后状态保留
+    capabilities:
+      - 内存态保存
+    status: supported
+    resolution:
+      type: explicit_compromise
+      notes: 交付约束明确不要求持久化服务；状态为会话内存态，刷新回初始态（初始态本身即完整可用）

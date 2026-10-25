@@ -1,0 +1,61 @@
+version: "0.1"
+session_id: ds_20261025061600_34e1162d
+task:
+  surfaces: []
+  primary: Switch the active projection dimension and continue exploring without losing filters or selection
+product_relationships:
+  - id: rel_dimension_filter
+    source: dimension
+    target: filter
+    type: owns
+    direction: forward
+    meaning: every filter is attributed to exactly one dimension and displays that ownership
+    importance: primary
+  - id: rel_projection_dimension
+    source: projection
+    target: dimension
+    type: composes
+    direction: bidirectional
+    meaning: a projection is a choice of 1–3 active dimensions out of the dataset's dimensions
+    importance: primary
+  - id: rel_selection_dataset
+    source: selection
+    target: dataset
+    type: pins-record
+    direction: forward
+    meaning: a selection points at records that stay highlighted under every projection
+    importance: supporting
+region_relationships:
+  - id: region_rel_data_detail
+    source: data
+    target: detail
+    type: selection_drives_contextual_detail
+decisions:
+  primary_structure: PAT-DATA-EXPLORER
+  density_intent: compact
+  major_choice_ids:
+    - MC-1-state-ownership
+    - MC-2-revertibility
+    - MC-3-bin-filtering
+    - MC-4-dataset
+    - MC-5-stack
+must_preserve: []
+regression_points: []
+unresolved: []
+corrections: []
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - filter_state
+    - comparison_scan
+    - requirement_alignment
+  regression_check_ids: []

@@ -1,0 +1,38 @@
+version: "0.1"
+session_id: ds_20261025053124_c92decb6
+task_ref: 切换投影维度（行/列/下钻）以从不同维度理解数据，同时过滤/度量/排序/锚定等认知上下文保持不变
+selected:
+  - ref: product_relationships
+    reason:
+      - proj_on_dim:projection->dimension
+      - filter_from_dim:filter->dimension
+      - cells_of_dataset:projection->dataset
+      - trail_records_ops:state_trail->filter
+  - ref: region_relationships
+    reason: []
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-WORKSPACE
+  - ref: unresolved
+    reason:
+      - default_axes_choice
+      - trail_depth
+  - ref: corrections
+    reason: []
+  - ref: validation-plan@1
+    reason:
+      - semantic_conformance
+      - state_completeness
+      - product_model_alignment
+      - keyboard
+      - hierarchy_review
+      - representation_decided
+      - state_ownership_declared
+      - acceptance_contract_present
+      - complexity_budget_declared
+      - requirement_alignment
+excluded:
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata

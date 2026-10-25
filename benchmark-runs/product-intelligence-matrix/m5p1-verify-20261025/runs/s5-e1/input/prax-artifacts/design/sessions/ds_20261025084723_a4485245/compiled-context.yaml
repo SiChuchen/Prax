@@ -1,0 +1,96 @@
+version: "0.1"
+session_id: ds_20261025084723_a4485245
+task:
+  surfaces: []
+  primary: 沿不同维度切换视角探索数据集：选择观察维度、按维度值过滤、投影关注的字段/切片
+product_relationships:
+  - id: rel-dataset-dimension
+    source: dataset
+    target: dimension
+    type: described_by
+    direction: forward
+    meaning: 数据集由多个维度刻画，维度数量无上界（unbounded 基数的主要来源）
+    importance: primary
+  - id: rel-dataset-record
+    source: dataset
+    target: record
+    type: contains
+    direction: forward
+    meaning: 数据集包含条目；当前透镜决定哪些条目可见
+    importance: primary
+  - id: rel-lens-dataset
+    source: lens
+    target: dataset
+    type: applies_to
+    direction: forward
+    meaning: 透镜明确作用于某个数据集（状态归属）
+    importance: primary
+  - id: rel-revision-lens
+    source: revision
+    target: lens
+    type: trails
+    direction: forward
+    meaning: 每次透镜变更生成一条变更记录，支持逐步回退
+    importance: primary
+region_relationships:
+  - id: region_rel_data_detail
+    source: data
+    target: detail
+    type: selection_drives_contextual_detail
+decisions:
+  primary_structure: PAT-DATA-EXPLORER
+  density_intent: compact
+  major_choice_ids:
+    - mc-dimension-switch-is-lens
+    - mc-owned-revertible-state
+    - mc-inline-dataset
+    - mc-no-compare-no-map
+must_preserve: []
+regression_points: []
+unresolved:
+  - u1-dataset-theme
+  - u2-dimension-count-visible
+corrections: []
+representation_portfolio:
+  primary:
+    type: table
+    reason: density=high + cardinality=unbounded 下，表格行集是扫描效率最高的承载；投影 dimension 直接映射为列，维度切换=换列/换组织轴而 record 行不变（认知连续的物理基础）
+  supporting:
+    - type: chart
+      reason: 维度面板内 dimension 值分布迷你条形：Overview 层帮助选择收窄方向（H-22）
+    - type: list
+      reason: revision-trail 以 list 承载，是『可回退』的直接可视对象
+  rejected:
+    - option: graph
+      reason: relationality=medium 非主要认知负担；graph 放大布局噪音、违背 P-22
+    - option: map
+      reason: spatiality=none，无空间语义
+    - option: tree
+      reason: hierarchy=medium，排序分组即可承载；tree 把探索锁进单一层级路径
+    - option: card grid
+      reason: myth-card-grid-default 否证成立：density=high 下 card grid 是 card-grid-for-dense-comparison 反模式，信息密度不足且无列对齐
+    - option: chart-as-primary
+      reason: 主对象是 dataset 的 record 集合，聚合 chart 丢失条目定位能力；chart 仅作 dimension 值分布辅助
+state_ownership:
+  - state: selection
+    owner: data
+  - state: preview
+    owner: session
+acceptance:
+  - 用户在任意次维度切换后：（1）此前的选择与过滤上下文仍然保持可见且生效；（2）每一条过滤/投影变更都记录了归属（作用对象与来源操作）并可逐条回退；（3）页面加载即处于可用状态（数据随首屏就绪）。
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - filter_state
+    - comparison_scan
+    - requirement_alignment
+  regression_check_ids: []

@@ -1,0 +1,87 @@
+version: "0.1"
+session_id: ds_20261025053124_c92decb6
+task:
+  surfaces: []
+  primary: 切换投影维度（行/列/下钻）以从不同维度理解数据，同时过滤/度量/排序/锚定等认知上下文保持不变
+product_relationships:
+  - id: proj_on_dim
+    source: projection
+    target: dimension
+    type: axes_on
+    direction: forward
+    meaning: 投影的行/列轴选自维度列表；切换投影不触碰过滤器集合
+    importance: primary
+  - id: filter_from_dim
+    source: filter
+    target: dimension
+    type: constrains_values_of
+    direction: forward
+    meaning: 过滤值隶属于维度；归属记录产生它的面板与操作
+    importance: primary
+  - id: cells_of_dataset
+    source: projection
+    target: dataset
+    type: aggregates
+    direction: forward
+    meaning: 单元格数值 = 满足全部过滤器的记录在轴上的聚合
+    importance: supporting
+  - id: trail_records_ops
+    source: state_trail
+    target: filter
+    type: attributes_and_reverts
+    direction: forward
+    meaning: 轨迹条目记录『谁产生了这个状态』并可回滚
+    importance: primary
+region_relationships: []
+decisions:
+  primary_structure: PAT-WORKSPACE
+  density_intent: compact
+  major_choice_ids:
+    - projection-form
+    - context-preservation
+    - attribution-and-revert
+    - dimension-rail
+    - static-no-build
+must_preserve: []
+regression_points: []
+unresolved:
+  - default_axes_choice
+  - trail_depth
+corrections: []
+representation_portfolio:
+  primary:
+    type: grid
+    reason: 无界基数+高维高密数据在一屏内的最优投影是行维度×列维度交叉表（热力矩阵格），单元格即维度交点聚合，天然支撑『换维度=重排同一对象空间』
+  supporting:
+    - type: tree
+      reason: 维度轨道与行轴层级下钻用树形承载（品类→子类→单品），medium hierarchy 的直接对应
+    - type: list
+      reason: 状态归属栏与可回滚轨迹用紧凑列表/chips 承载每条状态的来源与移除动作
+  rejected:
+    - option: chart（柱状/折线主表示）
+      reason: 聚合维度切换时图表轴语义突变最易重置认知，且比较需求=none
+    - option: map
+      reason: spatiality=none
+    - option: cards
+      reason: 密度高、需结构化行列对齐，卡片浪费空间且无法承载交叉聚合
+state_ownership:
+  - state: selection
+    owner: 投影交叉表（当前维度组合下的聚合矩阵）——认知主角
+  - state: preview
+    owner: session
+acceptance:
+  - 在应用内连续执行 ≥4 次维度切换/下钻操作后，此前设置的所有过滤器与锚定选择依然生效并可见（状态栏可数、可点、可逐条撤销），用户从未见到任何『状态被清空』的时刻
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - requirement_alignment
+  regression_check_ids: []

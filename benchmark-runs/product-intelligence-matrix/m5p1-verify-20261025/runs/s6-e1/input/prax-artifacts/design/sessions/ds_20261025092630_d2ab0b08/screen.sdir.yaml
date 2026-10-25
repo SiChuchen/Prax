@@ -1,0 +1,136 @@
+version: "0.2"
+screen:
+  id: list_detail_screen
+  intent:
+    primary_task: 按既定顺序执行发布流程的全部步骤：核对项逐一确认，操作项触发执行，不可逆项走二次确认后执行
+    secondary_tasks:
+      - 在不可逆步骤的恢复窗口内撤销误操作
+      - 随时掌握进度、零失误状态与操作审计日志
+      - 完成后查看全程总结
+  archetype:
+    pattern_ref: PAT-LIST-DETAIL
+  density_intent: spacious
+  regions:
+    - id: 当前可执行步骤卡及其唯一主控制
+      role: experimental:当前可执行步骤卡及其唯一主控制
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 不可逆步骤的警示、确认关卡与恢复窗口状态
+      role: experimental:不可逆步骤的警示、确认关卡与恢复窗口状态
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 阶段进度导航（左栏）
+      role: experimental:阶段进度导航（左栏）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 审计日志与零失误拦截计数（右栏）
+      role: experimental:审计日志与零失误拦截计数（右栏）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 总进度与流程元信息（页头）
+      role: experimental:总进度与流程元信息（页头）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: workspace
+      role: dominant_workspace
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - preserve_context
+  relationships: []
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved: []
+  rejected_alternatives:
+    - option: wizard（一次只显示一步）
+      reason: 隐藏整体进度与剩余风险，与『零失误全程可控』冲突；且基数 one、步骤仅 10 步，单屏可全部呈现
+    - option: PAT-CANVAS-WORKSPACE 流程图画布
+      reason: 空间性 none、关系性 low，画布把注意力引向拓扑而非顺序执行；已被路由排除
+    - option: PAT-RESOURCE-MANAGEMENT 多流程管理台
+      reason: 基数 one，不管理流程集合；已被路由排除
+    - option: 深色控制台主题
+      reason: 高后果流程以可读性与警示对比为先，浅色高对比更稳；预留足够对比度满足 WCAG AA（H-23）
+  user_job:
+    verb: complete
+    target: 高后果流程：一次生产环境发布（订单服务 v2.7.0）
+    success: 零失误走完全程，全程可回查，不可逆操作有确认与恢复
+  primary_object:
+    type: workflow
+    label: 生产发布流程
+  information_shape:
+    cardinality: one
+    relationality: low
+    hierarchy: high
+    temporality: low
+    density: low
+    dimensionality: medium
+    spatiality: none
+    volatility: medium
+    uncertainty: medium
+    comparison_need: none
+  representation:
+    primary:
+      type: list
+      reason: 严格有序的步骤集合，顺序即信息主干；列表天然承载顺序守卫与状态芯片
+    supporting:
+      - type: form
+        reason: 核对类步骤内嵌勾选/输入确认，是步骤卡的就地形态而非独立屏
+      - type: feed
+        reason: 审计事件按时间倒序追加，支撑零失误核验与事后回查
+  priority:
+    primary:
+      - 当前可执行步骤卡及其唯一主控制
+      - 不可逆步骤的警示、确认关卡与恢复窗口状态
+      - workspace
+    contextual:
+      - 阶段进度导航（左栏）
+      - 审计日志与零失误拦截计数（右栏）
+      - 总进度与流程元信息（页头）
+  interaction:
+    preview: none
+    inspect: select
+    navigate: none
+    locate: none
+  state_ownership:
+    - state: selection
+      owner: 当前可执行步骤卡及其唯一主控制
+    - state: preview
+      owner: session
+  complexity_budget:
+    permanent_panels: 4
+    permanent_primary_actions: 2
+    modes: 0
+    state_owners: 2
+    navigation_levels: 1
+    persistent_filters: 0
+    new_semantic_concepts: 3
+    keyboard_contracts: 0
+    mobile_conflicts: 0
+    permanent_surfaces: 4
+  acceptance:
+    - 用户在不触发任何顺序/确认违规（零失误）的情况下按序完成全部 10 个步骤并看到完成态总结；每个不可逆步骤均经由二次确认进入执行，且执行后在恢复窗口内可撤销，终态附带回滚预案。

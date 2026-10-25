@@ -1,0 +1,28 @@
+version: "0.1"
+user_quote:
+  - 动词：complete / 对象：高后果流程 / 成功标准：零失误走完全程
+  - 判别：单一高后果流程，零失误走完全程、不可逆步骤有恢复/确认路径。
+  - 验收种子：不可逆步骤有恢复/确认路径
+restatement: "Build a single-page web app that walks a user through exactly one high-consequence workflow (one workflow, high hierarchy: phases → steps → checks) so they can complete it end-to-end with zero errors. The app must make irreversible steps visually distinct, gate them behind explicit confirmation, and provide a recovery/rollback path for each irreversible step. Initial workflow data is inlined and the app is usable at page load; static open via index.html; no backend, no accounts, no persistence service."
+boundaries:
+  in_scope:
+    - One consequential workflow rendered as a hierarchical phase/step guide (single main screen)
+    - Irreversible steps carry visible warning affordances, an explicit confirmation gate (e.g. typed/elevated confirm), and a documented recovery/rollback action per step
+    - "Progress gating: steps unlock in order; cannot skip prerequisites; completion summary with audit trail of executed actions"
+    - Inlined workflow data ready at first paint; runs from file:// or any static server; no loading state as first impression
+    - Simulated execution only — the app guides and records decisions, no external side effects
+  out_of_scope:
+    - Backend, accounts, multi-user collaboration, external persistence services
+    - Multiple workflows or workflow authoring/editing UI
+    - Deployment to any external hosting
+    - Mobile form factor
+  scope_complete: true
+open_questions: []
+confirmation:
+  status: requirement_is_sufficient
+  evidence:
+    - type: task_brief
+      ref: brief.md — Product Brief cell-j10-s09 (complete × consequential-flow), frozen by benchmark M2
+    - type: conversation_message
+      ref: "user task instruction: work through Prax gates using the brief as requirement text"
+  confirmed_at: 2026-10-25T08:02:00Z

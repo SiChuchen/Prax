@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>drive</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #fff; }
+  iframe { display: block; width: 100vw; height: 100vh; border: 0; }
+</style>
+</head>
+<body>
+<iframe id="app" src="/index.html" title="app"></iframe>
+<script>
+(function () {
+  "use strict";
+  /* 驱动页：iframe 加载 /index.html，onload 后按 ?at=<scenario> 同步驱动应用。
+     全部使用真实 .click() / input 事件；应用每次交互后会重渲染 DOM，
+     故所有查询都在每次点击后重新执行。结果摘要写入父页 document.title。 */
+  var params = new URLSearchParams(location.search);
+  var at = params.get("at") || "initial";
+  var TICKET_OK = "REL-2026-1017";
+  var TICKET_BAD = "REL-0000-0000";
+  var PRE = ["s01", "s02", "s03", "s04", "s05", "s06", "s07"];
+
+  function frame() { return document.getElementById("app"); }
+  function doc() { return frame().contentDocument; }
+  function q(sel) { return doc().querySelector(sel); }
+  function qa(sel) { return Array.prototype.slice.call(doc().querySelectorAll(sel)); }
+  function must(el, what) {
+    if (!el) throw new Error("missing: " + what);
+    return el;
+  }
+  function clickEl(el, what) { must(el, what).click(); }
+
+  /* 勾选某步骤全部核对清单（每次 click 后应用 render()，须重查） */
+  function checkAll(stepId) {
+    for (var guard = 0; guard < 50; guard++) {
+      var boxes = qa('input[data-change="check"][data-id="' + stepId + '"]');
+      if (!boxes.length) throw new Error("no checklist boxes for " + stepId);
+      var pending = boxes.filter(function (b) { return !b.checked; });
+      if (!pending.length) return;
+      pending[0].click();
+    }
+    throw new Error("checklist loop did not converge for " + stepId);
+  }
+
+  function selectStep(stepId) {
+    clickEl(q('button[data-action="select"][data-id="' + stepId + '"]'), "rail select " + stepId);
+  }
+
+  function completeNormal(stepId) {
+    selectStep(stepId);
+    checkAll(stepId);
+    var btn = must(q('button[data-action="complete"][data-id="' + stepId + '"]'), "complete button " + stepId);
+    if (btn.disabled) throw new Error("complete button disabled for " + stepId);
+    btn.click();
+  }
+
+  function openGate(stepId) {
+    selectStep(stepId);
+    clickEl(must(q('button[data-action="open-gate"][data-id="' + stepId + '"]'), "open-gate " + stepId));
+    must(q("#gate-dialog"), "gate dialog for " + stepId);
+  }
+
+  function ackAll() {
+    var n = 0;
+    for (var guard = 0; guard < 30; guard++) {
+      var boxes = qa(".ack-item input");
+      if (!boxes.length) throw new Error("no ack items in gate");
+      n = boxes.length;
+      var pending = boxes.filter(function (b) { return !b.checked; });
+      if (!pending.length) return n;
+      pending[0].click(); /* renderGate() 重建 DOM，下一轮重查 */
+    }
+    throw new Error("ack loop did not converge");
+  }
+
+  function typeGateCode(code) {
+    var inp = must(q('input[data-input="gate-code"]'), "gate-code input");
+    inp.value = code;
+    inp.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+
+  function confirmGate() {
+    clickEl(must(q('button[data-action="gate-confirm"]'), "gate-confirm"));
+  }
+
+  function runGate(stepId, code) {
+    openGate(stepId);
+    ackAll();
+    typeGateCode(code);
+    confirmGate();
+  }
+
+  function rollbackStep(stepId) {
+    /* 回滚按钮渲染在该步骤详情内：先在左栏选中它，再点击回滚 */
+    selectStep(stepId);
+    clickEl(must(q('button[data-action="rollback"][data-id="' + stepId + '"]'), "rollback " + stepId));
+  }
+
+  function progressText() {
+    var m = q(".progress-meta b");
+    return m ? m.textContent.trim() : "?";
+  }
+
+  function settle(title) {
+    try { frame().contentWindow.scrollTo(0, 0); } catch (e) {}
+    qa(".panel").forEach(function (p) { try { p.scrollTop = 0; } catch (e) {} });
+    document.title = "drive | at=" + at + " | progress=" + progressText() +
+      " | events=" + qa(".audit-item").length + (title ? " | " + title : "");
+  }
+
+  function run() {
+    try {
+      if (!q("#region-step-rail")) throw new Error("app did not boot in iframe");
+      var note = "";
+      if (at === "initial") {
+        /* 不动作 */
+      } else if (at === "s01-done") {
+        completeNormal("s01");
+      } else if (at === "gate" || at === "gate-error" || at === "executed" ||
+                 at === "rolled-back" || at === "completed") {
+        PRE.forEach(completeNormal);
+        if (at === "gate") {
+          openGate("s08");            /* 停在对话框出现 */
+          note = "gate=open";
+        } else if (at === "gate-error") {
+          openGate("s08");
+          ackAll();
+          typeGateCode(TICKET_BAD);
+          confirmGate();
+          var err = q(".form-error");
+          note = "gate-error=" + (err ? err.textContent.trim() : "none");
+        } else if (at === "executed") {
+          runGate("s08", TICKET_OK);
+          selectStep("s08");          /* 应用会自动前进到 s09，此处回到 s08 展示回滚窗口 */
+          note = "s08=executed";
+        } else if (at === "rolled-back") {
+          runGate("s08", TICKET_OK);
+          rollbackStep("s08");        /* rollbackStep 内部已选中 s08 */
+          note = "s08=rolledBack";
+        } else if (at === "completed") {
+          runGate("s08", TICKET_OK);
+          rollbackStep("s08");        /* 同会话内先回滚一次（使回滚计数=1），再重执 */
+          runGate("s08", TICKET_OK);
+          completeNormal("s09");
+          completeNormal("s10");
+          runGate("s11", TICKET_OK);
+          completeNormal("s12");
+          runGate("s13", TICKET_OK);
+          completeNormal("s14");
+          note = "flow=completed";
+        }
+      } else {
+        throw new Error("unknown at: " + at);
+      }
+      settle(note);
+    } catch (err) {
+      document.title = "drive | at=" + at + " | FAIL | " +
+        (err && err.message ? err.message : String(err));
+      try { frame().contentWindow.scrollTo(0, 0); } catch (e) {}
+    }
+  }
+
+  frame().addEventListener("load", function () { setTimeout(run, 0); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+version: "0.2"
+jtbd:
+  verb: explore
+  target: 多维数据集的维度视角、过滤切片与投影子集
+  success: 多次维度切换后，用户的选择、过滤、标注与历史仍然连续可回退，认知不重置；过滤/投影状态有归属且可回退
+primary_object:
+  type: dataset
+  label: 多维数据集
+task_model:
+  frequency: high
+  reversibility: reversible
+  consequence: low
+  expertise: mixed
+user:
+  primary_role: 数据分析师 / 数据探索者
+  expertise: intermediate
+  familiarity: medium
+goal:
+  primary: 让用户在不丢失既有认知上下文的前提下，沿任意维度切换视角并过滤/投影，持续探索一份多维数据集
+tasks:
+  primary: 沿不同维度切换视角探索数据集：选择观察维度、按维度值过滤、投影关注的字段/切片
+  secondary:
+    - 查看当前生效的过滤/投影条目及其归属，并逐条撤销或整体回退
+    - 定位关注的数据条目（跨维度搜索/筛选）
+    - 查看单个数据条目的全维度详情
+product_objects:
+  - id: dataset
+    user_name: 数据集
+    purpose: 被探索的多维数据主体，首屏内联加载
+  - id: dimension
+    user_name: 维度
+    purpose: 数据集的切分轴（facet），可被选为当前观察维度、用于过滤或投影
+  - id: record
+    user_name: 数据条目
+    purpose: 数据集中的单个条目，可被选中查看详情
+  - id: lens
+    user_name: 当前视角（透镜）
+    purpose: 当前生效的过滤+投影+维度组合状态，有明确归属（作用于哪个数据集、来自哪次操作），可整体或逐条回退
+  - id: revision
+    user_name: 变更记录
+    purpose: 视角变更的历史步骤，构成可回退的状态轨迹
+relationships:
+  - id: rel-dataset-dimension
+    source: dataset
+    target: dimension
+    type: described_by
+    direction: forward
+    meaning: 数据集由多个维度刻画，维度数量无上界（unbounded 基数的主要来源）
+    condition: 任意时刻
+    importance: primary
+  - id: rel-dataset-record
+    source: dataset
+    target: record
+    type: contains
+    direction: forward
+    meaning: 数据集包含条目；当前透镜决定哪些条目可见
+    condition: 过滤后
+    importance: primary
+  - id: rel-lens-dataset
+    source: lens
+    target: dataset
+    type: applies_to
+    direction: forward
+    meaning: 透镜明确作用于某个数据集（状态归属）
+    condition: 用户操作时
+    importance: primary
+  - id: rel-revision-lens
+    source: revision
+    target: lens
+    type: trails
+    direction: forward
+    meaning: 每次透镜变更生成一条变更记录，支持逐步回退
+    condition: 每次变更
+    importance: primary
+mental_model_hypothesis:
+  summary: 用户把探索理解为：在同一个固定数据集上反复更换『透镜』（当前维度组合 + 过滤切片 + 投影字段），透镜可以随意更换，但底层数据对象与已积累的认知上下文（选中项、已生效过滤、回退历史）不随透镜更换而丢失——像切换地图图层，而不是换一张地图。
+  confidence: high
+  evidence:
+    - user_requirement
+primary_success_definition: 用户在任意次维度切换后：（1）此前的选择与过滤上下文仍然保持可见且生效；（2）每一条过滤/投影变更都记录了归属（作用对象与来源操作）并可逐条回退；（3）页面加载即处于可用状态（数据随首屏就绪）。
+open_questions: []
+existing_product:
+  stable_user_concepts: []
+  stable_patterns: []
+  current_user_pain_points: []
+  current_constraints: []
+  legacy_debt: []

@@ -1,0 +1,73 @@
+user:
+  expertise: intermediate
+  familiarity: medium
+task:
+  primary: 在一份多维数据集上持续探索：切换观察维度、按维度值过滤、投影字段，且切换不丢失既有上下文
+  modes:
+    - explore
+    - filter
+    - project
+    - inspect
+    - undo
+  frequency: high
+domain:
+  type: 数据分析 / 多维数据探索
+  entities:
+    - dataset
+    - dimension
+    - record
+    - filter
+    - projection
+    - revision
+information:
+  volume: high
+  relationship_complexity: medium
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: none
+  error_cost: low
+priorities:
+  - 维度切换不重置认知（成功标准）
+  - 过滤/投影状态有归属且可回退（验收种子）
+  - 首屏即用：初始数据内联，无 loading 可测态
+  - 高密度信息呈现（密度 high）
+density_intent: compact
+confidence:
+  overall: high
+unknowns:
+  - id: u1-dataset-theme
+    impact: low
+    affects:
+      - representation
+  - id: u2-dimension-count-visible
+    impact: low
+    affects:
+      - dimensionality_display
+classification:
+  version: "1"
+  task_type: compare_filter_records
+  domain_id: observability_analytics
+  interaction_mode: collection_with_contextual_detail
+  product_type: unknown
+  primary_object_type: dataset
+  secondary_object_types:
+    - lens
+    - dimension
+    - record
+    - revision
+  confidence: high
+  evidence:
+    - task_type=compare_filter_records ← token 'filter' in context.task and frame.tasks
+    - domain_id=observability_analytics ← token '分析' in context.domain
+    - interaction_mode=collection_with_contextual_detail ← token 'filter' in context.task, frame.tasks, and context.priorities
+    - primary_object_type=dataset ← most referenced product object in the Product Frame
+  open_questions:
+    - product_type could not be derived; record the intended audience and product kind

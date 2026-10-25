@@ -1,0 +1,60 @@
+version: "0.2"
+jtbd:
+  verb: complete
+  target: 高后果流程：一次生产环境发布（订单服务 v2.7.0）
+  success: 零失误走完全程，全程可回查，不可逆操作有确认与恢复
+primary_object:
+  type: workflow
+  label: 生产发布流程
+task_model:
+  frequency: low
+  reversibility: irreversible
+  consequence: high
+  expertise: expert
+user:
+  primary_role: 发布指挥 / 值班工程师（执行生产发布的人）
+  expertise: expert
+  familiarity: high
+goal:
+  primary: 在不发生任何失误的前提下，把一次生产发布从预检走到收尾完成
+tasks:
+  primary: 按既定顺序执行发布流程的全部步骤：核对项逐一确认，操作项触发执行，不可逆项走二次确认后执行
+  secondary:
+    - 在不可逆步骤的恢复窗口内撤销误操作
+    - 随时掌握进度、零失误状态与操作审计日志
+    - 完成后查看全程总结
+product_objects:
+  - id: release_flow
+    user_name: 生产发布流程
+    purpose: 承载一次高后果发布的完整阶段与有序步骤及其状态
+  - id: step
+    user_name: 发布步骤
+    purpose: 流程的最小执行单元，分核对（check）/操作（action）/不可逆（irreversible）三类，带守卫与恢复配置
+  - id: audit_entry
+    user_name: 操作审计记录
+    purpose: 记录每次执行、确认、撤销、拦截事件，支撑零失误核验与事后回查
+relationships:
+  - id: flow_has_steps
+    source: release_flow
+    target: step
+    type: contains_ordered
+    direction: forward
+    meaning: 流程由分阶段的有序步骤组成，步骤按序解锁
+    condition: 始终
+    importance: primary
+  - id: flow_appends_audit
+    source: release_flow
+    target: audit_entry
+    type: appends
+    direction: forward
+    meaning: 每次执行、撤销、拦截都追加一条审计记录
+    condition: 流程进行中与完成后
+    importance: supporting
+mental_model_hypothesis:
+  summary: 用户把发布视为一张必须按序执行的操作单：当前步骤高亮、后续步骤锁定；不可逆步骤前有明确的确认关卡（后果说明+理解项勾选+输入式确认），执行后短时间内可撤销，全程留痕可回查。
+  confidence: medium
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: 用户在不触发任何顺序/确认违规（零失误）的情况下按序完成全部 10 个步骤并看到完成态总结；每个不可逆步骤均经由二次确认进入执行，且执行后在恢复窗口内可撤销，终态附带回滚预案。
+open_questions: []

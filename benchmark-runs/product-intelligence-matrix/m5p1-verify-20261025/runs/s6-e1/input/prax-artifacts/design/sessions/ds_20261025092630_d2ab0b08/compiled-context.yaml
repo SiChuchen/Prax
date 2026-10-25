@@ -1,0 +1,70 @@
+version: "0.1"
+session_id: ds_20261025092630_d2ab0b08
+task:
+  surfaces: []
+  primary: 按既定顺序执行发布流程的全部步骤：核对项逐一确认，操作项触发执行，不可逆项走二次确认后执行
+product_relationships:
+  - id: flow_has_steps
+    source: release_flow
+    target: step
+    type: contains_ordered
+    direction: forward
+    meaning: 流程由分阶段的有序步骤组成，步骤按序解锁
+    importance: primary
+  - id: flow_appends_audit
+    source: release_flow
+    target: audit_entry
+    type: appends
+    direction: forward
+    meaning: 每次执行、撤销、拦截都追加一条审计记录
+    importance: supporting
+region_relationships: []
+decisions:
+  primary_structure: PAT-LIST-DETAIL
+  density_intent: spacious
+  major_choice_ids:
+    - mc-scenario
+    - mc-confirm-gate
+    - mc-recovery
+    - mc-zero-mistake
+    - mc-all-visible
+must_preserve: []
+regression_points: []
+unresolved: []
+corrections: []
+representation_portfolio:
+  primary:
+    type: list
+    reason: 严格有序的步骤集合，顺序即信息主干；列表天然承载顺序守卫与状态芯片
+  supporting:
+    - type: form
+      reason: 核对类步骤内嵌勾选/输入确认，是步骤卡的就地形态而非独立屏
+    - type: feed
+      reason: 审计事件按时间倒序追加，支撑零失误核验与事后回查
+  rejected:
+    - option: wizard
+      reason: 一次一步遮蔽全程结构，与零失误全程可见冲突
+    - option: graph/diagram
+      reason: 空间性 none，流程为纯线性，无拓扑可画
+state_ownership:
+  - state: selection
+    owner: 当前可执行步骤卡及其唯一主控制
+  - state: preview
+    owner: session
+acceptance:
+  - 用户在不触发任何顺序/确认违规（零失误）的情况下按序完成全部 10 个步骤并看到完成态总结；每个不可逆步骤均经由二次确认进入执行，且执行后在恢复窗口内可撤销，终态附带回滚预案。
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - destructive_recovery
+    - requirement_alignment
+  regression_check_ids: []

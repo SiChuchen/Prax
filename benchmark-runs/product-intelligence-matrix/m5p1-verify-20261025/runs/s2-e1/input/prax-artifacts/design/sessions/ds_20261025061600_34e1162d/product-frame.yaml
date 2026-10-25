@@ -1,0 +1,70 @@
+version: "0.2"
+jtbd:
+  verb: explore
+  target: multidimensional dataset
+  success: dimension switching does not reset cognition — filters, selection, and projection state persist, stay attributed, and are revertible
+primary_object:
+  type: dataset
+  label: Dataset
+task_model:
+  frequency: medium
+  reversibility: reversible
+  consequence: low
+  expertise: mixed
+user:
+  primary_role: data explorer / analyst investigating a high-dimensional dataset
+  expertise: intermediate
+  familiarity: medium
+goal:
+  primary: Understand the structure of a high-dimensional dataset by rotating dimension lenses (projections) while keeping a stable mental query
+tasks:
+  primary: Switch the active projection dimension and continue exploring without losing filters or selection
+  secondary:
+    - Filter records along any dimension's value ranges or categories
+    - Inspect an individual record's values across all dimensions
+    - Revert any filter/projection change individually (chips + undo)
+product_objects:
+  - id: dataset
+    user_name: Dataset
+    purpose: The collection of records the user explores; inlined and ready at first paint
+  - id: dimension
+    user_name: Dimension
+    purpose: One measurable axis of every record (numeric or categorical); the lens the user switches between
+  - id: filter
+    user_name: Filter
+    purpose: A constraint on one dimension that narrows the working set; always labeled with its owning dimension
+  - id: projection
+    user_name: View (projection)
+    purpose: The current lens configuration — which dimensions are being visualized right now
+  - id: selection
+    user_name: Selection
+    purpose: The record(s) the user pinned for inspection; persists across dimension switches
+relationships:
+  - source: dimension
+    target: filter
+    type: owns
+    direction: forward
+    meaning: every filter is attributed to exactly one dimension and displays that ownership
+    importance: primary
+    id: rel_dimension_filter
+  - source: projection
+    target: dimension
+    type: composes
+    direction: bidirectional
+    meaning: a projection is a choice of 1–3 active dimensions out of the dataset's dimensions
+    importance: primary
+    id: rel_projection_dimension
+  - source: selection
+    target: dataset
+    type: pins-record
+    direction: forward
+    meaning: a selection points at records that stay highlighted under every projection
+    importance: supporting
+    id: rel_selection_dataset
+mental_model_hypothesis:
+  summary: The user holds a stable mental query — 'this subset of records, this open question' — and rotates dimension lenses over it. Lenses change; the query must not. Losing filters on a dimension switch is perceived as losing the question itself.
+  confidence: high
+  evidence:
+    - user_requirement
+primary_success_definition: After any dimension/projection switch, the working set (active filters), the record selection, and the switch history remain visible, attributed to their owning dimensions, and each filter/projection step can be individually removed or undone — cognition carries across switches.
+open_questions: []

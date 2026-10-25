@@ -1,0 +1,121 @@
+session_id: ds_20261025053124_c92decb6
+version: "0.2"
+information_shape:
+  cardinality: unbounded
+  relationality: medium
+  hierarchy: medium
+  temporality: low
+  density: high
+  dimensionality: high
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: grid
+    reason: 无界基数+高维高密数据在一屏内的最优投影是行维度×列维度交叉表（热力矩阵格），单元格即维度交点聚合，天然支撑『换维度=重排同一对象空间』
+  supporting:
+    - type: tree
+      reason: 维度轨道与行轴层级下钻用树形承载（品类→子类→单品），medium hierarchy 的直接对应
+    - type: list
+      reason: 状态归属栏与可回滚轨迹用紧凑列表/chips 承载每条状态的来源与移除动作
+  rejected:
+    - option: chart（柱状/折线主表示）
+      reason: 聚合维度切换时图表轴语义突变最易重置认知，且比较需求=none
+    - option: map
+      reason: spatiality=none
+    - option: cards
+      reason: 密度高、需结构化行列对齐，卡片浪费空间且无法承载交叉聚合
+  justification_vs_shape: shape 束 unbounded×high dimensionality×high density×medium hierarchy×no spatiality/no comparison → 以维度交叉的矩阵格为认知主角（grid），用行头树承载 medium hierarchy（tree），用常驻 chip 列表承载状态归属与回退（list）；不需要 chart/map/cards 等表示。
+primary_structure:
+  pattern: PAT-WORKSPACE
+  rationale:
+    - explore 是高频迭代任务：主对象空间（投影交叉表）必须持久存在，所有操作就地发生，无页面跳转
+    - 路由返回的替代模式 PAT-APPLICATION-SHELL 自述 does_not_apply_when='the product is a single workspace'，故只保留单行顶栏作为全局状态/操作位，不引入可替换工作区导航
+    - 维度轨道/状态栏/轨迹作为工作台外围支撑区环绕主投影区，符合 pattern 解法『Keep the primary object space persistent and place supporting actions around it』
+    - 避免 anti-pattern：dashboard-as-workspace（不做被动卡片墙，全部区块响应探索操作）
+  confidence: high
+information_hierarchy:
+  primary:
+    - 投影交叉表（当前维度组合下的聚合矩阵）——认知主角
+    - 维度轨道（可投影/可过滤的维度清单与值）——探索的抓手
+    - 状态归属栏（活动过滤器/锚定，逐条带来源、可移除）——验收种子的显性化
+  secondary:
+    - 度量选择器与记录计数（顶栏，持续可见）
+    - 状态轨迹（可回滚历史，底部条）
+    - 单元格/记录详情（悬浮即时预览，不占常驻空间）
+density:
+  intent: compact
+  strategy:
+    - 12px 基线紧凑网格，数据表格行高 ~32px，数字右对齐等宽字体
+    - 维度面板值列表紧凑排布但保留可点击行高 ≥28px
+    - 状态轨迹与认知锚以 chips 呈现，密度高但每 chip 带移除热区
+    - 图表色彩仅用于编码数值强度（单色渐变），不做装饰性用色
+  avoid:
+    - 装饰性大图/插画挤占数据空间
+    - "无信息量的仪表盘卡片堆砌（anti-pattern: dashboard-as-workspace）"
+    - 多重嵌套导航（单一工作台无全局导航层级）
+major_choices:
+  - id: projection-form
+    choice: 投影 = 行维度 × 列维度 × 度量的交叉热力表；行轴支持层级下钻（品类→子类→单品）
+    rationale: dimensional-space + medium hierarchy 的标准判别式表示：格=维度交点聚合，行头树支持下钻；高密度一屏可容 ~200 单元格
+    confidence: high
+    references:
+      - projection
+      - dimension
+      - measure
+      - dataset
+  - id: context-preservation
+    choice: 切换行/列维度或下钻时，过滤器、度量、排序、锚定选择、单元格选中全部保留，并以『认知锚条』显式回显保留了什么（如『已保留 3 项过滤 · 2 条锚定』toast）
+    rationale: 直接实现成功标准『维度切换不重置认知』，且让保留可见而非仅隐式存在
+    confidence: high
+    references:
+      - dimension
+      - projection
+      - filter
+      - dataset
+  - id: attribution-and-revert
+    choice: 每个过滤 chip 与轨迹条目携带 origin（来源面板/操作），支持 chip × 单独移除、轨迹点击回滚任意历史状态、顶栏整体撤销/重置
+    rationale: 直接实现验收种子『过滤/投影状态有归属且可回退』：归属=来源字段+展示；回退=undo 栈+时间轨迹双通道
+    confidence: high
+    references:
+      - filter
+      - state_trail
+      - dimension
+  - id: dimension-rail
+    choice: 维度面板按『可投影维度』分区展示；点值=过滤（勾选），维度行内按钮=设为行轴/列轴
+    rationale: 把『维度』作为一等产品对象，同一面板服务投影与过滤两种动作，减少面板数量
+    confidence: medium
+    references:
+      - dimension
+      - filter
+      - projection
+  - id: static-no-build
+    choice: 无构建步骤：原生 HTML/CSS/JS 三文件 + 内联种子数据（确定性 PRNG 生成 ~2600 事实行，随首屏同步就绪）
+    rationale: 满足『静态直接打开、首屏即用、本地可运行』；零依赖消除加载态与网络风险
+    confidence: high
+    references:
+      - dataset
+      - state_trail
+rejected:
+  - option: PAT-APPLICATION-SHELL 全局导航壳
+    reason: 产品为单工作台，全局导航会引入第二层无意义的导航位（pattern 自身排除条件命中）
+  - option: 多视图标签页（图表/表格/地图分 tab）
+    reason: tab 切换正是『重置认知』的典型来源；比较需求=none，地图=spatiality none，均不需要
+  - option: 框架构建（React/Vite + dist 产物）
+    reason: 90min 预算内手写原生 JS 足够，且零构建让 file:// 直接打开成为可能，消除工具链风险
+  - option: 把状态轨迹做成抽屉/浮层
+    reason: 验收种子要求归属与回退成为一屏内的常驻能力，抽屉会隐藏状态可见性（P-26）
+unresolved: []
+complexity_budget:
+  permanent_panels: 4
+  permanent_primary_actions: 3
+  modes: 1
+  state_owners: 3
+  navigation_levels: 1
+  persistent_filters: 5
+  new_semantic_concepts: 3
+  keyboard_contracts: 2
+  mobile_conflicts: 0
+  permanent_surfaces: 4

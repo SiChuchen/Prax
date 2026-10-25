@@ -1,0 +1,64 @@
+needs:
+  - id: cap-strict-order-gating
+    product_action: Lock steps until prerequisites/checkpoints complete; make out-of-order execution impossible
+    required_experience:
+      - A locked step can never be executed; unlocking is derived purely from prior step completion
+    capabilities:
+      - deterministic state machine over inlined runbook data
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Pure derived state from an in-memory runbook store; no backend needed
+  - id: cap-irreversible-confirm-gate
+    product_action: Interrupt irreversible execution with consequence statement + rollback preview + typed confirmation
+    required_experience:
+      - Confirm button stays disabled until the typed phrase matches and the rollback plan has been shown
+    capabilities:
+      - modal focus trap
+      - typed-phrase match
+      - condition-gated confirm button
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Standard DOM dialog with input matching; no external services
+  - id: cap-rollback-and-audit
+    product_action: Execute documented rollback for an executed irreversible step and record it in an append-only activity log
+    required_experience:
+      - Rollback is always reachable on the executed step; every action appends a timestamped log entry that is never edited or removed
+    capabilities:
+      - append-only in-memory log
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Array append in session store; log rendered from the array
+  - id: cap-simulated-execution
+    product_action: Execute steps with deterministic simulated outcomes (no real side effects)
+    required_experience:
+      - Step completion records a deterministic outcome string; nothing outside the page is touched
+    capabilities:
+      - inlined deterministic outcome per step
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Outcome text ships inside the inlined runbook data
+  - id: cap-first-paint-readiness
+    product_action: Be fully usable at page load with no loading state
+    required_experience:
+      - First paint renders the complete runbook ladder; no spinner/skeleton is ever the measurable state
+    capabilities:
+      - all workflow data serialized into the first HTML/JS payload
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Runbook JSON is inlined in the page source; render is synchronous at DOMContentLoaded
+  - id: cap-cross-session-persistence
+    product_action: Persist runbook progress across browser restarts
+    required_experience:
+      - Progress survives reload
+    capabilities:
+      - localStorage/IndexedDB
+      - backend storage
+    status: gap
+    resolution:
+      type: explicit_compromise
+      notes: "Out of brief scope: '不要求后端、账号体系或持久化服务'. Progress is session-local; state resets on reload. Recorded as an explicit compromise, not a defect"

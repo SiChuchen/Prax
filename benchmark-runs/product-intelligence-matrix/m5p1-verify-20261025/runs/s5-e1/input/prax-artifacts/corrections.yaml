@@ -1,0 +1,27 @@
+version: "0.1"
+corrections:
+  - id: corr-vanilla-nobuild-delivery
+    scope:
+      project: cell-j13-s10
+      surfaces:
+        - data_explorer_screen
+    finding:
+      type: environment_constraint
+      observed: 执行环境无 shell/命令执行工具（ToolSearch 验证无 Bash 类工具），无法运行 npm/esbuild 构建；Prax
+        实现 brief 的 framework 字段为固定枚举 react，与零构建静态交付冲突。
+    intended:
+      statement: 以零依赖原生 JS 单页交付（根 index.html + data.js/app.js/styles.css 经典脚本，file://
+        与 http:// 均可直接打开）；DOM 语义完全对齐
+        SDIR：data-region={lens-bar,overview,dimension-panel,data,inspector,trail}、data-app-state={ready,selected,empty,error}、data-matched
+        计数；acceptance 契约常驻页脚。框架枚举不影响以浏览器实测为准的语义一致性验收。
+    evidence_refs:
+      - app.js 头部 SDIR 契约注释（regions/states/ownership/revert/keyboard/budget）
+      - index.html 经典脚本引用（styles.css/data.js/app.js，无构建产物依赖）
+      - ToolSearch 查询 select:Bash / shell 关键词均无结果（2026-10-25 本会话）
+    regression:
+      check_id: semantic_conformance
+      requirement: DOM 区域结构、状态完备性与验收契约与 SDIR 一致（以真实浏览器实测为准，与运行时框架无关）
+    supersedes: []
+    promotion:
+      candidate: false
+    created_at: 2026-10-25T09:14:09.980Z

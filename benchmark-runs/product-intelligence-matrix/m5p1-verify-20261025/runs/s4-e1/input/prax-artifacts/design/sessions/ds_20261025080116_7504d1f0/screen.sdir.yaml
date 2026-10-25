@@ -1,0 +1,154 @@
+version: "0.2"
+screen:
+  id: runbook-main
+  intent:
+    primary_task: Complete the cutover runbook end-to-end with zero errors, confirming every irreversible step and using its rollback path when needed
+    secondary_tasks:
+      - Review consequence and rollback plan before executing an irreversible step
+      - Audit the session activity log
+      - Reset the runbook for another rehearsal
+  archetype:
+    pattern_ref: PAT-APPLICATION-SHELL
+  density_intent: spacious
+  regions:
+    - id: runbook-header
+      role: "experimental:Runbook identity: title, owner, change window, overall status meter"
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:Show overall progress (steps done / total) and runbook state (not started / in progress / complete)
+        - experimental:Never swaps; the work region owns all change
+    - id: phase-ladder
+      role: "experimental:Hierarchical phase/step checklist: phases as sections, steps as rows with locked/ready/done states; current step expanded with detail and action controls"
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - "experimental:Strict order: each step locked until prerequisites complete"
+        - experimental:Irreversible steps carry a persistent warning badge and differ visually from reversible checks
+        - experimental:Completed steps collapse to one-line summaries with their recorded outcome
+        - experimental:Current step expanded with full detail and its action control
+    - id: confirm-gate
+      role: "experimental:Modal interrupt for irreversible execution: consequence statement, rollback plan preview, typed-phrase confirmation, cancel path"
+      importance: primary
+      visibility:
+        condition: task_driven
+      behavior_intent:
+        - experimental:State the consequence explicitly before any commit
+        - experimental:Show the paired rollback plan before the confirm input is enabled
+        - experimental:Require typed phrase matching the step's confirm phrase
+        - experimental:Cancel always returns to the ladder with nothing changed
+    - id: activity-log
+      role: experimental:Append-only audit trail of executions, confirmations, rollbacks, and resets with timestamps
+      importance: supporting
+      visibility:
+        condition: task_driven
+      behavior_intent:
+        - experimental:Append-only; entries are never edited or removed
+        - "experimental:Latest entries readable at a glance; entry types: executed, confirmed, rolled back, reset"
+    - id: completion-summary
+      role: "experimental:Zero-error completion proof shown when the final step completes: per-phase outcome roll-up and audit highlights"
+      importance: primary
+      visibility:
+        condition: task_driven
+      behavior_intent:
+        - experimental:Enumerate all steps with outcomes and confirmation/rollback records
+        - experimental:Link to the full audit trail
+        - experimental:Persist until reset
+  relationships: []
+  interaction_intents:
+    - experimental:Execute a reversible step (check-off with recorded outcome)
+    - experimental:Execute an irreversible step through the confirm gate (typed confirmation; rollback preview shown first)
+    - experimental:Trigger a documented rollback for an executed irreversible step (logged as recovery)
+    - experimental:Expand/collapse phase and step rows; the single next actionable step is emphasized
+    - experimental:Open/close the activity log
+    - experimental:Reset the runbook to its initial state (session-local rehearsal)
+  required_states:
+    - ready
+    - selected
+    - empty
+    - error
+    - loading
+  decision_points:
+    - id: dp-irreversible-gate
+      question: How does the confirm gate for irreversible steps demand deliberation while previewing the rollback plan?
+      adapter_may_choose:
+        - typed-phrase confirmation vs checkbox + explicit confirm button
+        - modal interrupt vs inline expansion of the step
+    - id: dp-conditional-branch
+      question: How do conditional checkpoints express medium volatility/uncertainty (conditions that may pass or fail)?
+      adapter_may_choose:
+        - precomputed deterministic condition results
+        - user-declared branch choice recorded in the audit log
+    - id: dp-log-visibility
+      question: Is the append-only activity log permanent or toggled?
+      adapter_may_choose:
+        - always-visible side region
+        - toggleable drawer/panel
+  unresolved: []
+  rejected_alternatives: []
+  user_job:
+    verb: complete
+    target: high-consequence production cutover runbook
+    success: walked the full flow with zero errors; every irreversible step confirmed with a usable recovery path
+  primary_object:
+    type: workflow
+    label: Cutover Runbook
+  information_shape:
+    cardinality: one
+    relationality: low
+    hierarchy: high
+    temporality: low
+    density: low
+    dimensionality: medium
+    spatiality: none
+    volatility: medium
+    uncertainty: medium
+    comparison_need: none
+  representation:
+    primary:
+      type: wizard
+      reason: Phase-gated wizard-like checklist inside single-workspace chrome encodes one path, high hierarchy, strict order, and per-step gates
+    supporting:
+      - type: list
+        reason: Append-only audit entries
+      - type: document
+        reason: Completion summary reads as a structured proof document
+  priority:
+    primary:
+      - phase-ladder
+      - confirm-gate
+      - completion-summary
+      - runbook-header
+    contextual:
+      - activity-log
+  interaction:
+    preview: none
+    inspect: select
+    navigate: none
+    locate: none
+  state_ownership:
+    - state: selection
+      owner: phase-ladder
+    - state: mode
+      owner: session
+    - state: preview
+      owner: confirm-gate
+  complexity_budget:
+    permanent_panels: 1
+    permanent_primary_actions: 1
+    modes: 1
+    state_owners: 3
+    navigation_levels: 1
+    persistent_filters: 0
+    new_semantic_concepts: 4
+    keyboard_contracts: 1
+    mobile_conflicts: 0
+    permanent_surfaces: 1
+  acceptance:
+    - Irreversible steps have a visible confirmation path (gate stating consequence, requiring deliberate typed confirmation) AND a recovery path (documented rollback plan, previewable before confirm, executable after)
+    - First paint shows the full runbook with all data inlined; no loading state is ever user-visible
+    - "Steps enforce strict order: locked steps cannot be executed; checkpoints must be satisfied before their dependent step unlocks"
+    - Completion requires every step done; the completion summary proves zero-error completion with the audit trail
+    - Single main screen; deliverable opens statically from root index.html with no backend and no external services

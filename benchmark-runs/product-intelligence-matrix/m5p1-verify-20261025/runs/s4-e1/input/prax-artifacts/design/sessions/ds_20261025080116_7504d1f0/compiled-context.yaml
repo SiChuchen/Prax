@@ -1,0 +1,90 @@
+version: "0.1"
+session_id: ds_20261025080116_7504d1f0
+task:
+  surfaces: []
+  primary: "Complete the cutover runbook in strict order: satisfy each phase's checkpoints, execute steps (marking reversible checks, explicitly confirming irreversible actions), and reach the completion summary with a clean audit trail."
+product_relationships:
+  - id: rel_runbook_phase
+    source: runbook
+    target: phase
+    type: contains
+    direction: forward
+    meaning: runbook is an ordered sequence of phases
+    importance: primary
+  - id: rel_phase_step
+    source: phase
+    target: step
+    type: contains
+    direction: forward
+    meaning: phase groups ordered steps
+    importance: primary
+  - id: rel_step_checkpoint
+    source: step
+    target: checkpoint
+    type: guarded_by
+    direction: forward
+    meaning: step stays locked until its checkpoints are satisfied
+    importance: primary
+  - id: rel_step_rollback_plan
+    source: step
+    target: rollback_plan
+    type: recovered_by
+    direction: forward
+    meaning: each irreversible step carries exactly one rollback plan, previewable before confirm
+    importance: primary
+  - id: rel_step_confirmation_gate
+    source: step
+    target: confirmation_gate
+    type: gated_by
+    direction: forward
+    meaning: irreversible execution requires passing the confirm gate
+    importance: primary
+  - id: rel_runbook_audit_log
+    source: runbook
+    target: audit_log
+    type: records_to
+    direction: forward
+    meaning: every execution/confirm/rollback appends an entry
+    importance: supporting
+region_relationships: []
+decisions:
+  primary_structure: PAT-APPLICATION-SHELL
+  density_intent: spacious
+  major_choice_ids:
+    - mc1-confirm-gate
+    - mc2-strict-gating
+    - mc3-simulated-execution
+    - mc4-inline-rollback
+must_preserve: []
+regression_points: []
+unresolved:
+  - u1-domain-depth
+corrections: []
+state_ownership:
+  - state: selection
+    owner: phase-ladder
+  - state: mode
+    owner: session
+  - state: preview
+    owner: confirm-gate
+acceptance:
+  - Irreversible steps have a visible confirmation path (gate stating consequence, requiring deliberate typed confirmation) AND a recovery path (documented rollback plan, previewable before confirm, executable after)
+  - First paint shows the full runbook with all data inlined; no loading state is ever user-visible
+  - "Steps enforce strict order: locked steps cannot be executed; checkpoints must be satisfied before their dependent step unlocks"
+  - Completion requires every step done; the completion summary proves zero-error completion with the audit trail
+  - Single main screen; deliverable opens statically from root index.html with no backend and no external services
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - destructive_recovery
+    - requirement_alignment
+  regression_check_ids: []

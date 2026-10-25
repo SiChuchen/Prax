@@ -1,0 +1,92 @@
+needs:
+  - id: n-sequence-guard
+    product_action: 按序解锁/锁定步骤，拦截越序尝试并计数
+    required_experience:
+      - 全量步骤状态即时派生与更新
+      - 锁定步骤可见且禁用、并说明等待原因
+    capabilities:
+      - 内联流程定义（阶段/步骤/恢复配置）
+      - 前端状态机与守卫函数
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端：单一 flow state 派生每步状态（locked/ready/executing/armed/done），拦截事件写入审计并递增计数
+  - id: n-irreversible-confirm
+    product_action: 不可逆步骤执行前的模态确认关卡（后果说明 + 理解项×2 + 输入变更单号）
+    required_experience:
+      - 未满足全部确认条件时确认按钮禁用
+      - 回滚预案在弹窗内可查
+    capabilities:
+      - 模态对话框 + 受控表单校验
+      - 按钮禁用态派生
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端原生 dialog + 表单校验派生 disabled 态；无后端参与
+  - id: n-recovery-window
+    product_action: 不可逆步骤执行后的恢复窗口：倒计时内一键撤销，恢复到执行前状态
+    required_experience:
+      - 窗口倒计时可见
+      - 撤销后步骤回到就绪态且全程留痕
+      - 窗口落定后步骤终态并保留回滚预案入口
+    capabilities:
+      - 倒计时定时器
+      - 状态回退函数
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 每步骤独立恢复配置（秒数）；撤销与落定均写审计
+  - id: n-audit-trail
+    product_action: 全程事件审计留痕与零失误拦截计数
+    required_experience:
+      - 执行/确认/撤销/拦截/完成全部留痕
+      - 新事件置顶、拦截事件高亮
+    capabilities:
+      - 事件流数据结构
+      - 计数器派生
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 内存事件数组倒序渲染；会话内可回查
+  - id: n-inline-ready
+    product_action: 页面加载即处于可用状态（初始数据内联，无加载态）
+    required_experience:
+      - DOM 就绪即呈现完整首屏与当前步骤主控制
+      - 不以骨架屏/loading 作为可测状态
+    capabilities:
+      - 数据随脚本内联
+      - 同步首屏渲染
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 流程数据为静态 JS 常量，DOMContentLoaded 同步渲染完成
+  - id: n-reset-guard
+    product_action: 重置演练经确认弹窗回到初始就绪态
+    required_experience:
+      - 误触重置可取消
+      - 确认后全部状态与审计归零
+    capabilities:
+      - 确认弹窗
+      - 状态整体重置
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 复用确认弹窗样式，破坏性操作按钮红色标识
+  - id: n-cross-session-persistence
+    product_action: 审计记录跨会话持久化
+    required_experience:
+      - 关闭页面后仍可回查历史发布审计
+    capabilities: []
+    status: gap
+    resolution:
+      type: explicit_compromise
+      notes: 交付约束明确不要求持久化服务：审计为会话内留痕，跨会话持久超出本格范围；如需可由后续后端能力补齐
+  - id: n-real-execution
+    product_action: 真实触发构建流水线 / 切换生产流量
+    required_experience:
+      - 操作产生真实线上效果
+    capabilities: []
+    status: gap
+    resolution:
+      type: explicit_compromise
+      notes: 对接真实生产系统在简报 out_of_scope：构建/切流以模拟执行（短延时+结果固定）呈现，界面语义与真实流程一致

@@ -1,0 +1,38 @@
+version: "0.1"
+session_id: ds_20261025061600_34e1162d
+task_ref: Switch the active projection dimension and continue exploring without losing filters or selection
+selected:
+  - ref: product_relationships
+    reason:
+      - rel_dimension_filter:dimension->filter
+      - rel_projection_dimension:projection->dimension
+      - rel_selection_dataset:selection->dataset
+  - ref: region_relationships
+    reason:
+      - region_rel_data_detail
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-DATA-EXPLORER
+  - ref: unresolved
+    reason: []
+  - ref: corrections
+    reason: []
+  - ref: validation-plan@1
+    reason:
+      - semantic_conformance
+      - state_completeness
+      - product_model_alignment
+      - keyboard
+      - hierarchy_review
+      - representation_decided
+      - state_ownership_declared
+      - acceptance_contract_present
+      - complexity_budget_declared
+      - filter_state
+      - comparison_scan
+      - requirement_alignment
+excluded:
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata

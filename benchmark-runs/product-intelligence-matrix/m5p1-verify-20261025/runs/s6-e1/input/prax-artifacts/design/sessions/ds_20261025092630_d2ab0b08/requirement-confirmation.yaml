@@ -1,0 +1,25 @@
+version: "0.1"
+user_quote:
+  - 零失误走完全程
+  - 不可逆步骤有恢复/确认路径
+  - 交付物必须能直接静态打开（根路径 index.html，或构建产物 dist/）
+restatement: 构建一个单页静态 Web 应用：引导用户零失误地走完一条高后果流程（主对象 workflow，基数为 one）。流程分阶段、步骤严格有序；不可逆步骤执行前有明确二次确认，执行后有恢复/撤销路径；页面加载即处于可用状态，初始数据内联首屏；本地可运行、可直接静态打开、不部署外部服务。
+boundaries:
+  in_scope:
+    - 单一主屏的高后果流程执行界面（workflow 对象，严格有序步骤）
+    - 不可逆步骤的二次确认路径（后果说明 + 理解项勾选 + 输入式确认）
+    - 不可逆步骤的恢复路径（执行后恢复窗口可撤销 + 回滚预案展示）
+    - 零失误引导：顺序守卫、风险拦截计数、全程审计日志、完成态总结
+  out_of_scope:
+    - 后端服务、账号体系、持久化存储
+    - 多屏/多流程管理、流程编辑器
+    - 部署到外部服务
+    - 对接真实生产系统（所有数据为内联演示数据）
+  scope_complete: true
+open_questions: []
+confirmation:
+  status: requirement_is_sufficient
+  evidence:
+    - type: task_brief
+      ref: brief.md（cell-j10-s09 产品简报，M2 冻结版，本工作区根目录）
+  confirmed_at: 2026-10-25T08:00:00Z

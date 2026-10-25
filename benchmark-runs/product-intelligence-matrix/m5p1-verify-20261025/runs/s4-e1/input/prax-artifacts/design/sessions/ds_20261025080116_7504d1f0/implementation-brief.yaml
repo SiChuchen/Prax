@@ -1,0 +1,51 @@
+version: "0.1"
+platform_profile: WEB-DESKTOP
+framework: react
+measurement_target:
+  app_root: .
+  entry: /index.html
+  scenario: "Complete the cutover runbook end-to-end with zero errors: execute reversible checks in order, pass typed confirm gates on irreversible steps with rollback plans previewed first, trigger a documented rollback, and reach the zero-error completion summary with a full audit trail"
+sdir_ref: screen.sdir.yaml
+decision_ref: design-decisions.yaml
+approved_patterns:
+  - PAT-APPLICATION-SHELL
+approved_component_contracts:
+  - WORKSPACE
+  - STATE-FEEDBACK
+states_required:
+  - ready
+  - selected
+  - empty
+  - error
+  - loading
+capability_gaps:
+  - id: cap-cross-session-persistence
+    product_action: Persist runbook progress across browser restarts
+    required_experience:
+      - Progress survives reload
+    capabilities:
+      - localStorage/IndexedDB
+      - backend storage
+    status: gap
+    resolution:
+      type: explicit_compromise
+      notes: "Out of brief scope: '不要求后端、账号体系或持久化服务'. Progress is session-local; state resets on reload. Recorded as an explicit compromise, not a defect"
+validation_plan_ref:
+  artifact: validation-plan.yaml
+  revision: 1
+validation_requirements:
+  - semantic_conformance
+  - state_completeness
+  - product_model_alignment
+  - keyboard
+  - hierarchy_review
+  - representation_decided
+  - state_ownership_declared
+  - acceptance_contract_present
+  - complexity_budget_declared
+  - destructive_recovery
+  - requirement_alignment
+state_ownership_ref: compiled-context.yaml#state_ownership
+acceptance_ref: compiled-context.yaml#acceptance
+realization:
+  mode: direct_code

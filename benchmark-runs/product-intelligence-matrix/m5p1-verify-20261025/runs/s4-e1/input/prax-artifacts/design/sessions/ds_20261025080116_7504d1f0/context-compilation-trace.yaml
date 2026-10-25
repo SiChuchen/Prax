@@ -1,0 +1,40 @@
+version: "0.1"
+session_id: ds_20261025080116_7504d1f0
+task_ref: "Complete the cutover runbook in strict order: satisfy each phase's checkpoints, execute steps (marking reversible checks, explicitly confirming irreversible actions), and reach the completion summary with a clean audit trail."
+selected:
+  - ref: product_relationships
+    reason:
+      - rel_runbook_phase:runbook->phase
+      - rel_phase_step:phase->step
+      - rel_step_checkpoint:step->checkpoint
+      - rel_step_rollback_plan:step->rollback_plan
+      - rel_step_confirmation_gate:step->confirmation_gate
+      - rel_runbook_audit_log:runbook->audit_log
+  - ref: region_relationships
+    reason: []
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-APPLICATION-SHELL
+  - ref: unresolved
+    reason:
+      - u1-domain-depth
+  - ref: corrections
+    reason: []
+  - ref: validation-plan@1
+    reason:
+      - semantic_conformance
+      - state_completeness
+      - product_model_alignment
+      - keyboard
+      - hierarchy_review
+      - representation_decided
+      - state_ownership_declared
+      - acceptance_contract_present
+      - complexity_budget_declared
+      - destructive_recovery
+      - requirement_alignment
+excluded:
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata

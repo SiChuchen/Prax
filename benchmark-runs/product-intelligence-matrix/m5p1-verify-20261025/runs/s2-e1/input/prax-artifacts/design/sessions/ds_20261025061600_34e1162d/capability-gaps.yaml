@@ -1,0 +1,86 @@
+needs:
+  - id: N-1
+    product_action: Switch the active lens dimension while per-dimension filters stay applied, attributed, and visible
+    required_experience:
+      - instant client-side re-render, no reload or loading state
+      - filters of other dimensions remain active and visible (rail badges + ledger chips)
+      - selection and scroll anchors preserved
+    capabilities:
+      - state model with separate query/viewport owners
+      - synchronous re-render pipeline
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: "Vanilla JS state store: filters keyed by dimension id, activeLens separate; single render() diffing only affected regions (chart, table rows, rail badges, ledger)."
+  - id: N-2
+    product_action: Attribute every filter to its owning dimension and make every state change individually revertible (chip removal, per-entry revert, global undo incl. Ctrl+Z)
+    required_experience:
+      - chips grouped by owning dimension with remove ×
+      - history entries with human labels and per-entry revert button
+      - global Undo button + Ctrl+Z pops latest entry
+    capabilities:
+      - command pattern history with inverse actions
+      - chip UI grouped by owner
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Each mutation pushes {label, do(), undo()} onto a bounded stack; chips read the live filter map so ownership is structural, not cosmetic.
+  - id: N-3
+    product_action: Click a histogram bin / category bar to filter the working set over the active dimension; clicking the filtered bin again removes the filter
+    required_experience:
+      - bins reflect working-set distribution
+      - filtered bins visually attributed
+      - click toggles the dimension-owned filter
+    capabilities:
+      - SVG histogram with per-bin hit areas
+      - derived filtered distribution
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Inline SVG rects with click handlers; 10 bins for numeric via min/width, exact category values for categorical.
+  - id: N-4
+    product_action: "First paint is fully usable: 720-record × 9-dimension dataset present at load, zero network fetches, works from file://"
+    required_experience:
+      - no loading state as measurable state
+      - no external service calls at runtime
+    capabilities:
+      - static synchronous data payload
+      - deterministic generation committed to repo
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: One-off build script scripts/gen-data.js emits static data.js (window.DATASET); index.html loads it via plain <script src> before app.js — no ES modules, no fetch.
+  - id: N-5
+    product_action: Inspector shows the selected record's values across ALL dimensions (not only the active lens), flagging values outside current filters
+    required_experience:
+      - selection persists across lens switches
+      - stable inspector layout regardless of active dimension
+    capabilities:
+      - record projection across full dimension list
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Inspector renders dimension rows in fixed dataset order, independent of lens; comparison against filter predicates for the flag.
+  - id: N-6
+    product_action: Over-filtered working set (0 rows) degrades gracefully with a one-click reset of all filters
+    required_experience:
+      - explicit empty message in table region
+      - Reset-all also offered in header
+    capabilities:
+      - empty-state rendering with recovery action
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Working-set computation returns count 0 → table region swaps to empty state with 'Clear all filters' action; chart shows zero-height bars.
+  - id: N-7
+    product_action: Deliverable opens statically from repo root index.html with no build, no server, no external dependencies
+    required_experience:
+      - double-click index.html works
+      - also servable statically
+    capabilities:
+      - static hosting of vanilla assets
+      - no build step required
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: "No framework, no ES modules, no fetch: three files (index.html, styles.css, app.js) + generated data.js. Optional static server for validation only."

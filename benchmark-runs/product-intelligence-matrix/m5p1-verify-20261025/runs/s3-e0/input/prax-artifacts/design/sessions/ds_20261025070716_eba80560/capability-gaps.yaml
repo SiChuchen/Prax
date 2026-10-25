@@ -1,0 +1,72 @@
+needs:
+  - id: cap-seq-unlock
+    product_action: 步骤顺序解锁：前序未完成则锁定当前不可执行并显示阻塞原因
+    required_experience:
+      - 左栏步骤列表状态图标随执行实时更新
+      - 锁定步骤点击给出阻塞原因
+    capabilities:
+      - dom 阶段→步骤列表渲染
+      - 状态机派生锁定/就绪/已完成/已回滚
+      - 阻塞原因 tooltip/提示行
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端状态机（内存态），无后端依赖
+  - id: cap-confirm-gate
+    product_action: 不可逆步骤强制确认关卡：后果陈述 + 回滚方案全文 + 确认项勾选 + 发布单号匹配
+    required_experience:
+      - 执行按钮打开确认层
+      - 未通过全部确认不放行
+    capabilities:
+      - 模态层与焦点管理
+      - 表单校验（勾选全齐 + 发布单号精确匹配）
+      - 取消无副作用
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 前端模态 + 表单校验实现，数据内联
+  - id: cap-rollback-window
+    product_action: 不可逆步骤执行后回滚窗口：回滚入口与恢复方案直至收尾前可达
+    required_experience:
+      - 已执行不可逆步骤就地显示回滚入口
+      - 回滚后流程可继续推进
+    capabilities:
+      - 步骤状态含 executed-回滚窗口态
+      - 回滚动作级联回退后续步骤并写留痕
+      - 恢复方案全文就地展开
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 前端实现：执行后状态带回滚窗口标记，收尾步骤完成前回滚按钮可用
+  - id: cap-audit-trail
+    product_action: 操作留痕：全部状态变迁写入时间线并支持复制导出
+    required_experience:
+      - 侧栏时间线实时更新
+      - 一键复制/下载 JSON
+    capabilities:
+      - 内存事件数组（时间/类型/步骤/详情）
+      - 剪贴板复制 + 文件下载
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 内存数组 + Blob 下载；无持久化服务（交付约束不要求）
+  - id: cap-persistence
+    product_action: 刷新后保留执行进度
+    required_experience:
+      - 关闭页面后进度不丢失
+    capabilities: []
+    status: gap
+    resolution:
+      type: explicit_compromise
+      notes: 交付约束明确不要求持久化服务；定位为单次执行台，刷新/重置均为干净复演入口，留痕可导出留存
+  - id: cap-inline-first-screen
+    product_action: 首屏即用：runbook 随页面加载内联就绪，无加载态
+    required_experience:
+      - 页面渲染完成即处于 ready 状态
+    capabilities:
+      - 数据内联于 JS 常量
+      - 无外部请求、无构建依赖
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 静态 HTML + 原生 JS，数据为内联常量，同步渲染

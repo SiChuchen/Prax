@@ -1,0 +1,50 @@
+plan_revision: 1
+evidence:
+  submitted_by: Claude (execution arm, cell-j13-s10)
+  collected_at: 2026-10-25T07:15:30Z
+  items:
+    - check_id: keyboard
+      outcome: pass
+      source: real-browser CDP Tab walk + screenshots (scripts/evidence.js)
+      notes: "After Prax measurement round 3 flagged the residual tr→tr inversion, the table rows were converted to the same roving-tabindex group pattern as the lens bins and dimension rail (one Tab stop per region; Arrow keys walk within a region; Enter applies). The fix was verified by an independent real-browser Tab walk (CDP Input.dispatchKeyEvent) at BOTH Prax validation viewports: 1280x860 = 13 stops / 0 inversions; 1440x900 = 13 stops / 0 inversions (artifacts focus-walk-*.json; the walk stops at the browser's standard wrap-around, which is not a sequencing defect). Prax auto-measurement rounds were exhausted (attempts_left 0), so this final fix is evidenced by the project's own CDP harness; interaction suite S1–S11 all pass on the final build."
+      artifact_refs:
+        - E:\codex-prj\ab-worktrees\pi-matrix-m5p1\s2-e1\shots\focus-walk-1280x860.json
+        - E:\codex-prj\ab-worktrees\pi-matrix-m5p1\s2-e1\shots\focus-walk-1440x900.json
+        - E:\codex-prj\ab-worktrees\pi-matrix-m5p1\s2-e1\shots\evidence-log.json
+    - check_id: hierarchy_review
+      outcome: pass
+      source: real-browser screenshots at 1680x1050, final build
+      notes: "Final-build screenshots re-taken after all fixes (24px rows, darkened secondary text #5d6675, virtualized table). Layout intact: lens dominant top-center, table primary below, rail primary left, ledger primary bottom, inspector supporting right, header supporting. Prax round-3 measurement passed contrast and target-size; layout collision passed from round 2."
+      artifact_refs:
+        - E:\codex-prj\ab-worktrees\pi-matrix-m5p1\s2-e1\shots\01-initial-firstpaint.png
+        - E:\codex-prj\ab-worktrees\pi-matrix-m5p1\s2-e1\shots\02-lens-switch-filters-persist.png
+        - E:\codex-prj\ab-worktrees\pi-matrix-m5p1\s2-e1\shots\e5-empty-state.png
+    - check_id: filter_state
+      outcome: pass
+      source: real-browser CDP session (final build), 15-step journey all PASS
+      notes: "Re-verified on the final build (virtualized table + roving groups): S2 add, S3 lens switch keeps filter + badge, S5 two filters + selection survive second switch, S7 per-entry filter revert, S7b per-entry projection revert, S8 chip removal, S8b lens-chip revert, S6 Ctrl+Z, S11 revertible reset. All attributed to owning dimensions in rail badges, chips, and chart highlight."
+      artifact_refs:
+        - E:\codex-prj\ab-worktrees\pi-matrix-m5p1\s2-e1\shots\evidence-log.json
+        - E:\codex-prj\ab-worktrees\pi-matrix-m5p1\s2-e1\shots\e3-lens-uptime-state-persists.png
+    - check_id: requirement_alignment
+      outcome: pass
+      source: real-browser CDP session (final build)
+      notes: "Final build re-verified end-to-end: file:// static open, inline 720x9 dataset, usable first paint (S1), dimension switching preserves filters/selection/history (S3/S5), attributed + revertible state at three granularities plus revertible reset, empty state with recovery (S10/S11), keyboard-operable throughout (S9/S9b/S12/S13)."
+      artifact_refs:
+        - E:\codex-prj\ab-worktrees\pi-matrix-m5p1\s2-e1\shots\evidence-log.json
+        - E:\codex-prj\ab-worktrees\pi-matrix-m5p1\s2-e1\shots\01-initial-firstpaint.png
+        - E:\codex-prj\ab-worktrees\pi-matrix-m5p1\s2-e1\shots\02-lens-switch-filters-persist.png
+    - check_id: product_model_alignment
+      outcome: pass
+      source: real-browser screenshots, final build
+      notes: "Final build preserves the Product Frame language and structure: dimension owns filter (badges + chips prefixed by dimension), projection composes dimensions (lens chip + lens entries), selection pins a record across projections (inspector anchor)."
+      artifact_refs:
+        - E:\codex-prj\ab-worktrees\pi-matrix-m5p1\s2-e1\shots\e2-two-filters-selection-history.png
+        - E:\codex-prj\ab-worktrees\pi-matrix-m5p1\s2-e1\shots\e4-keyboard-filter-selection.png
+    - check_id: comparison_scan
+      outcome: pass
+      source: real-browser screenshots, final build
+      notes: All 9 dimension values scannable per row without opening items; virtualization keeps only the visible window in the DOM but scrolling is transparent (24px rows, sticky header).
+      artifact_refs:
+        - E:\codex-prj\ab-worktrees\pi-matrix-m5p1\s2-e1\shots\01-initial-firstpaint.png
+        - E:\codex-prj\ab-worktrees\pi-matrix-m5p1\s2-e1\shots\e2-two-filters-selection-history.png

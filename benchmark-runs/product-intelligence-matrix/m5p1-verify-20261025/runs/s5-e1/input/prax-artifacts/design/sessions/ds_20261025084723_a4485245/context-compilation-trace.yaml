@@ -1,0 +1,41 @@
+version: "0.1"
+session_id: ds_20261025084723_a4485245
+task_ref: 沿不同维度切换视角探索数据集：选择观察维度、按维度值过滤、投影关注的字段/切片
+selected:
+  - ref: product_relationships
+    reason:
+      - rel-dataset-dimension:dataset->dimension
+      - rel-dataset-record:dataset->record
+      - rel-lens-dataset:lens->dataset
+      - rel-revision-lens:revision->lens
+  - ref: region_relationships
+    reason:
+      - region_rel_data_detail
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-DATA-EXPLORER
+  - ref: unresolved
+    reason:
+      - u1-dataset-theme
+      - u2-dimension-count-visible
+  - ref: corrections
+    reason: []
+  - ref: validation-plan@1
+    reason:
+      - semantic_conformance
+      - state_completeness
+      - product_model_alignment
+      - keyboard
+      - hierarchy_review
+      - representation_decided
+      - state_ownership_declared
+      - acceptance_contract_present
+      - complexity_budget_declared
+      - filter_state
+      - comparison_scan
+      - requirement_alignment
+excluded:
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata

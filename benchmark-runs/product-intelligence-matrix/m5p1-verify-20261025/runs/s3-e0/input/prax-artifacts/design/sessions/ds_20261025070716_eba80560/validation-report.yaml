@@ -1,0 +1,227 @@
+plan_revision: 1
+evidence:
+  submitted_by: Claude (execution arm, session ds_20261025070716_eba80560)
+  collected_at: 2026-10-25T08:28:00Z
+  items:
+    - check_id: product_model_alignment
+      outcome: pass
+      source: real-browser screenshot + product-frame session record + implementation
+      notes: 真实浏览器渲染（Prax 验证器 Chrome，1440x900）显示的用户可见结构与语言与 Product Frame 逐一对应：发布流程（Runbook，workflow 主对象，顶部标题+发布单号徽章）、阶段→步骤（左栏两级分组 P1–P5）、确认关卡与回滚方案（不可逆步骤标旗「不可逆 · 有回滚预案」，data.js 内 consequence/impact/acks/rollback）、操作留痕（右栏）。语言沿用 frame 的 user_name。
+      artifact_refs:
+        - .prax/design/sessions/ds_20261025070716_eba80560/validation-evidence/fcf70bff-c7cf-44a1-b8cd-267a30e99e88/viewport-1/type.min_projected_size/min-projected-size-1440x900.png
+        - .prax/design/sessions/ds_20261025070716_eba80560/product-frame.yaml
+        - app.js
+        - data.js
+    - check_id: hierarchy_review
+      outcome: pass
+      source: real-browser screenshots (1280/1440) vs SDIR region importance
+      notes: 截图核对：dominant=中部当前步骤工作区（占主宽，单步骤聚焦），primary=左栏阶段→步骤进度（窄列、状态图标、当前步高亮），supporting=顶部全局状态与右栏留痕（空态虚线框弱化）；任务驱动区（确认关卡/完成卡片）条件出现。密度 regular，与 SDIR importance 分配一致。
+      artifact_refs:
+        - .prax/design/sessions/ds_20261025070716_eba80560/validation-evidence/fcf70bff-c7cf-44a1-b8cd-267a30e99e88/viewport-0/type.min_projected_size/min-projected-size-1280x860.png
+        - .prax/design/sessions/ds_20261025070716_eba80560/screen.sdir.yaml
+        - styles.css
+    - check_id: destructive_recovery
+      outcome: pass
+      source: implementation (data.js/app.js) + prax state_completeness/semantic receipts + scripted journey harness
+      notes: 3 个不可逆步骤（s08/s11/s13）在 data.js 均声明 consequence/impact/acks/rollback；app.js 强制：执行仅经确认关卡（全部确认项勾选 + 发布单号精确匹配，错误输入显示 role=alert 错误且零状态变更——对应实测通过的 error 状态覆盖）、执行后回滚入口在收尾步骤完成前始终可达、回滚级联复位后续步骤并写入留痕；收尾后窗口关闭（完成页统计）。驱动页 evidence/drive.html 覆盖 gate/gate-error/executed/rolled-back/completed 场景供复核。
+      artifact_refs:
+        - data.js
+        - app.js
+        - evidence/drive.html
+    - check_id: requirement_alignment
+      outcome: pass
+      source: requirement-confirmation + real-browser screenshot + implementation
+      notes: 与确认的 restatement 逐条对齐：单一高后果流程（生产发布 runbook，5 阶段 14 步）顺序解锁零失误执行；不可逆步骤执行前确认层、执行后恢复/回滚路径直至收尾；验证步骤逐项核对；留痕时间线+复制/导出；数据内联首屏即 ready（实测 state_completeness 通过，无 fetch、零外部请求，file:// 可开）。范围外项未实现，与 out_of_scope 一致；唯一能力 gap（刷新持久化）按显式妥协记录。
+      artifact_refs:
+        - .prax/design/sessions/ds_20261025070716_eba80560/requirement-confirmation.yaml
+        - .prax/design/sessions/ds_20261025070716_eba80560/validation-evidence/fcf70bff-c7cf-44a1-b8cd-267a30e99e88/viewport-1/type.min_projected_size/min-projected-size-1440x900.png
+        - index.html
+    - check_id: keyboard
+      outcome: pass
+      source: prax browser measurement receipt + implementation
+      notes: 实测回执（Prax 验证器 Chrome，run fcf70bff，1280x860 与 1440x900 双视口，entry /index.html）：a11y.focus_order=pass——7 个 Tab 停留点（跳转链接 a → 重置按钮 → 当前步骤按钮 → 4 个核对项 input），inversions=0，missing_indicators=0；a11y.target_size=pass（0 个小于 24px 命中区）。配套实现：左栏 roving tabindex（仅选中步 tabbable，↑/↓/Home/End 移动焦点）；核对项原生 checkbox 24px；Esc/遮罩取消确认关卡；:focus-visible 3px 焦点环。
+      artifact_refs:
+        - .prax/design/sessions/ds_20261025070716_eba80560/validation-evidence/fcf70bff-c7cf-44a1-b8cd-267a30e99e88/viewport-0/a11y.focus_order/focus-order-1280x860.png
+        - app.js
+        - styles.css
+      measurement_receipt: validation-evidence/receipt-2026-10-25T07-40-24-696Z-4bab9308-1f27-4d29-85b1-f12b535d130a.json
+evaluation:
+  status: BLOCK
+  checks:
+    - id: semantic_conformance
+      label: Semantic conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR is valid, semantic, and aligned to the approved pattern.
+      evidence_required: false
+    - id: state_completeness
+      label: State completeness
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Required loading, empty, ready, and error states exist.
+      evidence_required: false
+    - id: product_model_alignment
+      label: Product model alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: User-facing structure and language preserve the Product Frame.
+      evidence_required: true
+    - id: keyboard
+      label: Keyboard operability
+      kind: empirical
+      profile: keyboard_accessibility
+      facet: behavioral
+      requirement: Primary work and selection are operable with keyboard and visible focus.
+      evidence_required: true
+    - id: hierarchy_review
+      label: Hierarchy review
+      kind: assistive
+      profile: semantic_integrity
+      facet: visual_hierarchy
+      requirement: Visual prominence follows SDIR importance rather than implementation convenience.
+      evidence_required: true
+    - id: representation_decided
+      label: Representation decided
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares representation.primary with a non-empty reason.
+      evidence_required: false
+    - id: state_ownership_declared
+      label: State ownership declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: Selection and preview states both have declared owners.
+      evidence_required: false
+    - id: acceptance_contract_present
+      label: Acceptance contract present
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 carries at least one acceptance criterion.
+      evidence_required: false
+    - id: complexity_budget_declared
+      label: Complexity budget declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      evidence_required: false
+    - id: destructive_recovery
+      label: Destructive recovery
+      kind: deterministic
+      profile: runtime_degradation
+      facet: behavioral
+      requirement: Destructive actions match error cost with prevention or recovery.
+      evidence_required: true
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+  findings:
+    - check_id: semantic_conformance
+      kind: deterministic
+      outcome: pass
+      message: SDIR is valid, semantic, and aligned to the approved pattern.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_completeness
+      kind: deterministic
+      outcome: pass
+      message: Required loading, empty, ready, and error states exist.
+      source: prax-validator
+      provenance: measured
+    - check_id: representation_decided
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares representation.primary with a non-empty reason.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_ownership_declared
+      kind: deterministic
+      outcome: pass
+      message: Selection and preview states both have declared owners.
+      source: prax-validator
+      provenance: measured
+    - check_id: acceptance_contract_present
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 carries at least one acceptance criterion.
+      source: prax-validator
+      provenance: measured
+    - check_id: complexity_budget_declared
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      source: prax-validator
+      provenance: measured
+    - check_id: product_model_alignment
+      kind: assistive
+      outcome: pass
+      message: 真实浏览器渲染（Prax 验证器 Chrome，1440x900）显示的用户可见结构与语言与 Product Frame 逐一对应：发布流程（Runbook，workflow 主对象，顶部标题+发布单号徽章）、阶段→步骤（左栏两级分组 P1–P5）、确认关卡与回滚方案（不可逆步骤标旗「不可逆 · 有回滚预案」，data.js 内 consequence/impact/acks/rollback）、操作留痕（右栏）。语言沿用 frame 的 user_name。
+      source: real-browser screenshot + product-frame session record + implementation
+      provenance: attested
+    - check_id: keyboard
+      kind: empirical
+      outcome: pass
+      message: 实测回执（Prax 验证器 Chrome，run fcf70bff，1280x860 与 1440x900 双视口，entry /index.html）：a11y.focus_order=pass——7 个 Tab 停留点（跳转链接 a → 重置按钮 → 当前步骤按钮 → 4 个核对项 input），inversions=0，missing_indicators=0；a11y.target_size=pass（0 个小于 24px 命中区）。配套实现：左栏 roving tabindex（仅选中步 tabbable，↑/↓/Home/End 移动焦点）；核对项原生 checkbox 24px；Esc/遮罩取消确认关卡；:focus-visible 3px 焦点环。
+      source: prax browser measurement receipt + implementation
+      provenance: attested
+    - check_id: hierarchy_review
+      kind: assistive
+      outcome: pass
+      message: 截图核对：dominant=中部当前步骤工作区（占主宽，单步骤聚焦），primary=左栏阶段→步骤进度（窄列、状态图标、当前步高亮），supporting=顶部全局状态与右栏留痕（空态虚线框弱化）；任务驱动区（确认关卡/完成卡片）条件出现。密度 regular，与 SDIR importance 分配一致。
+      source: real-browser screenshots (1280/1440) vs SDIR region importance
+      provenance: attested
+    - check_id: destructive_recovery
+      kind: deterministic
+      outcome: pass
+      message: 3 个不可逆步骤（s08/s11/s13）在 data.js 均声明 consequence/impact/acks/rollback；app.js 强制：执行仅经确认关卡（全部确认项勾选 + 发布单号精确匹配，错误输入显示 role=alert 错误且零状态变更——对应实测通过的 error 状态覆盖）、执行后回滚入口在收尾步骤完成前始终可达、回滚级联复位后续步骤并写入留痕；收尾后窗口关闭（完成页统计）。驱动页 evidence/drive.html 覆盖 gate/gate-error/executed/rolled-back/completed 场景供复核。
+      source: implementation (data.js/app.js) + prax state_completeness/semantic receipts + scripted journey harness
+      provenance: attested
+    - check_id: requirement_alignment
+      kind: assistive
+      outcome: pass
+      message: 与确认的 restatement 逐条对齐：单一高后果流程（生产发布 runbook，5 阶段 14 步）顺序解锁零失误执行；不可逆步骤执行前确认层、执行后恢复/回滚路径直至收尾；验证步骤逐项核对；留痕时间线+复制/导出；数据内联首屏即 ready（实测 state_completeness 通过，无 fetch、零外部请求，file:// 可开）。范围外项未实现，与 out_of_scope 一致；唯一能力 gap（刷新持久化）按显式妥协记录。
+      source: requirement-confirmation + real-browser screenshot + implementation
+      provenance: attested
+  missing_evidence:
+    - keyboard
+  warnings: []
+  codes:
+    - MEASUREMENT_BINDING_INVALID
+    - MEASUREMENT_RECEIPT_MISSING
+  readiness:
+    deterministic_passed: true
+    measurement:
+      receipt_ref: null
+      binding:
+        validation-evidence/receipt-2026-10-25T07-40-24-696Z-4bab9308-1f27-4d29-85b1-f12b535d130a.json: invalid
+      error_failures_open: 0
+      warning_dispositions: []
+    convergence:
+      stalled: true
+      unresolved: []
+    evidence_current: false
+    claims:
+      measured:
+        - semantic_conformance
+        - state_completeness
+        - representation_decided
+        - state_ownership_declared
+        - acceptance_contract_present
+        - complexity_budget_declared
+      attested:
+        - product_model_alignment
+        - keyboard
+        - hierarchy_review
+        - destructive_recovery
+        - requirement_alignment
+      skipped: []

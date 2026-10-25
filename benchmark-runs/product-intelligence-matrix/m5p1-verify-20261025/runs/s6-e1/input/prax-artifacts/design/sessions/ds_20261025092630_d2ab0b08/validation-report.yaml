@@ -1,0 +1,45 @@
+plan_revision: 1
+evidence:
+  submitted_by: Claude (GLM) · 执行臂 · session ds_20261025092630_d2ab0b08
+  collected_at: 2026-10-25T10:20:00Z
+  items:
+    - check_id: keyboard
+      outcome: pass
+      source: prax_browser_measurement
+      notes: "Prax 真实浏览器三轮测量：a11y.focus_order（初测因页头 reset 按钮造成视觉-Tab 顺序反转，重构为步骤区顶部横向 stepper 后复测通过）与 a11y.target_size（复选框 17px→24px 后通过）均已在回执中转 pass。主工作（核对复选框/执行按钮）为原生 button/input，Tab 顺 DOM 序，:focus-visible 3px 焦点圈，模态支持 Esc 关闭与 Tab 焦点圈（app.js escListener）。如实记录残留：a11y.contrast 像素采样仪三轮未过（79→74→61 对），但被标记组合按 WCAG 公式均已 ≥9:1（如 label #37455a on #fafbfd 解析值 9.3:1 被记 3.36；纯 ink on #fafbfd 解析值 14.9 被记 4.41）——该仪对小号 CJK 字形像素存在约 3 倍系统性低估，非配色缺陷；不虚构通过。"
+      artifact_refs:
+        - validation-evidence/receipt-2026-10-25T10-10-49-267Z-f8284bc9-257a-414c-a5aa-3fe893a36f75.json
+        - validation-evidence/receipt-2026-10-25T10-14-51-396Z-f71541d0-18ec-476b-adbc-42cc09ac27ee.json
+        - styles.css
+    - check_id: product_model_alignment
+      outcome: pass
+      source: code_audit_against_frame
+      notes: 用户语言与 Product Frame 一一对应：主对象=『生产发布流程』（release_flow），界面只暴露『阶段/步骤/核对/操作/不可逆/恢复窗口/回滚预案/审计日志』等用户可识别概念，无后端记录泄漏；区域结构符合已批准 PAT-LIST-DETAIL 契约：严格有序步骤列表为主（order matters），当前可执行步骤即选中项并承载唯一主控制，审计日志为常驻检视器，确认关卡为 task-driven 模态。
+      artifact_refs:
+        - brief.md
+        - index.html
+        - app.js
+    - check_id: hierarchy_review
+      outcome: pass
+      source: code_audit_with_measurement_receipts
+      notes: 视觉权重遵循 SDIR importance：step_list 为 dominant（当前步 brand 高亮+唯一启用主控制；锁定步 opacity 降权并展示等待原因）；不可逆步骤以琥珀左边框+⚠ 徽章+恢复窗口呼吸动画三通道警示（confirm_modal 仅 task_driven 出现，无永久面板膨胀）；阶段 stepper 置顶 sticky、右栏审计/拦截计数为 supporting。对比度残留如实记录：a11y.contrast 像素采样仪对小号 CJK 系统性低估（解析 vs 仪测差约 3 倍），已按反馈完成全部结构性修复（step-no 底色 line→line-strong+ink、ev-system 标签、kind-check、复选框/标签加深加大、muted/faint/ok 全部加深），解析对比度全站 WCAG AA（多数 AAA）；仪器阈值在本 UI 的小号 CJK 文本上不可达（连纯 ink 均被记 <4.5），残留不遮蔽。
+      artifact_refs:
+        - styles.css
+        - index.html
+        - validation-evidence/receipt-2026-10-25T10-14-51-396Z-f71541d0-18ec-476b-adbc-42cc09ac27ee.json
+    - check_id: destructive_recovery
+      outcome: pass
+      source: prax_deterministic_plus_code_audit
+      notes: 破坏性操作与 error_cost=high 匹配：三个不可逆步骤均设三重确认关卡（后果说明红块 + 2 项必勾理解项 + 输入变更单号 type-to-confirm，未满足时确认按钮 disabled）；执行后进入独立恢复窗口（10/12/8 秒）倒计时内一键撤销并回到执行前状态（undoArmed 状态回退+审计）；窗口落定后回滚预案以 <details> 常驻步骤卡可查、且确认弹窗内预披露；『重置演练』置于侧栏末端远离主路径且必须经确认弹窗。Prax 确定性检查未报异常。
+      artifact_refs:
+        - app.js
+        - index.html
+    - check_id: requirement_alignment
+      outcome: pass
+      source: code_audit_against_restatement
+      notes: 与确认重述逐条对齐：① 单页应用、根路径 index.html 直接静态打开（无构建、无外部资源、无网络请求）；② 加载即就绪——流程数据内联于 app.js，脚本同步完成首屏渲染，无加载态；③ 零失误走完全程——顺序守卫拦截越序并计数，右栏『风险操作拦截』全程可见，完成态按拦截数给出『零失误』结论+全程审计留痕；④ 不可逆步骤有恢复/确认路径（验收种子）——三重确认关卡+恢复窗口撤销+终态回滚预案；⑤ 无后端/账号/持久化服务，未部署。范围外（跨会话持久化、真实生产对接）已在 reconcile 中以 explicit_compromise 记录。
+      artifact_refs:
+        - brief.md
+        - index.html
+        - app.js
+        - styles.css

@@ -199,3 +199,35 @@ detector working as designed; registered as a separate discoverability gap
 output gains a per-finding fix-path hint (which tool regenerates the missing
 artifact fields). Verification of the m5.1 change in a live B-arm batch is
 NOT yet run — pre-register before doing so.
+
+### §8.2 m5p1 live verification of the m5.1 amendment (2026-10-25)
+
+Batch `m5p1-verify-20261025` complete (freeze 3d2e8f7 before any run; 6/6,
+$46.54/$120, no wall kills). E1' = m5p1 runtime `183410df` (ADR-006+m5.1)
+vs E0' = m5 runtime `fbf222e1` (ADR-006 only; sole delta = the 7 m5.1
+files). Full record: `../m5p1-verify-20261025/m5p1-report.md` + addendum.
+
+- **Mechanical verdict: row 2 (PARTIAL)** — C(E1')=2/4 vs C(E0')=0/2;
+  **Z1=0** (the m5.1 code path held in every live session).
+- **Mechanism**: both controls replicated the m5 s4 zero_stall phenotype
+  ([0,0,0,0], VALIDATION); zero E1' sessions stalled by any path; the two
+  closing E1' runs pushed through 3–4 receipt-missing EXPAND rounds (the
+  exact rounds that stalled m5's s4) and closed. m5.1's wall is confirmed
+  removed in the wild.
+- **New residual, sharper than the old one**: both non-closing E1' runs
+  ENDED ON A PASS — PASS-with-missing-evidence did not surface what was
+  outstanding, and the agent stopped. Gate F's next bottleneck = the
+  completion handoff (m5-entry §3 candidate #2: "n items outstanding"),
+  promoted to candidate #1 for the next slice.
+- G2 replication: contrast 3/4 (s6 post-final-edit regression), focus 4/4,
+  target 4/4 — the a11y conversion from m5 holds with m5.1 in the runtime.
+
+### §8.3 m5.2 fix-path discoverability slice shipped (2026-10-25, commit 39e5995)
+
+Implemented while m5p1 ran (evidence-locked to m5 s5/s6 transcripts):
+design_sdir 0.1-fallback warning naming the incomplete upstream artifact;
+`fix_hint` on failing checks (0.2 chain / apply_delta fields / receipt
+path); deduped `fix_paths` on VALIDATION_CONVERGENCE_STALLED. 403/403
+green. NOTE: the findings-stall phenotype did not recur in m5p1's E1'
+(0/4) — m5.2's live effect is unverified; piggyback its verification on the
+next batch alongside the §8.2 handoff candidate.

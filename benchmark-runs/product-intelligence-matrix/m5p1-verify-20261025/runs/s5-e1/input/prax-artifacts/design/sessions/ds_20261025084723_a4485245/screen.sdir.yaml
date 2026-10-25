@@ -1,0 +1,150 @@
+version: "0.2"
+screen:
+  id: data_explorer_screen
+  intent:
+    primary_task: 沿不同维度切换视角探索数据集：选择观察维度、按维度值过滤、投影关注的字段/切片
+    secondary_tasks:
+      - 查看当前生效的过滤/投影条目及其归属，并逐条撤销或整体回退
+      - 定位关注的数据条目（跨维度搜索/筛选）
+      - 查看单个数据条目的全维度详情
+  archetype:
+    pattern_ref: PAT-DATA-EXPLORER
+  density_intent: compact
+  regions:
+    - id: data
+      role: collection
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - comparison_group
+        - filter_then_inspect
+    - id: 投影数据网格 — dominant workspace surface（surface:data，representation=table）：dataset 的 record 行 × 投影 dimension 列，紧凑高密度，承载主任务 explore
+      role: experimental:投影数据网格 — dominant workspace surface（surface:data，representation=table）：dataset 的 record 行 × 投影 dimension 列，紧凑高密度，承载主任务 explore
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 视角状态条（lens-bar）：当前生效的过滤/投影/排序 chips + 匹配计数 + undo/redo/reset + 变更轨迹入口（过滤投影状态的归属与回退入口）
+      role: experimental:视角状态条（lens-bar）：当前生效的过滤/投影/排序 chips + 匹配计数 + undo/redo/reset + 变更轨迹入口（过滤投影状态的归属与回退入口）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 维度面板（dimension-panel）：全部维度清单 + 当前观察维度焦点 + 维度值分布（切换观察维度的操作面）
+      role: experimental:维度面板（dimension-panel）：全部维度清单 + 当前观察维度焦点 + 维度值分布（切换观察维度的操作面）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 选中检查器（inspector）：单个 record 的全维度详情
+      role: experimental:选中检查器（inspector）：单个 record 的全维度详情
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 变更轨迹（revision-trail）：lens 变更的 revision 序列，每条含操作/目标/时间，可点击回退到任意步
+      role: experimental:变更轨迹（revision-trail）：lens 变更的 revision 序列，每条含操作/目标/时间，可点击回退到任意步
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 数据集概览：dataset 总量/匹配数/维度数统计
+      role: experimental:数据集概览：dataset 总量/匹配数/维度数统计
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: detail
+      role: contextual_inspector
+      importance: contextual
+      visibility:
+        condition: selection_driven
+      behavior_intent:
+        - selection_driven
+  relationships:
+    - id: region_rel_data_detail
+      source: data
+      target: detail
+      type: selection_drives_contextual_detail
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved: []
+  rejected_alternatives:
+    - option: 多屏向导式（先选维度再浏览）
+      reason: 探索是高频往返任务，分屏强制线性流程，直接违背维度切换连续性
+  user_job:
+    verb: explore
+    target: 多维数据集的维度视角、过滤切片与投影子集
+    success: 多次维度切换后，用户的选择、过滤、标注与历史仍然连续可回退，认知不重置；过滤/投影状态有归属且可回退
+  primary_object:
+    type: dataset
+    label: 多维数据集
+  information_shape:
+    cardinality: unbounded
+    relationality: medium
+    hierarchy: medium
+    temporality: low
+    density: high
+    dimensionality: high
+    spatiality: none
+    volatility: medium
+    uncertainty: low
+    comparison_need: none
+  representation:
+    primary:
+      type: table
+      reason: density=high + cardinality=unbounded 下，表格行集是扫描效率最高的承载；投影 dimension 直接映射为列，维度切换=换列/换组织轴而 record 行不变（认知连续的物理基础）
+    supporting:
+      - type: chart
+        reason: 维度面板内 dimension 值分布迷你条形：Overview 层帮助选择收窄方向（H-22）
+      - type: list
+        reason: revision-trail 以 list 承载，是『可回退』的直接可视对象
+  priority:
+    primary:
+      - data
+      - 投影数据网格 — dominant workspace surface（surface:data，representation=table）：dataset 的 record 行 × 投影 dimension 列，紧凑高密度，承载主任务 explore
+      - 视角状态条（lens-bar）：当前生效的过滤/投影/排序 chips + 匹配计数 + undo/redo/reset + 变更轨迹入口（过滤投影状态的归属与回退入口）
+      - 维度面板（dimension-panel）：全部维度清单 + 当前观察维度焦点 + 维度值分布（切换观察维度的操作面）
+    contextual:
+      - 选中检查器（inspector）：单个 record 的全维度详情
+      - 变更轨迹（revision-trail）：lens 变更的 revision 序列，每条含操作/目标/时间，可点击回退到任意步
+      - 数据集概览：dataset 总量/匹配数/维度数统计
+      - detail
+  interaction:
+    preview: none
+    inspect: select
+    navigate: none
+    locate: none
+  state_ownership:
+    - state: selection
+      owner: data
+    - state: preview
+      owner: session
+  complexity_budget:
+    permanent_panels: 4
+    permanent_primary_actions: 3
+    modes: 0
+    state_owners: 1
+    navigation_levels: 1
+    persistent_filters: 0
+    new_semantic_concepts: 2
+    keyboard_contracts: 2
+    mobile_conflicts: 0
+    permanent_surfaces: 1
+  acceptance:
+    - 用户在任意次维度切换后：（1）此前的选择与过滤上下文仍然保持可见且生效；（2）每一条过滤/投影变更都记录了归属（作用对象与来源操作）并可逐条回退；（3）页面加载即处于可用状态（数据随首屏就绪）。

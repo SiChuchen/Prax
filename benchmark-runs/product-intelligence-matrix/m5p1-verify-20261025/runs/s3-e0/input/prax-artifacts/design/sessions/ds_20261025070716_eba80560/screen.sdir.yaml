@@ -1,0 +1,141 @@
+version: "0.2"
+screen:
+  id: list_detail_screen
+  intent:
+    primary_task: 按依赖顺序逐个完成发布 runbook 的全部步骤，直至发布收尾
+    secondary_tasks:
+      - 在不可逆步骤执行前完成强制确认（后果陈述 + 回滚方案 + 发布单号）
+      - 异常时按步骤级恢复/回滚路径回退
+      - 逐项核对验证清单并留存操作留痕
+  archetype:
+    pattern_ref: PAT-LIST-DETAIL
+  density_intent: regular
+  regions:
+    - id: 当前步骤工作区：操作指引、风险标注、核对清单、执行动作
+      role: experimental:当前步骤工作区：操作指引、风险标注、核对清单、执行动作
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 阶段→步骤有序进度（左栏）：锁定/就绪/已完成/已回滚状态与全程位置
+      role: experimental:阶段→步骤有序进度（左栏）：锁定/就绪/已完成/已回滚状态与全程位置
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 确认关卡（不可逆步骤执行前：后果陈述 + 回滚方案 + 确认口令）
+      role: experimental:确认关卡（不可逆步骤执行前：后果陈述 + 回滚方案 + 确认口令）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 回滚窗口（不可逆步骤执行后：回滚入口与恢复方案直至收尾）
+      role: experimental:回滚窗口（不可逆步骤执行后：回滚入口与恢复方案直至收尾）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 操作留痕时间线（侧栏，可导出）
+      role: experimental:操作留痕时间线（侧栏，可导出）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 顶部总进度与剩余高危步骤计数
+      role: experimental:顶部总进度与剩余高危步骤计数
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: workspace
+      role: dominant_workspace
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - preserve_context
+  relationships: []
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved: []
+  rejected_alternatives:
+    - option: 自由顺序（无锁定）
+      reason: 与零失误成功标准冲突
+    - option: 执行后不可回滚
+      reason: 违反验收种子「不可逆步骤有恢复/确认路径」
+  user_job:
+    verb: complete
+    target: 高后果生产发布流程
+    success: 零失误走完全程；不可逆步骤均有确认与恢复路径
+  primary_object:
+    type: workflow
+    label: 生产发布 Runbook
+  information_shape:
+    cardinality: one
+    relationality: low
+    hierarchy: high
+    temporality: low
+    density: low
+    dimensionality: medium
+    spatiality: none
+    volatility: medium
+    uncertainty: medium
+    comparison_need: none
+  representation:
+    primary:
+      type: list
+      reason: 有序步骤列表 + 相邻详情（List Detail）：保留全程位置感与锁定态，满足零失误的顺序约束；层级高由两级分组承载
+    supporting:
+      - type: wizard
+        reason: 线性门控执行：沿单行道逐步推进，锁定态可见
+      - type: form
+        reason: 核对清单与确认关卡（勾选确认项 + 输入发布单号）以表单化交互强制显式确认
+      - type: feed
+        reason: 操作留痕：按时间倒序事件流，支撑可回溯
+  priority:
+    primary:
+      - 当前步骤工作区：操作指引、风险标注、核对清单、执行动作
+      - 阶段→步骤有序进度（左栏）：锁定/就绪/已完成/已回滚状态与全程位置
+      - workspace
+    contextual:
+      - 确认关卡（不可逆步骤执行前：后果陈述 + 回滚方案 + 确认口令）
+      - 回滚窗口（不可逆步骤执行后：回滚入口与恢复方案直至收尾）
+      - 操作留痕时间线（侧栏，可导出）
+      - 顶部总进度与剩余高危步骤计数
+  interaction:
+    preview: none
+    inspect: select
+    navigate: none
+    locate: none
+  state_ownership:
+    - state: selection
+      owner: 当前步骤工作区：操作指引、风险标注、核对清单、执行动作
+    - state: preview
+      owner: session
+  complexity_budget:
+    permanent_panels: 3
+    permanent_primary_actions: 2
+    modes: 1
+    state_owners: 1
+    navigation_levels: 1
+    persistent_filters: 0
+    new_semantic_concepts: 4
+    keyboard_contracts: 0
+    mobile_conflicts: 0
+    permanent_surfaces: 1
+  acceptance:
+    - 用户按依赖顺序完成全部步骤直至发布收尾：无跳步、无误执行；每个不可逆步骤执行前经过强制确认（含回滚方案与发布单号），执行后收尾前回滚路径始终可达；全部动作可在留痕中回溯。

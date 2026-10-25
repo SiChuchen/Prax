@@ -1,0 +1,113 @@
+session_id: ds_20261025084723_a4485245
+version: "0.2"
+information_shape:
+  cardinality: unbounded
+  relationality: medium
+  hierarchy: medium
+  temporality: low
+  density: high
+  dimensionality: high
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: table
+    reason: density=high + cardinality=unbounded 下，表格行集是扫描效率最高的承载；投影 dimension 直接映射为列，维度切换=换列/换组织轴而 record 行不变（认知连续的物理基础）
+  supporting:
+    - type: chart
+      reason: 维度面板内 dimension 值分布迷你条形：Overview 层帮助选择收窄方向（H-22）
+    - type: list
+      reason: revision-trail 以 list 承载，是『可回退』的直接可视对象
+  rejected:
+    - option: graph
+      reason: relationality=medium 非主要认知负担；graph 放大布局噪音、违背 P-22
+    - option: map
+      reason: spatiality=none，无空间语义
+    - option: tree
+      reason: hierarchy=medium，排序分组即可承载；tree 把探索锁进单一层级路径
+    - option: card grid
+      reason: myth-card-grid-default 否证成立：density=high 下 card grid 是 card-grid-for-dense-comparison 反模式，信息密度不足且无列对齐
+    - option: chart-as-primary
+      reason: 主对象是 dataset 的 record 集合，聚合 chart 丢失条目定位能力；chart 仅作 dimension 值分布辅助
+  justification_vs_shape: shape 束逐项论证（变量名=取值→设计响应）：cardinality=unbounded→可滚动表格行集+实时匹配计数，首屏 480 条全量内联；dimensionality=high→dimension 成为一等操作对象（维度面板+投影列选择），换维度=换列/换组织轴而行对象不变；density=high→compact 表格行集是唯一能在单屏承载高行数×多维列的表示；relationality=medium→同值高亮+排序承载，不引入 graph；hierarchy=medium→维度面板分组承载，不用 tree 锁死单一路径；temporality=low→无时间轴，季度仅作普通 dimension；spatiality=none→无 map；volatility=medium→dataset 为静态快照，易变性由 lens 的 revision 轨迹承载；uncertainty=low→确定性过滤语义（维度值精确匹配，无模糊推断）；comparison_need=none→单选 inspector 而非多选对比板。对 myth-card-grid-default 的显式否证论证：card grid 以装饰性卡片换取视觉美感，牺牲对齐扫描与信息密度——在 density=high、cardinality=unbounded 下每卡占比过大、无列对齐可比性，且 PAT-DATA-EXPLORER 自身将 card-grid-for-dense-comparison 列为 anti_patterns；本设计用 table 行集保持列对齐与行扫描效率，cards 仅在不存在的高密度场景才具优势，故拒绝 card-grid 默认。
+primary_structure:
+  pattern: PAT-DATA-EXPLORER
+  rationale:
+    - 主结构选路由返回的 PAT-DATA-EXPLORER（已在 inspect 达 L2）：『结构化数据面 + 持久收窄 + 按需详情』正对 cardinality=unbounded、density=high 的探索任务；persistent filters 跨维度持久，切换维度不收窄网格上下文
+    - 以路由返回的 PAT-LIST-DETAIL-INSPECTOR（L2 已检）为互补：检查器绑定显式 selection（H-19 Contextual Inspector），保持工作区上下文（P-19 Preserve Context）；具体形态为单屏三区：左维度透镜面板（dimension 清单+维度值分布）、中央投影数据网格（dominant，行=record，列=投影 dimension）、右选中检查器，顶部常驻视角状态条（lens chips + undo/redo + revision-trail）
+    - H-21 Orientation Invariants：selection、filters/projection、revision-trail 作为跨维度稳定锚点，维度切换仅更换观察轴，绝不重置
+    - H-22 Overview-Filter-Detail：维度面板=总览收窄入口，数据网格=概览+过滤结果，检查器=按需详情
+    - H-13 Structured Density：compact 密度由表格行集+chips+分组承载，结构可读
+    - H-07 State Completeness：ready/selected/empty(零匹配)/error 四态在 SDIR 显式定义；dataset 内联故首屏即 ready，不设可测 loading 态
+  confidence: high
+information_hierarchy:
+  primary:
+    - data
+    - 投影数据网格 — dominant workspace surface（surface:data，representation=table）：dataset 的 record 行 × 投影 dimension 列，紧凑高密度，承载主任务 explore
+    - 视角状态条（lens-bar）：当前生效的过滤/投影/排序 chips + 匹配计数 + undo/redo/reset + 变更轨迹入口（过滤投影状态的归属与回退入口）
+    - 维度面板（dimension-panel）：全部维度清单 + 当前观察维度焦点 + 维度值分布（切换观察维度的操作面）
+  secondary:
+    - 选中检查器（inspector）：单个 record 的全维度详情
+    - 变更轨迹（revision-trail）：lens 变更的 revision 序列，每条含操作/目标/时间，可点击回退到任意步
+    - 数据集概览：dataset 总量/匹配数/维度数统计
+density:
+  intent: compact
+  strategy:
+    - 紧凑行高与密排 chips，结构由分组、对齐与留白承载（H-13 Structured Density）
+    - 控制件弱化：中性色为主，强调色仅用于生效状态与选中（P-22）
+    - 所有生效状态以文字+计数显式呈现，不靠颜色隐语（P-26 Visibility of System Status）
+  avoid:
+    - "grid-of-cards 装饰性布局（PAT-DATA-EXPLORER.anti_patterns: card-grid-for-dense-comparison；myth-card-grid-default 否证：以装饰换扫描密度）"
+    - 装饰性 chrome 与大图占位（P-22 Signal over Chrome）
+    - 多模式/多屏切换（与单屏约束冲突）
+major_choices:
+  - id: mc-dimension-switch-is-lens
+    choice: dimension 切换实现为『换透镜』：切换观察维度只改变数据网格的组织轴与维度面板焦点，selection/filters/projection/revision 全部跨维度保留（H-21 Orientation Invariants + P-19 Preserve Context 的直接实现）。对象：lens、dimension、dataset、revision。
+    rationale: 成功标准『维度切换不重置认知』要求切换维度只影响观察轴；若切换重置任何用户状态即判不合格
+    confidence: high
+    references:
+      - lens
+      - dimension
+      - dataset
+      - revision
+  - id: mc-owned-revertible-state
+    choice: 状态归属模型：单一 lens 状态所有者持有 {dataset_id, filters, projection, sort, focus_dimension, selection}，每次变更产生一条 revision（含操作类型/目标/时间/序号）；支持逐条 undo/redo、点击 revision-trail 任意步回退、一键 reset 到初始态。
+    rationale: 验收种子『过滤/投影状态有归属且可回退』要求状态可归属（作用对象+来源操作可见）且可回退（多级撤销+历史回退+重置）
+    confidence: high
+    references:
+      - lens
+      - revision
+      - dataset
+      - record
+  - id: mc-inline-dataset
+    choice: 合成 dataset：真实感产品运营多维数据集（≥14 个 dimension：品类/平台/区域/渠道/状态/优先级/负责人/季度/来源/标签/版本/语言/风险等级/客户规模），约 480 条 record，随首屏内联，无任何运行时数据获取。
+    rationale: cardinality unbounded 由可滚动行集+实时计数承载；首屏即用约束要求数据内联且无 loading 可测态
+    confidence: high
+    references:
+      - dataset
+      - dimension
+      - record
+  - id: mc-no-compare-no-map
+    choice: 无 graph/map/tree 主结构、无并排比较板：relationality/hierarchy=medium 用排序分组承载，comparison_need=none 用单选 inspector 而非多选对比；spatiality=none 排除 map。
+    rationale: 信息形状束判别：dimension 是主要认知负担（dimensionality=high），其余 facet 均为中等或低
+    confidence: high
+    references:
+      - dimension
+      - record
+rejected:
+  - option: 多屏向导式（先选维度再浏览）
+    reason: 探索是高频往返任务，分屏强制线性流程，直接违背维度切换连续性
+unresolved: []
+complexity_budget:
+  permanent_panels: 4
+  permanent_primary_actions: 3
+  modes: 0
+  state_owners: 1
+  navigation_levels: 1
+  persistent_filters: 0
+  new_semantic_concepts: 2
+  keyboard_contracts: 2
+  mobile_conflicts: 0
+  permanent_surfaces: 1

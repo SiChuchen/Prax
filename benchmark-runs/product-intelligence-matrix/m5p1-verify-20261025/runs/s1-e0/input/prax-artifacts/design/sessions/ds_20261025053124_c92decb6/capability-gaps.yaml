@@ -1,0 +1,68 @@
+needs:
+  - id: cap-pivot
+    product_action: 行维度×列维度×度量交叉聚合投影（换轴重排）
+    required_experience:
+      - 切换行/列维度即时重排交叉表（<100ms）
+      - 行轴层级下钻/上卷
+      - 格=度量聚合+强度底色
+    capabilities:
+      - 内存聚合引擎（单次遍历过滤+分组聚合，2600 行 <10ms）
+      - 维度元数据注册表（轴候选+层级树）
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端：数据集 ~2600 行内联，JS 单遍聚合即可，无需任何后端/查询服务
+  - id: cap-attributed-filters
+    product_action: 过滤器带来源归属且可单独移除
+    required_experience:
+      - 每个过滤 chip 显示来源（维度面板/轨迹回滚）
+      - chip × 单独移除
+      - 归属栏常驻可见可数
+    capabilities:
+      - 过滤状态模型 {dim,value,origin}
+      - 归属栏渲染+chip 级移除动作
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 过滤记录为 {dimension,value,origin,ts} 结构，归属栏与维度面板双向联动
+  - id: cap-state-trail
+    product_action: 状态轨迹：每次变更记入带归属历史，支持任意点回滚
+    required_experience:
+      - 每步操作记录 类型+对象+来源+时刻
+      - 点击任意条目回滚
+      - 撤销/重做/重置
+    capabilities:
+      - 不可变状态快照栈
+      - 时间线渲染+任意点回滚
+      - 撤销/重做/重置动作
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 深拷贝状态快照栈（状态体积小：过滤集/轴/度量/锚定，KB 级），轨迹上限 50 步
+  - id: cap-context-preservation
+    product_action: 维度切换不重置认知（过滤/度量/排序/锚定/选中跨换轴保留）
+    required_experience:
+      - 换轴动作只触碰投影轴字段
+      - 换轴后过滤/锚定仍生效且高亮回显
+      - 显式提示保留内容
+    capabilities:
+      - 状态分区（query/selection/mode 与投影轴解耦）
+      - 换轴动作白名单（仅改 rows/cols/level）
+      - 认知锚回显（toast 摘要保留内容）
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 状态模型按 SDIR state_ownership 分区：query/selection/mode 与 axes 正交，换轴动作白名单化
+  - id: cap-instant-first-screen
+    product_action: 首屏即用：初始数据随页面加载同步就绪
+    required_experience:
+      - 无加载态/骨架屏
+      - DOM ready 即完成首帧投影
+    capabilities:
+      - 同步内联数据集
+      - 零网络依赖
+      - file:// 可开
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 确定性 PRNG 数据生成脚本内联为 <script>，同步执行；无构建、无外部资源

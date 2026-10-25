@@ -1,0 +1,95 @@
+version: "0.1"
+screen:
+  id: data_explorer_screen
+  intent:
+    primary_task: Switch the active projection dimension and continue exploring without losing filters or selection
+    secondary_tasks:
+      - Filter records along any dimension's value ranges or categories
+      - Inspect an individual record's values across all dimensions
+      - Revert any filter/projection change individually (chips + undo)
+  archetype:
+    pattern_ref: PAT-DATA-EXPLORER
+  density_intent: compact
+  regions:
+    - id: data
+      role: collection
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - comparison_group
+        - filter_then_inspect
+    - id: "collection — the working-set table (dominant surface): every surviving record as a dense sortable row, sorted by the active lens dimension"
+      role: "experimental:collection — the working-set table (dominant surface): every surviving record as a dense sortable row, sorted by the active lens dimension"
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: "lens chart over the data collection: distribution of the working set by the active dimension — histogram for numeric, bars for categorical, click-to-filter bins"
+      role: "experimental:lens chart over the data collection: distribution of the working set by the active dimension — histogram for numeric, bars for categorical, click-to-filter bins"
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: "dimension rail: every dimension with its filter-ownership state visible"
+      role: "experimental:dimension rail: every dimension with its filter-ownership state visible"
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: "state ledger: attributed filter chips + revertible change history"
+      role: "experimental:state ledger: attributed filter chips + revertible change history"
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: Record inspector showing the selected record across ALL dimensions (stable anchor across lens switches)
+      role: experimental:Record inspector showing the selected record across ALL dimensions (stable anchor across lens switches)
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: "Header: dataset identity, live working-set count, global undo/reset"
+      role: "experimental:Header: dataset identity, live working-set count, global undo/reset"
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: detail
+      role: contextual_inspector
+      importance: contextual
+      visibility:
+        condition: selection_driven
+      behavior_intent:
+        - selection_driven
+  relationships:
+    - id: region_rel_data_detail
+      source: data
+      target: detail
+      type: selection_drives_contextual_detail
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved: []
+  rejected_alternatives:
+    - option: Parallel coordinates plot as the primary surface
+      reason: Best-known high-dimensional view, but medium relationality doesn't require it; heavier to implement well inside the 90-min budget and adds brushing interactions beyond the seed's needs
+    - option: Scatter matrix (SPLOM)
+      reason: O(n²) panels explode density and screen area for 9 dimensions
+    - option: Pivot-table-only explorer
+      reason: Dense but buries the lens-switching gesture that defines this cell; distribution shape is harder to read in pivots
+    - option: Map-based view
+      reason: spatiality=none in the shape bundle

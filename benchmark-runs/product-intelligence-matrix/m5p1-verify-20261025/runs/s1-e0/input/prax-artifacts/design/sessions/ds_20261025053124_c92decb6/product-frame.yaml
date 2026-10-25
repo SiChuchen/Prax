@@ -1,0 +1,95 @@
+version: "0.2"
+jtbd:
+  verb: explore
+  target: 多维数据集（无界基数、高维度、中层级）
+  success: 用户连续切换多个投影维度后，先前的过滤条件、度量与排序选择、锚定集合全部原样保留且可一键回退，无需重新设置
+primary_object:
+  type: dataset
+  label: 多维数据集（事实记录 × 维度 × 度量的立方体投影）
+task_model:
+  frequency: high
+  reversibility: reversible
+  consequence: low
+  expertise: expert
+user:
+  primary_role: 数据分析/运营人员（需要频繁按不同维度切片查看业务数据）
+  expertise: expert
+  familiarity: high
+goal:
+  primary: 让用户在多个维度之间自由切换投影（聚合维度、下钻层级），而探索积累的认知上下文——过滤器、度量、排序、锚定——始终保留、可归属、可回退
+tasks:
+  primary: 切换投影维度（行/列/下钻）以从不同维度理解数据，同时过滤/度量/排序/锚定等认知上下文保持不变
+  secondary:
+    - 按维度值设置/移除过滤器（带来源归属）
+    - 点击状态轨迹回滚到任意历史状态
+    - 切换度量与排序方式
+    - 下钻层级（品类→子类→单品）
+product_objects:
+  - id: dataset
+    user_name: 数据集
+    purpose: 探索的对象：全部事实记录的集合，随首屏内联就绪
+  - id: dimension
+    user_name: 维度
+    purpose: 投影/过滤的认知轴，部分维度带层级可下钻
+  - id: projection
+    user_name: 投影
+    purpose: 当前聚合视图：行维度×列维度×度量的交叉表
+  - id: filter
+    user_name: 过滤
+    purpose: 约束记录范围的维度值选择，每个过滤有明确来源归属
+  - id: measure
+    user_name: 度量
+    purpose: 聚合显示的数值（销量/毛利/订单数/退货率）
+  - id: state_trail
+    user_name: 状态轨迹
+    purpose: 带来源归属的操作轨迹，支持点击回滚到任意历史状态
+relationships:
+  - id: proj_on_dim
+    source: projection
+    target: dimension
+    type: axes_on
+    direction: forward
+    meaning: 投影的行/列轴选自维度列表；切换投影不触碰过滤器集合
+    condition: 投影按所选维度聚合
+    importance: primary
+  - id: filter_from_dim
+    source: filter
+    target: dimension
+    type: constrains_values_of
+    direction: forward
+    meaning: 过滤值隶属于维度；归属记录产生它的面板与操作
+    condition: 过滤器由维度值点选产生
+    importance: primary
+  - id: cells_of_dataset
+    source: projection
+    target: dataset
+    type: aggregates
+    direction: forward
+    meaning: 单元格数值 = 满足全部过滤器的记录在轴上的聚合
+    condition: 投影单元格由过滤后的记录聚合而成
+    importance: supporting
+  - id: trail_records_ops
+    source: state_trail
+    target: filter
+    type: attributes_and_reverts
+    direction: forward
+    meaning: 轨迹条目记录『谁产生了这个状态』并可回滚
+    condition: 每次状态变更加操作轨迹
+    importance: primary
+mental_model_hypothesis:
+  summary: 用户把数据集理解为一个可旋转的『立方体』：事实记录沿多个维度分布；切换投影维度=旋转立方体的观察面，而数据本身与已施加的约束不变。过滤器是『贴在维度值上的便签』，带来源且可撕掉；每次操作留在一条时间轨迹上，可回退。
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: 在应用内连续执行 ≥4 次维度切换/下钻操作后，此前设置的所有过滤器与锚定选择依然生效并可见（状态栏可数、可点、可逐条撤销），用户从未见到任何『状态被清空』的时刻
+open_questions: []
+existing_product:
+  stable_user_concepts: []
+  stable_patterns:
+    - 交互式数据透视/交叉表
+    - 维度面板+值过滤（faceted filter）
+    - 操作历史/撤销轨迹
+  current_user_pain_points: []
+  current_constraints: []
+  legacy_debt: []

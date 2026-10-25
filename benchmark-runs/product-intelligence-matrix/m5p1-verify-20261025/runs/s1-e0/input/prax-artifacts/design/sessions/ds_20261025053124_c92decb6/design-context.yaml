@@ -1,0 +1,74 @@
+user:
+  expertise: expert
+  familiarity: high
+task:
+  primary: 在多维数据集上切换投影维度进行探索（换轴/下钻/换度量），认知上下文全程保留
+  modes:
+    - explore
+    - filter
+    - drill_down
+    - revert
+  frequency: high
+domain:
+  type: business/market 多维分析（销售与运营指标立方体）
+  entities:
+    - 数据集（事实记录集合，~2600 行内联）
+    - 维度（品类/渠道/客群/区域/季度，部分带层级）
+    - 投影（行维度×列维度×度量的交叉表）
+    - 过滤器（维度值选择，带来源归属）
+    - 度量（销售额/毛利/订单数/退货率）
+    - 状态轨迹（带归属的操作历史，可回滚）
+information:
+  volume: high
+  relationship_complexity: medium
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: none
+  error_cost: low
+priorities:
+  - 维度切换保留全部认知上下文（过滤/度量/排序/锚定）——成功的硬标准
+  - 过滤/投影状态有归属（来源可见）且可回退（单条撤销+轨迹回滚）
+  - 高密度信息一屏呈现，首屏即用（无加载态）
+  - 层级下钻顺畅（品类→子类→单品）
+  - 低风险：全部操作可逆
+density_intent: compact
+confidence:
+  overall: high
+unknowns:
+  - id: default_axes_choice
+    impact: low
+    affects:
+      - 信息架构
+  - id: trail_depth
+    impact: low
+    affects:
+      - 状态轨迹交互
+classification:
+  version: "1"
+  task_type: configure_preferences
+  domain_id: observability_analytics
+  interaction_mode: collection_with_contextual_detail
+  product_type: unknown
+  primary_object_type: dimension
+  secondary_object_types:
+    - projection
+    - filter
+    - dataset
+    - state_trail
+    - measure
+  confidence: high
+  evidence:
+    - task_type=configure_preferences ← token '设置' in context.task and frame.tasks
+    - domain_id=observability_analytics ← token '分析' in context.domain
+    - interaction_mode=collection_with_contextual_detail ← token 'filter' in context.task, frame.tasks, and context.priorities
+    - primary_object_type=dimension ← most referenced product object in the Product Frame
+  open_questions:
+    - product_type could not be derived; record the intended audience and product kind

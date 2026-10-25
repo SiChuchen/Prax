@@ -1,0 +1,82 @@
+version: "0.2"
+jtbd:
+  verb: complete
+  target: 高后果生产发布流程
+  success: 零失误走完全程；不可逆步骤均有确认与恢复路径
+primary_object:
+  type: workflow
+  label: 生产发布 Runbook
+task_model:
+  frequency: low
+  reversibility: irreversible
+  consequence: high
+  expertise: expert
+user:
+  primary_role: 发布工程师 / 值班发布负责人（协同运维与后端）
+  expertise: expert
+  familiarity: medium
+goal:
+  primary: 零失误走完一条高后果流程（生产环境发布）
+tasks:
+  primary: 按依赖顺序逐个完成发布 runbook 的全部步骤，直至发布收尾
+  secondary:
+    - 在不可逆步骤执行前完成强制确认（后果陈述 + 回滚方案 + 发布单号）
+    - 异常时按步骤级恢复/回滚路径回退
+    - 逐项核对验证清单并留存操作留痕
+product_objects:
+  - id: release_runbook
+    user_name: 发布流程（Runbook）
+    purpose: 唯一的高后果流程本体：有序的阶段与步骤结构，随首屏内联就绪
+  - id: phase
+    user_name: 阶段
+    purpose: 步骤的分组层级，表达发布生命周期（准备→构建→迁移→切换→收尾）
+  - id: step
+    user_name: 步骤
+    purpose: 最小可执行单元：操作指引、核对清单、风险等级与可逆性标注
+  - id: confirmation_gate
+    user_name: 确认关卡
+    purpose: 不可逆步骤执行前的强制确认层：后果陈述、回滚方案、勾选确认项、输入发布单号
+  - id: rollback_plan
+    user_name: 回滚方案（恢复路径）
+    purpose: 不可逆步骤执行后异常时的恢复动作说明与回滚入口（收尾前始终可达）
+  - id: audit_log
+    user_name: 操作留痕
+    purpose: 每次执行、确认、回滚、验证的事件时间线，可导出
+relationships:
+  - id: rel_phase_step
+    source: phase
+    target: step
+    type: contains
+    direction: forward
+    meaning: 阶段包含按序步骤
+    importance: primary
+  - id: rel_gate
+    source: step
+    target: confirmation_gate
+    type: gated_by
+    direction: forward
+    meaning: 不可逆步骤被确认关卡阻塞，确认通过才可执行
+    condition: step.reversibility = irreversible
+    importance: primary
+  - id: rel_rollback
+    source: confirmation_gate
+    target: rollback_plan
+    type: exposes
+    direction: forward
+    meaning: 确认层与执行后状态都暴露该步骤的回滚方案
+    importance: primary
+  - id: rel_audit
+    source: step
+    target: audit_log
+    type: recorded_in
+    direction: forward
+    meaning: 步骤状态变迁全部写入留痕
+    importance: supporting
+mental_model_hypothesis:
+  summary: 用户把发布理解为一条由阶段串起的单行道：正常时顺序推进；高危不可逆节点必须停下核对后果与回滚预案并显式确认；执行后、收尾前仍保留回滚窗口。界面预期为：左侧流程进度（阶段→步骤）、中部当前步骤工作区、侧边留痕记录。
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: 用户按依赖顺序完成全部步骤直至发布收尾：无跳步、无误执行；每个不可逆步骤执行前经过强制确认（含回滚方案与发布单号），执行后收尾前回滚路径始终可达；全部动作可在留痕中回溯。
+open_questions: []

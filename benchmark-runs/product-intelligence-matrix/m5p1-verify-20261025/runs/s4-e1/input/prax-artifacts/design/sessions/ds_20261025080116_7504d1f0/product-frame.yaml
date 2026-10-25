@@ -1,0 +1,103 @@
+version: "0.2"
+jtbd:
+  verb: complete
+  target: a high-consequence production cutover runbook
+  success: walked the full flow with zero errors; every irreversible step was confirmed deliberately and has a usable recovery path
+primary_object:
+  type: workflow
+  label: Cutover Runbook
+task_model:
+  frequency: low
+  reversibility: irreversible
+  consequence: high
+  expertise: expert
+user:
+  primary_role: Release engineer on duty for a production cutover
+  expertise: intermediate
+  familiarity: high
+goal:
+  primary: Guide the engineer through the single production cutover runbook so it is completed end-to-end with zero missteps, where every irreversible step is deliberately confirmed and carries a recovery path.
+tasks:
+  primary: "Complete the cutover runbook in strict order: satisfy each phase's checkpoints, execute steps (marking reversible checks, explicitly confirming irreversible actions), and reach the completion summary with a clean audit trail."
+  secondary:
+    - Review a step's consequence and rollback plan before executing it
+    - Recover via a documented rollback action when an irreversible step must be undone
+    - Audit the session's action log at any time
+product_objects:
+  - id: runbook
+    user_name: Runbook
+    purpose: The single high-consequence workflow being executed; owns order and gates
+  - id: phase
+    user_name: Phase
+    purpose: Hierarchical grouping of steps; unlocks when prior phase completes
+  - id: step
+    user_name: Step
+    purpose: One executable action; either a reversible check or an irreversible action with confirm + rollback
+  - id: checkpoint
+    user_name: Checkpoint
+    purpose: Precondition list that gates a step or phase from being executed early
+  - id: rollback_plan
+    user_name: Rollback plan
+    purpose: The documented recovery path attached to each irreversible step, always previewable before confirming
+  - id: confirmation_gate
+    user_name: Confirm gate
+    purpose: Deliberate interrupt (consequence statement + typed/acknowledged confirm) before an irreversible step executes
+  - id: audit_log
+    user_name: Activity log
+    purpose: Append-only record of executed actions, confirmations, and rollbacks for zero-error verification
+  - id: completion_record
+    user_name: Completion summary
+    purpose: End state proving all steps done with zero errors, surfaced when the runbook finishes
+relationships:
+  - source: runbook
+    target: phase
+    type: contains
+    direction: forward
+    meaning: runbook is an ordered sequence of phases
+    importance: primary
+    id: rel_runbook_phase
+  - source: phase
+    target: step
+    type: contains
+    direction: forward
+    meaning: phase groups ordered steps
+    importance: primary
+    id: rel_phase_step
+  - source: step
+    target: checkpoint
+    type: guarded_by
+    direction: forward
+    meaning: step stays locked until its checkpoints are satisfied
+    importance: primary
+    id: rel_step_checkpoint
+  - source: step
+    target: rollback_plan
+    type: recovered_by
+    direction: forward
+    meaning: each irreversible step carries exactly one rollback plan, previewable before confirm
+    condition: only irreversible steps
+    importance: primary
+    id: rel_step_rollback_plan
+  - source: step
+    target: confirmation_gate
+    type: gated_by
+    direction: forward
+    meaning: irreversible execution requires passing the confirm gate
+    condition: only irreversible steps
+    importance: primary
+    id: rel_step_confirmation_gate
+  - source: runbook
+    target: audit_log
+    type: records_to
+    direction: forward
+    meaning: every execution/confirm/rollback appends an entry
+    importance: supporting
+    id: rel_runbook_audit_log
+mental_model_hypothesis:
+  summary: "Users model it like a pilot's pre-flight checklist crossed with a deployment runbook: a strict ordered ladder of phases and steps where most steps are check-offs, but 'point of no return' steps are treated differently — they announce their consequence, demand a deliberate confirmation, and always show the way back before letting you proceed."
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: The runbook reaches its completion state with every step executed in order, every checkpoint satisfied, every irreversible step confirmed through its gate, and an audit trail proving zero errors — available the moment the last step completes.
+open_questions: []

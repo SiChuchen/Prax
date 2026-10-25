@@ -1,0 +1,120 @@
+session_id: ds_20261025080116_7504d1f0
+information_shape:
+  cardinality: one
+  relationality: low
+  hierarchy: high
+  temporality: low
+  density: low
+  dimensionality: medium
+  spatiality: none
+  volatility: medium
+  uncertainty: medium
+  comparison_need: none
+representation:
+  primary:
+    type: wizard
+    reason: "A phase-gated wizard-like checklist directly encodes the consequential-flow shape: one path, high hierarchy, strict order, per-step gates for irreversible actions"
+  supporting:
+    - type: list
+      reason: Activity log is a flat append-only list of actions/confirmations/rollbacks
+    - type: document
+      reason: Completion summary reads as a short structured document proving zero-error completion
+  rejected:
+    - option: table
+      reason: comparison_need none; row density conflicts with spacious intent
+    - option: tree
+      reason: shows hierarchy but not progression/gating semantics
+    - option: document
+      reason: read-only; cannot gate or record execution
+  justification_vs_shape: "A guided-checklist wizard inside single-workspace chrome is the canonical representation for consequential-flow completion: cardinality one (a single path), high hierarchy (phase/step nesting), no comparison (no alternatives shown), medium volatility/uncertainty absorbed by conditional checkpoints and branch notes at decision points."
+primary_structure:
+  pattern: PAT-APPLICATION-SHELL
+  rationale:
+    - "Routed pattern, inspected at L2: its contract composes correctly for this product when multi-area navigation is dropped — keep the stable-chrome force (header/status) and let the single work region be the entire phase-gated runbook ladder; the anti-pattern (backend-table-per-navigation-item) and over-navigation risk are avoided by having zero nav items"
+    - "The shell's does_not_apply_when ('single workspace') is honored by degenerate composition: exactly one work region that never swaps, so there is nothing to reorient across"
+    - High hierarchy maps to phase → step nesting rendered as a vertical ladder with phase headers and step rows inside the work region
+    - "Consequential execution maps to wizard-style progression inside the work region: strict order enforcement makes out-of-order errors structurally impossible (error prevention over error correction)"
+    - "P-28 Recoverable Action: each irreversible step carries a rollback plan previewed inside its confirmation gate before execution is possible"
+    - "P-26 + H-07: ready/locked/done/blocked states and the activity log are always visible; loading is never user-visible because data is inlined at first paint"
+    - "H-01 Task-first entry: first paint shows runbook title, progress, and the single next actionable step — the task is obvious immediately"
+    - "WEB-DESKTOP profile: pointer+keyboard, large viewport, generous spacing"
+  confidence: high
+information_hierarchy:
+  primary:
+    - Current actionable step (dominant work region)
+    - "Runbook progress: phase ladder with per-phase completion"
+    - "Irreversible-step danger attributes: consequence + rollback plan"
+  secondary:
+    - Activity log (append-only, toggleable)
+    - "Runbook header: title, owner, change window, overall status"
+density:
+  intent: spacious
+  strategy:
+    - One step in focus at a time; completed steps collapse to single-line summaries
+    - Generous vertical rhythm and large targets on execute/confirm controls
+    - "Progressive disclosure: consequence + rollback detail revealed in the confirm gate, not permanently on screen"
+    - Single-column reading flow; no dense tables
+  avoid:
+    - multi-column data grids
+    - side-by-side comparisons
+    - cramped rows of small controls
+    - persistent chrome competing with the step in focus
+major_choices:
+  - id: mc1-confirm-gate
+    choice: Irreversible steps use a typed-phrase confirmation gate that previews the step's rollback plan before execution is allowed
+    rationale: The acceptance seed requires both confirmation AND a recovery path; binding rollback preview into the gate makes 'know the way back' a precondition of proceeding, per P-28 Recoverable Action (recovery beats perfect attention)
+    confidence: medium
+    references:
+      - confirmation_gate
+      - Rollback plan
+      - Step
+      - Checkpoint
+      - Review a step's consequence and rollback plan before executing it
+  - id: mc2-strict-gating
+    choice: "Strict prerequisite gating: a step stays locked until earlier steps/checkpoints complete; out-of-order execution is structurally impossible, not merely discouraged"
+    rationale: Zero-error completion demands the app make missteps structurally hard (error prevention over error correction); the Runbook owns order
+    confidence: medium
+    references:
+      - Runbook
+      - Phase
+      - Step
+      - Checkpoint
+      - "Complete the cutover runbook in strict order: satisfy each phase's checkpoints, execute steps (marking reversible checks, explicitly confirming irreversible actions), and reach the completion summary with a clean audit trail."
+  - id: mc3-simulated-execution
+    choice: Simulated execution with an append-only activity log; steps carry deterministic mock outcomes and no real side effects
+    rationale: Static single-page delivery with no external services; the product's value is guiding and recording decisions, and the Activity log makes zero-error completion verifiable
+    confidence: medium
+    references:
+      - Activity log entry
+      - Completion summary
+      - Audit the session's action log at any time
+  - id: mc4-inline-rollback
+    choice: Rollback actions live inside the executed step (and its gate), reversing exactly the paired irreversible step and logging the recovery
+    rationale: The recovery path must be reachable at the moment of regret, not behind a separate admin surface; rollback stays previewable before confirm
+    confidence: medium
+    references:
+      - Rollback plan
+      - Step
+      - Activity log entry
+      - Recover via a documented rollback action when an irreversible step must be undone
+rejected:
+  - option: Full application shell with multiple global navigation areas
+    reason: "Contract's does_not_apply_when: single workspace; over-navigation risk with zero secondary areas to navigate"
+  - option: Data table of steps
+    reason: Tables signal comparison (comparison_need=none) and compress density against spacious intent; confirm gates fit poorly in rows
+  - option: Canvas / flow diagram
+    reason: spatiality=none; diagram implies spatial reasoning the task does not need
+  - option: Plain document (read-only runbook text)
+    reason: "No execution semantics: cannot enforce order, gate irreversibles, or record the audit trail zero-error success needs"
+unresolved: []
+complexity_budget:
+  permanent_panels: 1
+  permanent_primary_actions: 1
+  modes: 1
+  state_owners: 1
+  navigation_levels: 1
+  persistent_filters: 0
+  new_semantic_concepts: 4
+  keyboard_contracts: 1
+  mobile_conflicts: 0
+  permanent_surfaces: 1

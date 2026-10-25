@@ -1,0 +1,82 @@
+[
+  {
+    "step": "S1 first-paint ready (inline data, no loading state)",
+    "ok": true,
+    "detail": "{\"count\":\"Showing 720 / 720 records · 0 filters\",\"rows\":18,\"railDims\":9,\"loadingText\":false,\"chartBars\":12,\"total\":720}"
+  },
+  {
+    "step": "S2 bin click adds attributed filter",
+    "ok": true,
+    "detail": "{\"count\":\"Showing 66 / 720 records · 1 filter\",\"chips\":[\"Temperature\",\"lens\"],\"hist\":[\"+ Temperature [29.1 – 32.5) °C]\"]}"
+  },
+  {
+    "step": "S3 lens switch keeps filter + attribution",
+    "ok": true,
+    "detail": "{\"lensTitle\":\"Lens — Status\",\"tempChipStillThere\":true,\"tempBadge\":\"1\",\"bars\":3}"
+  },
+  {
+    "step": "S4 second filter + selection drives inspector",
+    "ok": true,
+    "detail": "{\"selected\":\"S-0137\",\"inspectorId\":\"S-0137\",\"historyKinds\":\"filter-add,lens,filter-add\"}"
+  },
+  {
+    "step": "S5 cognition survives second switch",
+    "ok": true,
+    "detail": "{\"chips\":\"Status|Temperature|lens\",\"selStill\":\"S-0137\",\"count\":\"Showing 14 / 720 records · 2 filters\"}"
+  },
+  {
+    "step": "S6 Ctrl+Z reverts latest (lens switch)",
+    "ok": true,
+    "detail": "{\"lensTitle\":\"Lens — Status\",\"histCount\":3,\"count\":\"Showing 14 / 720 records · 2 filters\"}"
+  },
+  {
+    "step": "S7 per-entry revert removes exactly the degraded filter",
+    "ok": true,
+    "detail": "{\"lensTitle\":\"Lens — Status\",\"chips\":\"Temperature|lens\",\"histCount\":2,\"count\":\"Showing 66 / 720 records · 1 filter\",\"statusBadge\":\"0\"}"
+  },
+  {
+    "step": "S7b projection entry revert restores previous lens",
+    "ok": true,
+    "detail": "{\"lensTitle\":\"Lens — Status\",\"histCount\":2}"
+  },
+  {
+    "step": "S8 chip removal clears working set filters",
+    "ok": true,
+    "detail": "{\"count\":\"Showing 720 / 720 records · 0 filters\",\"histTop\":\"− Temperature [29.1 – 32.5) °C]\",\"chips\":\"lens\"}"
+  },
+  {
+    "step": "S8b projection chip × reverts to previous lens",
+    "ok": true,
+    "detail": "{\"lensTitle\":\"Lens — Temperature (°C)\"}"
+  },
+  {
+    "step": "S9 keyboard operability (bin focus + Enter filters, focus preserved)",
+    "ok": true,
+    "detail": "{\"s9focus\":true,\"s9\":{\"chipAdded\":true,\"focusPreserved\":true}}"
+  },
+  {
+    "step": "S9b row keyboard selection drives inspector",
+    "ok": true,
+    "detail": "{\"rowId\":\"S-0116\",\"s9b\":{\"inspectorId\":\"S-0116\"}}"
+  },
+  {
+    "step": "S10 empty state reachable with recovery",
+    "ok": true,
+    "detail": "{\"emptyShown\":true,\"tableHidden\":true,\"count\":\"Showing 0 / 720 records · 2 filters\",\"hasSetEntry\":true}"
+  },
+  {
+    "step": "S11 empty-state recovery (revertible reset)",
+    "ok": true,
+    "detail": "{\"count\":\"Showing 720 / 720 records · 0 filters\",\"histTop\":\"reset — cleared all filters (empty-state recovery)\"}"
+  },
+  {
+    "step": "S12 tab order monotonic @1280x860",
+    "ok": true,
+    "detail": "{\"viewport\":\"1280x860\",\"stops\":13,\"inversions\":0,\"details\":[]}"
+  },
+  {
+    "step": "S13 tab order monotonic @1440x900",
+    "ok": true,
+    "detail": "{\"viewport\":\"1440x900\",\"stops\":13,\"inversions\":0,\"details\":[]}"
+  }
+]

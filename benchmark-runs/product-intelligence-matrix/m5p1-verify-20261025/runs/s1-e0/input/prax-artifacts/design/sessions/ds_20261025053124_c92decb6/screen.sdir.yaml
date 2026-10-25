@@ -1,0 +1,144 @@
+version: "0.2"
+screen:
+  id: workspace_screen
+  intent:
+    primary_task: 切换投影维度（行/列/下钻）以从不同维度理解数据，同时过滤/度量/排序/锚定等认知上下文保持不变
+    secondary_tasks:
+      - 按维度值设置/移除过滤器（带来源归属）
+      - 点击状态轨迹回滚到任意历史状态
+      - 切换度量与排序方式
+      - 下钻层级（品类→子类→单品）
+  archetype:
+    pattern_ref: PAT-WORKSPACE
+  density_intent: compact
+  regions:
+    - id: 投影交叉表（当前维度组合下的聚合矩阵）——认知主角
+      role: experimental:投影交叉表（当前维度组合下的聚合矩阵）——认知主角
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 维度轨道（可投影/可过滤的维度清单与值）——探索的抓手
+      role: experimental:维度轨道（可投影/可过滤的维度清单与值）——探索的抓手
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 状态归属栏（活动过滤器/锚定，逐条带来源、可移除）——验收种子的显性化
+      role: experimental:状态归属栏（活动过滤器/锚定，逐条带来源、可移除）——验收种子的显性化
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 度量选择器与记录计数（顶栏，持续可见）
+      role: experimental:度量选择器与记录计数（顶栏，持续可见）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 状态轨迹（可回滚历史，底部条）
+      role: experimental:状态轨迹（可回滚历史，底部条）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 单元格/记录详情（悬浮即时预览，不占常驻空间）
+      role: experimental:单元格/记录详情（悬浮即时预览，不占常驻空间）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: workspace
+      role: dominant_workspace
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - preserve_context
+  relationships: []
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved: []
+  rejected_alternatives:
+    - option: PAT-APPLICATION-SHELL 全局导航壳
+      reason: 产品为单工作台，全局导航会引入第二层无意义的导航位（pattern 自身排除条件命中）
+    - option: 多视图标签页（图表/表格/地图分 tab）
+      reason: tab 切换正是『重置认知』的典型来源；比较需求=none，地图=spatiality none，均不需要
+    - option: 框架构建（React/Vite + dist 产物）
+      reason: 90min 预算内手写原生 JS 足够，且零构建让 file:// 直接打开成为可能，消除工具链风险
+    - option: 把状态轨迹做成抽屉/浮层
+      reason: 验收种子要求归属与回退成为一屏内的常驻能力，抽屉会隐藏状态可见性（P-26）
+  user_job:
+    verb: explore
+    target: 多维数据集（无界基数、高维度、中层级）
+    success: 用户连续切换多个投影维度后，先前的过滤条件、度量与排序选择、锚定集合全部原样保留且可一键回退，无需重新设置
+  primary_object:
+    type: dataset
+    label: 多维数据集（事实记录 × 维度 × 度量的立方体投影）
+  information_shape:
+    cardinality: unbounded
+    relationality: medium
+    hierarchy: medium
+    temporality: low
+    density: high
+    dimensionality: high
+    spatiality: none
+    volatility: medium
+    uncertainty: low
+    comparison_need: none
+  representation:
+    primary:
+      type: grid
+      reason: 无界基数+高维高密数据在一屏内的最优投影是行维度×列维度交叉表（热力矩阵格），单元格即维度交点聚合，天然支撑『换维度=重排同一对象空间』
+    supporting:
+      - type: tree
+        reason: 维度轨道与行轴层级下钻用树形承载（品类→子类→单品），medium hierarchy 的直接对应
+      - type: list
+        reason: 状态归属栏与可回滚轨迹用紧凑列表/chips 承载每条状态的来源与移除动作
+  priority:
+    primary:
+      - 投影交叉表（当前维度组合下的聚合矩阵）——认知主角
+      - 维度轨道（可投影/可过滤的维度清单与值）——探索的抓手
+      - 状态归属栏（活动过滤器/锚定，逐条带来源、可移除）——验收种子的显性化
+      - workspace
+    contextual:
+      - 度量选择器与记录计数（顶栏，持续可见）
+      - 状态轨迹（可回滚历史，底部条）
+      - 单元格/记录详情（悬浮即时预览，不占常驻空间）
+  interaction:
+    preview: none
+    inspect: select
+    navigate: none
+    locate: none
+  state_ownership:
+    - state: selection
+      owner: 投影交叉表（当前维度组合下的聚合矩阵）——认知主角
+    - state: preview
+      owner: session
+  complexity_budget:
+    permanent_panels: 4
+    permanent_primary_actions: 3
+    modes: 1
+    state_owners: 3
+    navigation_levels: 1
+    persistent_filters: 5
+    new_semantic_concepts: 3
+    keyboard_contracts: 2
+    mobile_conflicts: 0
+    permanent_surfaces: 4
+  acceptance:
+    - 在应用内连续执行 ≥4 次维度切换/下钻操作后，此前设置的所有过滤器与锚定选择依然生效并可见（状态栏可数、可点、可逐条撤销），用户从未见到任何『状态被清空』的时刻

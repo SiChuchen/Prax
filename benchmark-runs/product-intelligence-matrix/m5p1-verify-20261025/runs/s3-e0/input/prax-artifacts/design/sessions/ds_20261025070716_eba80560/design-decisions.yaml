@@ -1,0 +1,115 @@
+session_id: ds_20261025070716_eba80560
+version: "0.2"
+information_shape:
+  cardinality: one
+  relationality: low
+  hierarchy: high
+  temporality: low
+  density: low
+  dimensionality: medium
+  spatiality: none
+  volatility: medium
+  uncertainty: medium
+  comparison_need: none
+representation:
+  primary:
+    type: list
+    reason: 有序步骤列表 + 相邻详情（List Detail）：保留全程位置感与锁定态，满足零失误的顺序约束；层级高由两级分组承载
+  supporting:
+    - type: wizard
+      reason: 线性门控执行：沿单行道逐步推进，锁定态可见
+    - type: form
+      reason: 核对清单与确认关卡（勾选确认项 + 输入发布单号）以表单化交互强制显式确认
+    - type: feed
+      reason: 操作留痕：按时间倒序事件流，支撑可回溯
+  rejected:
+    - option: PAT-CANVAS-WORKSPACE
+      reason: spatiality=none、relationality=low，无空间关系需表达
+    - option: table
+      reason: density=low、comparison_need=none，表格浪费于单流程执行
+    - option: kanban/board
+      reason: 弱化顺序性，与零失误单行道冲突
+    - option: document
+      reason: 无状态与门控，无法承载确认/回滚交互
+  justification_vs_shape: cardinality=one 决定单流程单列表征而非集合管理；hierarchy=high 由列表的阶段→步骤两级分组承载；density=low 决定主区聚焦单一步骤而非密集并置；volatility=medium 由步骤状态机（锁定/就绪/已执行/已回滚/完成）承载；uncertainty=medium 由验证清单与确认关卡吸收；temporality=low、comparison_need=none 排除时间轴与对比表征；spatiality=none 排除 canvas。
+primary_structure:
+  pattern: PAT-LIST-DETAIL
+  rationale:
+    - 路由返回 PAT-LIST-DETAIL（confidence high），已 inspect 至 L2：applies_when=collection order matters，与基数 one + 顺序依赖的单流程完全吻合；左栏阶段→步骤有序列表（含锁定态）+ 右侧当前步骤详情工作区
+    - 在 List Detail 骨架上叠加顺序门控（wizard 语义：前序未完成则锁定）与不可逆步骤的确认关卡、执行后回滚窗口（P-28 Recoverable Action 的落位）
+    - 排除 PAT-WORKSPACE：pattern_contract 明确 does_not_apply_when=tasks are linear，本任务为单行道线性流程
+    - 排除 PAT-CANVAS-WORKSPACE：要求 relationships first-class，本域 spatiality=none、relationality=low，无关系网络需表达
+  confidence: high
+information_hierarchy:
+  primary:
+    - 当前步骤工作区：操作指引、风险标注、核对清单、执行动作
+    - 阶段→步骤有序进度（左栏）：锁定/就绪/已完成/已回滚状态与全程位置
+  secondary:
+    - 确认关卡（不可逆步骤执行前：后果陈述 + 回滚方案 + 确认口令）
+    - 回滚窗口（不可逆步骤执行后：回滚入口与恢复方案直至收尾）
+    - 操作留痕时间线（侧栏，可导出）
+    - 顶部总进度与剩余高危步骤计数
+density:
+  intent: regular
+  strategy:
+    - 主区单步骤大区块呈现，留白分组替代密集并置
+    - 左栏窄列常驻，留痕侧栏折叠可展开
+    - 关键信息用层级与留白区分，维持 regular 密度与 design_context 一致
+  avoid:
+    - 仪表盘式多面板拼贴
+    - 超过一个的常驻主操作按钮
+major_choices:
+  - id: confirm-gate
+    choice: 不可逆步骤执行采用确认关卡：后果陈述 + 回滚方案预览 + 勾选确认项 + 输入发布单号匹配，全部通过才放行执行
+    rationale: 验收种子要求确认路径；口令匹配杜绝顺手点击，回滚方案前置阅读
+    confidence: high
+    references:
+      - confirmation_gate
+      - step
+      - rollback_plan
+      - release_runbook
+  - id: rollback-window
+    choice: 不可逆步骤执行后进入回滚窗口，回滚入口直至收尾步骤完成前始终可达；回滚触发恢复路径并写入留痕
+    rationale: 验收种子要求恢复路径；P-28：恢复比注意力更可靠
+    confidence: high
+    references:
+      - rollback_plan
+      - confirmation_gate
+      - audit_log
+  - id: linear-lock
+    choice: 步骤严格顺序解锁，锁定步骤不可执行且点击给出阻塞原因
+    rationale: 零失误 → 不给跳步机会；锁定原因可视化避免困惑
+    confidence: high
+    references:
+      - step
+      - phase
+      - release_runbook
+  - id: audit-trail
+    choice: 全部状态变迁写入留痕日志（时间、事件、步骤），支持复制导出
+    rationale: 高后果流程要求可回溯
+    confidence: high
+    references:
+      - audit_log
+  - id: inline-data
+    choice: runbook 数据以 JS 内联，无 fetch、无构建依赖，file:// 双击即可用
+    rationale: 交付约束：首屏即用、本地静态打开
+    confidence: high
+    references:
+      - release_runbook
+rejected:
+  - option: 自由顺序（无锁定）
+    reason: 与零失误成功标准冲突
+  - option: 执行后不可回滚
+    reason: 违反验收种子「不可逆步骤有恢复/确认路径」
+unresolved: []
+complexity_budget:
+  permanent_panels: 3
+  permanent_primary_actions: 2
+  modes: 1
+  state_owners: 1
+  navigation_levels: 1
+  persistent_filters: 0
+  new_semantic_concepts: 4
+  keyboard_contracts: 0
+  mobile_conflicts: 0
+  permanent_surfaces: 1

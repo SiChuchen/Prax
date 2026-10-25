@@ -1,0 +1,64 @@
+user:
+  expertise: expert
+  familiarity: high
+task:
+  primary: 按序执行一次生产发布流程的全部步骤，零失误走完全程
+  modes:
+    - 按序执行
+    - 二次确认
+    - 恢复/撤销
+    - 审计回查
+    - 完成总结
+  frequency: low
+domain:
+  type: 生产发布 / 运维变更管理（内联演示数据）
+  entities:
+    - 发布流程
+    - 阶段
+    - 步骤
+    - 变更单
+    - 回滚预案
+    - 审计记录
+information:
+  volume: low
+  relationship_complexity: low
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: high
+  error_cost: high
+priorities:
+  - 顺序正确性优先于速度
+  - 不可逆步骤的确认与可撤销路径清晰可见
+  - 零失误状态全程可见
+  - 操作全程审计留痕
+  - 低密度、清爽、无干扰的界面
+density_intent: spacious
+confidence:
+  overall: high
+unknowns: []
+classification:
+  version: "1"
+  task_type: compare_filter_records
+  domain_id: data_exploration
+  interaction_mode: unknown
+  product_type: internal_engineering_tool
+  primary_object_type: release_flow
+  secondary_object_types:
+    - step
+    - audit_entry
+  confidence: medium
+  evidence:
+    - task_type=compare_filter_records ← token '日志' in context.task and frame.tasks
+    - domain_id=data_exploration ← token '数据' in context.domain
+    - product_type=internal_engineering_tool ← expert user in an engineering domain
+    - primary_object_type=release_flow ← most referenced product object in the Product Frame
+  open_questions:
+    - interaction_mode could not be classified from the provided context; refine the context fields or record a custom classification

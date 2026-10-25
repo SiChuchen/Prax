@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>多维棱镜 · 数据探索工作台</title>
+  <link rel="stylesheet" href="app/style.css">
+</head>
+<body>
+  <div id="app">
+    <header id="topbar">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">◈</span>
+        <b>多维棱镜</b>
+        <span class="sub">数据集「零售销售观测事实表」· 本地内联</span>
+      </div>
+      <span id="recMain" class="rec-main"></span>
+      <div class="top-actions">
+        <label class="axis-pick">行
+          <select id="rowSel" title="行维度（换轴保留过滤/锚定/度量）"></select>
+        </label>
+        <label class="axis-pick">列
+          <select id="colSel" title="列维度（换轴保留过滤/锚定/度量）"></select>
+        </label>
+        <span class="sep" aria-hidden="true"></span>
+        <label class="axis-pick">度量
+          <select id="measureSel" title="度量选择（切换不触碰过滤/锚定）"></select>
+        </label>
+        <button id="sortBtn" class="btn" title="按当前度量排序（顶层行）">排序↓</button>
+        <span class="sep" aria-hidden="true"></span>
+        <button id="undoBtn" class="btn" title="撤销（Ctrl+Z）">↶ 撤销</button>
+        <button id="redoBtn" class="btn" title="重做（Ctrl+Y / Ctrl+Shift+Z）">↷ 重做</button>
+        <button id="resetBtn" class="btn danger" title="恢复初始状态（本身记入轨迹，可再回退）">⟲ 重置全部</button>
+      </div>
+    </header>
+
+    <div id="main">
+      <aside id="dimRail" aria-label="维度轨道（勾选=过滤，按钮=设轴）"></aside>
+      <section id="right">
+        <div id="attrBar" aria-label="状态归属栏"></div>
+        <div id="gridPanel">
+          <div class="grid-head">
+            <b id="gridTitle"></b>
+            <span id="ctxAnchor" class="ctx-anchor" title="换轴保留的认知上下文（实时回显）"></span>
+          </div>
+          <div id="gridWrap"></div>
+          <div id="cellTip" aria-hidden="true"></div>
+        </div>
+      </section>
+    </div>
+
+    <footer id="trail" aria-label="状态轨迹：点击任意条目回滚"></footer>
+  </div>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+  <div id="fatal" hidden>
+    <h3>渲染出错</h3>
+    <p id="fatalMsg"></p>
+  </div>
+
+  <script src="app/data.js"></script>
+  <script src="app/app.js"></script>
+</body>
+</html>

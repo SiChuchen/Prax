@@ -1,0 +1,73 @@
+user:
+  expertise: intermediate
+  familiarity: high
+task:
+  primary: Complete the single high-consequence cutover runbook end-to-end with zero errors
+  modes:
+    - guided-execution
+    - pre-execution-review
+    - recovery
+  frequency: low
+domain:
+  type: release operations / production cutover
+  entities:
+    - Runbook
+    - Phase
+    - Step
+    - Checkpoint
+    - Confirm gate
+    - Rollback plan
+    - Activity log entry
+    - Completion summary
+information:
+  volume: medium
+  relationship_complexity: low
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: high
+  error_cost: high
+priorities:
+  - "Zero-error completion: strict order enforcement and prerequisite gating before anything can execute"
+  - "Irreversible safety: every irreversible step shows consequence + rollback plan and requires explicit confirmation"
+  - "Recoverability: rollback actions are documented, previewable, and executable"
+  - "Traceability: append-only activity log proving what happened and when"
+  - Calm spacious layout keeping attention on the current step
+density_intent: spacious
+confidence:
+  overall: high
+unknowns:
+  - id: u1-domain-depth
+    impact: low
+    affects:
+      - step-content-realism
+classification:
+  version: "1"
+  task_type: unknown
+  domain_id: data_exploration
+  interaction_mode: collection_with_contextual_detail
+  product_type: unknown
+  primary_object_type: step
+  secondary_object_types:
+    - runbook
+    - phase
+    - checkpoint
+    - rollback_plan
+    - confirmation_gate
+    - audit_log
+    - completion_record
+  confidence: medium
+  evidence:
+    - domain_id=data_exploration ← token 'log' in context.domain
+    - interaction_mode=collection_with_contextual_detail ← token 'table' in context.task, frame.tasks, and context.priorities
+    - primary_object_type=step ← most referenced product object in the Product Frame
+  open_questions:
+    - task_type could not be classified from the provided context; refine the context fields or record a custom classification
+    - product_type could not be derived; record the intended audience and product kind

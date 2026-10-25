@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lensboard — dimensional workbench</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header id="header">
+  <div class="brand">◍ Lensboard <span class="brand-sub">dimensional workbench</span></div>
+  <div class="dataset-name" id="dataset-name"></div>
+  <div class="working-count" id="working-count" aria-live="polite"></div>
+  <div class="header-actions">
+    <button id="btn-undo" title="Undo the latest change (Ctrl+Z)" disabled>↶ Undo</button>
+    <button id="btn-reset" title="Clear all filters and restore the initial lens">Reset all</button>
+  </div>
+</header>
+
+<main id="main">
+  <aside id="dimension-rail" class="panel" aria-label="Dimensions">
+    <div class="panel-head"><h2>Dimensions</h2><span class="panel-note" id="rail-note"></span></div>
+    <div id="rail-list" role="list"></div>
+  </aside>
+
+  <section id="lens-panel" class="panel" aria-label="Projection lens">
+    <div class="panel-head">
+      <h2 id="lens-title"></h2>
+      <span class="panel-note" id="lens-note"></span>
+      <span id="lens-filter-note"></span>
+    </div>
+    <div id="lens-chart"></div>
+    <div id="lens-tip" hidden></div>
+  </section>
+
+  <section id="table-panel" class="panel" aria-label="Working set">
+    <div class="panel-head">
+      <h2>Working set</h2>
+      <span class="panel-note" id="table-note"></span>
+    </div>
+    <div id="table-scroll">
+      <table id="working-table" aria-label="Records in the working set"></table>
+    </div>
+    <div id="empty-state" hidden>
+      <p><strong>No records match the active filters.</strong></p>
+      <p class="muted">Every dimension keeps its filter — the combination is too narrow.</p>
+      <button id="btn-empty-clear">Clear all filters</button>
+    </div>
+  </section>
+
+  <aside id="inspector" class="panel" aria-label="Inspector">
+    <div class="panel-head"><h2>Inspector</h2><span class="panel-note">all dimensions · fixed order</span></div>
+    <div id="inspector-body"></div>
+  </aside>
+</main>
+
+<footer id="ledger" aria-label="State ledger">
+  <div class="ledger-zone panel">
+    <div class="panel-head"><h3>Filters <span class="panel-note" id="chip-count"></span></h3>
+      <span class="panel-note">owned by dimension · each removable</span></div>
+    <div id="filter-chips"></div>
+  </div>
+  <div class="ledger-zone panel">
+    <div class="panel-head"><h3>History <span class="panel-note" id="history-count"></span></h3>
+      <span class="panel-note">latest first · every step revertible</span></div>
+    <div id="history-list"></div>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

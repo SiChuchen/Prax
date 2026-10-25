@@ -1,0 +1,70 @@
+user:
+  expertise: expert
+  familiarity: medium
+task:
+  primary: 按顺序完成生产发布 runbook 全部步骤，零失误走完全程
+  modes:
+    - guided-execution
+    - confirmation-gate
+    - verification-checklist
+    - rollback-recovery
+    - audit-review
+  frequency: low
+domain:
+  type: 生产环境软件发布 / 变更管理
+  entities:
+    - 发布流程
+    - 阶段
+    - 步骤
+    - 核对清单项
+    - 不可逆操作
+    - 确认关卡
+    - 回滚方案
+    - 操作留痕事件
+    - 发布单
+information:
+  volume: low
+  relationship_complexity: low
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: high
+  error_cost: high
+priorities:
+  - 防失误：顺序锁定、不可逆步骤强制确认与回滚预案前置
+  - 恢复路径：执行后收尾前回滚入口始终可达
+  - 可回溯：全部状态变迁进入留痕
+  - 首屏即用：runbook 数据内联，无加载态
+  - 低密度清晰呈现：每屏聚焦当前步骤
+density_intent: regular
+confidence:
+  overall: high
+unknowns: []
+classification:
+  version: "1"
+  task_type: browse_collection
+  domain_id: unknown
+  interaction_mode: collection_with_contextual_detail
+  product_type: unknown
+  primary_object_type: step
+  secondary_object_types:
+    - confirmation_gate
+    - phase
+    - rollback_plan
+    - audit_log
+    - release_runbook
+  confidence: medium
+  evidence:
+    - task_type=browse_collection ← token '清单' in context.task and frame.tasks
+    - interaction_mode=collection_with_contextual_detail ← token 'list' in context.task, frame.tasks, and context.priorities
+    - primary_object_type=step ← most referenced product object in the Product Frame
+  open_questions:
+    - domain_id could not be classified from the provided context; refine the context fields or record a custom classification
+    - product_type could not be derived; record the intended audience and product kind

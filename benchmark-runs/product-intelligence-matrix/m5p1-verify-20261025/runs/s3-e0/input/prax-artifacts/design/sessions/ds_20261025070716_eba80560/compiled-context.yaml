@@ -1,0 +1,90 @@
+version: "0.1"
+session_id: ds_20261025070716_eba80560
+task:
+  surfaces: []
+  primary: 按依赖顺序逐个完成发布 runbook 的全部步骤，直至发布收尾
+product_relationships:
+  - id: rel_phase_step
+    source: phase
+    target: step
+    type: contains
+    direction: forward
+    meaning: 阶段包含按序步骤
+    importance: primary
+  - id: rel_gate
+    source: step
+    target: confirmation_gate
+    type: gated_by
+    direction: forward
+    meaning: 不可逆步骤被确认关卡阻塞，确认通过才可执行
+    importance: primary
+  - id: rel_rollback
+    source: confirmation_gate
+    target: rollback_plan
+    type: exposes
+    direction: forward
+    meaning: 确认层与执行后状态都暴露该步骤的回滚方案
+    importance: primary
+  - id: rel_audit
+    source: step
+    target: audit_log
+    type: recorded_in
+    direction: forward
+    meaning: 步骤状态变迁全部写入留痕
+    importance: supporting
+region_relationships: []
+decisions:
+  primary_structure: PAT-LIST-DETAIL
+  density_intent: regular
+  major_choice_ids:
+    - confirm-gate
+    - rollback-window
+    - linear-lock
+    - audit-trail
+    - inline-data
+must_preserve: []
+regression_points: []
+unresolved: []
+corrections: []
+representation_portfolio:
+  primary:
+    type: list
+    reason: 有序步骤列表 + 相邻详情（List Detail）：保留全程位置感与锁定态，满足零失误的顺序约束；层级高由两级分组承载
+  supporting:
+    - type: wizard
+      reason: 线性门控执行：沿单行道逐步推进，锁定态可见
+    - type: form
+      reason: 核对清单与确认关卡（勾选确认项 + 输入发布单号）以表单化交互强制显式确认
+    - type: feed
+      reason: 操作留痕：按时间倒序事件流，支撑可回溯
+  rejected:
+    - option: PAT-CANVAS-WORKSPACE
+      reason: spatiality=none、relationality=low，无空间关系需表达
+    - option: table
+      reason: density=low、comparison_need=none，表格浪费于单流程执行
+    - option: kanban/board
+      reason: 弱化顺序性，与零失误单行道冲突
+    - option: document
+      reason: 无状态与门控，无法承载确认/回滚交互
+state_ownership:
+  - state: selection
+    owner: 当前步骤工作区：操作指引、风险标注、核对清单、执行动作
+  - state: preview
+    owner: session
+acceptance:
+  - 用户按依赖顺序完成全部步骤直至发布收尾：无跳步、无误执行；每个不可逆步骤执行前经过强制确认（含回滚方案与发布单号），执行后收尾前回滚路径始终可达；全部动作可在留痕中回溯。
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - destructive_recovery
+    - requirement_alignment
+  regression_check_ids: []

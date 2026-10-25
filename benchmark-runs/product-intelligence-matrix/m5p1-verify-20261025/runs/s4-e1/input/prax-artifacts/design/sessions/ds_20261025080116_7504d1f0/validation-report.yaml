@@ -1,0 +1,230 @@
+plan_revision: 1
+evidence:
+  submitted_by: execution arm (Claude) — real-browser evidence via zero-dependency CDP driver scripts/drive.cjs
+  collected_at: 2026-10-25T08:56:30Z
+  items:
+    - check_id: product_model_alignment
+      outcome: pass
+      source: headless Chrome 1440x900 via Chrome DevTools Protocol (real input events)
+      notes: "CDP drive (scripts/drive.cjs, 51/51 checks, rerun against the final build): user-facing structure and language preserve the Product Frame one-to-one — Runbook header, 4 Phases containing 10 Steps, tick-to-confirm Checkpoints, 'Irreversible — point of no return' confirm gate, 'Rollback plan — your recovery path' card, append-only Activity log, and 'Runbook complete — zero missteps' Completion summary. All six compiled relationships (runbook→phase→step contains, step guarded_by checkpoint, gated_by confirmation gate, recovered_by rollback plan, records_to audit log) are enacted in the journey, not just claimed."
+      artifact_refs:
+        - screenshots/01b-first-paint-full.png
+        - screenshots/04-confirm-gate.png
+        - screenshots/09-activity-log.png
+        - screenshots/journey-log.md
+      measurement_receipt: validation-evidence/receipt-2026-10-25T08-44-45-091Z-4d1e466e-7fdd-4c59-ab7b-bfbabcfbec3e.json
+    - check_id: keyboard
+      outcome: pass
+      source: headless Chrome via CDP Input.dispatchKeyEvent + Prax-measured receipt (a11y.focus_order pass, 0 inversions)
+      notes: "Measured Tab sequence via real CDP key events: button#log-toggle → button#reset-btn → step-1 row (data-action=toggle-step) → its checkpoint checkbox; document.activeElement.matches(':focus-visible') is true with a 3px accent outline (screenshot 02). The bound Prax measurement receipt (run c9c562f9, digest 948162173e9a, 7pass/0fail) independently confirms a11y.focus_order (14 stops, 0 inversions, 0 missing indicators) and a11y.target_size at both viewports — the empirical keyboard-accessibility facets. Gate traps Tab internally and Escape cancels it (app.js keydown handler)."
+      artifact_refs:
+        - screenshots/02-keyboard-focus.png
+        - screenshots/journey-log.md
+      measurement_receipt: validation-evidence/receipt-2026-10-25T08-44-45-091Z-4d1e466e-7fdd-4c59-ab7b-bfbabcfbec3e.json
+    - check_id: hierarchy_review
+      outcome: pass
+      source: screenshot review against SDIR region importances + Prax layout measurement
+      notes: "Visual prominence follows SDIR importance: phase-ladder is the dominant single-column work region at spacious density; runbook-header stays compact with status pill + progress meter; confirm-gate and completion-summary appear as task-driven primary interrupts; activity-log is the supporting slide-in drawer. The single current step is the highest-emphasis ladder element (accent ring, 'Up next' badge), irreversible steps carry a persistent warning badge, completed steps collapse to one-line summaries carrying their recorded outcome. Receipt also confirms layout.overflow=0 and responsive_collision=0 at both viewports."
+      artifact_refs:
+        - screenshots/01-first-paint.png
+        - screenshots/03-progress-midway.png
+        - screenshots/08-completion.png
+      measurement_receipt: validation-evidence/receipt-2026-10-25T08-44-45-091Z-4d1e466e-7fdd-4c59-ab7b-bfbabcfbec3e.json
+    - check_id: destructive_recovery
+      outcome: pass
+      source: headless Chrome via CDP drive + screenshots
+      notes: "Error cost is high, so destruction is matched with prevention AND recovery, both measured: (1) prevention — steps are locked until prerequisites complete; the irreversible gate requires reading the consequence, previewing the exact rollback plan, ticking 2 acknowledgements, and typing the step phrase; a wrong phrase keeps Execute disabled with an inline error (screenshot 05). (2) recovery — every executed irreversible step keeps an inline two-click Roll back control; rolling back S5 dropped progress 5→4, restored its 'Rolled back' state, re-locked dependents, and appended a rollback entry to the audit log; the window closes honestly (disabled with explanation) once a dependent step has executed."
+      artifact_refs:
+        - screenshots/04-confirm-gate.png
+        - screenshots/05-gate-error.png
+        - screenshots/07-rollback-armed.png
+        - screenshots/07b-rollback-done.png
+        - screenshots/09-activity-log.png
+        - screenshots/journey-log.md
+      measurement_receipt: validation-evidence/receipt-2026-10-25T08-44-45-091Z-4d1e466e-7fdd-4c59-ab7b-bfbabcfbec3e.json
+    - check_id: requirement_alignment
+      outcome: pass
+      source: CDP drive 51/51 checks + Prax-measured receipt bound to final build digest
+      notes: "Matches the confirmed restatement end-to-end: one high-consequence workflow completed with zero missteps (banner: 10/10 steps, 3/3 gates confirmed, 1 rollback exercised, 21 audit entries; per-phase roll-up lists every outcome). Delivered as root index.html opening statically with inlined data (data.js) — first paint shows the complete usable ladder with no loading state (checked: no 'loading' text anywhere, render is synchronous at parse). No backend, no external services, no deployment; state is session-local with an explicit reset. Acceptance seed 'irreversible steps have recovery/confirmation paths' is satisfied and demonstrated, not just implemented. Journey rerun against the final build: 51/51 checks, 0 console errors."
+      artifact_refs:
+        - screenshots/01-first-paint.png
+        - screenshots/08-completion.png
+        - screenshots/10-after-reset.png
+        - screenshots/journey-log.md
+      measurement_receipt: validation-evidence/receipt-2026-10-25T08-44-45-091Z-4d1e466e-7fdd-4c59-ab7b-bfbabcfbec3e.json
+evaluation:
+  status: PASS
+  checks:
+    - id: semantic_conformance
+      label: Semantic conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR is valid, semantic, and aligned to the approved pattern.
+      evidence_required: false
+    - id: state_completeness
+      label: State completeness
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Required loading, empty, ready, and error states exist.
+      evidence_required: false
+    - id: product_model_alignment
+      label: Product model alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: User-facing structure and language preserve the Product Frame.
+      evidence_required: true
+    - id: keyboard
+      label: Keyboard operability
+      kind: empirical
+      profile: keyboard_accessibility
+      facet: behavioral
+      requirement: Primary work and selection are operable with keyboard and visible focus.
+      evidence_required: true
+    - id: hierarchy_review
+      label: Hierarchy review
+      kind: assistive
+      profile: semantic_integrity
+      facet: visual_hierarchy
+      requirement: Visual prominence follows SDIR importance rather than implementation convenience.
+      evidence_required: true
+    - id: representation_decided
+      label: Representation decided
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares representation.primary with a non-empty reason.
+      evidence_required: false
+    - id: state_ownership_declared
+      label: State ownership declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: Selection and preview states both have declared owners.
+      evidence_required: false
+    - id: acceptance_contract_present
+      label: Acceptance contract present
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 carries at least one acceptance criterion.
+      evidence_required: false
+    - id: complexity_budget_declared
+      label: Complexity budget declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      evidence_required: false
+    - id: destructive_recovery
+      label: Destructive recovery
+      kind: deterministic
+      profile: runtime_degradation
+      facet: behavioral
+      requirement: Destructive actions match error cost with prevention or recovery.
+      evidence_required: true
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+  findings:
+    - check_id: semantic_conformance
+      kind: deterministic
+      outcome: pass
+      message: SDIR is valid, semantic, and aligned to the approved pattern.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_completeness
+      kind: deterministic
+      outcome: pass
+      message: Required loading, empty, ready, and error states exist.
+      source: prax-validator
+      provenance: measured
+    - check_id: representation_decided
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares representation.primary with a non-empty reason.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_ownership_declared
+      kind: deterministic
+      outcome: pass
+      message: Selection and preview states both have declared owners.
+      source: prax-validator
+      provenance: measured
+    - check_id: acceptance_contract_present
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 carries at least one acceptance criterion.
+      source: prax-validator
+      provenance: measured
+    - check_id: complexity_budget_declared
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      source: prax-validator
+      provenance: measured
+    - check_id: product_model_alignment
+      kind: assistive
+      outcome: pass
+      message: "CDP drive (scripts/drive.cjs, 51/51 checks, rerun against the final build): user-facing structure and language preserve the Product Frame one-to-one — Runbook header, 4 Phases containing 10 Steps, tick-to-confirm Checkpoints, 'Irreversible — point of no return' confirm gate, 'Rollback plan — your recovery path' card, append-only Activity log, and 'Runbook complete — zero missteps' Completion summary. All six compiled relationships (runbook→phase→step contains, step guarded_by checkpoint, gated_by confirmation gate, recovered_by rollback plan, records_to audit log) are enacted in the journey, not just claimed."
+      source: headless Chrome 1440x900 via Chrome DevTools Protocol (real input events)
+      provenance: attested
+    - check_id: keyboard
+      kind: empirical
+      outcome: pass
+      message: "Measured Tab sequence via real CDP key events: button#log-toggle → button#reset-btn → step-1 row (data-action=toggle-step) → its checkpoint checkbox; document.activeElement.matches(':focus-visible') is true with a 3px accent outline (screenshot 02). The bound Prax measurement receipt (run c9c562f9, digest 948162173e9a, 7pass/0fail) independently confirms a11y.focus_order (14 stops, 0 inversions, 0 missing indicators) and a11y.target_size at both viewports — the empirical keyboard-accessibility facets. Gate traps Tab internally and Escape cancels it (app.js keydown handler)."
+      source: headless Chrome via CDP Input.dispatchKeyEvent + Prax-measured receipt (a11y.focus_order pass, 0 inversions)
+      provenance: measured
+    - check_id: hierarchy_review
+      kind: assistive
+      outcome: pass
+      message: "Visual prominence follows SDIR importance: phase-ladder is the dominant single-column work region at spacious density; runbook-header stays compact with status pill + progress meter; confirm-gate and completion-summary appear as task-driven primary interrupts; activity-log is the supporting slide-in drawer. The single current step is the highest-emphasis ladder element (accent ring, 'Up next' badge), irreversible steps carry a persistent warning badge, completed steps collapse to one-line summaries carrying their recorded outcome. Receipt also confirms layout.overflow=0 and responsive_collision=0 at both viewports."
+      source: screenshot review against SDIR region importances + Prax layout measurement
+      provenance: attested
+    - check_id: destructive_recovery
+      kind: deterministic
+      outcome: pass
+      message: "Error cost is high, so destruction is matched with prevention AND recovery, both measured: (1) prevention — steps are locked until prerequisites complete; the irreversible gate requires reading the consequence, previewing the exact rollback plan, ticking 2 acknowledgements, and typing the step phrase; a wrong phrase keeps Execute disabled with an inline error (screenshot 05). (2) recovery — every executed irreversible step keeps an inline two-click Roll back control; rolling back S5 dropped progress 5→4, restored its 'Rolled back' state, re-locked dependents, and appended a rollback entry to the audit log; the window closes honestly (disabled with explanation) once a dependent step has executed."
+      source: headless Chrome via CDP drive + screenshots
+      provenance: attested
+    - check_id: requirement_alignment
+      kind: assistive
+      outcome: pass
+      message: "Matches the confirmed restatement end-to-end: one high-consequence workflow completed with zero missteps (banner: 10/10 steps, 3/3 gates confirmed, 1 rollback exercised, 21 audit entries; per-phase roll-up lists every outcome). Delivered as root index.html opening statically with inlined data (data.js) — first paint shows the complete usable ladder with no loading state (checked: no 'loading' text anywhere, render is synchronous at parse). No backend, no external services, no deployment; state is session-local with an explicit reset. Acceptance seed 'irreversible steps have recovery/confirmation paths' is satisfied and demonstrated, not just implemented. Journey rerun against the final build: 51/51 checks, 0 console errors."
+      source: CDP drive 51/51 checks + Prax-measured receipt bound to final build digest
+      provenance: attested
+  missing_evidence: []
+  warnings: []
+  readiness:
+    deterministic_passed: true
+    measurement:
+      receipt_ref: validation-evidence/receipt-2026-10-25T08-44-45-091Z-4d1e466e-7fdd-4c59-ab7b-bfbabcfbec3e.json
+      binding:
+        validation-evidence/receipt-2026-10-25T08-44-45-091Z-4d1e466e-7fdd-4c59-ab7b-bfbabcfbec3e.json: implementation_current
+      error_failures_open: 0
+      warning_dispositions: []
+    convergence:
+      stalled: false
+      unresolved: []
+    evidence_current: true
+    claims:
+      measured:
+        - semantic_conformance
+        - state_completeness
+        - representation_decided
+        - state_ownership_declared
+        - acceptance_contract_present
+        - complexity_budget_declared
+        - keyboard
+      attested:
+        - product_model_alignment
+        - hierarchy_review
+        - destructive_recovery
+        - requirement_alignment
+      skipped: []
