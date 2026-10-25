@@ -1,0 +1,46 @@
+plan_revision: 1
+evidence:
+  submitted_by: implementer (Claude agent, glm-5.3-flash) — cell-j13-s10 build
+  collected_at: 2026-10-25T12:08:00Z
+  items:
+    - check_id: product_model_alignment
+      outcome: pass
+      source: static DOM inspection against product_frame objects (dataset/record/dimension/projection/filter/selection/state_entry)
+      notes: DOM 区域与 SDIR region 一一同名对应：data-region=dataset_stats / dimension_rail / data / detail / filter_editor / collection / state_ledger / color_size_legend（index.html data-region 属性）。用户语言保留 Product Frame 对象命名：维度轨道、投影画布、状态台账、选集、过滤器；台账条目展示 frame 中 state_entry 的归属语义（来源区域+动作）。
+      artifact_refs:
+        - index.html
+        - assets/app.js
+    - check_id: hierarchy_review
+      outcome: pass
+      source: "layout proportion analysis: styles.css .layout grid-template-columns 236px/1fr/312px, region importance mapping"
+      notes: SDIR importance→视觉分量：dominant=data（画布居中 grid minmax(0,1fr)，最大区域）；primary=dimension_rail(236px 固定轨)+state_ledger(检查器 flex:1 常驻)；supporting=filter_editor(上限47%)+legend(画布底部条)+selection tray(小)；contextual inspector 的 tooltip 仅悬停出现。阅读顺序：顶栏统计→左轨维度→中央投影→右检查器，符合 hierarchy primary 列表顺序。
+      artifact_refs:
+        - assets/styles.css
+    - check_id: filter_state
+      outcome: pass
+      source: "code path audit: state.filters -> renderChips/renderStats/renderEmpty/ghost rendering (classify/passes)"
+      notes: 激活过滤器三重显式表达：顶栏『过滤器 N』计数；检查器 chip 列表（逐条可移除，label 含范围/排除值）；f-row active 高亮。结果状态=顶栏『可见 N』实时计数 + 画布 ghost 点（被过滤记录 8% 透明度保留上下文）+ 空结果时 empty-note 与恢复按钮。每个过滤变更同时生成台账条目（归属）。
+      artifact_refs:
+        - assets/app.js
+    - check_id: requirement_alignment
+      outcome: pass
+      source: requirement restatement cross-walk (confirmed_at 2026-10-25T00:00:00Z)
+      notes: 对照确认复述逐项落地：explore×多维数据→10 维 4 通道投影探索；维度切换不重置认知→选择/过滤绑定维度、viewport-memory 按投影键恢复（setChannel）；状态归属可回退→台账 actor=来源区域+动作、点击回退+undo/redo；首屏就绪→同步种子数据，无加载态；静态打开→根路径 index.html，零构建零网络；单主屏→navigation_levels=1。
+      artifact_refs:
+        - README.md
+        - brief.md
+        - assets/data.js
+        - assets/app.js
+    - check_id: keyboard
+      outcome: inconclusive
+      source: static code audit only — no browser session available in this environment; requesting Prax browser measurement
+      notes: 静态实现完备（原生 button/range 可聚焦、focus-visible 样式、Ctrl+Z/Ctrl+Y、X/Y/C/S 通道循环），但按诚实汇报原则：本会话无本地浏览器工具，未做真实按键走查，请求 Prax 浏览器实测。
+      artifact_refs: []
+    - check_id: comparison_scan
+      outcome: inconclusive
+      source: design-level analysis — no browser session available in this environment; requesting Prax browser measurement
+      notes: 设计上可扫读：图例含逐值可见计数、坐标轴刻度常驻、顶栏统计、悬停 tooltip 显示同记录在四通道的取值——均为不开箱即可比较的值。但 empirical 检查需真实渲染证据，请求 Prax 浏览器实测。
+      artifact_refs: []
+measurement_loop:
+  attempts: 3
+  last_receipt_ref: validation-evidence/receipt-2026-10-25T12-26-46-612Z-2989cdd7-a9f6-499a-8391-24e9db17ab73.json

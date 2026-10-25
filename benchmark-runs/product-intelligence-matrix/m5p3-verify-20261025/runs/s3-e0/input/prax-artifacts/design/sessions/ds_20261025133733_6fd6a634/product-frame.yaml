@@ -1,0 +1,87 @@
+version: "0.2"
+jtbd:
+  verb: complete
+  target: high-consequence flow
+  success: 零失误走完全程 — finish the whole flow with zero mistakes
+primary_object:
+  type: workflow
+  label: Release Runbook (single high-consequence workflow)
+task_model:
+  frequency: low
+  reversibility: irreversible
+  consequence: high
+  expertise: mixed
+user:
+  primary_role: Release/on-call engineer executing a critical, procedure-governed operation (single high-consequence flow)
+  expertise: mixed
+  familiarity: medium
+goal:
+  primary: Complete the entire high-consequence workflow from first step to last with zero mistakes, with every irreversible action explicitly confirmed and recoverable
+tasks:
+  primary: Walk the single workflow phase-by-phase, satisfying each gate (preconditions, observed-value checks, confirmations) before advancing
+  secondary:
+    - Verify observed runtime values against expected values before proceeding past volatile steps
+    - Execute contingency branches when a check outcome is not as expected
+    - Consult and (where defined) exercise the recovery/rollback path around irreversible steps
+    - Review the audit trail of what was done and confirmed
+product_objects:
+  - id: runbook
+    user_name: Runbook (the procedure)
+    purpose: "The single high-consequence workflow: an ordered set of phases containing steps, with gates and recovery paths"
+  - id: phase
+    user_name: Phase
+    purpose: A named stage of the runbook grouping ordered steps (e.g. Pre-flight, Backup, Cutover, Verify)
+  - id: step
+    user_name: Step
+    purpose: One instruction unit in the flow; carries instructions, checks, and either reversible or irreversible effect
+  - id: irreversible_step
+    user_name: Irreversible step
+    purpose: A step whose effect cannot be undone by re-running it; it must gate on explicit confirmation and expose a recovery path
+  - id: gate
+    user_name: Gate (checklist / value check / confirmation)
+    purpose: "A zero-mistake barrier on a step: precondition checklist, observed-vs-expected value verification, or typed confirmation before an irreversible action"
+  - id: recovery_path
+    user_name: Recovery path (rollback)
+    purpose: Documented, surfaced remediation attached to every irreversible step, exercisable inside the undo window where one exists
+  - id: audit_log
+    user_name: Audit trail
+    purpose: Chronological record of completed gates, confirmations, verifications and contingencies, proving zero-mistake completion
+relationships:
+  - id: r1
+    source: runbook
+    target: phase
+    type: contains
+    meaning: Runbook is a strict hierarchy of ordered phases
+    importance: primary
+  - id: r2
+    source: phase
+    target: step
+    type: contains
+    meaning: Each phase is an ordered list of steps
+    importance: primary
+  - id: r3
+    source: step
+    target: gate
+    type: gated_by
+    meaning: A step cannot complete until all its gates pass
+    importance: primary
+  - id: r4
+    source: irreversible_step
+    target: recovery_path
+    type: recovers
+    meaning: Every irreversible step ships with an explicit recovery path; acceptance seed
+    importance: primary
+  - id: r5
+    source: step
+    target: audit_log
+    type: records_into
+    meaning: Every gate pass/confirm/recovery event is appended to the audit trail
+    importance: supporting
+mental_model_hypothesis:
+  summary: "Users model this as a cockpit-style runbook: a linear rail of phases/steps where the current step is foregrounded, progress is always visible, and red-flag (irreversible) steps are visually louder and surrounded by confirm-then-act and rollback affordances rather than buried in prose"
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: The user reaches the runbook's terminal step having passed every gate with zero mistakes; each irreversible action was preceded by an explicit confirmation and is backed by a visible recovery path (exercisable within its undo window where defined); the audit trail shows a complete, ordered record
+open_questions: []

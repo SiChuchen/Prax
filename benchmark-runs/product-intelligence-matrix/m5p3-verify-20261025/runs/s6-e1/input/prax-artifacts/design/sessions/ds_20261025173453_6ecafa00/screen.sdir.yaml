@@ -1,0 +1,211 @@
+version: "0.2"
+screen:
+  id: list_detail_screen
+  intent:
+    primary_task: 按层级推进发布流程：完成当前步骤的核验项，在不可逆步骤前通过确认门提交，必要时从恢复点恢复
+    secondary_tasks:
+      - 随时查看整体进度与流程完整性（核验完成度、确认覆盖、恢复点可用性）
+      - 在不可逆步骤提交后使用恢复点执行恢复
+      - 重启演练（重置整个流程到初始态）
+  archetype:
+    pattern_ref: PAT-LIST-DETAIL
+  density_intent: spacious
+  regions:
+    - id: step_navigator
+      role: experimental:阶段→步骤有序导航器（全流程概览、门控状态、不可逆标识）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - preserve_context
+        - experimental:locked steps dimmed and inert
+    - id: step_detail
+      role: experimental:当前步骤详情工作区（说明、核验清单、主操作）
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:checks gate the primary action
+        - experimental:primary action opens confirm gate for irreversible steps
+    - id: consequence_panel
+      role: experimental:不可逆后果与恢复预案说明（仅不可逆步骤详情内）
+      importance: primary
+      visibility:
+        condition: task_driven
+      behavior_intent:
+        - experimental:lists what becomes irreversible and which checkpoint will be created
+    - id: checkpoint_panel
+      role: experimental:恢复点台账（恢复路径常驻入口）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:always visible, no drawer
+    - id: ledger_panel
+      role: experimental:执行记录（事件台账）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:newest first
+    - id: progress_header
+      role: experimental:整体进度与完整性徽章
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent:
+        - experimental:derive from app state on every render
+    - id: confirm_gate_modal
+      role: experimental:确认门模态（后果明示、勾选理解、输入口令后方可提交）
+      importance: dominant
+      visibility:
+        condition: task_driven
+      behavior_intent:
+        - experimental:disabled commit until acknowledgment checked and passphrase matches
+        - experimental:shows checkpoint-to-be-created
+    - id: empty_states
+      role: experimental:空态（恢复点/执行记录尚无条目时）
+      importance: contextual
+      visibility:
+        condition: task_driven
+      behavior_intent:
+        - experimental:applies to ledger and checkpoint panel before first irreversible commit
+  relationships:
+    - id: rr_nav_detail
+      source: step_navigator
+      target: step_detail
+      type: selects
+    - id: rr_detail_gate
+      source: step_detail
+      target: confirm_gate_modal
+      type: opens
+    - id: rr_gate_checkpoint
+      source: confirm_gate_modal
+      target: checkpoint_panel
+      type: creates
+    - id: rr_checkpoint_restore
+      source: checkpoint_panel
+      target: step_navigator
+      type: restores
+    - id: rr_all_ledger
+      source: step_detail
+      target: ledger_panel
+      type: records
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+    - experimental:explicit_confirmation_before_irreversible_commit
+    - experimental:restore_from_checkpoint_with_confirmation
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: 平台适配层如何在保持层级的前提下实现语义区域？
+      adapter_may_choose:
+        - 原生 landmark
+        - 可访问复合组件
+        - 响应式区域排布
+    - id: confirm_gate_affordance
+      question: 确认门的确认方式选哪种形态？（本实现选定：勾选理解 + 输入步骤口令 + 明示后果与将生成的恢复点）
+      adapter_may_choose:
+        - 长按确认
+        - 勾选+输入口令
+        - 双击二次确认
+    - id: recovery_visibility
+      question: 恢复点（恢复路径）放哪里？（本实现选定：右栏常驻面板，不用抽屉/二级页）
+      adapter_may_choose:
+        - 常驻面板
+        - 抽屉
+        - 二级页
+  unresolved:
+    - id: industry_scenario_unspecified
+      question: 简报未指定行业场景——已选定生产发布 runbook 作为代表性载体
+      impact: medium
+      affects:
+        - workflow content realism
+  rejected_alternatives:
+    - option: 全屏分步 wizard
+      reason: 丢失全流程概览与恢复点可见性，恢复路径被藏进导航
+    - option: 恢复点收入抽屉
+      reason: 恢复路径必须常驻可见（验收种子硬要求）
+    - option: PAT-APPLICATION-SHELL / 多屏路由
+      reason: 单工作区；交付约束限定单页单主屏
+  user_job:
+    verb: complete
+    target: 一次高后果生产发布流程（含不可逆步骤）
+    success: 零失误走完全程：核验全完成、不可逆步骤均经确认提交、恢复路径始终可用
+  primary_object:
+    type: workflow
+    label: 生产发布流程
+  information_shape:
+    cardinality: one
+    relationality: low
+    hierarchy: high
+    temporality: low
+    density: low
+    dimensionality: medium
+    spatiality: none
+    volatility: medium
+    uncertainty: medium
+    comparison_need: none
+  representation:
+    primary:
+      type: wizard
+      reason: 单一高后果流程、零失误目标要求强顺序与强制门控：只有当前步骤可操作，不可逆提交被确认门拦截——向导的任务表示以常驻列表-详情布局实现以保留全流程概览
+    supporting:
+      - type: list
+        reason: 左栏阶段→步骤有序导航器：全流程概览、状态与锁定语义、恢复点标记
+      - type: form
+        reason: 步骤详情区的核验清单（逐项勾选，全勾解锁主操作）
+      - type: document
+        reason: 步骤背景说明、风险提示与恢复预案的结构化文本
+  priority:
+    primary:
+      - step_detail
+      - step_navigator
+      - consequence_panel
+      - checkpoint_panel
+    contextual:
+      - ledger_panel
+      - progress_header
+      - empty_states
+  interaction:
+    preview: hover
+    inspect: select
+    navigate: none
+    locate: none
+  state_ownership:
+    - state: selection
+      owner: session
+    - state: preview
+      owner: checkpoint_panel
+    - state: inspector
+      owner: checkpoint_panel
+    - state: mode
+      owner: session
+    - state: viewport
+      owner: session
+    - state: query
+      owner: url
+  complexity_budget:
+    permanent_panels: 3
+    permanent_primary_actions: 1
+    modes: 1
+    state_owners: 1
+    navigation_levels: 1
+    persistent_filters: 0
+    new_semantic_concepts: 4
+    keyboard_contracts: 1
+    mobile_conflicts: 0
+    permanent_surfaces: 1
+  acceptance:
+    - 不可逆步骤提交前必须通过确认门（勾选理解+输入口令），条件未满足时提交按钮禁用
+    - 每个不可逆提交自动创建恢复点；恢复点在主屏常驻可见、可执行恢复，恢复本身需确认且写入执行记录
+    - 首屏加载完成即处于就绪可交互状态：初始流程数据内联，无加载态作为可测状态
+    - 键盘可完成主工作：步骤选择、核验勾选、打开确认门、提交、恢复均有键盘路径且焦点可见
+    - 恢复后流程状态回退到该恢复点之前，且执行记录留痕
+    - 全部不可逆步骤提交并完成最终步骤后进入完成态摘要，可重启演练重置流程

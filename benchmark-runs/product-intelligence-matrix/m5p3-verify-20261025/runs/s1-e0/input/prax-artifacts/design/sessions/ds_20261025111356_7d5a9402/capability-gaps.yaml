@@ -1,0 +1,93 @@
+needs:
+  - id: need_channel_assign
+    product_action: 在维度轨道上把任意维度就地指派到 X/Y/颜色/大小通道（不合规维度禁用并提示）
+    required_experience:
+      - 点击即换镜头，无需对话框或模式切换
+      - 通道归属在维度行上常驻可见
+      - 指派约束（X/Y/大小仅数值维度）以禁用态表达
+    capabilities:
+      - DOM event handling
+      - channel state in single store
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: 纯前端状态 + 事件委托；无后端参与
+  - id: need_context_preserving_switch
+    product_action: 切换投影维度时保留选择、过滤与该投影的视口
+    required_experience:
+      - 选择高亮与过滤结果跨投影保持
+      - 回到曾用过的 X×Y 组合时视口恢复
+      - 可见/总数计数始终可见
+    capabilities:
+      - orthogonal state slices
+      - per-projection viewport memory
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 选择/过滤与通道/视口为正交状态切片；viewport map 以投影键存取
+  - id: need_dimension_filters
+    product_action: 按维度过滤：数值范围、分类多选、层级树多选
+    required_experience:
+      - 过滤器编辑器内联于检查器
+      - 激活的过滤器以 chip 呈现且可单移除
+      - 过滤器与投影正交
+    capabilities:
+      - dual-range input pair
+      - checkbox groups
+      - checkbox tree
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: 双滑块由两个 range input 组合；层级树为嵌套 checkbox 列表
+  - id: need_state_ledger
+    product_action: 过滤/投影/选择/视口变更全部记入状态台账：来源区域+动作+摘要+前态快照，支持点击回退与 undo/redo
+    required_experience:
+      - 台账条目显示归属（来源界面区域与动作）
+      - 一步回退到任意历史状态
+      - 撤销/重做常驻可用
+    capabilities:
+      - structuredClone snapshots
+      - undo stack
+      - event sourcing lite
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: 内存快照栈（上限 50 条），无持久化服务（简报不要求）
+  - id: need_scatter_canvas
+    product_action: 投影画布：840 点散点渲染、坐标轴、悬停提示、点击选择、滚轮缩放/拖拽平移
+    required_experience:
+      - 首帧即全量渲染（无渐进加载）
+      - 选中点跨重投影保持高亮
+      - 空结果时显示恢复路径
+    capabilities:
+      - Canvas 2D
+      - requestAnimationFrame
+      - spatial index by grid bucket
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Canvas 2D 一次性重绘 840 点 <5ms；命中检测用网格桶索引
+  - id: need_inline_first_paint
+    product_action: 数据集随首屏就绪：确定性合成目录在脚本执行期同步生成，无加载态
+    required_experience:
+      - 页面加载完成即可交互
+      - 无网络请求、无外部服务
+    capabilities:
+      - seeded PRNG (mulberry32)
+      - synchronous script execution
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 经典 <script> 同步执行；生成耗时 <10ms
+  - id: need_static_delivery
+    product_action: 根路径 index.html 直接静态打开（含 file://），零构建零依赖
+    required_experience:
+      - 双击即可运行
+      - 无 CDN、无构建步骤
+    capabilities:
+      - classic scripts (no ES modules)
+      - relative asset paths
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: classic script 避免 file:// 下 ES module 的 CORS 限制；相对路径引用 assets/

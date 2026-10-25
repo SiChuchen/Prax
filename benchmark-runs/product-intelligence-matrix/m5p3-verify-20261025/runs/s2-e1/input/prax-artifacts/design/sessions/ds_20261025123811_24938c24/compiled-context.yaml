@@ -1,0 +1,85 @@
+version: "0.1"
+session_id: ds_20261025123811_24938c24
+task:
+  surfaces: []
+  primary: 在多维数据集上选择/切换维度（投影轴、着色、分组、过滤），连续探索不同切片而无需重建认知
+product_relationships:
+  - id: rel_dimension_dataset
+    source: dimension
+    target: dataset
+    type: facet_of
+    direction: forward
+    meaning: 每个维度是数据集的一个列切面
+    importance: primary
+  - id: rel_view_state_dimension
+    source: view_state
+    target: dimension
+    type: references
+    direction: forward
+    meaning: 投影/过滤/分组状态引用具体维度，状态面板显示该引用（归属）
+    importance: primary
+  - id: rel_step_history_view_state
+    source: step_history
+    target: view_state
+    type: snapshot_of
+    direction: forward
+    meaning: 每步操作保存视图状态快照，供回退
+    importance: primary
+region_relationships:
+  - id: region_rel_data_detail
+    source: data
+    target: detail
+    type: selection_drives_contextual_detail
+decisions:
+  primary_structure: PAT-DATA-EXPLORER
+  density_intent: compact
+  major_choice_ids:
+    - mc-dimmed-rows
+    - mc-owned-undo
+    - mc-inline-data
+must_preserve: []
+regression_points: []
+unresolved:
+  - oq-1-dataset-domain
+corrections: []
+representation_portfolio:
+  primary:
+    type: chart
+    reason: dimensional-space 的主导表示：任一维度可即时成为分布投影（分类→条形、数值→直方图+条带），同位同尺度切换承载'换灯不换桌'的心智模型
+  supporting:
+    - type: table
+      reason: 稳定顺序的记录台账是被过滤仍可见的认知锚点，保证切换维度时行位置不跳
+    - type: list
+      reason: 维度清单按分类/数值/时间分组，是切换动作的发源地
+  rejected:
+    - option: cards
+      reason: 高密度无界数据下扫描效率低，无法呈现分布（反模式 card-grid-for-dense-comparison）
+    - option: graph
+      reason: 关系性仅 medium，无网络拓扑语义
+    - option: tree
+      reason: 层级性 medium 但非主负担，树形切换会重置认知
+    - option: map
+      reason: spatiality=none，无地理/空间坐标语义
+state_ownership:
+  - state: selection
+    owner: data
+  - state: preview
+    owner: session
+acceptance:
+  - 用户在切换投影/着色/分组维度后：①关注记录与已读语义保持可见（不重置）；②每条生效的过滤/投影都能指出'来自哪个维度的什么条件'并可单步撤销或一键回全集
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - filter_state
+    - comparison_scan
+    - requirement_alignment
+  regression_check_ids: []

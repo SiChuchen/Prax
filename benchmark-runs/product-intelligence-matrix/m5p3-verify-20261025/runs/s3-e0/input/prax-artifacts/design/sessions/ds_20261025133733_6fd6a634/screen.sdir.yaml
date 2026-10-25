@@ -1,0 +1,82 @@
+version: "0.1"
+screen:
+  id: application_shell_screen
+  intent:
+    primary_task: Walk the single workflow phase-by-phase, satisfying each gate (preconditions, observed-value checks, confirmations) before advancing
+    secondary_tasks:
+      - Verify observed runtime values against expected values before proceeding past volatile steps
+      - Execute contingency branches when a check outcome is not as expected
+      - Consult and (where defined) exercise the recovery/rollback path around irreversible steps
+      - Review the audit trail of what was done and confirmed
+  archetype:
+    pattern_ref: PAT-APPLICATION-SHELL
+  density_intent: spacious
+  regions:
+    - id: "Current step: instruction, its gates (checklist / value check / confirmation), and its action"
+      role: "experimental:Current step: instruction, its gates (checklist / value check / confirmation), and its action"
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: "Position and progress: which phase, which step, how far to go (always visible)"
+      role: "experimental:Position and progress: which phase, which step, how far to go (always visible)"
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: "Irreversible-step status: confirmation requirement and recovery path, visible before and after execution"
+      role: "experimental:Irreversible-step status: confirmation requirement and recovery path, visible before and after execution"
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: Audit trail of gates passed, confirmations, verifications, contingencies
+      role: experimental:Audit trail of gates passed, confirmations, verifications, contingencies
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: Runbook metadata (title, change ref, abort rule)
+      role: experimental:Runbook metadata (title, change ref, abort rule)
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: Contingency branch outcomes
+      role: experimental:Contingency branch outcomes
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: workspace
+      role: dominant_workspace
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - preserve_context
+  relationships: []
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved: []
+  rejected_alternatives:
+    - option: Single scrolling checklist page
+      reason: Loses foregrounding of the current step; irreversible confirmations would drift out of view
+    - option: Multi-screen wizard (one screen per step)
+      reason: Breaks the one-main-screen constraint and the persistent audit/rail regions
+    - option: Optimistic UI with post-hoc undo only
+      reason: Insufficient for irreversible steps; confirmation must precede the action, not follow it

@@ -1,0 +1,106 @@
+version: "0.1"
+session_id: ds_20261025142859_fb793ab6
+task:
+  surfaces: []
+  primary: 按阶段顺序逐步执行注销步骤，完成一步、确认一步、推进一步
+product_relationships:
+  - id: r1
+    source: flow
+    target: phase
+    type: contains
+    direction: forward
+    meaning: 一个流程包含 5 个有序阶段
+    importance: primary
+  - id: r2
+    source: phase
+    target: step
+    type: contains
+    direction: forward
+    meaning: 一个阶段包含 2–3 个有序步骤
+    importance: primary
+  - id: r3
+    source: step
+    target: confirmation
+    type: requires
+    direction: forward
+    meaning: 不可逆步骤在完成前必须通过确认仪式
+    importance: primary
+  - id: r4
+    source: step
+    target: recovery_path
+    type: has
+    direction: bidirectional
+    meaning: 不可逆步骤带有撤销窗口/补救动作说明
+    importance: primary
+  - id: r5
+    source: step
+    target: preflight_checklist
+    type: gated_by
+    direction: forward
+    meaning: 每步可带前置自查清单
+    importance: supporting
+  - id: r6
+    source: step
+    target: advisory
+    type: annotated_by
+    direction: forward
+    meaning: 每步可带口径提示（地区差异/时效）
+    importance: supporting
+region_relationships: []
+decisions:
+  primary_structure: PAT-LIST-DETAIL
+  density_intent: spacious
+  major_choice_ids:
+    - mc-sequence-lock
+    - mc-confirm-ritual
+    - mc-recovery-dual
+    - mc-branch-gate
+    - mc-advisory
+    - mc-in-memory
+must_preserve: []
+regression_points: []
+unresolved:
+  - regional_variance
+corrections: []
+representation_portfolio:
+  primary:
+    type: wizard
+    reason: 用户任务是“按序走完一个高后果流程”，向导式顺序推进+完成门与状态机直接对应零失误走完全程；每步只暴露当前动作，防跳步防遗漏
+  supporting:
+    - type: list
+      reason: 左侧阶段→步骤轨：有序层级导航，selection 常驻可见（hierarchy=high，List Detail 契约）
+    - type: form
+      reason: 前置自查清单与分支判定以表单交互承载，未全勾禁用完成
+    - type: document
+      reason: 办理要点/恢复手册以文档式排版阅读（不可逆步骤的恢复路径需成段可查）
+  rejected:
+    - option: timeline
+      reason: temporality=low，时间轴会夸大时间维
+    - option: table
+      reason: 无比较需求，表格制造伪密度
+    - option: canvas/map
+      reason: spatiality=none
+    - option: document 长文滚动
+      reason: 无法按序锁定与逐步确认
+state_ownership:
+  - state: selection
+    owner: 当前步骤的可执行动作与完成门（前置自查未全勾不可完成）
+  - state: preview
+    owner: session
+acceptance:
+  - 用户从“解散决议”走到“注销证明归档”，全程零失误：未跳步、未漏办，全部不可逆步骤均经确认仪式后执行，且任一时刻都能找到当前步骤的恢复/补救路径。
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - destructive_recovery
+    - requirement_alignment
+  regression_check_ids: []

@@ -1,0 +1,106 @@
+session_id: ds_20261025123811_24938c24
+version: "0.2"
+information_shape:
+  cardinality: unbounded
+  relationality: medium
+  hierarchy: medium
+  temporality: low
+  density: high
+  dimensionality: high
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: chart
+    reason: dimensional-space 的主导表示：任一维度可即时成为分布投影（分类→条形、数值→直方图+条带），同位同尺度切换承载'换灯不换桌'的心智模型
+  supporting:
+    - type: table
+      reason: 稳定顺序的记录台账是被过滤仍可见的认知锚点，保证切换维度时行位置不跳
+    - type: list
+      reason: 维度清单按分类/数值/时间分组，是切换动作的发源地
+  rejected:
+    - option: cards
+      reason: 高密度无界数据下扫描效率低，无法呈现分布（反模式 card-grid-for-dense-comparison）
+    - option: graph
+      reason: 关系性仅 medium，无网络拓扑语义
+    - option: tree
+      reason: 层级性 medium 但非主负担，树形切换会重置认知
+    - option: map
+      reason: spatiality=none，无地理/空间坐标语义
+  justification_vs_shape: information_shape 逐项对应：cardinality=unbounded → 分箱/条形聚合 + 台账滚动承载，不假设有限值集；dimensionality=high → 任一维度可即时成为投影/着色/过滤轴，图表是维度切换的舞台；density=high → 紧凑台账 + 结构化分组；relationality=medium → 状态芯片显式引用所属维度；hierarchy=medium → 维度面板按分类/数值/时间三分组；temporality=low → 不设时间主轴；spatiality=none → 排除地图/画布；comparison_need=none → 不设并排比较视图；volatility=medium 与 uncertainty=low → 无需实时流或不确定性标注。切换认知连续由定向不变量启发式 H-21 落实：区域位置、选择、顺序、颜色语义四类不变量。
+primary_structure:
+  pattern: PAT-DATA-EXPLORER
+  rationale:
+    - 路由返回 PAT-DATA-EXPLORER（L2 已查）并与 PAT-LIST-DETAIL-INSPECTOR（L2 已查）组合：主导区=当前维度分布图（data surface），台账=稳定顺序记录锚（collection table），检查器=选中记录多维细节
+    - 层级首位是承载 explore 主任务的 data 工作面：当前投影维度的分布图，区域恒定（定向不变量启发式 H-21）
+    - collection 台账按稳定 id 排序、被过滤行淡出不消失 → 行位置跨任何状态变更保持稳定，认知锚点不重置
+    - 数据量大且需比较 → 表格对齐 + 持久过滤是 Data Explorer 核心强项（总览-过滤-详情启发式 H-22）
+    - 无界基数 → 直方图分箱/条形聚合 + 台账滚动承载，不假设有限值集
+    - 状态有归属且可回退 → 状态芯片逐条标注来源维度与值，快照历史支撑撤销/重做/回全集
+  confidence: high
+information_hierarchy:
+  primary:
+    - data
+    - collection
+    - inspector（选中记录详情）
+    - dimension list（分组维度面板）
+    - state bar（状态归属条与操作轨迹）
+  secondary:
+    - 色彩图例（可点击过滤）
+    - 数据集概览计数
+density:
+  intent: compact
+  strategy:
+    - 记录表 24px 紧凑行高、12.5px 字号，数字右对齐等宽字型
+    - 图表用结构化分组与直接标签，控制件比信号安静（P-22）
+    - 维度面板按类型分组三段，条目双行高密度排列
+    - 色彩仅用于数据编码（着色维度）与状态高亮，不用于装饰
+    - 留白只出现在区域边界，不进入数据区
+  avoid:
+    - 装饰性插画/大留白（与高密度目标冲突）
+    - 多级导航（单页单屏）
+    - 为美观牺牲对比度（H-23 AA 下限）
+major_choices:
+  - id: mc-dimmed-rows
+    choice: 被过滤记录在台账中淡出保留（可切换'仅匹配'），不在切换时从视线消失
+    rationale: 台账行位置是跨状态变更的稳定锚：过滤/投影/着色切换都不移动行，只改变淡出态。消除跳变并给出'剩余 vs 全集'的直接对照，支撑'维度切换不重置认知'
+    confidence: high
+    references:
+      - dataset
+      - view_state
+      - dimension
+  - id: mc-owned-undo
+    choice: 状态芯片标注归属维度，撤销/重做/回全集全程可用（键盘 Ctrl+Z/Ctrl+Shift+Z）
+    rationale: 验收种子'过滤/投影状态有归属且可回退'的直接实现：快照式历史让投影/着色/过滤三类变更统一可回退，芯片逐条显示来源维度与值
+    confidence: high
+    references:
+      - view_state
+      - step_history
+      - dimension
+  - id: mc-inline-data
+    choice: 数据集用确定性 PRNG 在构建期内联为静态 JS（520 条 × 10 维度）
+    rationale: 满足'初始数据随首屏就绪、无加载态'与'静态打开、本地无外部服务'；unbounded 由模式承载（台账滚动、直方图分箱），内联规模仅是演示样本
+    confidence: high
+    references:
+      - dataset
+rejected:
+  - option: 卡片网格流
+    reason: 高密度无界数据下扫描效率低，无法呈现分布
+  - option: 关系网络图
+    reason: 关系性仅 medium，无网络语义
+  - option: 树形钻取
+    reason: 层级性 medium 但非主负担，树形切换会重置认知
+unresolved: []
+complexity_budget:
+  permanent_panels: 5
+  permanent_primary_actions: 3
+  modes: 1
+  state_owners: 1
+  navigation_levels: 1
+  persistent_filters: 1
+  new_semantic_concepts: 3
+  keyboard_contracts: 1
+  mobile_conflicts: 0
+  permanent_surfaces: 1

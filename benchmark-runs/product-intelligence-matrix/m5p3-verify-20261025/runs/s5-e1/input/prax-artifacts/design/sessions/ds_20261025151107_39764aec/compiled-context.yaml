@@ -1,0 +1,68 @@
+version: "0.1"
+session_id: ds_20261025151107_39764aec
+task:
+  surfaces: []
+  primary: 在主屏上切换投影维度/度量/聚合来探索数据集，期间过滤器、选中记录与排序持续有效
+product_relationships:
+  - id: rel_probe_record
+    source: probe
+    target: record
+    type: filters
+    direction: forward
+    meaning: 每条探针把记录集投影为其子集，子集大小随探针组合变化
+    importance: primary
+  - id: rel_projection_dataset
+    source: projection
+    target: dataset
+    type: aggregates
+    direction: forward
+    meaning: 投影把（过滤后的）记录集按某维度聚合为柱序列，不改变记录集本身
+    importance: primary
+  - id: rel_record_projection
+    source: record
+    target: projection
+    type: survives_across
+    direction: forward
+    meaning: 选中记录跨维度保持；其所在柱在任意投影下都可见高亮
+    importance: primary
+  - id: rel_history_state
+    source: state_history
+    target: projection
+    type: reverts
+    direction: forward
+    meaning: 每次投影/探针/排序变更入栈，可撤销、重做或回跳到任意节点
+    importance: supporting
+region_relationships:
+  - id: region_rel_data_detail
+    source: data
+    target: detail
+    type: selection_drives_contextual_detail
+decisions:
+  primary_structure: PAT-DATA-EXPLORER
+  density_intent: compact
+  major_choice_ids:
+    - stack
+    - state_model
+    - ownership_ui
+    - continuity
+    - chart_interaction
+must_preserve: []
+regression_points: []
+unresolved: []
+corrections: []
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - filter_state
+    - comparison_scan
+    - requirement_alignment
+  regression_check_ids: []

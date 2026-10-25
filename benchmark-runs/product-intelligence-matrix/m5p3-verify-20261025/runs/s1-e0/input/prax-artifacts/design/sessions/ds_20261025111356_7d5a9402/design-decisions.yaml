@@ -1,0 +1,118 @@
+session_id: ds_20261025111356_7d5a9402
+representation:
+  primary:
+    type: chart
+    reason: 基数无界 + 维度性高的主投影：散点画布一次呈现全部可见记录在两三个通道上的形态；选中/过滤以视觉层叠加，不重建页面
+  supporting:
+    - type: form
+      reason: 范围/分类/层级过滤器的编辑面
+    - type: list
+      reason: 状态台账与选集托盘的清单呈现（按时间序，可点击回退）
+  rejected:
+    - option: parallel-coordinates 平行坐标
+      reason: 维度切换时轴重排认知成本高，且高基数下线条过绘（overplotting），违背「切换不重置认知」
+    - option: table 表格为主
+      reason: 表格切换维度=换列，但丧失形态/分布感知，密度收益低于画布+图例组合
+    - option: small-multiples 小倍数图集
+      reason: 屏幕预算内无法同屏承载无界维度组合，且每格独立视口反而加重认知重建
+primary_structure:
+  pattern: PAT-DATA-EXPLORER
+  rationale:
+    - 路由返回 PAT-DATA-EXPLORER（confidence high，域 data_exploration）且已 inspect 至 L2；其实例化为：持久维度轨道（左）+ 主投影画布（中，dominant 数据面 data surface）+ 上下文检查器（右：过滤器/选集/状态台账）+ 顶部常驻数据集概要条
+    - 按 pattern_contract 组合 complements：PAT-LIST-DETAIL-INSPECTOR 作为检查器（绑定显式 selection，避免 inspector-as-unrelated-sidebar 反模式）
+    - P-19/H-21：选择、过滤、视口作为持久上下文锚点跨投影保持，降低工作记忆负担
+    - 维度轨道承载 dimensionality=high 的主要认知负担：通道指派常驻可见，切换动作就地完成
+    - 状态台账（state_entry 对象）是验收种子「过滤/投影状态有归属且可回退」的显式产品对象；tradeoff「weak fit for nonlinear relationships」以散点投影+颜色/大小通道缓解
+  confidence: high
+information_hierarchy:
+  primary:
+    - data
+    - collection
+    - dimension_rail
+    - state_ledger
+  secondary:
+    - filter_editor
+    - color_size_legend
+    - selection_tray
+    - dataset_stats
+density:
+  intent: compact
+  strategy:
+    - 紧凑行高与 12px 基线网格；数值用等宽字体对齐
+    - 画布高密度散点：小半径、半透明叠层，选中/悬停才提亮
+    - 检查器按「过滤器→选集→状态台账」分组折叠，同屏可见
+    - 通道标记（X/Y/C/S）内联在维度行上，避免额外指派对话框
+  avoid:
+    - 装饰性渐变与图表垃圾
+    - "卡片网格承载高密度比较（anti-pattern: card-grid-for-dense-comparison）"
+    - 比信息更响亮的控件 chrome（P-22）
+major_choices:
+  - id: channel-model
+    choice: 四通道投影模型：X、Y（仅数值维度）、颜色、大小（颜色任意维度）
+    rationale: 维度性高的标准投影语义；通道约束用禁用态+提示表达，不引入模式切换
+    confidence: high
+    references:
+      - dimension
+      - projection
+  - id: selection-filter-orthogonal
+    choice: 选择与过滤绑定在维度上而非通道上，投影切换零影响
+    rationale: 直接实现「维度切换不重置认知」：内容层（selection/filters）与镜头层（channels/viewport）正交
+    confidence: high
+    references:
+      - selection
+      - filter
+      - projection
+  - id: viewport-memory
+    choice: 每投影键记忆视口：切回曾用过的 X×Y 组合时恢复当时的缩放平移
+    rationale: H-21 Orientation Invariants；回访旧镜头时空间记忆不重建
+    confidence: high
+    references:
+      - projection
+      - dataset
+  - id: state-ledger
+    choice: 状态台账：每次变更记录 {来源区域, 动作, 摘要, 前态快照}，支持点击回退与 undo/redo
+    rationale: 验收种子的直接实现：归属=来源区域+动作；回退=快照恢复，一步完成
+    confidence: high
+    references:
+      - state_entry
+      - filter
+      - projection
+  - id: hierarchy-as-filter
+    choice: 层级维度（星座→系统）作为树形过滤器呈现，不做钻取导航
+    rationale: 层级性中等，导航层级预算为 1；树形过滤器即可表达包含关系且不增加 navigation_levels
+    confidence: medium
+    references:
+      - dimension
+      - filter
+      - dataset
+  - id: inline-dataset
+    choice: 种子内联数据集：确定性合成系外行星目录（840 条，10 维），页面加载时同步生成
+    rationale: 满足首屏即就绪与无网络约束；同步生成 <10ms，无加载态；确定性种子保证可复现
+    confidence: high
+    references:
+      - dataset
+      - record
+  - id: vanilla-static
+    choice: 纯静态 vanilla HTML/CSS/JS，零构建零依赖，根路径 index.html 直接打开（file:// 可用）
+    rationale: 无 shell/构建环境且约束要求本地静态可开；经典脚本避免 ES module 的 file:// 限制
+    confidence: high
+    references:
+      - dataset
+      - state_entry
+rejected:
+  - option: 维度钻取式导航（点维度进入子屏）
+    reason: navigation_levels 必须保持 1；钻取即重置认知，直接违背成功标准
+  - option: 多主屏/向导式投影配置
+    reason: 单屏约束；模式数为 0，指派操作必须就地完成
+unresolved: []
+complexity_budget:
+  permanent_panels: 3
+  permanent_primary_actions: 3
+  modes: 0
+  state_owners: 1
+  navigation_levels: 1
+  persistent_filters: 10
+  new_semantic_concepts: 4
+  keyboard_contracts: 2
+  mobile_conflicts: 0
+  permanent_surfaces: 4

@@ -1,0 +1,340 @@
+{
+  "receipt_version": "0.2",
+  "tool": {
+    "name": "prax-measure",
+    "version": "0.2.0"
+  },
+  "target": {
+    "app_root": "E:\\codex-prj\\ab-worktrees\\pi-matrix-m5p3\\s4-e1",
+    "base_url": "http://127.0.0.1:7597/",
+    "build_ref": null
+  },
+  "run_at": "2026-10-25T15:00:10.954Z",
+  "viewport_matrix": [
+    {
+      "width": 1280,
+      "height": 860
+    },
+    {
+      "width": 1440,
+      "height": 900
+    }
+  ],
+  "checks": [
+    {
+      "id": "layout.overflow",
+      "status": "pass",
+      "severity": "error",
+      "measured": {
+        "scroll_width": 1280,
+        "inner_width": 1280,
+        "overflow_px": 0,
+        "element_overflows": 0,
+        "flagged_elements": [],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "pass"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "pass"
+          }
+        ]
+      },
+      "threshold": {
+        "max_overflow_px": 0,
+        "element_overflow_tolerance_px": 1
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "layout.responsive_collision",
+      "status": "pass",
+      "severity": "error",
+      "measured": {
+        "collisions": 0,
+        "pairs": [],
+        "interactive_elements": 18,
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "pass"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "pass"
+          }
+        ]
+      },
+      "threshold": {
+        "max_collisions": 0
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "text.truncation",
+      "status": "pass",
+      "severity": "error",
+      "measured": {
+        "truncated": 0,
+        "elements": [],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "pass"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "pass"
+          }
+        ]
+      },
+      "threshold": {
+        "max_truncated": 0
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "a11y.contrast",
+      "status": "fail",
+      "severity": "error",
+      "subject": "button#btnComplete",
+      "measured": {
+        "failing": 1,
+        "pairs": [
+          {
+            "selector": "button#btnComplete",
+            "ratio": 1.99,
+            "required": 4.5,
+            "font_px": 15,
+            "bold": true,
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(157,185,232)"
+          }
+        ],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "normal_min_ratio": 4.5,
+        "large_min_ratio": 3
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/2c97bad5-8811-49e2-b36f-ecc9d223ee1d/viewport-0/a11y.contrast/contrast-1280x860.png",
+          "sha256": "aaec98bb1d7c74348793fa4d8278ded38a0666fca0de675e33739dedf3f05436"
+        },
+        {
+          "ref": "validation-evidence/2c97bad5-8811-49e2-b36f-ecc9d223ee1d/viewport-1/a11y.contrast/contrast-1440x900.png",
+          "sha256": "06d409a209b37eca1b611eb6d281e3eac30a109681d39a65b9b7a2ac85c1fb71"
+        }
+      ],
+      "supported_fixes": [
+        "darken the failing text color (or lighten it against a dark background) until the measured ratio meets the required minimum"
+      ]
+    },
+    {
+      "id": "a11y.focus_order",
+      "status": "fail",
+      "severity": "error",
+      "subject": "tab order contradicts visual order: button → input",
+      "measured": {
+        "stops": 16,
+        "sequence": [
+          "button#btnHandbook",
+          "button#btnReset",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "input",
+          "input",
+          "input"
+        ],
+        "missing_indicators": [],
+        "inversions": [
+          {
+            "from": "button",
+            "to": "input"
+          }
+        ],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "max_missing_focus_indicators": 0,
+        "max_order_inversions": 0
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/2c97bad5-8811-49e2-b36f-ecc9d223ee1d/viewport-0/a11y.focus_order/focus-order-1280x860.png",
+          "sha256": "895291b31f6ee2df0854f2d8852447e8862aedf03dc3804bdffa57a46d5f1ded"
+        },
+        {
+          "ref": "validation-evidence/2c97bad5-8811-49e2-b36f-ecc9d223ee1d/viewport-1/a11y.focus_order/focus-order-1440x900.png",
+          "sha256": "2ae00bdd0fbff46d4e870166e02ab2b4f84e1adb4f8d1daa96dc878401b2786a"
+        }
+      ],
+      "supported_fixes": [
+        "restore a visible focus indicator (outline or box-shadow) on the listed elements and order the tab sequence to follow the visual reading order (positive tabindex or DOM reordering)"
+      ]
+    },
+    {
+      "id": "a11y.target_size",
+      "status": "fail",
+      "severity": "error",
+      "subject": "input; input; input",
+      "measured": {
+        "undersized": 3,
+        "elements": [
+          {
+            "selector": "input",
+            "width": 16,
+            "height": 16
+          },
+          {
+            "selector": "input",
+            "width": 16,
+            "height": 16
+          },
+          {
+            "selector": "input",
+            "width": 16,
+            "height": 16
+          }
+        ],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "min_target_px": 24
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/2c97bad5-8811-49e2-b36f-ecc9d223ee1d/viewport-0/a11y.target_size/target-size-1280x860.png",
+          "sha256": "aaec98bb1d7c74348793fa4d8278ded38a0666fca0de675e33739dedf3f05436"
+        },
+        {
+          "ref": "validation-evidence/2c97bad5-8811-49e2-b36f-ecc9d223ee1d/viewport-1/a11y.target_size/target-size-1440x900.png",
+          "sha256": "06d409a209b37eca1b611eb6d281e3eac30a109681d39a65b9b7a2ac85c1fb71"
+        }
+      ],
+      "supported_fixes": [
+        "raise the listed targets to at least 24×24 CSS px, or declare an equivalent alternative control via data-target-alternative"
+      ]
+    },
+    {
+      "id": "type.min_projected_size",
+      "status": "fail",
+      "severity": "warning",
+      "subject": "span; span; span; span; span",
+      "measured": {
+        "min_font_px": 11.5,
+        "undersized": 5,
+        "elements": [
+          "span",
+          "span",
+          "span",
+          "span",
+          "span"
+        ],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "min_projected_px": 12
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/2c97bad5-8811-49e2-b36f-ecc9d223ee1d/viewport-0/type.min_projected_size/min-projected-size-1280x860.png",
+          "sha256": "aaec98bb1d7c74348793fa4d8278ded38a0666fca0de675e33739dedf3f05436"
+        },
+        {
+          "ref": "validation-evidence/2c97bad5-8811-49e2-b36f-ecc9d223ee1d/viewport-1/type.min_projected_size/min-projected-size-1440x900.png",
+          "sha256": "06d409a209b37eca1b611eb6d281e3eac30a109681d39a65b9b7a2ac85c1fb71"
+        }
+      ],
+      "supported_fixes": [
+        "raise the listed primary-content text to at least 12px, or declare a density intent that justifies the smaller projection"
+      ]
+    }
+  ],
+  "summary": {
+    "pass": 3,
+    "fail": 4,
+    "skipped": 0,
+    "warnings": 1
+  },
+  "binding": {
+    "run_id": "2c97bad5-8811-49e2-b36f-ecc9d223ee1d",
+    "entry": "/index.html",
+    "scenario": "company-deregistration-zero-miss-walkthrough：首屏即见流程全貌与当前步骤；按序完成步骤；不可逆步骤经确认仪式；任一时刻可打开恢复手册",
+    "implementation": {
+      "root": "E:\\codex-prj\\ab-worktrees\\pi-matrix-m5p3\\s4-e1",
+      "digest": "0298bc8026fa4f6ec05e279a2c32a251dad8445ff2834852088d4f9f4cb85af3",
+      "kind": "static_tree"
+    },
+    "session_id": "ds_20261025142859_fb793ab6",
+    "contract_digests": {
+      "screen.sdir.yaml": "2742897950a1d47f4c0ff5dd075c235b0e40b83880637e20883232a57c8bec8b",
+      "sdir-delta.yaml": null,
+      "implementation-brief.yaml": "33bfa1d206451127e99be0033c7f57a2ca209ab4a256836e70a95da4f8b9709c"
+    }
+  },
+  "target_validation": {
+    "status": "valid",
+    "issues": [],
+    "readiness": "document",
+    "ready_selector": null
+  }
+}

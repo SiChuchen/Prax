@@ -1,0 +1,17 @@
+version: "0.1"
+realization_mode: direct_code
+conditions:
+  - id: defect_fix_fit
+    holds: true
+    basis: greenfield 全新构建，无既有产品行为可回归，直接编码不涉及缺陷修复错配
+  - id: visual_polish_fit
+    holds: true
+    basis: 视觉意图已在 SDIR 固化（spacious 控制台风格、状态色语义、AA 对比度底线），视觉不确定性低，无需设计工具先行探索
+  - id: small_modification
+    holds: false
+    basis: 非既有产品的小修改——greenfield 全新实现（单页、零依赖，但为完整产品而非 modification）
+  - id: mature_design_system
+    holds: false
+    basis: 无既有设计系统可依赖；本次交付自行建立组件样式（CSS 变量 token）
+proposed_at: 2026-10-25T17:37:21.349Z
+overridden: false

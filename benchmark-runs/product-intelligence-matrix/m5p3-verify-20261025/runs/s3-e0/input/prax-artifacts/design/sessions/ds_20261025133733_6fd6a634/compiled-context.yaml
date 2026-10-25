@@ -1,0 +1,65 @@
+version: "0.1"
+session_id: ds_20261025133733_6fd6a634
+task:
+  surfaces: []
+  primary: Walk the single workflow phase-by-phase, satisfying each gate (preconditions, observed-value checks, confirmations) before advancing
+product_relationships:
+  - id: r1
+    source: runbook
+    target: phase
+    type: contains
+    meaning: Runbook is a strict hierarchy of ordered phases
+    importance: primary
+  - id: r2
+    source: phase
+    target: step
+    type: contains
+    meaning: Each phase is an ordered list of steps
+    importance: primary
+  - id: r3
+    source: step
+    target: gate
+    type: gated_by
+    meaning: A step cannot complete until all its gates pass
+    importance: primary
+  - id: r4
+    source: irreversible_step
+    target: recovery_path
+    type: recovers
+    meaning: Every irreversible step ships with an explicit recovery path; acceptance seed
+    importance: primary
+  - id: r5
+    source: step
+    target: audit_log
+    type: records_into
+    meaning: Every gate pass/confirm/recovery event is appended to the audit trail
+    importance: supporting
+region_relationships: []
+decisions:
+  primary_structure: PAT-APPLICATION-SHELL
+  density_intent: spacious
+  major_choice_ids:
+    - MC-1
+    - MC-2
+    - MC-3
+    - MC-4
+    - MC-5
+must_preserve: []
+regression_points: []
+unresolved: []
+corrections: []
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - destructive_recovery
+    - requirement_alignment
+  regression_check_ids: []

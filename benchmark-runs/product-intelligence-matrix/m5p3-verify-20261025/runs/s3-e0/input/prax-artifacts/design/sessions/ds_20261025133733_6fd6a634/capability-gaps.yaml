@@ -1,0 +1,86 @@
+needs:
+  - id: N-1
+    product_action: Execute an irreversible step only through typed-phrase confirmation
+    required_experience:
+      - Confirmation overlay names the exact action, blast radius, and recovery path
+      - Primary danger action stays disabled until the typed phrase matches
+      - Cancel is always available and safe
+    capabilities:
+      - typed-phrase match check
+      - focus trap
+      - disabled-until-valid button
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Pure front-end modal with local phrase matching; no service needed
+  - id: N-2
+    product_action: Recover/rollback an executed irreversible step (undo window where defined; documented out-of-band recovery otherwise)
+    required_experience:
+      - Rollback button inline while the undo window is open, window length visible
+      - Recovery procedure block persists for irreversible steps without an undo window
+      - Rollback reverts runbook state and appends an audit event
+    capabilities:
+      - in-memory state reversal
+      - undo window timer
+    status: composable
+    resolution:
+      type: frontend_composition
+      notes: Rollback is a local state reversal on the simulated runbook plus documented out-of-band steps; no backend rollback service exists or is required
+  - id: N-3
+    product_action: Verify observed runtime values against expected values
+    required_experience:
+      - Observed-value inputs checked against inlined expected values with explicit pass/fail feedback
+    capabilities:
+      - local value comparison
+      - expected values inlined with first screen
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Expected values ship inline in the runbook data; comparison is local string/number equality
+  - id: N-4
+    product_action: Hard-block progression until all gates of the current step pass
+    required_experience:
+      - Advance control inert while any gate is unsatisfied
+      - Future steps visible but locked in the rail
+    capabilities:
+      - gate predicate evaluation
+      - locked row rendering
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Gate predicates evaluated in the runbook controller; render layer reflects locked/blocked states
+  - id: N-5
+    product_action: Route failed value checks to documented contingency branches
+    required_experience:
+      - Failing a check reveals the contingency procedure as a first-class path instead of a dead end
+    capabilities:
+      - conditional branch reveal
+      - audit event on branch taken
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: Contingency content inlined per gate; branch reveal is render logic
+  - id: N-6
+    product_action: Run fully offline from a static file with no persistence service
+    required_experience:
+      - Opens from file:// or any static server; usable at first paint with data inlined
+      - Progress/audit are session-local (no persistence service is in scope)
+    capabilities:
+      - session-scoped state
+      - no network calls
+    status: supported
+    resolution:
+      type: explicit_compromise
+      notes: Single static page, all data inlined, zero network requests; session-local state is an explicit, brief-compliant compromise (no persistence services required)
+  - id: N-7
+    product_action: Meet WCAG 2.2 AA floor (contrast, focus, target size, type size)
+    required_experience:
+      - AA-contrast text throughout; visible focus; controls ≥44px where pointer-operated
+    capabilities:
+      - semantic HTML landmarks
+      - focus indicators
+      - contrast-safe palette
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: "H-23 applied: muted tiers rebalanced to AA; focus-visible preserved; enforced during styling"

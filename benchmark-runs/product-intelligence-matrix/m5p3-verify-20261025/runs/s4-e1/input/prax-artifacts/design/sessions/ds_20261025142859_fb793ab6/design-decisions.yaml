@@ -1,0 +1,135 @@
+session_id: ds_20261025142859_fb793ab6
+version: "0.2"
+information_shape:
+  cardinality: one
+  relationality: low
+  hierarchy: high
+  temporality: low
+  density: low
+  dimensionality: medium
+  spatiality: none
+  volatility: medium
+  uncertainty: medium
+  comparison_need: none
+representation:
+  primary:
+    type: wizard
+    reason: 用户任务是“按序走完一个高后果流程”，向导式顺序推进+完成门与状态机直接对应零失误走完全程；每步只暴露当前动作，防跳步防遗漏
+  supporting:
+    - type: list
+      reason: 左侧阶段→步骤轨：有序层级导航，selection 常驻可见（hierarchy=high，List Detail 契约）
+    - type: form
+      reason: 前置自查清单与分支判定以表单交互承载，未全勾禁用完成
+    - type: document
+      reason: 办理要点/恢复手册以文档式排版阅读（不可逆步骤的恢复路径需成段可查）
+  rejected:
+    - option: timeline
+      reason: temporality=low，时间轴会夸大时间维
+    - option: table
+      reason: 无比较需求，表格制造伪密度
+    - option: canvas/map
+      reason: spatiality=none
+    - option: document 长文滚动
+      reason: 无法按序锁定与逐步确认
+  justification_vs_shape: cardinality=one+hierarchy=high → 列表轨承载阶段→步骤；density=low+spacious → 单步详情聚焦；uncertainty/volatility=medium → 口径提示与分支判定内嵌；无空间/时间/比较诉求 → 排除 map/timeline/表格。wizard 提供按序完成门，list 轨提供全局位置感。
+primary_structure:
+  pattern: PAT-LIST-DETAIL
+  rationale:
+    - 路由返回的 PAT-LIST-DETAIL 契约显式覆盖“collection order matters”，与按序推进的步骤集合同构（已在 L2 检视，含 PAT-APPLICATION-SHELL 对照）
+    - 复合形态：仅一条顶栏的最小 Application Shell 作全局上下文（流程名/总进度/恢复手册/重置），左侧阶段→步骤有序层级轨为 selection list，右侧当前步骤详情为 detail（P-19/P-01/P-03/H-21）
+    - 确认仪式独占模态与恢复手册按需抽屉把高摩擦动作限制在 Recoverable Action 要求的时刻，不占常驻面板预算
+    - 不单设第三栏 Contextual Inspector：恢复手册内容已内联于步骤卡，避免 inspector-as-unrelated-sidebar 反模式
+  confidence: high
+information_hierarchy:
+  primary:
+    - 当前步骤的可执行动作与完成门（前置自查未全勾不可完成）
+    - 不可逆步骤的后果说明与恢复路径（执行前+执行后）
+    - 全局进度与当前位置（阶段→步骤层级）
+  secondary:
+    - 前置自查清单
+    - 易错点与口径提示（地区差异/时效）
+    - 全局恢复手册（抽屉）
+density:
+  intent: spacious
+  strategy:
+    - 每屏聚焦单个当前步骤，其余步骤收进左侧层级轨
+    - 确认仪式用独占模态层而非内联折叠，强制注视后果
+    - 留白分区：办理要点/前置自查/风险与恢复三段式卡片
+    - 正文 ≥14px、辅助信息 ≥12px，全部达 WCAG AA 对比（H-23 底线），保留焦点指示
+  avoid:
+    - 多步并排展示造成主次不分
+    - 密集表格化排布（密度低且无比较需求）
+    - 灰字灰底低对比弱化
+major_choices:
+  - id: mc-sequence-lock
+    choice: 顺序锁定：步骤按序解锁，禁止跳步完成；后续步骤可预览但不可办
+    rationale: 零失误的第一来源是顺序类失误；高后果流程顺序即安全
+    confidence: high
+    references:
+      - step
+      - flow
+  - id: mc-confirm-ritual
+    choice: 不可逆步骤确认仪式：独占模态+逐条承诺勾选，终步需键入公司全名
+    rationale: 直接落实验收种子“不可逆步骤有确认路径”；执行前必须注视后果与代价（Recoverable Action 原则明示的摩擦代价在本场景值得）
+    confidence: high
+    references:
+      - confirmation
+      - step
+  - id: mc-recovery-dual
+    choice: 恢复路径双通道：步骤卡内联展示（执行前撤回/执行后补救）+ 顶栏全局恢复手册抽屉
+    rationale: 执行前要看得见、执行后仍要查得到；抽屉满足“随时可达”且不占常驻面板预算
+    confidence: high
+    references:
+      - recovery_path
+      - step
+  - id: mc-branch-gate
+    choice: 分支判定小表单（税务注销：即办 vs 一般程序），按答案推荐并把不适用分支标“不适用”
+    rationale: 承载 dimensionality=medium 与 uncertainty=medium，把地区口径不确定性变成显式判定而非隐含假设
+    confidence: medium
+    references:
+      - step
+      - advisory
+  - id: mc-advisory
+    choice: 每步附口径提示（地区差异/时效）并统一标注“以办理当日口径为准”
+    rationale: volatility=medium：不假装口径永恒，显式提示核对
+    confidence: high
+    references:
+      - advisory
+      - step
+  - id: mc-in-memory
+    choice: 状态仅内存、刷新即重置，提供“重置演练”按钮
+    rationale: 交付约束无持久化要求且要求首屏即用；内存态保证每次打开都是可测的初始态
+    confidence: high
+    references:
+      - flow
+rejected:
+  - option: 自由勾选清单（乱序可完成）
+    reason: 允许跳步会在顺序上引入高后果失误，违背零失误目标
+  - option: 单页长文滚动式指南
+    reason: 失去“当前一步”焦点与完成门，无法承载确认仪式与状态
+  - option: 时间轴/甘特表示
+    reason: temporality=low，时间不是主要组织维度
+  - option: 表格/看板/多流程比较视图
+    reason: cardinality=one 且 comparison_need=none
+  - option: canvas/map 空间布局
+    reason: spatiality=none
+  - option: localStorage 持久化进度
+    reason: 无持久化要求；内存态保证打开即初始态、可测可重演
+unresolved:
+  - id: regional_variance
+    impact: medium
+    affects:
+      - 税务注销步骤文案
+      - 公告渠道与期限
+      - 银行销户材料清单
+complexity_budget:
+  permanent_panels: 2
+  permanent_primary_actions: 3
+  modes: 1
+  state_owners: 1
+  navigation_levels: 2
+  persistent_filters: 0
+  new_semantic_concepts: 3
+  keyboard_contracts: 1
+  mobile_conflicts: 0
+  permanent_surfaces: 1

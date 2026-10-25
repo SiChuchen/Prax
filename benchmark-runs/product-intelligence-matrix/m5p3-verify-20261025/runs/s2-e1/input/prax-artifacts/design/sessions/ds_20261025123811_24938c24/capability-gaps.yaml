@@ -1,0 +1,85 @@
+needs:
+  - id: need-explore-overview
+    product_action: 首屏即呈现数据集全量分布（无加载态）
+    required_experience:
+      - 页面加载完成时数据已内联并完成首次渲染
+      - 分布图与台账直接可交互
+    capabilities:
+      - inline-static-dataset
+      - deterministic-prng-build-data
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 数据在构建期由确定性 PRNG 生成为静态 JS 内联；首帧同步渲染
+  - id: need-switch-projection
+    product_action: 任一维度即时成为投影/着色轴，同位重投影
+    required_experience:
+      - 切换只改变图表编码，不改变区域位置与坐标框架
+      - 选择、滚动、过滤跨切换保持
+      - 颜色语义按维度稳定注册
+    capabilities:
+      - projection-state-in-view-store
+      - stable-region-layout
+      - stable-row-order
+      - palette-registry-per-dimension
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 单一视图状态所有者 + 定向不变量（区域/选择/顺序/颜色）在前端组合实现
+  - id: need-filter-ownership
+    product_action: 过滤状态逐条芯片化并标注来源维度与值
+    required_experience:
+      - 状态条列出每条生效过滤的归属维度、操作符与值
+      - 芯片可单独移除
+    capabilities:
+      - chip-attribution
+      - filter-composition
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 过滤谓词对象携带 dimensionId，渲染为归属芯片
+  - id: need-revert
+    product_action: 投影/着色/过滤变更可撤销、重做、一键回全集
+    required_experience:
+      - 每步变更加入快照历史
+      - Ctrl+Z / Ctrl+Shift+Z / 回全集按钮
+      - 空结果提供回全集出口
+    capabilities:
+      - snapshot-history
+      - keyboard-shortcuts
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 快照数组 + 指针实现撤销/重做；reset 恢复初始快照
+  - id: need-inspect-record
+    product_action: 选中记录的多维细节与当前投影百分位
+    required_experience:
+      - 点击台账行即选中
+      - 检查器列出全部维度值并高亮当前投影维度
+      - 选择跨维度切换保持
+    capabilities:
+      - selection-binding
+      - percentile-rank
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 选中态入全局 store；百分位由当前投影分布实时计算
+  - id: need-unbounded-scale
+    product_action: 台账承载大规模记录（unbounded 形状）
+    required_experience:
+      - 滚动流畅，行位置稳定
+    capabilities:
+      - dom-row-pool
+    status: composable
+    resolution:
+      type: explicit_compromise
+      notes: 演示规模 520 行直接渲染足够；虚拟滚动列为后续扩展，不影响形状语义
+  - id: need-persistence
+    product_action: 视图状态跨会话持久化
+    required_experience:
+      - 简报明确不要求持久化服务，会话内快照历史已覆盖可回退
+    capabilities: []
+    status: gap
+    resolution:
+      type: explicit_compromise
+      notes: 超出简报范围，明确不做；不做超范围能力

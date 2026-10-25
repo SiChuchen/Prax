@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>办结 · 有限公司注销全程向导</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230f5fd6'/%3E%3Cpath d='M9 16.5l5 5 9-11' stroke='%23fff' stroke-width='3.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app" data-app-state="ready">
+
+  <header class="topbar">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+        <rect width="32" height="32" rx="7" fill="#0f5fd6"/>
+        <path d="M9 16.5l5 5 9-11" stroke="#fff" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div class="brand-text">
+        <strong>办结</strong>
+        <span>高后果流程零失误向导</span>
+      </div>
+    </div>
+    <div class="flow-title">有限公司注销 · 零失误全程向导</div>
+    <div class="topbar-right">
+      <div class="progress-chip" aria-live="polite">
+        <div class="progress-track" role="progressbar" aria-label="总进度" aria-valuemin="0" aria-valuemax="100" id="progressBar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <span class="progress-num" id="progressText">0/0</span>
+      </div>
+      <button type="button" id="btnHandbook" class="btn ghost">恢复手册</button>
+      <button type="button" id="btnReset" class="btn ghost ghost-danger">重置演练</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <nav id="rail" class="rail" aria-label="流程阶段与步骤"></nav>
+    <section id="detail" class="detail" aria-label="步骤详情" tabindex="-1"></section>
+  </main>
+
+  <footer class="footnote">
+    <span>本应用为流程演练演示：步骤与材料为常见通行口径，各地执行细节存在差异，一切以办理当日主管机关官方口径为准（口径核对：2026-10）。</span>
+    <span class="footnote-dim">本地静态应用 · 初始数据随首屏内联 · 无网络请求</span>
+  </footer>
+</div>
+
+<!-- 恢复手册抽屉 -->
+<div id="drawerWrap" class="drawer-wrap" hidden>
+  <div class="scrim" data-close-drawer></div>
+  <aside class="drawer" role="dialog" aria-modal="true" aria-label="恢复手册">
+    <div class="drawer-head">
+      <h2>恢复手册</h2>
+      <button type="button" class="icon-btn" id="drawerClose" aria-label="关闭恢复手册">✕</button>
+    </div>
+    <p class="drawer-lede">全部不可逆节点的撤回窗口与补救动作。原则：<strong>先看“执行前”，再决定；一旦执行，立刻核对“执行后”。</strong></p>
+    <div id="drawerBody"></div>
+  </aside>
+</div>
+
+<!-- 确认仪式 / 通用确认 -->
+<div id="modalWrap" class="modal-wrap" hidden>
+  <div class="scrim" data-close-modal></div>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" id="modal"></div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

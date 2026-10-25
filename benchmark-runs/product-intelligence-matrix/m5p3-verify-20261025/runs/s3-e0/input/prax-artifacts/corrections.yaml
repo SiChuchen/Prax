@@ -1,0 +1,51 @@
+version: "0.1"
+corrections:
+  - id: corr-sdir-0_2-artifact-persistence
+    scope:
+      project: cell-j10-s09
+      surfaces:
+        - application_shell_screen
+        - runbook_runner_screen
+    finding:
+      type: sdir_artifact_persistence
+      observed: screen.sdir.yaml was persisted at prepare time from
+        generate_from_decisions (version 0.1, id application_shell_screen) and
+        lacks the 0.2 blocks; design_sdir mode=validate with the full 0.2 SDIR
+        (version 0.2, id runbook_runner_screen, representation.primary=wizard
+        with reason, state_ownership selection=phase_step_rail /
+        preview=confirm_modal / mode=session, 6 acceptance criteria,
+        complexity_budget 3 panels / 2 primary actions / 1 mode / 1 state owner
+        / 1 nav level / 4 concepts / 1 keyboard contract) passed lint twice at
+        the VALIDATION phase but validate-mode does not persist, and
+        apply_delta/generate are gate-blocked post-prepare — so deterministic
+        checks representation_decided / state_ownership_declared /
+        acceptance_contract_present measure the stale 0.1 artifact and fail
+        although the validated declarations exist
+    intended:
+      statement: Deterministic SDIR-0.2 checks (representation_decided,
+        state_ownership_declared, acceptance_contract_present,
+        complexity_budget_declared) should evaluate the session's latest
+        lint-passed SDIR 0.2 declarations — representation.primary=wizard
+        ('Consequential flow = linear gated progression…'); state owners
+        selection=phase_step_rail, preview=confirm_modal, mode=session;
+        acceptance = the 6 criteria incl. typed-phrase confirmation before every
+        irreversible action and recovery path before/after execution;
+        complexity_budget = 3 permanent panels, 2 primary actions, 1 mode, 1
+        state owner, 1 navigation level, 0 persistent filters, 4 new concepts, 1
+        keyboard contract, 0 mobile conflicts, 1 permanent surface
+    evidence_refs:
+      - design_sdir mode=validate version=0.2 → PASS (schema_errors 0,
+        semantic_errors 0) recorded in session transcript at VALIDATION phase
+      - .prax/design/sessions/ds_20261025133733_6fd6a634/screen.sdir.yaml still
+        holds version 0.1 auto-generation (id application_shell_screen) without
+        representation/state_ownership/acceptance blocks
+      - design_sdir mode=apply_delta at VALIDATION gate → GATE_NOT_SATISFIED
+        (mutation illegal post-prepare)
+    regression:
+      check_id: semantic_conformance
+      requirement: Deterministic SDIR-0.2 checks must evaluate the session's latest
+        lint-passed SDIR 0.2, not a stale generate-time artifact
+    supersedes: []
+    promotion:
+      candidate: false
+    created_at: 2026-10-25T14:20:09.021Z

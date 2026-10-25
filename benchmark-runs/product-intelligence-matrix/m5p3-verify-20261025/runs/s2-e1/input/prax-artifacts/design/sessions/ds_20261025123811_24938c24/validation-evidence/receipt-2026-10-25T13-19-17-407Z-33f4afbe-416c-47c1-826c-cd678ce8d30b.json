@@ -1,0 +1,6096 @@
+{
+  "receipt_version": "0.2",
+  "tool": {
+    "name": "prax-measure",
+    "version": "0.2.0"
+  },
+  "target": {
+    "app_root": "E:\\codex-prj\\ab-worktrees\\pi-matrix-m5p3\\s2-e1",
+    "base_url": "http://127.0.0.1:3457/",
+    "build_ref": null
+  },
+  "run_at": "2026-10-25T13:19:17.407Z",
+  "viewport_matrix": [
+    {
+      "width": 1280,
+      "height": 860
+    },
+    {
+      "width": 1440,
+      "height": 900
+    }
+  ],
+  "checks": [
+    {
+      "id": "layout.overflow",
+      "status": "fail",
+      "severity": "error",
+      "subject": "document.documentElement",
+      "measured": {
+        "scroll_width": 1280,
+        "inner_width": 1280,
+        "overflow_px": 0,
+        "element_overflows": 1,
+        "flagged_elements": [
+          "div#ledger-scroll"
+        ],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "max_overflow_px": 0,
+        "element_overflow_tolerance_px": 1
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/875d0fe6-82a3-456e-8004-a7a4c7dfe64d/viewport-0/layout.overflow/overflow-1280x860.png",
+          "sha256": "db4fc870bcbe8a435728ce7cdd2c285beb91a0b6dff8c3ae47a92cbbe4b9543d"
+        },
+        {
+          "ref": "validation-evidence/875d0fe6-82a3-456e-8004-a7a4c7dfe64d/viewport-1/layout.overflow/overflow-1440x900.png",
+          "sha256": "11bca7e7fe055df4896afca07a7262f38715c649df739b8d2bf662c7df34c55a"
+        }
+      ],
+      "supported_fixes": [
+        "find the widest row via the flagged elements and remove the fixed-width cause"
+      ]
+    },
+    {
+      "id": "layout.responsive_collision",
+      "status": "pass",
+      "severity": "error",
+      "measured": {
+        "collisions": 0,
+        "pairs": [],
+        "interactive_elements": 38,
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "pass"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "pass"
+          }
+        ]
+      },
+      "threshold": {
+        "max_collisions": 0
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "text.truncation",
+      "status": "pass",
+      "severity": "error",
+      "measured": {
+        "truncated": 0,
+        "elements": [],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "pass"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "pass"
+          }
+        ]
+      },
+      "threshold": {
+        "max_truncated": 0
+      },
+      "evidence_refs": [],
+      "supported_fixes": []
+    },
+    {
+      "id": "a11y.contrast",
+      "status": "fail",
+      "severity": "error",
+      "subject": "span; span; span#dim-badge; div; span; span; span; span; div; span; span; span; span; span; div; span; span#chart-sub; span; span; span; span; span; span; span; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; div; div; span; span; span; span; button#btn-undo; button#btn-redo; button#btn-reset; span",
+      "measured": {
+        "failing": 554,
+        "pairs": [
+          {
+            "selector": "span",
+            "ratio": 1.62,
+            "required": 4.5,
+            "font_px": 13,
+            "bold": false,
+            "foreground": "rgb(195, 204, 214)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 1.62,
+            "required": 4.5,
+            "font_px": 13,
+            "bold": false,
+            "foreground": "rgb(195, 204, 214)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span#dim-badge",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "div",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": true,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 10.5,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 10.5,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 10.5,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 10.5,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "div",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": true,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 10.5,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 10.5,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 10.5,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 10.5,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 10.5,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "div",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": true,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 10.5,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span#chart-sub",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 10.5,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 10.5,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "td",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "div",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "div",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 12,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11,
+            "bold": true,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 2.67,
+            "required": 4.5,
+            "font_px": 11.5,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(232,239,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 2.9,
+            "required": 4.5,
+            "font_px": 11.5,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,248,232)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 11.5,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "button#btn-undo",
+            "ratio": 2.76,
+            "required": 4.5,
+            "font_px": 12,
+            "bold": false,
+            "foreground": "rgb(27, 35, 48)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "button#btn-redo",
+            "ratio": 2.76,
+            "required": 4.5,
+            "font_px": 12,
+            "bold": false,
+            "foreground": "rgb(27, 35, 48)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "button#btn-reset",
+            "ratio": 2.76,
+            "required": 4.5,
+            "font_px": 12,
+            "bold": false,
+            "foreground": "rgb(27, 35, 48)",
+            "background": "rgb(255,255,255)"
+          },
+          {
+            "selector": "span",
+            "ratio": 3.07,
+            "required": 4.5,
+            "font_px": 10.5,
+            "bold": false,
+            "foreground": "rgb(138, 148, 161)",
+            "background": "rgb(255,255,255)"
+          }
+        ],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "normal_min_ratio": 4.5,
+        "large_min_ratio": 3
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/875d0fe6-82a3-456e-8004-a7a4c7dfe64d/viewport-0/a11y.contrast/contrast-1280x860.png",
+          "sha256": "db4fc870bcbe8a435728ce7cdd2c285beb91a0b6dff8c3ae47a92cbbe4b9543d"
+        },
+        {
+          "ref": "validation-evidence/875d0fe6-82a3-456e-8004-a7a4c7dfe64d/viewport-1/a11y.contrast/contrast-1440x900.png",
+          "sha256": "11bca7e7fe055df4896afca07a7262f38715c649df739b8d2bf662c7df34c55a"
+        }
+      ],
+      "supported_fixes": [
+        "darken the failing text color (or lighten it against a dark background) until the measured ratio meets the required minimum"
+      ]
+    },
+    {
+      "id": "a11y.focus_order",
+      "status": "fail",
+      "severity": "error",
+      "subject": "tab order contradicts visual order: button → button; tab order contradicts visual order: input#match-only → div#ledger-scroll",
+      "measured": {
+        "stops": 36,
+        "sequence": [
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "input#match-only",
+          "div#ledger-scroll",
+          "button"
+        ],
+        "missing_indicators": [],
+        "inversions": [
+          {
+            "from": "button",
+            "to": "button"
+          },
+          {
+            "from": "input#match-only",
+            "to": "div#ledger-scroll"
+          }
+        ],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "max_missing_focus_indicators": 0,
+        "max_order_inversions": 0
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/875d0fe6-82a3-456e-8004-a7a4c7dfe64d/viewport-0/a11y.focus_order/focus-order-1280x860.png",
+          "sha256": "9e17a88059b8bf1b3fc03d8e6c49f38e1d5efdfe29fbb14dfb978f56f5b9d84f"
+        },
+        {
+          "ref": "validation-evidence/875d0fe6-82a3-456e-8004-a7a4c7dfe64d/viewport-1/a11y.focus_order/focus-order-1440x900.png",
+          "sha256": "deb09c11a0960db3a193c33724a58f2006b4ae2817dde809e0907f5c5e716e80"
+        }
+      ],
+      "supported_fixes": [
+        "restore a visible focus indicator (outline or box-shadow) on the listed elements and order the tab sequence to follow the visual reading order (positive tabindex or DOM reordering)"
+      ]
+    },
+    {
+      "id": "a11y.target_size",
+      "status": "fail",
+      "severity": "error",
+      "subject": "button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; button; input#match-only; button",
+      "measured": {
+        "undersized": 35,
+        "elements": [
+          {
+            "selector": "button",
+            "width": 137,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 36,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 36,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 137,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 36,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 36,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 137,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 36,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 36,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 137,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 36,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 36,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 137,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 36,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 36,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 137,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 36,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 36,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 137,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 36,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 36,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 137,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 36,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 36,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 137,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 36,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 36,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 137,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 36,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 36,
+            "height": 20
+          },
+          {
+            "selector": "button",
+            "width": 76.36,
+            "height": 18
+          },
+          {
+            "selector": "button",
+            "width": 76.36,
+            "height": 18
+          },
+          {
+            "selector": "button",
+            "width": 69.91,
+            "height": 18
+          },
+          {
+            "selector": "input#match-only",
+            "width": 13,
+            "height": 13
+          },
+          {
+            "selector": "button",
+            "width": 73.2,
+            "height": 18
+          }
+        ],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "min_target_px": 24
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/875d0fe6-82a3-456e-8004-a7a4c7dfe64d/viewport-0/a11y.target_size/target-size-1280x860.png",
+          "sha256": "db4fc870bcbe8a435728ce7cdd2c285beb91a0b6dff8c3ae47a92cbbe4b9543d"
+        },
+        {
+          "ref": "validation-evidence/875d0fe6-82a3-456e-8004-a7a4c7dfe64d/viewport-1/a11y.target_size/target-size-1440x900.png",
+          "sha256": "11bca7e7fe055df4896afca07a7262f38715c649df739b8d2bf662c7df34c55a"
+        }
+      ],
+      "supported_fixes": [
+        "raise the listed targets to at least 24×24 CSS px, or declare an equivalent alternative control via data-target-alternative"
+      ]
+    },
+    {
+      "id": "type.min_projected_size",
+      "status": "fail",
+      "severity": "warning",
+      "subject": "span#dim-badge; div; span; button; button; span; button; button; span; button; button; span; button; button; div; span; button; button; span; button; button; span; button; button; span; button; button; span; button; button; div; span; button; button; span#chart-sub; span; button; span; button; span; button; span; text; text; text; text; text; text; text; text; button#btn-empty-reset; span; span; span; th; th; th; th; th; th; th; th; th; th; th; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; td; div",
+      "measured": {
+        "min_font_px": 10.5,
+        "undersized": 586,
+        "elements": [
+          "span#dim-badge",
+          "div",
+          "span",
+          "button",
+          "button",
+          "span",
+          "button",
+          "button",
+          "span",
+          "button",
+          "button",
+          "span",
+          "button",
+          "button",
+          "div",
+          "span",
+          "button",
+          "button",
+          "span",
+          "button",
+          "button",
+          "span",
+          "button",
+          "button",
+          "span",
+          "button",
+          "button",
+          "span",
+          "button",
+          "button",
+          "div",
+          "span",
+          "button",
+          "button",
+          "span#chart-sub",
+          "span",
+          "button",
+          "span",
+          "button",
+          "span",
+          "button",
+          "span",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "button#btn-empty-reset",
+          "span",
+          "span",
+          "span",
+          "th",
+          "th",
+          "th",
+          "th",
+          "th",
+          "th",
+          "th",
+          "th",
+          "th",
+          "th",
+          "th",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "td",
+          "div"
+        ],
+        "viewport": "1280x860",
+        "per_viewport": [
+          {
+            "viewport": "1280x860",
+            "status": "fail"
+          },
+          {
+            "viewport": "1440x900",
+            "status": "fail"
+          }
+        ]
+      },
+      "threshold": {
+        "min_projected_px": 12
+      },
+      "evidence_refs": [
+        {
+          "ref": "validation-evidence/875d0fe6-82a3-456e-8004-a7a4c7dfe64d/viewport-0/type.min_projected_size/min-projected-size-1280x860.png",
+          "sha256": "db4fc870bcbe8a435728ce7cdd2c285beb91a0b6dff8c3ae47a92cbbe4b9543d"
+        },
+        {
+          "ref": "validation-evidence/875d0fe6-82a3-456e-8004-a7a4c7dfe64d/viewport-1/type.min_projected_size/min-projected-size-1440x900.png",
+          "sha256": "11bca7e7fe055df4896afca07a7262f38715c649df739b8d2bf662c7df34c55a"
+        }
+      ],
+      "supported_fixes": [
+        "raise the listed primary-content text to at least 12px, or declare a density intent that justifies the smaller projection"
+      ]
+    }
+  ],
+  "summary": {
+    "pass": 2,
+    "fail": 5,
+    "skipped": 0,
+    "warnings": 1
+  },
+  "binding": {
+    "run_id": "875d0fe6-82a3-456e-8004-a7a4c7dfe64d",
+    "entry": "/index.html",
+    "scenario": "explore-dimensional-dataset-with-owned-revertible-view-state",
+    "implementation": {
+      "root": "E:\\codex-prj\\ab-worktrees\\pi-matrix-m5p3\\s2-e1",
+      "digest": "e5f61ada72bb6c7d41a7f7bfb83cc500dc9f9805af70ad1c28ad7b861aec9109",
+      "kind": "static_tree"
+    },
+    "session_id": "ds_20261025123811_24938c24",
+    "contract_digests": {
+      "screen.sdir.yaml": "74ac864d6459f4bcd42b118fe9d65288b62d5bd603ab3074d8c99f9822351048",
+      "sdir-delta.yaml": null,
+      "implementation-brief.yaml": "8f429c7ecad7f9b599adb140d6710033c119982f43552b570ca12476209163f6"
+    }
+  },
+  "target_validation": {
+    "status": "valid",
+    "issues": [],
+    "readiness": "document",
+    "ready_selector": null
+  }
+}

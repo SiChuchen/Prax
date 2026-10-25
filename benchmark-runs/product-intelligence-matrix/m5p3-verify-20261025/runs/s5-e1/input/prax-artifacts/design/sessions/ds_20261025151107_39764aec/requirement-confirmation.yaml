@@ -1,0 +1,27 @@
+version: "0.1"
+user_quote:
+  - 动词：explore；对象：多维数据；成功标准：维度切换不重置认知
+  - 验收种子：过滤/投影状态有归属且可回退
+  - 交付物必须能直接静态打开（根路径 index.html，或构建产物 dist/）
+  - 应用在页面加载完成时即处于可用状态（初始数据随首屏就绪，不得以加载态作为可测状态）
+restatement: 从零实现一个单页 Web 数据探索应用：用户面对一个高维数据集（无界基数、高维度、高密度），通过切换投影维度（group-by）、度量与过滤器来探索数据。核心成功标准是“维度切换不重置认知”——切换投影维度时，过滤器、选择、排序等状态全部保留；且所有过滤/投影状态都有明确归属（来源可追溯）并可回退（单项撤销/移除、历史回退）。交付物为根路径 index.html 静态可开、加载即用、本地运行、不部署。
+boundaries:
+  in_scope:
+    - 单页桌面 Web 应用：多维数据集探索主屏 1 个
+    - 投影（group-by 维度 / 度量 / 聚合）切换且切换不清空过滤器、选择、排序等认知状态
+    - 过滤/投影状态有归属（来源标记）且可回退（单项移除、undo/redo、历史回跳）
+    - 初始数据随首屏内联就绪，页面加载完成即可用
+    - 根路径 index.html 静态打开，本地运行，不部署
+  out_of_scope:
+    - 后端、账号体系、持久化服务
+    - 部署到外部服务
+    - 移动端适配、多屏/路由
+    - 真实数据接入（使用内联合成数据集）
+  scope_complete: true
+open_questions: []
+confirmation:
+  status: requirement_is_sufficient
+  evidence:
+    - type: task_brief
+      ref: brief.md — Product Brief cell-j13-s10 (explore × dimensional-space)，M2 冻结简报
+  confirmed_at: 2026-10-25T00:00:00Z

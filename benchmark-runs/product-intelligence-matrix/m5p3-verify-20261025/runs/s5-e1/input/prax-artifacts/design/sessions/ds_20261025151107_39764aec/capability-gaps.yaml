@@ -1,0 +1,77 @@
+needs:
+  - id: cap_continuity
+    product_action: 切换投影维度时保持过滤器、选中记录与排序（carry-over 提示）
+    required_experience:
+      - 切换 dimension/measure/aggregation 后探针集合与 selection 不变
+      - 切换瞬间出现 carry-over 提示标注被保留的状态
+    capabilities:
+      - in-memory immutable state
+      - state slices independent of projection dimension
+      - re-render without state reset
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端状态模型：记录集/探针/选择/排序与投影配置分槽存储，投影切换只改 mode 槽并触发重渲染
+  - id: cap_ownership
+    product_action: 每条过滤/投影状态显示来源徽标，可静默、可单项移除
+    required_experience:
+      - 探针 chip 标注来源（chart-click/manual/history-restore）
+      - 单项 × 移除与静默开关只作用于该探针
+    capabilities:
+      - chip model with origin metadata
+      - per-chip mute/remove actions
+      - projection chip with revert
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 探针数据结构携带 origin 字段；chip UI 直接渲染该元数据
+  - id: cap_revert
+    product_action: 任意状态变更可 undo/redo，历史条可点击回跳到任意节点
+    required_experience:
+      - 每次变更入栈并带标签
+      - undo/redo/回跳后探针+投影+选择+排序完整一致
+    capabilities:
+      - labeled snapshot stack
+      - pointer-based undo/redo
+      - clickable history steps
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 单一时间线：变更推送带标签快照，栈指针决定当前态；无异步、无服务端，无一致性风险
+  - id: cap_first_screen
+    product_action: 页面加载完成即呈现含数据的完整首屏
+    required_experience:
+      - 无 loading 态出现在可测路径
+      - 首屏同步渲染 ~1000 条内联记录的聚合视图与明细表
+    capabilities:
+      - synchronous inline dataset generation
+      - no network fetch on critical path
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 数据由确定性种子在脚本内同步生成并内联，DOMContentLoaded 前即可渲染完成
+  - id: cap_static_open
+    product_action: 根路径 index.html 静态打开即可用（file:// 或本地 http）
+    required_experience:
+      - file:// 协议下脚本与样式全部生效
+      - 无外部服务依赖
+    capabilities:
+      - no build step
+      - classic scripts
+      - no external CDN
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 无构建 vanilla JS + classic script，避免 ES module 的 file:// CORS 限制；零外部请求
+  - id: cap_scale
+    product_action: 千行级数据集的排序/过滤/聚合与柱状渲染保持流畅
+    required_experience:
+      - 交互响应即时（<100ms）
+      - 明细表虚拟化或限量渲染不卡顿
+    capabilities:
+      - client-side sort/filter/aggregate over 1k rows
+      - SVG bar rendering
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 1024 行在现代浏览器一次聚合毫秒级；表格限量渲染 + 滚动即可，无需虚拟化库

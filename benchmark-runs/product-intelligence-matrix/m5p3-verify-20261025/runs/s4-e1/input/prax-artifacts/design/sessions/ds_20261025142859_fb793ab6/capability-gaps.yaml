@@ -1,0 +1,88 @@
+needs:
+  - id: cap-sequence-engine
+    product_action: 按序推进与完成门：步骤状态机（锁定/当前/已完成/不适用）、前置自查未全勾禁用完成、禁跳步
+    required_experience:
+      - 打开页面即呈现流程全貌与当前步骤
+      - 完成动作仅在自查清单全勾后可用
+      - 完成当前步后自动聚焦下一步
+    capabilities:
+      - client-side state machine
+      - ordered step unlock
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端内存状态机 + 渲染层禁用即可，无后端参与
+  - id: cap-confirm-ritual
+    product_action: 不可逆步骤确认仪式：独占模态、逐条承诺勾选、终步键入公司全名
+    required_experience:
+      - 确认前必须展示后果与恢复路径
+      - 承诺未全勾/名称不匹配时确认按钮禁用
+      - Esc 可取消且不产生状态变更
+    capabilities:
+      - modal layer
+      - multi-step confirmation form
+      - typed confirmation input
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 标准模态+表单校验，纯前端可实现
+  - id: cap-recovery-dual
+    product_action: 恢复路径双通道：步骤卡内联（执行前撤回/执行后补救）+ 顶栏恢复手册抽屉
+    required_experience:
+      - 不可逆步骤卡内常驻恢复区
+      - 任一时刻可从顶栏打开全局恢复手册
+      - 已完成的不可逆步骤仍可查其补救说明
+    capabilities:
+      - inline content region
+      - drawer overlay
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 静态内容 + 抽屉组件，无后端
+  - id: cap-branch-gate
+    product_action: 分支判定：税务注销前小表单判定即办/一般通道，推荐并把不适用分支标“不适用”
+    required_experience:
+      - 答案决定推荐通道并解释理由
+      - 不适用步骤在轨上可见但标灰、不计入进度
+    capabilities:
+      - conditional form logic
+      - derived step state
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 纯前端条件逻辑
+  - id: cap-advisory
+    product_action: 口径提示：地区差异/时效提示与“以办理当日口径为准”标注
+    required_experience:
+      - 每步可见提示区
+      - 汇总页统一声明
+    capabilities:
+      - static advisory content
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 静态文案内嵌
+  - id: cap-progress-summary
+    product_action: 进度统计与办结归档清单（完成态汇总）
+    required_experience:
+      - 总进度与阶段进度实时更新
+      - 办结页列出全部已确认不可逆操作及归档事项
+    capabilities:
+      - computed progress
+      - printable summary
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 从内存状态推导渲染
+  - id: cap-session-state
+    product_action: 会话内演练状态与显式重置（持久化不在交付范围内，按约束以内存态为设计语义）
+    required_experience:
+      - 刷新后回到初始态（演练模式语义）
+      - 随时可点“重置演练”回到第一步
+    capabilities:
+      - in-memory state
+      - explicit reset action
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 交付约束明确不要求持久化；内存态+显式重置即为所承诺体验，纯前端可完全支持

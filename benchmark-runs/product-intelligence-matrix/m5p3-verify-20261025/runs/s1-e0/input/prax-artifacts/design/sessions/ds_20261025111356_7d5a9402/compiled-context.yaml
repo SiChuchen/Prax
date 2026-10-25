@@ -1,0 +1,71 @@
+version: "0.1"
+session_id: ds_20261025111356_7d5a9402
+task:
+  surfaces: []
+  primary: 将维度指派到投影通道（X/Y/颜色/大小）并解读投影视图
+product_relationships:
+  - id: dim_to_channel
+    source: dimension
+    target: projection
+    type: assigned_to
+    direction: forward
+    meaning: 把维度指派到通道即产生一次投影变更
+    importance: primary
+  - id: filter_narrows_dataset
+    source: filter
+    target: dataset
+    type: narrows
+    direction: forward
+    meaning: 过滤器收窄当前可见记录集，与投影正交
+    importance: primary
+  - id: entry_owns_snapshot
+    source: state_entry
+    target: projection
+    type: snapshots
+    direction: forward
+    meaning: 每条台账条目持有变更前状态快照，点击即回退
+    importance: primary
+  - id: record_in_hierarchy
+    source: record
+    target: dataset
+    type: member_of
+    direction: forward
+    meaning: 行星属于恒星系统，系统属于星座，星座属于天区（中层级性）
+    importance: supporting
+region_relationships:
+  - id: region_rel_data_detail
+    source: data
+    target: detail
+    type: selection_drives_contextual_detail
+decisions:
+  primary_structure: PAT-DATA-EXPLORER
+  density_intent: compact
+  major_choice_ids:
+    - channel-model
+    - selection-filter-orthogonal
+    - viewport-memory
+    - state-ledger
+    - hierarchy-as-filter
+    - inline-dataset
+    - vanilla-static
+must_preserve: []
+regression_points: []
+unresolved:
+  - hierarchy-vs-flat-dimension-treatment
+corrections: []
+validation:
+  plan_revision: 1
+  check_ids:
+    - semantic_conformance
+    - state_completeness
+    - product_model_alignment
+    - keyboard
+    - hierarchy_review
+    - representation_decided
+    - state_ownership_declared
+    - acceptance_contract_present
+    - complexity_budget_declared
+    - filter_state
+    - comparison_scan
+    - requirement_alignment
+  regression_check_ids: []

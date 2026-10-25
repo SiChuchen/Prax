@@ -1,0 +1,74 @@
+user:
+  expertise: novice
+  familiarity: low
+task:
+  primary: 引导经办人按正确顺序零失误走完公司注销全流程
+  modes:
+    - 按序执行步骤
+    - 不可逆步骤确认仪式
+    - 查看/执行恢复路径
+    - 分支条件判定
+  frequency: low
+domain:
+  type: 企业退出·商事登记与注销办理（中国内地有限公司注销）
+  entities:
+    - 注销流程
+    - 阶段
+    - 步骤
+    - 前置自查清单
+    - 确认仪式
+    - 恢复路径
+    - 口径提示
+information:
+  volume: low
+  relationship_complexity: low
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: high
+  error_cost: high
+priorities:
+  - 按序零失误推进（不可跳步）
+  - 不可逆步骤执行前强确认
+  - 恢复/补救路径随时可达且执行后仍可查
+  - 口径不确定性与时效提示
+  - 清晰的层级进度与当前焦点
+density_intent: spacious
+confidence:
+  overall: high
+unknowns:
+  - id: regional_variance
+    impact: medium
+    affects:
+      - 税务注销步骤文案
+      - 公告渠道与期限
+      - 银行销户材料清单
+classification:
+  version: "1"
+  task_type: browse_collection
+  domain_id: unknown
+  interaction_mode: unknown
+  product_type: unknown
+  primary_object_type: step
+  secondary_object_types:
+    - phase
+    - flow
+    - preflight_checklist
+    - confirmation
+    - recovery_path
+    - advisory
+  confidence: low
+  evidence:
+    - task_type=browse_collection ← token '清单' in context.task and frame.tasks
+    - primary_object_type=step ← most referenced product object in the Product Frame
+  open_questions:
+    - domain_id could not be classified from the provided context; refine the context fields or record a custom classification
+    - interaction_mode could not be classified from the provided context; refine the context fields or record a custom classification
+    - product_type could not be derived; record the intended audience and product kind

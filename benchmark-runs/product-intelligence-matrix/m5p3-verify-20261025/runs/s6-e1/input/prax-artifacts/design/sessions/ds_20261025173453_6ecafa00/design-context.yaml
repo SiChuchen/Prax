@@ -1,0 +1,71 @@
+user:
+  expertise: intermediate
+  familiarity: medium
+task:
+  primary: 零失误完成一次高后果生产发布流程（含不可逆步骤的确认与恢复）
+  modes:
+    - execute_steps
+    - confirm_irreversible
+    - recover_from_checkpoint
+    - monitor_progress
+  frequency: low
+domain:
+  type: 发布运维 / 变更管理（release operations）
+  entities:
+    - 发布流程
+    - 阶段
+    - 步骤
+    - 核验项
+    - 确认门
+    - 恢复点
+    - 执行记录
+information:
+  volume: medium
+  relationship_complexity: low
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: high
+  error_cost: high
+priorities:
+  - 正确性优先于速度：门控与确认先于操作效率
+  - 不可逆动作前强制确认并明示后果
+  - 每一步可核验、可追溯（执行记录完整）
+  - 任何不可逆提交都有可用恢复点（恢复路径）
+  - 整体进度与风险状态始终可见
+density_intent: spacious
+confidence:
+  overall: high
+unknowns:
+  - id: industry_scenario_unspecified
+    impact: medium
+    affects:
+      - workflow content realism
+classification:
+  version: "1"
+  task_type: inspect_relationships
+  domain_id: data_exploration
+  interaction_mode: unknown
+  product_type: unknown
+  primary_object_type: step
+  secondary_object_types:
+    - workflow
+    - phase
+    - checkpoint
+    - gate
+    - ledger
+  confidence: medium
+  evidence:
+    - task_type=inspect_relationships ← token '查看' in context.task and frame.tasks
+    - domain_id=data_exploration ← token '记录' in context.domain
+    - primary_object_type=step ← most referenced product object in the Product Frame
+  open_questions:
+    - interaction_mode could not be classified from the provided context; refine the context fields or record a custom classification
+    - product_type could not be derived; record the intended audience and product kind

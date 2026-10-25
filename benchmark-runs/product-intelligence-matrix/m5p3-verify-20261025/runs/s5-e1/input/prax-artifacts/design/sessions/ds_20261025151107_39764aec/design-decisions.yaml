@@ -1,0 +1,120 @@
+session_id: ds_20261025151107_39764aec
+information_shape:
+  cardinality: unbounded
+  relationality: medium
+  hierarchy: medium
+  temporality: low
+  density: high
+  dimensionality: high
+  spatiality: none
+  volatility: medium
+  uncertainty: low
+  comparison_need: none
+representation:
+  primary:
+    type: chart
+    reason: 维度是主要认知负担：聚合柱状图把无界记录投影到单个可切换维度上，柱=维度值，高=度量聚合；切换维度=换投影，不换镜头下的记录集
+  supporting:
+    - type: table
+      reason: 过滤后记录的密集列表，可排序、行选中驱动检查器；PAT-DATA-EXPLORER 的记录级证据面
+    - type: list
+      reason: 探针栏：过滤/投影状态 chip 列表，带来源徽标、静默、单项移除——状态归属的具象
+    - type: cards
+      reason: 检查器：选中记录的全维度值卡（PAT-LIST-DETAIL-INSPECTOR）
+  rejected:
+    - option: map
+      reason: spatiality=none，无空间语义
+    - option: tree
+      reason: hierarchy=medium 非主导；维度间是平行投影关系而非包含树
+    - option: graph
+      reason: relationality=medium，记录间关系非探索焦点
+    - option: feed
+      reason: temporality=low，数据非事件流
+  justification_vs_shape: dimensionality=high：主认知负担是“沿哪个维度看”，所以主表示必须是可切换投影维度的聚合图（chart）；cardinality=unbounded+density=high：用探针过滤收窄 + 高密度明细表呈现记录级；comparison_need=none：不需要小倍数/并排对比；temporality=low：不采用 feed/timeline 为主；spatiality=none：排除 map/canvas。
+primary_structure:
+  pattern: PAT-DATA-EXPLORER
+  rationale:
+    - 路由返回且已 L2 检查的主模式：无界基数+高密度数据集，比较靠“投影聚合”完成——柱状画布是当前 lens 的主视图，明细表承载记录级证据（H-22 overview→filter→detail）
+    - 组合 PAT-LIST-DETAIL-INSPECTOR（已 L2 检查）：选中记录的检查器从属绑定选择，不离开工作区（P-19）
+    - 验收种子要求状态归属与可回退：探针栏让每个过滤/投影状态可见、有来源、可单独摘除；历史条+undo/redo 提供整体回退（P-28）
+    - 维度切换不重置认知：过滤器/选择/排序在状态模型中独立于投影维度存在，切换投影只改变聚合轴（H-21 定向不变量）
+  confidence: high
+information_hierarchy:
+  primary:
+    - data
+    - collection
+    - 探针栏：过滤/投影状态的归属与回退（产品差异点）
+  secondary:
+    - data 承载：投影画布——当前 lens 的聚合柱状图（切换维度/度量/聚合），主任务面
+    - collection 承载：明细表——过滤后记录的可排序列表，行选中驱动检查器
+    - 记录检查器：选中记录的全维度详情（选择驱动显隐）
+    - 状态历史条：可点击回跳的时间线
+    - 顶栏全局操作：undo/redo/reset
+density:
+  intent: compact
+  strategy:
+    - 单屏五区固定：顶栏 / 左探针栏 / 中投影画布 / 下明细表 / 底状态历史条，检查器按选择显隐（H-13 结构化密度）
+    - 紧凑行高、小型控件、单行工具栏；图表内联数值标签
+    - 状态一律以 chip/徽标呈现，chrome 保持安静（P-22）
+  avoid:
+    - "卡片网格（anti-pattern: card-grid-for-dense-comparison）"
+    - 大面积装饰/插图（P-22 Signal over Chrome）
+    - 多级导航或分页
+major_choices:
+  - id: stack
+    choice: 无构建 vanilla JS（index.html + classic script），dataset 确定性内联生成，首屏同步可用
+    rationale: 静态打开零风险、首屏即用无加载态；单屏规模下打包器只增加构建与 file:// 兼容风险，无收益
+    confidence: high
+    references:
+      - dataset
+  - id: state_model
+    choice: 不可变 session state + 全量历史栈：每次变更存带标签快照，undo/redo=指针移动，历史条点击=时间回跳
+    rationale: P-28 可恢复动作的最强形态；probe、projection、record 选择、排序全部纳入同一历史，杜绝部分回退造成的状态不一致
+    confidence: high
+    references:
+      - state_history
+      - probe
+      - projection
+      - record
+  - id: ownership_ui
+    choice: 状态归属 UI：探针栏每条 chip 带来源徽标（chart-click/brush/manual/history-restore）+ 静默开关 + 单项移除；projection 配置本身也呈现为一条可回退 chip
+    rationale: 直接落实验收种子“过滤/投影状态有归属且可回退”；归属徽标让用户知道每个状态从哪来
+    confidence: high
+    references:
+      - probe
+      - projection
+      - state_history
+  - id: continuity
+    choice: 维度切换连续性机制：过滤器/选择/排序生存于 projection 之外；切换时发 carry-over 提示（N 过滤器、M 选中已保留）；projection 自身有 back/forward
+    rationale: 落实成功标准“维度切换不重置认知”（H-21 定向不变量：选择与锚点跨检查步骤保持）
+    confidence: high
+    references:
+      - projection
+      - record
+      - probe
+  - id: chart_interaction
+    choice: 点柱=过滤该维度值（生成 probe），再次点击已过滤值=移除该 probe
+    rationale: overview→filter→detail（H-22）的自然动线；过滤结果立即反映在柱高与明细表，形成闭环
+    confidence: high
+    references:
+      - probe
+      - dataset
+rejected:
+  - option: PAT-LIST-DETAIL 作为主模式
+    reason: 其契约面向“集合浏览为主、逐项查看”的动线；本格的主认知负担是维度投影而非集合遍历，PAT-DATA-EXPLORER 的 persistent narrowing + 按需明细更贴合（PAT-LIST-DETAIL 降级为检查器组合件）
+  - option: PAT-CANVAS-WORKSPACE
+    reason: router 已排除：spatiality=none，拓扑/画布语义不存在
+  - option: PAT-RESOURCE-MANAGEMENT / PAT-SETTINGS-SECTIONS
+    reason: router 已排除：task_type 是 explore/filter 而非 manage/administer
+unresolved: []
+complexity_budget:
+  permanent_panels: 5
+  permanent_primary_actions: 3
+  modes: 0
+  state_owners: 4
+  navigation_levels: 1
+  persistent_filters: 1
+  new_semantic_concepts: 2
+  keyboard_contracts: 1
+  mobile_conflicts: 0
+  permanent_surfaces: 5

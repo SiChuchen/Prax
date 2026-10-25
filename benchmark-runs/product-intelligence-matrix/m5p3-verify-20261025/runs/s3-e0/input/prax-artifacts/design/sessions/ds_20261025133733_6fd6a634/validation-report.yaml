@@ -1,0 +1,42 @@
+plan_revision: 1
+evidence:
+  submitted_by: Claude (execution arm, session ds_20261025133733_6fd6a634)
+  collected_at: 2026-10-25T14:40:00Z
+  items:
+    - check_id: keyboard
+      outcome: pass
+      source: real-browser drive (Edge headless via playwright-core) + Prax harness receipt e8a9187b
+      notes: "Empirical grounding: Prax harness receipt run e8a9187b (validation-evidence/receipt-2026-10-25T14-20-18-288Z) measured a11y.focus_order = pass at 1280x860 AND 1440x900 (6 clean tab stops, 0 inversions, 0 missing focus indicators), a11y.target_size pass, a11y.contrast pass. Independent real-browser drive (Edge/playwright-core, 30/30 checks, 0 console errors): first Tab lands on the current step row with a visible :focus-visible ring (evidence/s08-keyboard-focus.png); locked rows leave the tab order; checkboxes/inputs/Verify/action buttons natively operable; Enter submits typed phrase; Esc/Cancel close the modal. Only post-receipt delta: 11px→12px badge font (removes the receipt's single warning-severity item), re-verified 30/30."
+      artifact_refs:
+        - evidence/s08-keyboard-focus.png
+        - evidence/DRIVE-REPORT.md
+    - check_id: product_model_alignment
+      outcome: pass
+      source: real-browser drive (Edge headless via playwright-core) at http://127.0.0.1:3000/
+      notes: "Real-browser drive (playwright-core + Edge, 30/30 checks passed, evidence/DRIVE-REPORT.md). Rail/work/audit regions carry product-frame object language: Runbook, Phase 1-5, Step, IRREVERSIBLE flag, Recovery path, Audit trail; no backend-record leakage on any screen."
+      artifact_refs:
+        - evidence/s01-first-paint.png
+        - evidence/s03-undo-window.png
+    - check_id: hierarchy_review
+      outcome: pass
+      source: real-browser screenshots at 1440x900 + Prax harness contrast measurement
+      notes: "Prominence follows SDIR importance: dominant step work region, primary rail with current-step emphasis and IRREV flags, task-driven modal overlay, supporting header/audit column; AA-contrast palette confirmed by Prax harness a11y.contrast pass (receipt e8a9187b)."
+      artifact_refs:
+        - evidence/s01-first-paint.png
+        - evidence/s02-confirm-modal.png
+    - check_id: destructive_recovery
+      outcome: pass
+      source: real-browser drive (two runs incl. rollback drill)
+      notes: "Error cost is high; prevention/recovery matches it: typed-phrase modal (disabled until exact match) with blast radius + recovery path shown BEFORE execution; 15:00 undo window with working inline Rollback (driver check F rollback-reverts PASS: step reverted to pending/current, audit 'Rolled back', re-execution enabled); documented recovery path persists pre- and post-execution for steps without undo windows; Prax harness layout/a11y checks all pass on these surfaces."
+      artifact_refs:
+        - evidence/s02-confirm-modal.png
+        - evidence/s03-undo-window.png
+        - evidence/s09-rollback.png
+    - check_id: requirement_alignment
+      outcome: pass
+      source: real-browser drive (two complete end-to-end runs)
+      notes: "Matches confirmed restatement: single workflow (one/low/high-hierarchy), zero-mistake completion achieved (run 2: 0 failed checks), irreversible steps all have typed confirmation + recovery path (acceptance seed), gate mismatches route to contingency, first screen usable at paint with data inlined, single static index.html at root, no backend/deployment. Run 1 with a deliberate failure shows contingency + honest 1-failed-check completion stats."
+      artifact_refs:
+        - evidence/DRIVE-REPORT.md
+        - evidence/s01-first-paint.png
+        - evidence/s06-completion-zero-mistake.png

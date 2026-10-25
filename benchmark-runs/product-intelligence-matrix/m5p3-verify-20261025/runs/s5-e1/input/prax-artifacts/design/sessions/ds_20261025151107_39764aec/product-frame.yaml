@@ -1,0 +1,82 @@
+version: "0.2"
+jtbd:
+  verb: explore
+  target: 一个高维数据集（国家 × 年份 × 多项指标，~1000 条观测）
+  success: 切换投影维度后，过滤器、选择、排序全部保持；且每次过滤/投影变更可见归属、可回退
+primary_object:
+  type: dataset
+  label: 数据集
+task_model:
+  frequency: medium
+  reversibility: reversible
+  consequence: low
+  expertise: mixed
+user:
+  primary_role: 数据分析师（用浏览器做即席多维探索的分析/运营人员）
+  expertise: mixed
+  familiarity: medium
+goal:
+  primary: 让用户在无界多维数据上自由切换投影维度进行探索，而不丢失已建立的认知状态
+tasks:
+  primary: 在主屏上切换投影维度/度量/聚合来探索数据集，期间过滤器、选中记录与排序持续有效
+  secondary:
+    - 查看每条过滤/投影状态的来源归属并单独移除或静默
+    - 通过 undo/redo 与历史回跳回退任意状态变更
+    - 在明细表中定位并选中记录，查看其全维度详情
+    - 点击柱/刷选区间对当前投影维度施加过滤
+product_objects:
+  - id: dataset
+    user_name: 数据集
+    purpose: 探索的全部对象：内联多维记录集合（国家×年份×指标）
+  - id: record
+    user_name: 记录
+    purpose: 一条观测（某国某年的一组指标值），可被过滤、选中、查看全维度
+  - id: projection
+    user_name: 投影
+    purpose: 当前投影配置（group-by 维度 × 度量 × 聚合 × 排序），切换时携带全部认知状态
+  - id: probe
+    user_name: 探针（过滤条件）
+    purpose: 作用于记录集的过滤状态，每条带来源归属（如“点击柱”“手动”“时间刷选”），可静默/移除
+  - id: state_history
+    user_name: 状态历史
+    purpose: 状态变更栈，支持 undo/redo 与点击任意历史节点整体回跳
+relationships:
+  - id: rel_probe_record
+    source: probe
+    target: record
+    type: filters
+    direction: forward
+    meaning: 每条探针把记录集投影为其子集，子集大小随探针组合变化
+    condition: 存在活动探针时
+    importance: primary
+  - id: rel_projection_dataset
+    source: projection
+    target: dataset
+    type: aggregates
+    direction: forward
+    meaning: 投影把（过滤后的）记录集按某维度聚合为柱序列，不改变记录集本身
+    condition: 任意时刻
+    importance: primary
+  - id: rel_record_projection
+    source: record
+    target: projection
+    type: survives_across
+    direction: forward
+    meaning: 选中记录跨维度保持；其所在柱在任意投影下都可见高亮
+    condition: 选中未取消时
+    importance: primary
+  - id: rel_history_state
+    source: state_history
+    target: projection
+    type: reverts
+    direction: forward
+    meaning: 每次投影/探针/排序变更入栈，可撤销、重做或回跳到任意节点
+    condition: 状态变更发生时
+    importance: supporting
+mental_model_hypothesis:
+  summary: 用户把探索理解为：在一个固定记录集上不断更换“镜头”（投影 + 过滤器）。镜头可叠加、各有来源、可单独摘除，也可整体回退；无论镜头怎么换，底层记录集与已选中的记录不变——认知建立在记录集上，而非视图上。
+  confidence: high
+  evidence:
+    - user_requirement
+primary_success_definition: 任意投影维度切换后：活动过滤器集合、选中记录、排序意图全部保留并在界面可见；每个过滤/投影状态条目都标明来源（归属），且可通过单项移除、undo/redo、历史回跳三种方式回退。
+open_questions: []

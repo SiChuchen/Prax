@@ -1,0 +1,50 @@
+plan_revision: 2
+evidence:
+  submitted_by: implementation arm (Claude)
+  collected_at: 2026-10-26T00:35:00Z
+  items:
+    - check_id: product_model_alignment
+      outcome: pass
+      source: harness-browser-screenshots + DOM
+      notes: harness 真实浏览器截图（双 viewport）显示的用户可见结构与语言与 Product Frame 一致：数据集 meta（776 条观测 · 97 国 · 2016–2023 · 数据内联就绪）、投影 chip（地区 × 人均CO₂ × 均值 + 投影回退 ‹›）、探针栏（每条状态有来源，可静默 · 可移除）、明细记录、检查器（选择驱动）、状态历史条（起点节点）。状态行明示“✓ 维度切换保留以上全部状态”。当前构建仅调整画布内部布局与柱体实现，词汇与结构未变。
+      artifact_refs:
+        - .prax/design/sessions/ds_20261025151107_39764aec/validation-evidence/866d074b-38cd-4bd1-8d14-0d05456bcf3d/viewport-0/a11y.focus_order/focus-order-1280x860.png
+        - .prax/design/sessions/ds_20261025151107_39764aec/validation-evidence/866d074b-38cd-4bd1-8d14-0d05456bcf3d/viewport-1/a11y.focus_order/focus-order-1440x900.png
+    - check_id: keyboard
+      outcome: pass
+      source: 当前构建代码 + 请求本轮 harness 实测
+      notes: 键盘可操作性（当前构建）：柱为原生 <button class=bar-btn>——Tab 逐柱可达、Enter/Space 原生触发 click 切换探针、:focus-visible 2px 描边、aria-pressed 标注过滤态；明细表 tbody role=grid 单 Tab 停靠 + ↑/↓ 行漫游 + Enter 选中；表头 Enter 循环排序；探针 chip 静默/移除为原生按钮；投影切换经 select 与维度 tab 键盘可达；Ctrl+Z/Ctrl+Y 撤销重做；历史条节点可 Enter 回跳。历史轮次实测 missing_indicators=[]；请对本轮构建重新实测（此前一轮因 renderChart 重写引入的语法错误 pageerror 被跳过，已修复：title 属性行未闭合的 esc() 调用）。
+      artifact_refs:
+        - .prax/design/sessions/ds_20261025151107_39764aec/validation-evidence/866d074b-38cd-4bd1-8d14-0d05456bcf3d/viewport-0/a11y.focus_order/focus-order-1280x860.png
+    - check_id: hierarchy_review
+      outcome: pass
+      source: harness-browser-screenshots + 当前构建
+      notes: 当前构建为数据优先布局：柱状图位于投影画布顶部（dominant），维度/度量/聚合/排序控件位于图下方、状态行之上（chrome 安静，P-22/P-03）；探针栏/明细表 primary，检查器 contextual（选择驱动），历史条 supporting。视觉显著度与 SDIR importance 一致。
+      artifact_refs:
+        - .prax/design/sessions/ds_20261025151107_39764aec/validation-evidence/866d074b-38cd-4bd1-8d14-0d05456bcf3d/viewport-0/a11y.focus_order/focus-order-1280x860.png
+        - .prax/design/sessions/ds_20261025151107_39764aec/validation-evidence/866d074b-38cd-4bd1-8d14-0d05456bcf3d/viewport-1/a11y.focus_order/focus-order-1440x900.png
+    - check_id: filter_state
+      outcome: pass
+      source: harness-browser-screenshots + DOM
+      notes: 活动过滤与结果状态显式呈现：状态行“镜头内 776 / 776 条 · 探针 0 · 选中 0 · 历史深度 1”实时反映探针组合结果；每条探针 chip 带来源徽标（图表/手动/历史）、覆盖计数 n=、静默（◉/◌）与移除（×）；投影配置为带来源的可回退 chip；空结果有显式空态面板与清空出口（首屏误显 bug 已由 .empty-panel[hidden]{display:none} 修复）。
+      artifact_refs:
+        - .prax/design/sessions/ds_20261025151107_39764aec/validation-evidence/866d074b-38cd-4bd1-8d14-0d05456bcf3d/viewport-0/a11y.focus_order/focus-order-1280x860.png
+    - check_id: comparison_scan
+      outcome: pass
+      source: harness-browser-screenshots
+      notes: 可比值无需逐条打开即可扫读：投影柱状图每柱内联聚合值（14.75t/8.29t/8.07t/4.67t/3.17t/0.79t）与 n= 记录数、y 轴 4 条网格刻度；明细表 11 列（国家/地区/收入组/年份 + 7 项度量）密集可扫读、表头点击循环排序（↓/↑）。当前构建改由原生元素渲染柱体，数值标签与刻度呈现不变。
+      artifact_refs:
+        - .prax/design/sessions/ds_20261025151107_39764aec/validation-evidence/866d074b-38cd-4bd1-8d14-0d05456bcf3d/viewport-0/a11y.focus_order/focus-order-1280x860.png
+        - .prax/design/sessions/ds_20261025151107_39764aec/validation-evidence/866d074b-38cd-4bd1-8d14-0d05456bcf3d/viewport-1/a11y.focus_order/focus-order-1440x900.png
+    - check_id: requirement_alignment
+      outcome: pass
+      source: harness measurement receipts + screenshots
+      notes: 交付与确认的 restatement/success 逐项对齐：(1) 维度切换不重置认知——探针/选择/排序生存于投影之外，切换仅改 mode 槽并弹 carry-over 提示；(2) 状态归属——每条探针 chip 带来源徽标，投影 chip 记录最近变更来源；(3) 可回退——单项移除/静默、投影 ‹›、全局 undo/redo、历史条点击任意节点时间回跳；(4) 首屏即用——776 条记录同步内联生成，截图证实加载即完整呈现、无 loading 态；(5) 静态可用——无构建 vanilla JS + classic script，file:// 与本地 http 均可打开，零外部请求。历史五轮 harness 真实浏览器测量 receipt 均针对交付物 index.html；最新构建修复了 renderChart 重写引入的语法错误，请以本轮实测为准。
+      artifact_refs:
+        - validation-evidence/receipt-2026-10-25T15-51-35-865Z-accec1d4-d7c7-4967-85e4-8bde4d1cd56b.json
+        - validation-evidence/receipt-2026-10-25T15-57-35-650Z-51cdad7f-6f42-456e-bbd3-c1dfc0eb5e2e.json
+        - validation-evidence/receipt-2026-10-25T16-14-33-377Z-bdec28cd-d795-4448-b59f-6c6937cfdc15.json
+        - validation-evidence/receipt-2026-10-25T16-21-32-647Z-371c33f5-8abf-4d0e-b533-6dece177fe41.json
+measurement_loop:
+  attempts: 1
+  last_receipt_ref: validation-evidence/receipt-2026-10-25T16-37-01-442Z-0590f1cf-1ce6-4d33-a098-abfae8bb713a.json

@@ -1,0 +1,41 @@
+version: "0.1"
+session_id: ds_20261025163914_5ea17139
+task_ref: 按层级推进发布流程：完成当前步骤的核验项，在不可逆步骤前通过确认门提交，必要时从恢复点恢复
+selected:
+  - ref: product_relationships
+    reason:
+      - rel_workflow_phase:workflow->phase
+      - rel_phase_step:phase->step
+      - rel_step_gate:step->gate
+      - rel_step_checkpoint:step->checkpoint
+      - rel_checkpoint_step:checkpoint->step
+      - rel_workflow_ledger:workflow->ledger
+  - ref: region_relationships
+    reason: []
+  - ref: decisions.primary_structure
+    reason:
+      - PAT-LIST-DETAIL
+  - ref: unresolved
+    reason:
+      - 简报未指定具体行业场景——采用生产发布（release runbook）作为代表性高后果流程，判别语义与简报一致
+      - industry_scenario_unspecified
+  - ref: corrections
+    reason: []
+  - ref: validation-plan@1
+    reason:
+      - semantic_conformance
+      - state_completeness
+      - product_model_alignment
+      - keyboard
+      - hierarchy_review
+      - representation_decided
+      - state_ownership_declared
+      - acceptance_contract_present
+      - complexity_budget_declared
+      - destructive_recovery
+      - requirement_alignment
+excluded:
+  - ref: routing-log
+    reason: process_metadata
+  - ref: session-internals
+    reason: process_metadata

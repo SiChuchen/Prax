@@ -1,0 +1,105 @@
+version: "0.2"
+jtbd:
+  verb: complete
+  target: 公司注销这一高后果流程（从解散决议到执照缴销、归档）
+  success: 零失误走完全程：顺序不乱、事项不漏、每个不可逆步骤都经过明确确认且随时能查到恢复/补救路径，最终拿到注销证明
+primary_object:
+  type: workflow
+  label: 公司注销流程
+task_model:
+  frequency: low
+  reversibility: irreversible
+  consequence: high
+  expertise: novice
+user:
+  primary_role: 公司经办人（法定代表人/行政/代理记账会计，通常一生只办一两次）
+  expertise: novice
+  familiarity: low
+goal:
+  primary: 在不犯不可挽回错误的前提下，按正确顺序走完公司注销全流程，拿到注销证明并完成归档
+tasks:
+  primary: 按阶段顺序逐步执行注销步骤，完成一步、确认一步、推进一步
+  secondary:
+    - 每步执行前完成前置自查清单
+    - 不可逆步骤执行前阅读后果与恢复路径并完成确认仪式
+    - 口径不确定时查看地区差异与时效提示
+    - 反悔或出错时打开恢复手册执行补救
+product_objects:
+  - id: flow
+    user_name: 注销流程
+    purpose: 承载整体进度、当前所处阶段与完成状态
+  - id: phase
+    user_name: 阶段
+    purpose: 把流程分成 5 个有序阶段，提供层级导航
+  - id: step
+    user_name: 步骤
+    purpose: 最小可执行单元，含办理要点、前置自查、风险等级与状态
+  - id: preflight_checklist
+    user_name: 前置自查
+    purpose: 进入步骤前的自查清单，未全勾不能完成该步
+  - id: confirmation
+    user_name: 确认
+    purpose: 不可逆步骤执行前的确认仪式：后果说明+逐条承诺+确认动作
+  - id: recovery_path
+    user_name: 恢复路径
+    purpose: 每个不可逆步骤的撤销窗口/补救动作，执行前可见、执行后仍可查
+  - id: advisory
+    user_name: 口径提示
+    purpose: 地区口径差异与时效提示，标注“以办理当日口径为准”
+relationships:
+  - id: r1
+    source: flow
+    target: phase
+    type: contains
+    direction: forward
+    meaning: 一个流程包含 5 个有序阶段
+    condition: 按序
+    importance: primary
+  - id: r2
+    source: phase
+    target: step
+    type: contains
+    direction: forward
+    meaning: 一个阶段包含 2–3 个有序步骤
+    condition: 按序
+    importance: primary
+  - id: r3
+    source: step
+    target: confirmation
+    type: requires
+    direction: forward
+    meaning: 不可逆步骤在完成前必须通过确认仪式
+    condition: 仅不可逆步骤
+    importance: primary
+  - id: r4
+    source: step
+    target: recovery_path
+    type: has
+    direction: bidirectional
+    meaning: 不可逆步骤带有撤销窗口/补救动作说明
+    condition: 仅不可逆步骤
+    importance: primary
+  - id: r5
+    source: step
+    target: preflight_checklist
+    type: gated_by
+    direction: forward
+    meaning: 每步可带前置自查清单
+    condition: 全步骤
+    importance: supporting
+  - id: r6
+    source: step
+    target: advisory
+    type: annotated_by
+    direction: forward
+    meaning: 每步可带口径提示（地区差异/时效）
+    condition: 全步骤
+    importance: supporting
+mental_model_hypothesis:
+  summary: 用户把注销理解为一条必须按序通关的单线旅程：一个流程、分若干阶段、阶段下若干步骤，做完一步勾一步；对不可逆步骤，用户预期先看清后果、有明确的确认动作，并希望随时知道“如果做错了/反悔了怎么办”。
+  confidence: high
+  evidence:
+    - user_requirement
+    - domain_convention
+primary_success_definition: 用户从“解散决议”走到“注销证明归档”，全程零失误：未跳步、未漏办，全部不可逆步骤均经确认仪式后执行，且任一时刻都能找到当前步骤的恢复/补救路径。
+open_questions: []

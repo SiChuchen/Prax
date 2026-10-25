@@ -1,0 +1,124 @@
+session_id: ds_20261025133733_6fd6a634
+information_shape:
+  cardinality: one
+  relationality: low
+  hierarchy: high
+  temporality: low
+  density: low
+  dimensionality: medium
+  spatiality: none
+  volatility: medium
+  uncertainty: medium
+  comparison_need: none
+representation:
+  primary:
+    type: wizard
+    reason: "Consequential flow = linear gated progression with forward/back control; wizard is the canonical representation for one hierarchical procedure executed step-by-step (brief verb: complete)"
+  supporting:
+    - type: tree
+      reason: Phase/step rail exposes the high hierarchy and current position persistently
+    - type: form
+      reason: Each gate (checklist items, observed-value inputs, typed confirmation) is a bounded form unit
+    - type: feed
+      reason: Audit trail is an append-only event feed
+  rejected:
+    - option: document (prose runbook reader)
+      reason: Prose hides gates inside text; cannot block progression or prove zero-mistake completion
+    - option: checklist-as-simple-list
+      reason: Flat list loses the required high hierarchy (phases) and cannot host per-step confirmation/recovery affordances
+    - option: table
+      reason: Comparison need is none; a table would inflate density against the low-density shape
+    - option: canvas/workspace
+      reason: No spatial facet (spatiality none); excluded by routing on task scope and density scope
+  justification_vs_shape: One workflow with high hierarchy and linear execution maps to a wizard's gated linear progression; the tree rail adds the hierarchy/position layer wizards usually lack; the form representation covers per-gate input; the feed covers the audit trail; no shape facet (comparison none, spatiality none, temporality low) motivates table/grid/map/chart
+primary_structure:
+  pattern: PAT-APPLICATION-SHELL
+  rationale:
+    - Router-returned pattern PAT-APPLICATION-SHELL (Application Shell), inspected at L2
+    - "Shell specialization: stable regions (1) phase/step rail (hierarchical tree with status), (2) gated step work region (one current step, foregrounded, blocking until gates pass), (3) audit/recovery column (event trail + recovery paths for executed irreversible steps)"
+    - Single workflow, high hierarchy → a persistent phase/step rail makes position and progress visible without navigation (P-03, P-26)
+    - Zero-mistake success → the work region foregrounds exactly one step and hard-blocks completion until its gates pass; structure enforces correctness instead of attention (P-28)
+    - Acceptance seed (irreversible steps have recovery/confirmation paths) → confirm-then-act modal before, recovery path + undo window after, always visible (P-28)
+    - Low density → spacious single-focus work region; shell chrome stays minimal to avoid over-navigation (PAT-APPLICATION-SHELL tradeoff)
+    - Medium volatility/uncertainty → value-check gates verify observed runtime values; failed checks branch to documented contingencies instead of dead ends
+  confidence: high
+information_hierarchy:
+  primary:
+    - "Current step: instruction, its gates (checklist / value check / confirmation), and its action"
+    - "Position and progress: which phase, which step, how far to go (always visible)"
+    - "Irreversible-step status: confirmation requirement and recovery path, visible before and after execution"
+  secondary:
+    - Audit trail of gates passed, confirmations, verifications, contingencies
+    - Runbook metadata (title, change ref, abort rule)
+    - Contingency branch outcomes
+density:
+  intent: spacious
+  strategy:
+    - One current step foregrounded at a time; everything else recedes
+    - Phase/step rail uses compact rows with status marks, not cards
+    - Instructions as short imperative lines; each gate is its own bounded block
+    - Irreversible steps get a red-flag band plus dedicated recovery block — emphasis via color+icon+position, not extra density
+    - Generous whitespace around the work region; no persistent chrome beyond the three regions
+  avoid:
+    - tables of raw backend fields
+    - decorative dashboards/charts
+    - multi-column prose walls
+    - "low-contrast gray-on-gray muted tiers (H-23: rebalance one shade darker)"
+major_choices:
+  - id: MC-1
+    choice: Irreversible steps gate on a typed-phrase confirmation modal naming the exact action; the primary button stays disabled until the phrase matches
+    rationale: "Acceptance seed demands a confirmation path; typed-phrase beats a bare OK for high-consequence actions (P-28 tradeoff: friction is intentional here)"
+    confidence: high
+    references:
+      - gate
+      - irreversible_step
+  - id: MC-2
+    choice: Steps whose real-world effect has an undo window expose Rollback inline after execution, with the window length shown; steps without one show their documented recovery procedure persistently
+    rationale: "Covers both recovery classes: in-app undo and documented out-of-band recovery"
+    confidence: high
+    references:
+      - recovery_path
+      - irreversible_step
+      - step
+  - id: MC-3
+    choice: Audit trail is a permanent third region, appended on every gate pass/confirm/recover/contingency event
+    rationale: Zero-mistake completion must be provable; P-26 status visibility
+    confidence: high
+    references:
+      - audit_log
+      - gate
+  - id: MC-4
+    choice: "Progression is hard-blocked: a step cannot be completed until every gate passes; future steps are visible but locked"
+    rationale: Makes 'zero mistakes' the path of least resistance rather than an aspiration
+    confidence: high
+    references:
+      - step
+      - gate
+      - phase
+  - id: MC-5
+    choice: "Concrete scenario: a production release runbook (pre-flight, backup, cutover, verify, finalize) with 3 irreversible steps — read-only mode flip, database migration, old-version cleanup"
+    rationale: Brief fixes shape, not content; a release runbook naturally exhibits high hierarchy, medium volatility (runtime values to verify) and medium uncertainty (contingency branches)
+    confidence: medium
+    references:
+      - runbook
+      - irreversible_step
+      - step
+rejected:
+  - option: Single scrolling checklist page
+    reason: Loses foregrounding of the current step; irreversible confirmations would drift out of view
+  - option: Multi-screen wizard (one screen per step)
+    reason: Breaks the one-main-screen constraint and the persistent audit/rail regions
+  - option: Optimistic UI with post-hoc undo only
+    reason: Insufficient for irreversible steps; confirmation must precede the action, not follow it
+unresolved: []
+complexity_budget:
+  permanent_panels: 3
+  permanent_primary_actions: 2
+  modes: 1
+  state_owners: 1
+  navigation_levels: 1
+  persistent_filters: 0
+  new_semantic_concepts: 4
+  keyboard_contracts: 1
+  mobile_conflicts: 0
+  permanent_surfaces: 1

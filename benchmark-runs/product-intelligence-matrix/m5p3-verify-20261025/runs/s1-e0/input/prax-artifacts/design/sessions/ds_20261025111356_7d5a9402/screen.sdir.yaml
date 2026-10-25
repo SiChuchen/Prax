@@ -1,0 +1,97 @@
+version: "0.1"
+screen:
+  id: data_explorer_screen
+  intent:
+    primary_task: 将维度指派到投影通道（X/Y/颜色/大小）并解读投影视图
+    secondary_tasks:
+      - 按维度（数值范围/分类/层级）过滤记录
+      - 选择记录并使其在重投影后保持高亮
+      - 在状态台账中查看每个视图状态的来源并回退
+  archetype:
+    pattern_ref: PAT-DATA-EXPLORER
+  density_intent: compact
+  regions:
+    - id: data
+      role: collection
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - comparison_group
+        - filter_then_inspect
+    - id: collection
+      role: experimental:collection
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: dimension_rail
+      role: experimental:dimension_rail
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: state_ledger
+      role: experimental:state_ledger
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: filter_editor
+      role: experimental:filter_editor
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: color_size_legend
+      role: experimental:color_size_legend
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: selection_tray
+      role: experimental:selection_tray
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: dataset_stats
+      role: experimental:dataset_stats
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: detail
+      role: contextual_inspector
+      importance: contextual
+      visibility:
+        condition: selection_driven
+      behavior_intent:
+        - selection_driven
+  relationships:
+    - id: region_rel_data_detail
+      source: data
+      target: detail
+      type: selection_drives_contextual_detail
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved: []
+  rejected_alternatives:
+    - option: 维度钻取式导航（点维度进入子屏）
+      reason: navigation_levels 必须保持 1；钻取即重置认知，直接违背成功标准
+    - option: 多主屏/向导式投影配置
+      reason: 单屏约束；模式数为 0，指派操作必须就地完成

@@ -1,0 +1,84 @@
+version: "0.1"
+screen:
+  id: list_detail_screen
+  intent:
+    primary_task: 按层级推进发布流程：完成当前步骤的核验项，在不可逆步骤前通过确认门提交，必要时从恢复点恢复
+    secondary_tasks:
+      - 随时查看整体进度与流程完整性（核验完成度、确认覆盖、恢复点可用性）
+      - 在不可逆步骤提交后使用恢复点执行恢复
+      - 重启演练（重置整个流程到初始态）
+  archetype:
+    pattern_ref: PAT-LIST-DETAIL
+  density_intent: spacious
+  regions:
+    - id: 当前步骤的核验清单与主操作（可提交性一目了然）
+      role: experimental:当前步骤的核验清单与主操作（可提交性一目了然）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 步骤序列与门控状态（阶段→步骤，锁定/就绪/完成/已提交）
+      role: experimental:步骤序列与门控状态（阶段→步骤，锁定/就绪/完成/已提交）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 不可逆标识、后果说明与恢复点可用性
+      role: experimental:不可逆标识、后果说明与恢复点可用性
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 整体进度与完整性徽章（核验 x/y · 确认 x/x · 恢复点 n）
+      role: experimental:整体进度与完整性徽章（核验 x/y · 确认 x/x · 恢复点 n）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 执行记录（事件台账）
+      role: experimental:执行记录（事件台账）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 步骤背景说明与恢复预案文本
+      role: experimental:步骤背景说明与恢复预案文本
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: workspace
+      role: dominant_workspace
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - preserve_context
+  relationships: []
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved:
+    - id: industry_scenario_unspecified
+      question: industry_scenario_unspecified
+      impact: medium
+      affects:
+        - workflow content realism
+  rejected_alternatives:
+    - option: PAT-APPLICATION-SHELL
+      reason: 知识库 contract 明确 does_not_apply_when『the product is a single workspace』
+    - option: 多屏路由拆分
+      reason: 交付约束限定单页单主屏

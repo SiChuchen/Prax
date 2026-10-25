@@ -1,0 +1,115 @@
+session_id: ds_20261025163914_5ea17139
+information_shape:
+  cardinality: one
+  relationality: low
+  hierarchy: high
+  temporality: low
+  density: low
+  dimensionality: medium
+  spatiality: none
+  volatility: medium
+  uncertainty: medium
+  comparison_need: none
+representation:
+  primary:
+    type: wizard
+    reason: 单一高后果流程、零失误目标要求强顺序与强制门控：只有当前步骤可操作，不可逆提交被确认门拦截——这是向导的任务表示，但以常驻列表-详情布局实现以保留全流程概览
+  supporting:
+    - type: list
+      reason: 左栏阶段→步骤有序导航器：全流程概览、状态与锁定语义、恢复点标记
+    - type: form
+      reason: 步骤详情区的核验清单（逐项勾选，全勾解锁主操作）
+    - type: document
+      reason: 步骤背景说明、风险提示与恢复预案的结构化文本
+  rejected:
+    - option: 全屏分步 wizard（每次只见一步）
+      reason: 丢失全流程概览与恢复点可见性，恢复路径被藏进导航，违背验收种子对恢复路径常驻可得的要求
+    - option: document 长文清单
+      reason: 无门控与状态语义，无法拦截跳步与误提交
+    - option: canvas/graph 流程图
+      reason: 关系性低、空间性 none，图编排不承载门控与核验
+    - option: table 步骤表格
+      reason: 核验清单与确认门需要主从布局而非行列扫描
+  justification_vs_shape: 形状束（one/低关系/高层级/低时间/低密度/无空间/中易变中不确定/无比较）指向『单一对象、强顺序、强层级、重门控』：wizard 主表示承担顺序与门控，list 保概览与台账，form 承载核验清单，document 承载步骤说明——全部服务于零失误走完与不可逆恢复/确认。
+primary_structure:
+  pattern: PAT-LIST-DETAIL
+  rationale:
+    - 单一流程、基数 one、层级高：左栏按 阶段→步骤 展示全流程有序列表（锁定/就绪/完成/已提交状态），中栏是当前选中步骤的详情区（说明、核验清单、主操作）——列表保序、详情相邻，符合 PAT-LIST-DETAIL 的 applies_when『collection order matters』
+    - 向导式门控（不可跳步、逐段解锁）作为行为层嵌入列表顺序中，而非独立全屏向导，从而保住全流程概览与恢复点台账的可见性
+    - 右栏为支撑性 contextual inspector：恢复点 + 执行记录，绑定全局流程状态而非选择，恢复路径始终可见（验收种子硬要求）
+    - PAT-APPLICATION-SHELL 被知识库明确排除（single workspace），本产品是单工作区，不采用
+  confidence: high
+information_hierarchy:
+  primary:
+    - 当前步骤的核验清单与主操作（可提交性一目了然）
+    - 步骤序列与门控状态（阶段→步骤，锁定/就绪/完成/已提交）
+    - 不可逆标识、后果说明与恢复点可用性
+  secondary:
+    - 整体进度与完整性徽章（核验 x/y · 确认 x/x · 恢复点 n）
+    - 执行记录（事件台账）
+    - 步骤背景说明与恢复预案文本
+density:
+  intent: spacious
+  strategy:
+    - 低密度高后果：每屏聚焦当前步骤，核验项与主操作有充足留白与明确层级
+    - 不可逆步骤用暖色/⚠标识与后果面板从视觉上区别于可逆步骤
+    - 恢复点与执行记录右栏常驻可见，不用抽屉或二级页
+    - 阶段→步骤两级缩进导航，锁定步骤降透明度显示
+  avoid:
+    - 多列密排表格（信息形状密度为 low）
+    - 隐藏式抽屉承载恢复点/执行记录（恢复路径必须始终可见）
+    - 装饰性动效干扰门控语义
+major_choices:
+  - id: MC-1-scenario
+    choice: 用『生产发布 runbook（订单服务 v2.4.0）』作为代表性高后果流程：3 阶段 / 7 步骤 / 12 核验项，其中 3 个不可逆步骤（DB 迁移、全量切换、关闭归档）
+    rationale: 简报未指定行业；发布运维是含不可逆步骤的高后果流程的典型载体，与判别语义（零失误走完全程、不可逆有恢复/确认）完全对应
+    confidence: medium
+    references:
+      - workflow
+      - phase
+      - step
+  - id: MC-2-gating
+    choice: 门控模型：严格顺序锁（前置未完成则锁定）+ 核验项全勾才解锁主操作 + 不可逆提交必须过确认门（勾选理解 + 输入口令 + 明示后果与将生成的恢复点）
+    rationale: 零失误目标要求错误在发生前被拦截：顺序锁防跳步，核验清单防漏项，确认门防误触不可逆动作
+    confidence: medium
+    references:
+      - step
+      - gate
+      - confirm_irreversible
+      - execute_steps
+  - id: MC-3-recovery
+    choice: 恢复模型：不可逆提交成功即自动创建恢复点；恢复点面板常驻右栏，恢复动作本身也需确认并写入执行记录；关闭归档前的任何时刻都可恢复
+    rationale: 验收种子要求不可逆步骤『有恢复/确认路径』——确认门覆盖前半，自动恢复点+常驻恢复面板覆盖后半
+    confidence: medium
+    references:
+      - checkpoint
+      - gate
+      - ledger
+      - recover_from_checkpoint
+  - id: MC-4-stack
+    choice: 技术栈：原生 HTML/CSS/JS 单页应用，无构建、零依赖，index.html 根路径直接静态打开；初始流程数据以 JS 常量内联，首屏即完整可交互
+    rationale: 交付约束要求静态可开、加载即用、本地可跑、无外部服务；原生实现消除构建与网络变量，最可靠满足『页面加载完成即可用』
+    confidence: medium
+    references:
+      - workflow
+rejected:
+  - option: PAT-APPLICATION-SHELL
+    reason: 知识库 contract 明确 does_not_apply_when『the product is a single workspace』
+  - option: 多屏路由拆分
+    reason: 交付约束限定单页单主屏
+unresolved:
+  - id: industry_scenario_unspecified
+    impact: medium
+    affects:
+      - workflow content realism
+complexity_budget:
+  permanent_panels: 3
+  permanent_primary_actions: 1
+  modes: 1
+  state_owners: 1
+  navigation_levels: 1
+  persistent_filters: 0
+  new_semantic_concepts: 4
+  keyboard_contracts: 1
+  mobile_conflicts: 0
+  permanent_surfaces: 1

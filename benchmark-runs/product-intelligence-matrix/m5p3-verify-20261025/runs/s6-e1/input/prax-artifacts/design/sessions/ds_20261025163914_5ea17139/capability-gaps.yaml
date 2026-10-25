@@ -1,0 +1,64 @@
+needs:
+  - id: N1-gated-sequence
+    product_action: 按严格顺序推进步骤：前置完成才解锁后继，当前步骤核验项全勾才解锁主操作
+    required_experience:
+      - 全流程步骤序列始终可见（含锁定态）
+      - 仅当前步骤可操作
+      - 核验清单逐项勾选并即时反映可提交性
+    capabilities: []
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 单页前端内联状态机：步骤派生状态 locked/ready/active/done/committed 由顺序与核验完成度推导，纯本地计算，无后端依赖
+  - id: N2-confirmation-gate
+    product_action: 不可逆步骤提交前强制确认：明示后果、勾选理解、输入口令后方可提交
+    required_experience:
+      - 模态确认门阻断主操作
+      - 后果与将生成的恢复点在确认前可见
+      - 确认条件未满足时提交按钮禁用
+    capabilities: []
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 前端模态 + 条件校验（勾选+口令匹配步骤码），提交按钮随条件动态解锁
+  - id: N3-checkpoint-recovery
+    product_action: 不可逆提交成功自动创建恢复点；随时可从恢复点恢复（恢复本身需确认并回退状态）
+    required_experience:
+      - 恢复点面板常驻可见
+      - 恢复动作有独立确认门
+      - 恢复后流程状态回退且执行记录留痕
+    capabilities: []
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 提交时深拷贝流程状态快照入恢复点列表；恢复即用快照覆写当前状态并写入台账，纯前端内存态
+  - id: N4-progress-integrity
+    product_action: 整体进度与零失误完整性始终可见（核验 x/y · 确认覆盖 · 恢复点 n）
+    required_experience:
+      - 首屏即显示进度与完整性徽章
+      - 状态变化即时更新
+    capabilities: []
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 由状态派生的徽章计算，随每次渲染更新
+  - id: N5-audit-ledger
+    product_action: 核验、提交、确认、恢复、重置全部动作写入执行记录
+    required_experience:
+      - 事件按时间倒序可查
+      - 含时间戳与动作对象
+    capabilities: []
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 内存事件数组渲染于右栏台账区
+  - id: N6-reset-drill
+    product_action: 重启演练：重置整个流程到初始态
+    required_experience:
+      - 重置需确认
+      - 重置后首屏回到初始可交互状态
+    capabilities: []
+    status: supported
+    resolution:
+      type: frontend_composition
+      notes: 重置为重新以内联初始数据装配状态对象

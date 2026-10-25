@@ -231,3 +231,39 @@ path); deduped `fix_paths` on VALIDATION_CONVERGENCE_STALLED. 403/403
 green. NOTE: the findings-stall phenotype did not recur in m5p1's E1'
 (0/4) — m5.2's live effect is unverified; piggyback its verification on the
 next batch alongside the §8.2 handoff candidate.
+
+### §8.4 m5.3 handoff-clarity live verification + series close-out (2026-10-25)
+
+Batch `m5p3-verify-20261025` complete (freeze 6c4eae8 before any run; 6/6,
+$44.27+$30 D-1 allowances ≈ $74.3/$120). E1'' = m5p3 runtime `76bfda91`
+(full stack ADR-006+m5.1+m5.2+m5.3) vs E0'' = m5p1 runtime `183410df`
+(sole delta = m5.2+m5.3). Full record: `../m5p3-verify-20261025/m5p3-report.md`
++ addendum.
+
+- **Mechanical verdict: row 2 (PARTIAL)** — C(E1'')=2/4 vs C(E0'')=0/2;
+  **submit_terminal 2/4 → 0/4**: the m5p1 residual (acceptance-PASS read as
+  the verdict) is eliminated; the not-a-verdict handoff appeared live in
+  4/4 E1'' sessions; both closers ended on evaluate/PASS→COMPLETE.
+- **Residual class transformed**: s5 = budget-limited (wall-killed at 90min
+  mid-maximal-effort: 17 validate calls, 8 loop feedbacks); s2 = agent
+  judgment stop (saw the open-validation signals and honestly documented
+  residual status in its README, then concluded). No signal-misreading
+  terminal class remains in treatment arms: zero_stall eliminated (m5.1,
+  verified m5p1), submit_terminal eliminated (m5.3, verified here),
+  findings_stall never reached a treatment arm in 8 runs.
+- **m5.2 hints: 0 live occurrences in 8 treatment-arm runs** — target
+  phenotype recurs only on control arms (m5p3 s3-e0''). Status: live-
+  unverified; verify opportunistically if the phenotype recurs.
+- Control cumulative 0/4 across m5p1+m5p3; treatment 2/4 → 2/4; closing
+  trajectory context-only: 30% (R1+R2) → 25% → 50% → 50%.
+- **Registered next candidates (pre-register before acting)**: (a)
+  post-loop-cap handoff prominence; (b) wall-budget adequacy for
+  maximal-effort sessions; (c) focus-pass dip monitoring (E1'' 2/4).
+
+**Series close-out**: the m5 arc (loop → m5.1 → m5.2 → m5.3, commits
+2ccb60e/59e870d/39e5995/c5da382) took Gate F from "agents never close
+(30%) through stacked mechanical frictions" to "close at 50% with only
+budget/judgment-limited residuals" — every mechanism-level friction
+identified by pre-registered batches has now been removed and live-verified
+(or, for m5.2, rendered unreachable-so-far). All m5-series batches are
+CLOSED; no re-runs.

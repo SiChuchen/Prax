@@ -1,0 +1,31 @@
+version: "0.1"
+user_quote:
+  - 动词：explore
+  - 对象：多维数据
+  - 成功标准：维度切换不重置认知
+  - 过滤/投影状态有归属且可回退
+  - 交付物必须能直接静态打开（根路径 index.html，或构建产物 dist/）
+  - 应用在页面加载完成时即处于可用状态（初始数据随首屏就绪，不得以加载态作为可测状态）
+restatement: 从零构建一个单页、静态可打开的多维数据探索应用：用户在一个数据集上通过切换维度（将维度映射到投影通道）来探索数据；切换维度时，选择、过滤、缩放等认知上下文不得丢失；所有过滤/投影状态变更必须有明确归属（哪个界面区域、什么动作产生）且可回退（撤销/恢复到任一历史状态）。首屏即含数据且可用，无加载态。
+boundaries:
+  in_scope:
+    - 单页 Web 应用（主屏 1 个）
+    - 多维数据集的维度-通道投影探索（scatter 投影画布）
+    - 维度切换保留选择/过滤/视口等认知上下文
+    - 过滤与投影状态的产生归属记录与可回退（undo/redo/状态台账）
+    - 初始数据随首屏内联就绪，无加载态，无网络依赖
+  out_of_scope:
+    - 后端服务、账号体系、持久化服务
+    - 多页面/多主屏
+    - 外部部署
+    - 修改冻结的验收标准
+  scope_complete: true
+open_questions: []
+confirmation:
+  status: requirement_is_sufficient
+  evidence:
+    - type: task_brief
+      ref: brief.md (cell-j13-s10, frozen by benchmark M2)
+    - type: conversation_message
+      ref: initial task message instructing to build the product described in REQUIREMENT
+  confirmed_at: 2026-10-25T00:00:00Z

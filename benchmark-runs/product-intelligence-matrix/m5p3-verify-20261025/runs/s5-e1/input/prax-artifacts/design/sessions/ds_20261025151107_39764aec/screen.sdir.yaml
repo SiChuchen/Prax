@@ -1,0 +1,195 @@
+version: "0.2"
+screen:
+  id: data_explorer_screen
+  intent:
+    primary_task: 在主屏上切换投影维度/度量/聚合来探索数据集，期间过滤器、选中记录与排序持续有效
+    secondary_tasks:
+      - 查看每条过滤/投影状态的来源归属并单独移除或静默
+      - 通过 undo/redo 与历史回跳回退任意状态变更
+      - 在明细表中定位并选中记录，查看其全维度详情
+      - 点击柱对当前投影维度施加/移除过滤
+  archetype:
+    pattern_ref: PAT-DATA-EXPLORER
+  density_intent: compact
+  regions:
+    - id: topbar
+      role: "experimental:global_toolbar"
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent:
+        - "experimental:dataset_identity"
+        - "experimental:undo_redo"
+        - "experimental:reset_all"
+        - "experimental:history_depth_indicator"
+    - id: probe_rail
+      role: "experimental:state_ownership_rail"
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - "experimental:show_probe_origin_badge"
+        - "experimental:mute_unmute_probe"
+        - "experimental:remove_probe"
+        - "experimental:projection_chip_with_revert"
+        - "experimental:clear_all_probes"
+    - id: projection_canvas
+      role: "experimental:dominant_data_surface"
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - "experimental:switch_projection_dimension"
+        - "experimental:switch_measure_and_aggregation"
+        - "experimental:click_bar_to_toggle_probe"
+        - "experimental:sort_bars"
+        - "experimental:carry_over_notice_on_dimension_switch"
+        - comparison_group
+        - filter_then_inspect
+    - id: record_table
+      role: collection
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent:
+        - "experimental:sort_columns"
+        - "experimental:select_row"
+        - "experimental:show_filtered_vs_total_count"
+        - "experimental:scrollable_dense_rows"
+        - comparison_group
+        - filter_then_inspect
+    - id: inspector
+      role: contextual_inspector
+      importance: contextual
+      visibility:
+        condition: selection_driven
+      behavior_intent:
+        - "experimental:show_record_full_dimensions"
+        - "experimental:clear_selection"
+        - selection_driven
+    - id: history_strip
+      role: "experimental:state_history_timeline"
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent:
+        - "experimental:click_step_to_time_travel"
+        - "experimental:show_undo_redo_cursor_position"
+  relationships:
+    - id: r1
+      source: projection_canvas
+      target: probe_rail
+      type: bar_click_creates_probe_with_origin
+    - id: r2
+      source: probe_rail
+      target: projection_canvas
+      type: active_probes_scope_projected_bars
+    - id: r3
+      source: projection_canvas
+      target: record_table
+      type: projection_change_preserves_record_set_and_selection
+    - id: r4
+      source: record_table
+      target: inspector
+      type: row_selection_drives_inspector
+    - id: r5
+      source: history_strip
+      target: probe_rail
+      type: time_travel_restores_full_state
+    - id: r6
+      source: topbar
+      target: history_strip
+      type: undo_redo_moves_time_cursor
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+    - "experimental:filter"
+    - "experimental:select"
+    - "experimental:locate"
+  required_states:
+    - loading
+    - ready
+    - empty
+    - selected
+    - error
+  decision_points:
+    - id: chart_realization
+      question: 柱状图用原生 HTML button 柱还是内嵌库/SVG 实现？
+      adapter_may_choose:
+        - 原生 HTML button 柱（当前实现，焦点/键盘语义最稳）
+        - inline SVG + roving tabindex
+    - id: probe_origin_vocabulary
+      question: 探针来源徽标的用词（chart-click/brush/manual/history）如何本地化？
+      adapter_may_choose:
+        - 沿用 PAT-DATA-EXPLORER 术语（filter/sort）
+        - 沿用探针/投影中文术语并附英文副标
+    - id: undo_redo_binding
+      question: undo/redo 的键位绑定约定
+      adapter_may_choose:
+        - 顶栏按钮 + Ctrl+Z/Ctrl+Y（当前实现）
+        - 顶栏按钮 + Ctrl+Z/Ctrl+Shift+Z
+  user_job:
+    verb: explore
+    target: 多维数据集（国家×年份×指标，约 800 条观测）
+    success: 维度切换不重置认知：过滤器、选择、排序跨投影保持，且状态归属可见、可回退
+  primary_object:
+    type: dataset
+    label: 数据集（国家×年份×指标）
+  information_shape:
+    cardinality: unbounded
+    relationality: medium
+    hierarchy: medium
+    temporality: low
+    density: high
+    dimensionality: high
+    spatiality: none
+    volatility: medium
+    uncertainty: low
+    comparison_need: none
+  representation:
+    primary:
+      type: chart
+      reason: 维度是主要认知负担：聚合柱状图把记录集投影到单个可切换维度上，柱=维度值，高=度量聚合；切换维度=换投影，不换镜头下的记录集
+    supporting:
+      - type: table
+        reason: 过滤后记录的密集列表，可排序、行选中驱动检查器
+      - type: list
+        reason: 探针栏：过滤/投影状态 chip 列表，带来源徽标、静默、单项移除
+      - type: cards
+        reason: 检查器：选中记录的全维度值卡
+  priority:
+    primary:
+      - projection_canvas
+      - probe_rail
+      - record_table
+    contextual:
+      - history_strip
+      - inspector
+  state_ownership:
+    - state: query
+      owner: probe_rail
+    - state: selection
+      owner: record_table
+    - state: mode
+      owner: projection_canvas
+    - state: viewport
+      owner: history_strip
+    - state: preview
+      owner: inspector
+  complexity_budget:
+    permanent_panels: 5
+    permanent_primary_actions: 3
+    modes: 0
+    state_owners: 4
+    navigation_levels: 1
+    persistent_filters: 1
+    new_semantic_concepts: 2
+    keyboard_contracts: 1
+    mobile_conflicts: 0
+    permanent_surfaces: 5
+  acceptance:
+    - 维度切换（region/income_group/year/country）后：活动探针集合、选中记录、排序全部保持，且 carry-over 提示可见
+    - 每条探针 chip 显示来源徽标（归属），可静默、可单项移除；投影配置呈现为可回退 chip
+    - 任意状态变更可 undo/redo，历史条可点击回跳到任意节点，回跳后状态完整一致
+    - 页面加载完成即呈现含数据的完整首屏；loading 已声明但设计中不可达（数据内联，无异步加载）
+    - 根路径 index.html 静态打开（file:// 与本地 http 服务器）均完全可用

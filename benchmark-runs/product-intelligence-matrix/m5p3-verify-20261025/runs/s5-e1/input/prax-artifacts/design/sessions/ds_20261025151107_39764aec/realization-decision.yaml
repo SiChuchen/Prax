@@ -1,0 +1,17 @@
+version: "0.1"
+realization_mode: direct_code
+conditions:
+  - id: defect_fix_fit
+    holds: true
+    basis: greenfield 新建，不存在需要先修复的缺陷基线；direct_code 不受既有视觉缺陷约束
+  - id: visual_polish_fit
+    holds: true
+    basis: 单屏紧凑专业工具风格，视觉语言由随代码交付的 design tokens（色彩/间距/字号/状态色）直接定义，无需设计工具迭代视觉保真
+  - id: small_modification
+    holds: true
+    basis: 规模为单屏 6 区域，代码量小且状态模型已定型，直接编码完全可控
+  - id: mature_design_system
+    holds: true
+    basis: 实现仅依赖本次随交付定义的内部 token 集，不依赖任何外部设计系统；无运行时外部依赖
+proposed_at: 2026-10-25T15:33:34.256Z
+overridden: false

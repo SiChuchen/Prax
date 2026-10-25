@@ -1,0 +1,32 @@
+version: "0.1"
+user_quote:
+  - 动词：explore；对象：多维数据；成功标准：维度切换不重置认知
+  - 验收种子：过滤/投影状态有归属且可回退
+  - 交付物必须能直接静态打开（根路径 index.html，或构建产物 dist/）
+  - 应用在页面加载完成时即处于可用状态（初始数据随首屏就绪，不得以加载态作为可测状态）
+restatement: 构建一个单页 Web 应用：对多维数据集的探索主屏。用户可按不同维度（投影/过滤/分组）切换查看同一数据集，切换维度时保持认知连续（不重置已建立的阅读位置与理解），且过滤/投影状态有明确归属（可见其来源与当前值）并可回退（撤销/清除）。初始数据内联于首屏，加载即可用，静态可开，本地运行，无后端。
+boundaries:
+  in_scope:
+    - 单页应用，主屏 1 个（多维数据探索视图）
+    - 维度切换：选择哪个维度作为当前投影/着色/分组，切换不重置认知
+    - 过滤/投影状态面板：状态有归属（显示来源维度与当前值）且可回退（单步撤销/一键重置）
+    - 内联初始数据集，首屏即就绪
+    - 静态交付：根路径 index.html 或 dist/，本地可运行可构建
+  out_of_scope:
+    - 后端、账号体系、持久化服务
+    - 部署到外部服务
+    - 多屏/多页面
+    - 修改验收标准（简报由 M2 冻结）
+  scope_complete: true
+open_questions:
+  - id: oq-1-dataset-domain
+    impact: low
+    affects:
+      - context
+      - frame
+confirmation:
+  status: requirement_is_sufficient
+  evidence:
+    - type: task_brief
+      ref: brief.md / Product Brief — cell-j13-s10 (explore × dimensional-space)，M2 冻结版
+  confirmed_at: 2026-10-25T12:40:00Z

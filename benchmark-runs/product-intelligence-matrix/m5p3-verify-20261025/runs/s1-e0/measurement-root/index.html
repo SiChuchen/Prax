@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ORRERY · 多维系外行星目录探索台</title>
+<meta name="description" content="explore × dimensional-space — 维度切换不重置认知；过滤/投影状态有归属且可回退。本地静态单页应用，无网络依赖。">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+
+<div id="fatal" class="fatal" hidden role="alert">
+  <div class="fatal-box">
+    <h2>初始化失败</h2>
+    <p id="fatal-msg"></p>
+  </div>
+</div>
+
+<header class="topbar" data-region="dataset_stats" aria-label="数据集概要与全局操作">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true">◍</span>
+    <span class="brand-name">ORRERY</span>
+    <span class="brand-sub">多维系外行星目录探索台</span>
+  </div>
+  <div class="stats" id="stats" aria-label="数据集统计">
+    <span class="stat"><b id="stat-total">–</b> 目录记录</span>
+    <span class="stat-dot" aria-hidden="true"></span>
+    <span class="stat"><b id="stat-visible">–</b> 可见</span>
+    <span class="stat"><b id="stat-selected">–</b> 选集</span>
+    <span class="stat"><b id="stat-filters">–</b> 过滤器</span>
+  </div>
+  <div class="view-tools" role="group" aria-label="当前投影视图工具">
+    <label class="tool" title="横轴对数刻度"><input type="checkbox" id="log-x"> 对数 X</label>
+    <label class="tool" title="纵轴对数刻度"><input type="checkbox" id="log-y"> 对数 Y</label>
+    <button id="btn-fitview" class="btn" title="恢复该投影的默认视口">适配视口</button>
+  </div>
+  <div class="global-actions">
+    <button id="btn-undo" class="btn" title="撤销 (Ctrl+Z)">↶ 撤销</button>
+    <button id="btn-redo" class="btn" title="重做 (Ctrl+Y)">↷ 重做</button>
+    <button id="btn-reset" class="btn" title="恢复初始视图；该操作记入台账，可再撤销">重置视图</button>
+  </div>
+</header>
+
+<main class="layout">
+
+  <!-- 检查器：过滤器 / 选集 / 状态台账（DOM 序在轨道之前，保证 Tab 走查自上而下） -->
+  <aside class="inspector" data-region="detail" aria-label="检查器">
+
+    <section class="panel sec sec-filters" data-region="filter_editor" aria-label="过滤器">
+      <div class="sec-head">
+        <h2>过滤器 <span class="count" id="filter-count">0</span></h2>
+        <button id="btn-clear-filters" class="btn btn-sm" hidden>清空</button>
+      </div>
+      <div class="chips" id="filter-chips"></div>
+      <label class="f-edit-pick">编辑维度
+        <select id="filter-dim"></select>
+      </label>
+      <div class="filter-list" id="filter-editor"></div>
+    </section>
+
+    <section class="panel sec sec-selection" data-region="collection" aria-label="选集">
+      <div class="sec-head">
+        <h2>选集 <span class="count" id="sel-count">0</span></h2>
+        <button id="btn-clear-selection" class="btn btn-sm" hidden>清空</button>
+      </div>
+      <ul class="sel-list" id="sel-list"></ul>
+      <p class="hint" id="sel-hint">在画布中点击记录加入选集；切换维度后选集保持。</p>
+    </section>
+
+    <section class="panel sec sec-ledger" data-region="state_ledger" aria-label="状态台账">
+      <div class="sec-head">
+        <h2>状态台账</h2>
+        <span class="hint">过滤 / 投影状态有归属且可回退</span>
+      </div>
+      <ol class="ledger-list" id="ledger-list"></ol>
+    </section>
+
+  </aside>
+
+  <!-- 维度轨道：维度 → 通道指派（切换镜头的主入口；视觉位置在左列） -->
+  <aside class="rail panel" data-region="dimension_rail" aria-label="维度轨道">
+    <div class="rail-head">
+      <h2>维度 <span class="count" id="dim-count"></span></h2>
+      <p class="hint">点击通道字母即换镜头；选择、过滤与该投影的视口不受影响。</p>
+    </div>
+    <div class="channel-key" aria-hidden="true">
+      <span><i class="ck cx">X</i>横轴</span>
+      <span><i class="ck cy">Y</i>纵轴</span>
+      <span><i class="ck cc">C</i>颜色</span>
+      <span><i class="ck cs">S</i>大小</span>
+    </div>
+    <ul class="dims" id="dim-list"></ul>
+  </aside>
+
+  <!-- 投影画布：dominant 数据工作面 -->
+  <section class="canvas-wrap panel" data-region="data" aria-label="投影画布">
+    <div class="canvas-head">
+      <h2 id="proj-title" aria-live="polite">…</h2>
+    </div>
+    <div class="plot-area">
+      <canvas id="plot"></canvas>
+      <div class="empty-note" id="empty-note" hidden>
+        <p><b>当前过滤条件下没有可见记录。</b></p>
+        <p class="hint">数据都还在——只是被过滤器藏起来了。</p>
+        <button id="btn-empty-undo" class="btn">↶ 撤销上一步</button>
+      </div>
+    </div>
+    <div class="legend" data-region="color_size_legend" id="legend" aria-label="颜色与大小图例"></div>
+  </section>
+</main>
+
+<footer class="foot">
+  <span>每条过滤 / 投影状态均记录来源（区域 · 动作），在状态台账中点击即可一步回退。</span>
+  <span class="sep">·</span>
+  <span>本地确定性合成目录 · 种子 0xC0FFEE · 随首屏同步生成 · 无网络请求</span>
+</footer>
+
+<div class="tooltip" id="tooltip" hidden></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

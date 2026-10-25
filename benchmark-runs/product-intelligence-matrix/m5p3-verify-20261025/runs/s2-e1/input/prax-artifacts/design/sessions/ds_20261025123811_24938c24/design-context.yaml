@@ -1,0 +1,68 @@
+user:
+  expertise: intermediate
+  familiarity: medium
+task:
+  primary: 探索多维数据：连续切换维度（投影/着色/分组/过滤）观察不同切片
+  modes:
+    - 浏览全量分布
+    - 切维度重投影
+    - 筛选子集
+    - 回退操作
+    - 查看单条详情
+  frequency: medium
+domain:
+  type: 多面数据分析（单一数据集多维度探索）
+  entities:
+    - 数据集
+    - 记录
+    - 维度（分类/数值/时间）
+    - 投影/过滤状态
+    - 操作步骤
+information:
+  volume: high
+  relationship_complexity: medium
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: none
+  error_cost: low
+priorities:
+  - 维度切换不重置认知（认知连续性优先）
+  - 过滤/投影状态有归属且可回退
+  - 高密度呈现（信息效率优先）
+  - 首屏即就绪（无加载态）
+density_intent: compact
+confidence:
+  overall: high
+unknowns:
+  - id: oq-1-dataset-domain
+    impact: low
+    affects:
+      - frame
+      - sdir
+classification:
+  version: "1"
+  task_type: compare_filter_records
+  domain_id: observability_analytics
+  interaction_mode: collection_with_contextual_detail
+  product_type: unknown
+  primary_object_type: dimension
+  secondary_object_types:
+    - view_state
+    - dataset
+    - step_history
+  confidence: high
+  evidence:
+    - task_type=compare_filter_records ← token '筛选' in context.task and frame.tasks
+    - domain_id=observability_analytics ← token '分析' in context.domain
+    - interaction_mode=collection_with_contextual_detail ← token '筛选' in context.task, frame.tasks, and context.priorities
+    - primary_object_type=dimension ← most referenced product object in the Product Frame
+  open_questions:
+    - product_type could not be derived; record the intended audience and product kind

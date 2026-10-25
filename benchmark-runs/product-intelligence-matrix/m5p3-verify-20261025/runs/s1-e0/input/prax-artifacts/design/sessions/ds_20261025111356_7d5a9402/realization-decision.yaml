@@ -1,0 +1,18 @@
+version: "0.1"
+realization_mode: direct_code
+conditions:
+  - id: defect_fix_fit
+    holds: false
+    basis: greenfield 会话，无缺陷修复阶段；该条件不适用而非不满足
+  - id: visual_polish_fit
+    holds: true
+    basis: 单屏信息密度工具界面，视觉复杂度可控，直接编码可精确落实 P-22 signal-over-chrome 与紧凑密度策略
+  - id: small_modification
+    holds: true
+    basis: 单主屏、零既有系统耦合，预计代码 ~1.2k 行，直接编码规模可控
+  - id: mature_design_system
+    holds: false
+    basis: greenfield 无既有设计系统；以 CSS 自定义属性内联 design tokens 保持视觉一致性
+proposed_at: 2026-10-25T11:25:15.766Z
+overridden: true
+override_reason: 本环境未配置任何表征提供方（figma/penpot/pen 均不可用），figma_first 无法执行；交付物必须为零构建、可 file:// 直接打开的静态 vanilla 代码，direct_code 是唯一可执行且符合交付约束的实现路径。direct_code 固定条件集中两项（defect_fix_fit / mature_design_system）对 greenfield 语境天然不适用，而非风险信号。

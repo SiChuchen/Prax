@@ -1,0 +1,157 @@
+version: "0.2"
+screen:
+  id: list_detail_screen
+  intent:
+    primary_task: 按阶段顺序逐步执行注销步骤，完成一步、确认一步、推进一步
+    secondary_tasks:
+      - 每步执行前完成前置自查清单
+      - 不可逆步骤执行前阅读后果与恢复路径并完成确认仪式
+      - 口径不确定时查看地区差异与时效提示
+      - 反悔或出错时打开恢复手册执行补救
+  archetype:
+    pattern_ref: PAT-LIST-DETAIL
+  density_intent: spacious
+  regions:
+    - id: 当前步骤的可执行动作与完成门（前置自查未全勾不可完成）
+      role: experimental:当前步骤的可执行动作与完成门（前置自查未全勾不可完成）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 不可逆步骤的后果说明与恢复路径（执行前+执行后）
+      role: experimental:不可逆步骤的后果说明与恢复路径（执行前+执行后）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 全局进度与当前位置（阶段→步骤层级）
+      role: experimental:全局进度与当前位置（阶段→步骤层级）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 前置自查清单
+      role: experimental:前置自查清单
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 易错点与口径提示（地区差异/时效）
+      role: experimental:易错点与口径提示（地区差异/时效）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 全局恢复手册（抽屉）
+      role: experimental:全局恢复手册（抽屉）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: workspace
+      role: dominant_workspace
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - preserve_context
+  relationships: []
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved:
+    - id: regional_variance
+      question: regional_variance
+      impact: medium
+      affects:
+        - 税务注销步骤文案
+        - 公告渠道与期限
+        - 银行销户材料清单
+  rejected_alternatives:
+    - option: 自由勾选清单（乱序可完成）
+      reason: 允许跳步会在顺序上引入高后果失误，违背零失误目标
+    - option: 单页长文滚动式指南
+      reason: 失去“当前一步”焦点与完成门，无法承载确认仪式与状态
+    - option: 时间轴/甘特表示
+      reason: temporality=low，时间不是主要组织维度
+    - option: 表格/看板/多流程比较视图
+      reason: cardinality=one 且 comparison_need=none
+    - option: canvas/map 空间布局
+      reason: spatiality=none
+    - option: localStorage 持久化进度
+      reason: 无持久化要求；内存态保证打开即初始态、可测可重演
+  user_job:
+    verb: complete
+    target: 公司注销这一高后果流程（从解散决议到执照缴销、归档）
+    success: 零失误走完全程：顺序不乱、事项不漏、每个不可逆步骤都经过明确确认且随时能查到恢复/补救路径，最终拿到注销证明
+  primary_object:
+    type: workflow
+    label: 公司注销流程
+  information_shape:
+    cardinality: one
+    relationality: low
+    hierarchy: high
+    temporality: low
+    density: low
+    dimensionality: medium
+    spatiality: none
+    volatility: medium
+    uncertainty: medium
+    comparison_need: none
+  representation:
+    primary:
+      type: wizard
+      reason: 用户任务是“按序走完一个高后果流程”，向导式顺序推进+完成门与状态机直接对应零失误走完全程；每步只暴露当前动作，防跳步防遗漏
+    supporting:
+      - type: list
+        reason: 左侧阶段→步骤轨：有序层级导航，selection 常驻可见（hierarchy=high，List Detail 契约）
+      - type: form
+        reason: 前置自查清单与分支判定以表单交互承载，未全勾禁用完成
+      - type: document
+        reason: 办理要点/恢复手册以文档式排版阅读（不可逆步骤的恢复路径需成段可查）
+  priority:
+    primary:
+      - 当前步骤的可执行动作与完成门（前置自查未全勾不可完成）
+      - 不可逆步骤的后果说明与恢复路径（执行前+执行后）
+      - 全局进度与当前位置（阶段→步骤层级）
+      - workspace
+    contextual:
+      - 前置自查清单
+      - 易错点与口径提示（地区差异/时效）
+      - 全局恢复手册（抽屉）
+  interaction:
+    preview: none
+    inspect: select
+    navigate: none
+    locate: none
+  state_ownership:
+    - state: selection
+      owner: 当前步骤的可执行动作与完成门（前置自查未全勾不可完成）
+    - state: preview
+      owner: session
+  complexity_budget:
+    permanent_panels: 2
+    permanent_primary_actions: 3
+    modes: 1
+    state_owners: 1
+    navigation_levels: 2
+    persistent_filters: 0
+    new_semantic_concepts: 3
+    keyboard_contracts: 1
+    mobile_conflicts: 0
+    permanent_surfaces: 1
+  acceptance:
+    - 用户从“解散决议”走到“注销证明归档”，全程零失误：未跳步、未漏办，全部不可逆步骤均经确认仪式后执行，且任一时刻都能找到当前步骤的恢复/补救路径。

@@ -1,0 +1,40 @@
+version: "0.1"
+platform_profile: WEB-DESKTOP
+framework: react
+measurement_target:
+  app_root: .
+  entry: /index.html
+  scenario: explore_multidim_state_continuity：首屏即含数据 → 切换投影维度（region→income_group→year）后探针/选中/排序保持 → 点柱生成带来源徽标的探针 chip → chip 可静默/移除 → undo/redo 与历史条回跳状态一致 → 明细表选中记录驱动检查器且跨维度保持
+sdir_ref: screen.sdir.yaml
+decision_ref: design-decisions.yaml
+approved_patterns:
+  - PAT-DATA-EXPLORER
+approved_component_contracts:
+  - DATA-SURFACE
+  - FILTER-CONTROLS
+  - CONTEXTUAL-DETAIL
+states_required:
+  - loading
+  - empty
+  - ready
+  - selected
+  - error
+capability_gaps: []
+validation_plan_ref:
+  artifact: validation-plan.yaml
+  revision: 1
+validation_requirements:
+  - semantic_conformance
+  - state_completeness
+  - product_model_alignment
+  - keyboard
+  - hierarchy_review
+  - representation_decided
+  - state_ownership_declared
+  - acceptance_contract_present
+  - complexity_budget_declared
+  - filter_state
+  - comparison_scan
+  - requirement_alignment
+realization:
+  mode: direct_code

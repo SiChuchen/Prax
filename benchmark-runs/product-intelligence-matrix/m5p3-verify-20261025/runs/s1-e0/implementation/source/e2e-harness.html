@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>E2E-HARNESS</title>
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body style="margin:0">
+<iframe id="app" src="index.html" style="width:1280px;height:860px;border:0"></iframe>
+<pre id="out" style="font:12px monospace; color:#000; background:#fff; padding:8px; white-space:pre-wrap">BOOT</pre>
+<script>
+(function () {
+  var out = document.getElementById('out');
+  var lines = [];
+  function log(m) { lines.push(m); }
+  function flush(done) {
+    out.textContent = (done ? 'E2E-DONE\n' : '') + lines.join('\n');
+    document.title = done ? 'E2E-DONE' : 'E2E-RUNNING';
+  }
+
+  function fatalState(doc) {
+    var f = doc.getElementById('fatal');
+    if (f && !f.hidden) {
+      return 'FATAL VISIBLE: ' + (doc.getElementById('fatal-msg') || {}).textContent;
+    }
+    return null;
+  }
+  function step(doc, name, fn) {
+    var f = fatalState(doc);
+    if (f) { log('STOP BEFORE "' + name + '": ' + f); return false; }
+    try { fn(); } catch (e) { log('EXCEPTION in "' + name + '": ' + (e && e.message || e)); }
+    f = fatalState(doc);
+    if (f) { log('CRASH AFTER "' + name + '": ' + f); return false; }
+    log('ok: ' + name);
+    return true;
+  }
+  function fire(w, el, type, Ctor, init) {
+    init.bubbles = init.bubbles !== false;
+    el.dispatchEvent(new Ctor(type, init));
+  }
+  function click(w, el) { fire(w, el, 'click', w.MouseEvent, { bubbles: true, cancelable: true }); }
+  function setVal(w, el, v) {
+    el.value = v;
+    fire(w, el, 'input', w.Event, { bubbles: true });
+    fire(w, el, 'change', w.Event, { bubbles: true });
+  }
+
+  function run() {
+    var frame = document.getElementById('app');
+    var w = frame.contentWindow, doc = frame.contentDocument;
+    if (!w || !doc) { log('no frame access'); flush(true); return; }
+    log('title=' + doc.title);
+    if (fatalState(doc)) { log('FATAL AT BOOT'); flush(true); return; }
+    log('boot ok, total=' + doc.getElementById('stat-total').textContent +
+        ' visible=' + doc.getElementById('stat-visible').textContent);
+
+    var $ = function (id) { return doc.getElementById(id); };
+    var all = function (sel) { return Array.prototype.slice.call(doc.querySelectorAll(sel)); };
+
+    /* 1. select every editing dimension and exercise its editor */
+    var dims = all('#filter-dim option').map(function (o) { return o.value; });
+    for (var i = 0; i < dims.length; i++) {
+      if (!step(doc, 'select dim ' + dims[i], function () {
+        var sel = $('filter-dim');
+        sel.value = dims[i];
+        fire(w, sel, 'change', w.Event, { bubbles: true });
+      })) { flush(true); return; }
+      (function (dimId) {
+        step(doc, 'edit numeric ' + dimId, function () {
+          var rows = all('#filter-editor input[type=range]');
+          if (rows.length >= 2) {
+            setVal(w, rows[0], rows[0].min);
+            setVal(w, rows[1], (+rows[1].min + (+rows[1].max - +rows[1].min) * 0.4) + '');
+            setVal(w, rows[0], (+rows[0].min + (+rows[0].max - +rows[0].min) * 0.6) + '');
+            setVal(w, rows[0], rows[0].min); setVal(w, rows[1], rows[1].max); /* back to full range */
+          }
+        });
+        step(doc, 'toggle checkboxes ' + dimId, function () {
+          var cbs = all('#filter-editor input[type=checkbox]');
+          for (var k = 0; k < cbs.length && k < 3; k++) { cbs[k].click(); }
+          for (var k2 = 0; k2 < cbs.length && k2 < 3; k2++) { cbs[k2].click(); } /* restore */
+        });
+        step(doc, 'open tree details ' + dimId, function () {
+          all('#filter-editor details').forEach(function (d) { d.open = true; });
+        });
+      })(dims[i]);
+    }
+
+    /* 2. click every enabled channel button */
+    var chans = all('.dims .ch').filter(function (b) { return !b.disabled; });
+    for (var c = 0; c < chans.length; c++) {
+      (function (btn) {
+        step(doc, 'channel ' + btn.dataset.dim + '->' + btn.dataset.ch, function () { click(w, btn); });
+      })(chans[c]);
+    }
+
+    /* 3. keyboard paths */
+    step(doc, 'key x/y/c/s', function () {
+      ['x', 'y', 'c', 's', 'X', 'C'].forEach(function (key) {
+        fire(w, doc.body, 'keydown', w.KeyboardEvent, { key: key, bubbles: true });
+      });
+    });
+    step(doc, 'ctrl+z / ctrl+y', function () {
+      fire(w, doc.body, 'keydown', w.KeyboardEvent, { key: 'z', ctrlKey: true, bubbles: true });
+      fire(w, doc.body, 'keydown', w.KeyboardEvent, { key: 'y', ctrlKey: true, bubbles: true });
+      fire(w, doc.body, 'keydown', w.KeyboardEvent, { key: 'z', ctrlKey: true, shiftKey: true, bubbles: true });
+    });
+
+    /* 4. canvas interactions */
+    step(doc, 'canvas hover/move', function () {
+      var r = $('plot').getBoundingClientRect();
+      for (var mx = 0; mx <= 1.001; mx += 0.125) {
+        for (var my = 0; my <= 1.001; my += 0.25) {
+          fire(w, w, 'mousemove', w.MouseEvent, {
+            clientX: r.left + r.width * mx, clientY: r.top + r.height * my, bubbles: true
+          });
+        }
+      }
+    });
+    step(doc, 'canvas click select', function () {
+      var r = $('plot').getBoundingClientRect();
+      var pts = all('#plot'); /* find a hit point via app internals is not possible; sweep grid */
+      for (var gx = 0.15; gx <= 0.9; gx += 0.05) {
+        fire(w, $('plot'), 'mousedown', w.MouseEvent, { button: 0, clientX: r.left + r.width * gx, clientY: r.top + r.height * 0.5, bubbles: true, cancelable: true });
+        fire(w, w, 'mouseup', w.MouseEvent, { button: 0, clientX: r.left + r.width * gx, clientY: r.top + r.height * 0.5, bubbles: true });
+      }
+    });
+    step(doc, 'canvas pan drag', function () {
+      var r = $('plot').getBoundingClientRect();
+      fire(w, $('plot'), 'mousedown', w.MouseEvent, { button: 0, clientX: r.left + 300, clientY: r.top + 300, bubbles: true, cancelable: true });
+      fire(w, w, 'mousemove', w.MouseEvent, { clientX: r.left + 420, clientY: r.top + 250, bubbles: true });
+      fire(w, w, 'mouseup', w.MouseEvent, { clientX: r.left + 420, clientY: r.top + 250, bubbles: true });
+    });
+    step(doc, 'canvas shift box filter', function () {
+      var r = $('plot').getBoundingClientRect();
+      fire(w, $('plot'), 'mousedown', w.MouseEvent, { button: 0, shiftKey: true, clientX: r.left + 200, clientY: r.top + 200, bubbles: true, cancelable: true });
+      fire(w, w, 'mousemove', w.MouseEvent, { clientX: r.left + 500, clientY: r.top + 400, bubbles: true });
+      fire(w, w, 'mouseup', w.MouseEvent, { clientX: r.left + 500, clientY: r.top + 400, bubbles: true });
+    });
+    step(doc, 'canvas wheel zoom', function () {
+      var r = $('plot').getBoundingClientRect();
+      for (var n = 0; n < 4; n++) {
+        fire(w, $('plot'), 'wheel', w.WheelEvent, { deltaY: -240, clientX: r.left + 400, clientY: r.top + 300, bubbles: true, cancelable: true });
+      }
+    });
+
+    /* 5. ledger revert on every entry */
+    step(doc, 'ledger revert all', function () {
+      var entries = all('.ledger-list .l-entry');
+      log('  ledger entries=' + entries.length);
+      entries.forEach(function (b, idx) {
+        if (idx !== entries.length - 1) b.click(); /* last is current */
+      });
+    });
+
+    /* 6. top-level controls */
+    step(doc, 'btn fitview', function () { click(w, $('btn-fitview')); });
+    step(doc, 'btn undo', function () { if (!$('btn-undo').disabled) click(w, $('btn-undo')); });
+    step(doc, 'btn redo', function () { if (!$('btn-redo').disabled) click(w, $('btn-redo')); });
+    step(doc, 'btn clear-filters', function () {
+      if (!$('btn-clear-filters').hidden) click(w, $('btn-clear-filters'));
+    });
+    step(doc, 'btn clear-selection', function () {
+      if (!$('btn-clear-selection').hidden) click(w, $('btn-clear-selection'));
+    });
+    step(doc, 'btn reset', function () { click(w, $('btn-reset')); });
+    step(doc, 'log toggles', function () {
+      var lx = $('log-x'), ly = $('log-y');
+      lx.checked = !lx.checked; fire(w, lx, 'change', w.Event, { bubbles: true });
+      ly.checked = !ly.checked; fire(w, ly, 'change', w.Event, { bubbles: true });
+      lx.checked = !lx.checked; fire(w, lx, 'change', w.Event, { bubbles: true });
+      ly.checked = !ly.checked; fire(w, ly, 'change', w.Event, { bubbles: true });
+    });
+    step(doc, 'window resize event', function () {
+      fire(w, w, 'resize', w.Event, {});
+    });
+    step(doc, 'empty-state probe + undo', function () {
+      /* force empty: exclude all six methods via checkbox editor */
+      var sel = $('filter-dim');
+      sel.value = 'method'; fire(w, sel, 'change', w.Event, { bubbles: true });
+      var cbs = all('#filter-editor input[type=checkbox]');
+      cbs.forEach(function (cb) { if (cb.checked) cb.click(); });
+      var emptyShown = !doc.getElementById('empty-note').hidden;
+      log('  empty-note shown=' + emptyShown);
+      click(w, $('btn-empty-undo')); /* recover via undo */
+    });
+
+    var f = fatalState(doc);
+    log(f ? 'RESULT: CRASHED — ' + f : 'RESULT: SURVIVED — no fatal, all steps ok');
+    flush(true);
+  }
+
+  var frame = document.getElementById('app');
+  if (frame.contentDocument && frame.contentDocument.readyState === 'complete') { setTimeout(run, 200); }
+  else frame.addEventListener('load', function () { setTimeout(run, 200); });
+  setTimeout(function () { if (document.title !== 'E2E-DONE') { log('TIMEOUT'); flush(true); } }, 15000);
+})();
+</script>
+</body>
+</html>

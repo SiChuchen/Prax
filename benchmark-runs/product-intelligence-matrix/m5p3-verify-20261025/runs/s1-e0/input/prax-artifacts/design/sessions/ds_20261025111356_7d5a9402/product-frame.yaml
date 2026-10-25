@@ -1,0 +1,87 @@
+version: "0.2"
+jtbd:
+  verb: explore
+  target: 多维数据（一个无界的多维科学目录）
+  success: 维度切换不重置认知：选择、过滤、视口在重投影后保持；每次状态变更可归属、可回退
+primary_object:
+  type: dataset
+  label: 目录数据集（合成系外行星目录）
+task_model:
+  frequency: medium
+  reversibility: reversible
+  consequence: low
+  expertise: mixed
+user:
+  primary_role: 数据好奇型分析师 / 目录探索者
+  expertise: intermediate
+  familiarity: medium
+goal:
+  primary: 理解一个大型多维目录的结构、模式与离群点——通过把不同维度投影到可视通道，且在切换视角时不丢失已建立的认知上下文
+tasks:
+  primary: 将维度指派到投影通道（X/Y/颜色/大小）并解读投影视图
+  secondary:
+    - 按维度（数值范围/分类/层级）过滤记录
+    - 选择记录并使其在重投影后保持高亮
+    - 在状态台账中查看每个视图状态的来源并回退
+product_objects:
+  - id: dataset
+    user_name: 目录（数据集）
+    purpose: 被探索的多维记录全集；首屏内联就绪，基数感知为“无界中的窗口”
+  - id: record
+    user_name: 记录（行星）
+    purpose: 目录中的一条观测（行星）；在所有投影中保持同一身份（选中高亮跨投影不丢）
+  - id: dimension
+    user_name: 维度
+    purpose: 记录的一个可测属性面（数值/分类/层级）；探索的原材料
+  - id: projection
+    user_name: 投影（通道映射）
+    purpose: 维度到视觉通道（X/Y/颜色/大小）的当前映射；切换投影=换镜头
+  - id: filter
+    user_name: 过滤器
+    purpose: 按维度限定记录范围；跨投影持续有效，独立于投影
+  - id: selection
+    user_name: 选集
+    purpose: 用户标记的关注记录集合；跨投影持续有效
+  - id: state_entry
+    user_name: 状态台账条目
+    purpose: 一次过滤/投影/选择/视口变更的归属记录（来源区域+动作+快照），可点击回退
+relationships:
+  - id: dim_to_channel
+    source: dimension
+    target: projection
+    type: assigned_to
+    direction: forward
+    meaning: 把维度指派到通道即产生一次投影变更
+    condition: always
+    importance: primary
+  - id: filter_narrows_dataset
+    source: filter
+    target: dataset
+    type: narrows
+    direction: forward
+    meaning: 过滤器收窄当前可见记录集，与投影正交
+    condition: any active filter
+    importance: primary
+  - id: entry_owns_snapshot
+    source: state_entry
+    target: projection
+    type: snapshots
+    direction: forward
+    meaning: 每条台账条目持有变更前状态快照，点击即回退
+    condition: always
+    importance: primary
+  - id: record_in_hierarchy
+    source: record
+    target: dataset
+    type: member_of
+    direction: forward
+    meaning: 行星属于恒星系统，系统属于星座，星座属于天区（中层级性）
+    condition: always
+    importance: supporting
+mental_model_hypothesis:
+  summary: 用户心中稳定持有的是“我关心哪些记录”（选择+过滤，问题的内容）与“我正怎么看它们”（投影通道，观察的镜头）两个正交层面；切换维度=换镜头而非换问题；因此镜头切换必须保留内容层（选择/过滤/视口），且每一次换镜头都是一条有归属、可回退的命名步骤（状态台账）。
+  confidence: high
+  evidence:
+    - user_requirement
+primary_success_definition: 用户切换投影维度后，能立即继续此前的问题线索（选择、过滤、该投影的视口均保持），且任一过滤/投影变更都能在一处看到归属（来源界面区域+动作）并一步回退。
+open_questions: []

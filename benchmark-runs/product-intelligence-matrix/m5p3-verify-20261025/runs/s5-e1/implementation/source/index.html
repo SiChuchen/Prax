@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prism · Terra Index — 维度探索台</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%230e1319'/%3E%3Crect x='3' y='8' width='2.6' height='5' fill='%234da3ff'/%3E%3Crect x='6.7' y='5' width='2.6' height='8' fill='%234da3ff'/%3E%3Crect x='10.4' y='3' width='2.6' height='10' fill='%23f2b23e'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- 顶栏：数据集身份 · 全局操作 -->
+  <header class="topbar" id="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-name">Prism</span>
+      <span class="brand-sub">Terra Index · 维度探索台</span>
+    </div>
+    <div class="dataset-meta" id="datasetMeta">776 条观测 · 97 国 · 2016–2023 · 数据内联就绪</div>
+    <div class="topbar-actions">
+      <span class="kbd-hint" title="键盘：Ctrl+Z 撤销 · Ctrl+Y 重做">Ctrl+Z</span>
+      <button class="btn" id="undoBtn" title="撤销上一步状态变更 (Ctrl+Z)">↶ 撤销</button>
+      <button class="btn" id="redoBtn" title="重做 (Ctrl+Y)">↷ 重做</button>
+      <button class="btn btn-danger-ghost" id="resetBtn" title="回到初始状态（可撤销）">全部重置</button>
+    </div>
+  </header>
+
+  <div class="main">
+
+    <!-- 中列：投影画布 + 明细表（DOM 首位 = 主任务面优先） -->
+    <section class="center">
+
+      <section class="canvas-region" id="canvasRegion" aria-label="投影画布">
+        <div class="chart-wrap" id="chartWrap"><!-- SVG 柱状投影 --></div>
+
+        <div class="carry-over" id="carryOver" hidden></div>
+
+        <div class="canvas-toolbar">
+          <div class="seg" id="dimSeg" role="tablist" aria-label="投影维度"><!-- 维度分段按钮 --></div>
+          <div class="toolbar-right">
+            <label class="ctl"><span>度量</span>
+              <select id="measureSel" class="sel"></select></label>
+            <label class="ctl"><span>聚合</span>
+              <select id="aggSel" class="sel">
+                <option value="mean">均值</option>
+                <option value="median">中位数</option>
+                <option value="sum">总和</option>
+              </select></label>
+            <label class="ctl"><span>排序</span>
+              <select id="sortSel" class="sel">
+                <option value="value-desc">按值 ↓</option>
+                <option value="value-asc">按值 ↑</option>
+                <option value="name-asc">按名称 A→Z</option>
+                <option value="name-desc">按名称 Z→A</option>
+              </select></label>
+          </div>
+        </div>
+
+        <div class="status-line" id="statusLine"><!-- 镜头内记录数 / 探针 / 选中 / 历史深度 --></div>
+      </section>
+
+      <section class="table-region" id="tableRegion" aria-label="明细记录表">
+        <div class="table-head">
+          <span class="rail-title">明细记录</span>
+          <span class="rail-sub" id="tableCount"></span>
+        </div>
+        <div class="table-scroll" id="tableScroll">
+          <table class="grid" id="recordTable">
+            <thead id="tableHead"></thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+          <div class="empty-panel" id="tableEmpty" hidden>
+            <div class="empty-icon">◌</div>
+            <div>当前探针组合下没有记录</div>
+            <button class="btn" id="emptyClear">清空全部探针</button>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- 探针栏：过滤/投影状态 · 归属与回退（视觉上位于左栏） -->
+    <aside class="probe-rail" id="probeRail" aria-label="探针栏：过滤与投影状态">
+      <div class="rail-head">
+        <span class="rail-title">探针</span>
+        <span class="rail-sub">每条状态有来源，可静默 · 可移除</span>
+      </div>
+
+      <div class="proj-chip-box" id="projChipBox"><!-- 投影 chip 由 JS 渲染 --></div>
+
+      <div class="chip-list" id="probeList" aria-live="polite"><!-- 探针 chips --></div>
+
+      <div class="manual-box">
+        <div class="manual-title">手动添加探针</div>
+        <div class="manual-row">
+          <select id="manualDim" class="sel" aria-label="探针维度"></select>
+          <select id="manualValue" class="sel" aria-label="探针值"></select>
+        </div>
+        <button class="btn btn-block" id="manualAdd">＋ 添加探针（来源：手动）</button>
+        <button class="btn btn-block btn-ghost" id="clearProbes">清空全部探针</button>
+      </div>
+    </aside>
+
+    <!-- 检查器：选中记录的全维度详情（选择驱动） -->
+    <aside class="inspector" id="inspector" aria-label="检查器：选中记录">
+      <div class="rail-head">
+        <span class="rail-title">检查器</span>
+        <span class="rail-sub" id="inspectorCount">未选中记录</span>
+      </div>
+      <div class="inspector-body" id="inspectorBody"></div>
+      <div class="inspector-foot">
+        <span class="foot-hint">选择跨维度切换保持</span>
+        <button class="btn btn-ghost btn-sm" id="clearSelection">清除全部选择</button>
+      </div>
+    </aside>
+  </div>
+
+  <!-- 状态历史条：可点击回跳的时间线 -->
+  <footer class="history-strip" id="historyStrip" aria-label="状态历史时间线">
+    <span class="rail-title">状态历史</span>
+    <div class="history-nodes" id="historyNodes"></div>
+  </footer>
+
+  <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

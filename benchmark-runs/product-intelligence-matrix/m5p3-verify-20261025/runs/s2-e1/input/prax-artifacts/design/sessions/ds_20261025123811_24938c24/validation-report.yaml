@@ -1,0 +1,56 @@
+plan_revision: 1
+evidence:
+  submitted_by: Claude（执行臂，cell-j13-s10）
+  collected_at: 2026-10-25T13:22:00Z
+  items:
+    - check_id: product_model_alignment
+      outcome: pass
+      source: headless-chrome CDP（真实 DOM 读取 + 截图）
+      notes: 界面语言与结构保留 Product Frame 的四个产品对象：数据集（头部概览）、维度（维度面板，分类/数值/时间三分组，覆盖度摘要）、视图状态（状态条归属芯片，标注来源维度与值）、操作轨迹（轨迹条 + 撤销/重做/回全集）。无后端概念泄漏；区域关系 selection→detail 由检查器承载。
+      artifact_refs:
+        - screenshots/01-initial.png
+        - screenshots/evidence-02-selected.png
+        - screenshots/evidence-log.json
+    - check_id: keyboard
+      outcome: pass
+      source: headless-chrome CDP Input.dispatchKeyEvent（真实输入）
+      notes: CDP Input 域真实键盘输入：Tab 5 次焦点遍历到达维度面板'投影:语言'按钮，:focus-visible 轮廓 solid 2px 可见；真实 Ctrl+Z 输入触发应用快捷键撤销刚加的过滤；DOM 重建后焦点恢复到等价控件（focusRestored=true, outline solid 2px）。附注：该无头构建不执行合成 Enter 的按钮激活默认行为（环境限制）；控件均为原生 button（平台保证 Enter/Space 激活）。
+      artifact_refs:
+        - screenshots/evidence-08-keyboard.png
+        - screenshots/evidence-log.json
+        - scripts/cdp-evidence.mjs
+    - check_id: hierarchy_review
+      outcome: pass
+      source: headless-chrome CDP（截图 + getBoundingClientRect 探针）
+      notes: 视觉显著度遵循 SDIR importance：data（分布投影）dominant 占主区上部最大视觉权重；collection（台账）primary 占剩余主区；state-bar primary 常驻底部；detail（检查器）supporting 仅在选中后出现（01 未选中显示引导语，02 起显示详情）；header contextual 计数最轻。无实现便利性压倒层级的现象（早前布局重叠缺陷已修复并复检）。
+      artifact_refs:
+        - screenshots/01-initial.png
+        - screenshots/evidence-04-filter-legend.png
+    - check_id: filter_state
+      outcome: pass
+      source: headless-chrome CDP（真实 DOM 断言）
+      notes: 生效过滤显式呈现：状态条芯片'生命周期 ∈ 成熟 ×'标注来源维度与值且可单条移除；头部计数'匹配 45 / 520'；台账 475 行淡出保留（totalRows=520 不变）；无过滤态显式显示'无过滤 · 全集 520 条'。
+      artifact_refs:
+        - screenshots/evidence-04-filter-legend.png
+        - screenshots/evidence-05-undo.png
+        - screenshots/evidence-log.json
+    - check_id: comparison_scan
+      outcome: pass
+      source: headless-chrome CDP（截图）
+      notes: 可比值无需逐条打开即可扫描：台账 11 列 × 520 行全量对齐呈现（数字右对齐等宽）；图表直接标签逐值显示计数（94/91/88/86/85/76 与直方图箱计数）；检查器百分位给出选中记录在匹配分布中的位置。
+      artifact_refs:
+        - screenshots/evidence-04-filter-legend.png
+        - screenshots/evidence-06-numeric-stars.png
+    - check_id: requirement_alignment
+      outcome: pass
+      source: headless-chrome CDP（真实操作序列 + DOM 断言）
+      notes: 对照确认的复述与成功标准：①维度切换不重置认知——投影切到语言后（evidence-03）选中记录保持（inspKept=true）、第 5 行仍为 r005（行序不变）、过滤不丢失；②过滤/投影状态有归属且可回退——归属芯片（evidence-04）、Ctrl+Z 撤销恢复全集（evidence-05）、⟲ 回到全集恢复初始视图（evidence-07）；③首屏即就绪——数据内联同步渲染，step1 加载完成即 520 条全集可交互，全程无加载态、无 console error。
+      artifact_refs:
+        - screenshots/evidence-03-projection-language.png
+        - screenshots/evidence-04-filter-legend.png
+        - screenshots/evidence-05-undo.png
+        - screenshots/evidence-07-reset.png
+        - screenshots/evidence-log.json
+measurement_loop:
+  attempts: 3
+  last_receipt_ref: validation-evidence/receipt-2026-10-25T13-32-11-775Z-5faabbb4-ce4b-4a30-b20f-c11e7ccea905.json

@@ -1,0 +1,67 @@
+user:
+  expertise: mixed
+  familiarity: medium
+task:
+  primary: Execute the single high-consequence runbook end-to-end with zero mistakes
+  modes:
+    - execute
+    - verify
+    - recover
+    - review
+  frequency: low
+domain:
+  type: release operations / critical procedure execution
+  entities:
+    - runbook
+    - phase
+    - step
+    - gate
+    - recovery path
+    - audit trail
+information:
+  volume: low
+  relationship_complexity: low
+  change_rate: medium
+  comparison_need: low
+platform:
+  family: web
+  form_factor: desktop
+  input:
+    - pointer
+    - keyboard
+  viewport: large
+risk:
+  destructive_actions: high
+  error_cost: high
+priorities:
+  - "Zero-mistake progression: impossible to advance past an unsatisfied gate"
+  - Explicit confirmation before every irreversible action
+  - Recovery path visible for every irreversible step, before and after execution
+  - "Constant orientation: phase/step position and overall progress always visible"
+  - Auditability of gates passed, confirmations, verifications, contingencies
+density_intent: spacious
+confidence:
+  overall: high
+unknowns: []
+classification:
+  version: "1"
+  task_type: unknown
+  domain_id: unknown
+  interaction_mode: unknown
+  product_type: unknown
+  primary_object_type: step
+  secondary_object_types:
+    - phase
+    - runbook
+    - gate
+    - irreversible_step
+    - recovery_path
+    - audit_log
+  confidence: low
+  evidence:
+    - primary_object_type=step ← most referenced product object in the Product Frame
+  open_questions:
+    - task_type could not be classified from the provided context; refine the context fields or record a custom classification
+    - domain_id could not be classified from the provided context; refine the context fields or record a custom classification
+    - interaction_mode could not be classified from the provided context; refine the context fields or record a custom classification
+    - product_type could not be derived; record the intended audience and product kind

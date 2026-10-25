@@ -1,0 +1,97 @@
+version: "0.2"
+jtbd:
+  verb: complete
+  target: 一次高后果生产发布流程（含不可逆步骤）
+  success: 零失误走完全程：核验全完成、不可逆步骤均经确认提交、恢复路径始终可用
+primary_object:
+  type: workflow
+  label: 生产发布流程
+task_model:
+  frequency: low
+  reversibility: irreversible
+  consequence: high
+  expertise: mixed
+user:
+  primary_role: 发布负责人（值班发布工程师 / Release Captain）
+  expertise: intermediate
+  familiarity: medium
+goal:
+  primary: 零失误地走完一次高后果生产发布流程：每个核验项完成、每个不可逆步骤都经显式确认提交、任何已提交的不可逆步骤都有可用的恢复路径。
+tasks:
+  primary: 按层级推进发布流程：完成当前步骤的核验项，在不可逆步骤前通过确认门提交，必要时从恢复点恢复
+  secondary:
+    - 随时查看整体进度与流程完整性（核验完成度、确认覆盖、恢复点可用性）
+    - 在不可逆步骤提交后使用恢复点执行恢复
+    - 重启演练（重置整个流程到初始态）
+product_objects:
+  - id: workflow
+    user_name: 发布流程
+    purpose: 承载一次完整的高后果发布（订单服务 v2.4.0），分层为阶段→步骤→核验项
+  - id: phase
+    user_name: 阶段
+    purpose: 流程的顶层分组（预检 / 发布执行 / 验证与关闭），控制整体推进节奏
+  - id: step
+    user_name: 步骤
+    purpose: 最小执行单元：含背景说明、核验清单与主操作；不可逆步骤带 ⚠ 标识
+  - id: gate
+    user_name: 确认门
+    purpose: 不可逆步骤提交前的强制确认：展示后果、需勾选理解并输入步骤口令
+  - id: checkpoint
+    user_name: 恢复点
+    purpose: 不可逆提交时自动创建的状态快照，是提交后的恢复路径入口
+  - id: ledger
+    user_name: 执行记录
+    purpose: 按时间记录每次核验、提交、确认与恢复，支撑追溯与零失误验证
+relationships:
+  - source: workflow
+    target: phase
+    type: contains
+    direction: forward
+    meaning: 流程包含 3 个按序阶段
+    importance: primary
+    id: rel_workflow_phase
+  - source: phase
+    target: step
+    type: contains
+    direction: forward
+    meaning: 阶段包含按序步骤，前置步骤未完成则后继锁定
+    importance: primary
+    id: rel_phase_step
+  - source: step
+    target: gate
+    type: gated_by
+    direction: forward
+    meaning: 不可逆步骤的主操作被确认门拦截
+    condition: step.irreversible = true
+    importance: primary
+    id: rel_step_gate
+  - source: step
+    target: checkpoint
+    type: creates
+    direction: forward
+    meaning: 不可逆提交成功即自动创建恢复点
+    condition: commit succeeds on irreversible step
+    importance: primary
+    id: rel_step_checkpoint
+  - source: checkpoint
+    target: step
+    type: restores
+    direction: forward
+    meaning: 从恢复点恢复会把流程状态回退到该提交之前，并记入执行记录
+    importance: supporting
+    id: rel_checkpoint_step
+  - source: workflow
+    target: ledger
+    type: records_to
+    direction: forward
+    meaning: 所有关键动作写入执行记录
+    importance: supporting
+    id: rel_workflow_ledger
+mental_model_hypothesis:
+  summary: 用户把一次发布理解为一串有顺序的阶段，其中少数几步是“过了就回不去”的关口；他们期望关口前有明确的后果警示与强制确认，关口后有可回退的保险（恢复点），全程可追溯。
+  confidence: high
+  evidence:
+    - user_requirement
+primary_success_definition: 用户从第一步走到最后“流程完成”：全部核验项完成、全部不可逆提交均经确认门、每个不可逆步骤都生成了恢复点且可恢复——全程零失误。
+open_questions:
+  - 简报未指定具体行业场景——采用生产发布（release runbook）作为代表性高后果流程，判别语义与简报一致

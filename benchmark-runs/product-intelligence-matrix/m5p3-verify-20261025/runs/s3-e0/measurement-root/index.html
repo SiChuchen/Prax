@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%231552c8'/%3E%3Cpath d='M4 8.5l2.5 2.5L12 5.5' stroke='white' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<title>Gatepass — Release Runbook Runner</title>
+<style>
+  /* ---------- tokens ---------- */
+  :root{
+    --bg:#f4f6f8; --surface:#ffffff; --surface-2:#eef1f4;
+    --ink:#1a212b; --ink-2:#4a5561; --ink-3:#4d5763;
+    --line:#d9dee4; --line-2:#c6cdd5;
+    --accent:#1552c8; --accent-ink:#0f3f9d; --accent-soft:#e8effc;
+    --danger:#b42318; --danger-ink:#9a1e14; --danger-soft:#fdefee; --danger-line:#ecc8c4;
+    --ok:#067647; --ok-soft:#e7f6ee; --ok-line:#bfe5d2;
+    --warn-ink:#7a4d00; --warn-soft:#fff6e0; --warn-line:#eedcae;
+    --focus:#1552c8;
+    --radius:10px; --radius-sm:7px;
+    --shadow:0 1px 2px rgba(16,24,40,.06),0 4px 14px rgba(16,24,40,.07);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font:15px/1.55 "Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  button,input{font:inherit;color:inherit}
+  button{cursor:pointer}
+  :focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:4px}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+  /* ---------- shell ---------- */
+  .app{display:flex;flex-direction:column;height:100vh;min-height:640px}
+  header.topbar{
+    background:var(--surface);border-bottom:1px solid var(--line);
+    padding:14px 24px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;
+  }
+  .brand{display:flex;align-items:baseline;gap:10px}
+  .brand .logo{
+    font-weight:700;letter-spacing:.2px;font-size:16px;color:var(--accent-ink);
+    background:var(--accent-soft);padding:3px 10px;border-radius:999px;
+  }
+  .brand h1{font-size:17px;margin:0;font-weight:650}
+  .meta{display:flex;gap:8px;align-items:center;color:var(--ink-2);font-size:13px;flex-wrap:wrap}
+  .chip{background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:2px 10px;white-space:nowrap}
+  .chip.abort{background:var(--warn-soft);border-color:var(--warn-line);color:var(--warn-ink);font-weight:600}
+  .progress-wrap{margin-left:auto;display:flex;align-items:center;gap:12px;min-width:260px}
+  .progress-num{font-size:13px;color:var(--ink-2);white-space:nowrap;font-weight:600}
+  .progress-track{flex:1;height:8px;background:var(--surface-2);border-radius:999px;overflow:hidden;min-width:120px}
+  .progress-fill{height:100%;background:var(--accent);border-radius:999px;transition:width .3s ease}
+
+  .columns{flex:1;display:grid;grid-template-columns:300px minmax(0,1fr) 340px;gap:20px;padding:20px 24px;overflow:hidden}
+
+  /* ---------- rail ---------- */
+  .rail{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow-y:auto;padding:14px 10px 20px;box-shadow:var(--shadow)}
+  .rail h2{font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--ink-3);margin:6px 10px 10px}
+  .phase-label{font-size:13px;font-weight:700;color:var(--ink);padding:14px 10px 6px;display:flex;gap:8px;align-items:baseline}
+  .phase-label .ph-idx{color:var(--ink-3);font-weight:600;font-size:12px}
+  .step-row{
+    display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+    background:none;border:none;border-radius:var(--radius-sm);
+    padding:9px 10px;min-height:44px;color:var(--ink-2);
+  }
+  .step-row .st-idx{font-size:12px;color:var(--ink-3);width:18px;text-align:right;font-variant-numeric:tabular-nums}
+  .step-row .st-name{flex:1;font-size:14px}
+  .step-row .st-flag{font-size:12px;font-weight:700;letter-spacing:.4px;color:var(--danger);background:var(--danger-soft);border:1px solid var(--danger-line);border-radius:4px;padding:1px 6px}
+  .step-row .st-mark{width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;border:2px solid var(--line-2);color:var(--surface);background:var(--surface);flex:none;font-weight:700}
+  .step-row.done .st-mark{background:var(--ok);border-color:var(--ok)}
+  .step-row.current{background:var(--accent-soft);color:var(--ink);font-weight:600}
+  .step-row.current .st-mark{border-color:var(--accent);color:var(--accent)}
+  .step-row.locked{color:#5d6874;cursor:not-allowed}
+  .step-row.locked .st-idx,.step-row.locked .st-mark{color:#5d6874}
+  .step-row.done:not(.current){color:var(--ink-2)}
+  .step-row:not(.locked):hover{background:var(--surface-2)}
+  .step-row.current:hover{background:var(--accent-soft)}
+  .step-row.irrev-done .st-mark{background:var(--ok);border-color:var(--ok)}
+  @keyframes deny{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+  .step-row.deny{animation:deny .25s ease}
+
+  /* ---------- work region ---------- */
+  .work{overflow-y:auto;padding:4px 8px 40px 4px}
+  .crumb{font-size:13px;color:var(--ink-3);margin-bottom:6px;font-weight:600}
+  .work h2{font-size:24px;margin:0 0 8px;font-weight:700;letter-spacing:-.2px}
+  .work .desc{color:var(--ink-2);margin:0 0 16px;max-width:64ch}
+  .kind-banner{display:flex;align-items:center;gap:10px;border-radius:var(--radius-sm);padding:10px 14px;font-size:13.5px;font-weight:600;margin-bottom:18px;border:1px solid}
+  .kind-banner .kb-tag{font-size:11px;letter-spacing:.6px;padding:2px 8px;border-radius:4px;font-weight:800}
+  .kind-banner.reversible{background:var(--surface);border-color:var(--line);color:var(--ink-2)}
+  .kind-banner.reversible .kb-tag{background:var(--surface-2);color:var(--ink-2)}
+  .kind-banner.irreversible{background:var(--danger-soft);border-color:var(--danger-line);color:var(--danger-ink)}
+  .kind-banner.irreversible .kb-tag{background:var(--danger);color:#fff}
+
+  .gate-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px;box-shadow:var(--shadow)}
+  .gate-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .gate-head h3{margin:0;font-size:15px;font-weight:650}
+  .gate-state{margin-left:auto;font-size:12px;font-weight:700;border-radius:999px;padding:2px 10px;white-space:nowrap}
+  .gate-state.pending{background:var(--surface-2);color:var(--ink-2)}
+  .gate-state.pass{background:var(--ok-soft);color:var(--ok);border:1px solid var(--ok-line)}
+  .gate-state.fail{background:var(--danger-soft);color:var(--danger);border:1px solid var(--danger-line)}
+  .gate-item{display:flex;align-items:flex-start;gap:10px;padding:8px 6px;border-radius:6px;min-height:40px}
+  .gate-item:hover{background:var(--surface-2)}
+  .gate-item input[type=checkbox]{width:24px;height:24px;margin:0;accent-color:var(--accent);flex:none;cursor:pointer}
+  .gate-item input[type=checkbox]:disabled{cursor:default}
+  .gate-item.checked label{color:var(--ink)}
+  .gate-item label{color:var(--ink-2);cursor:pointer}
+  .gate-item.checked label{ text-decoration:none }
+  .value-row{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap}
+  .value-row .vf{flex:1;min-width:220px}
+  .value-row label{display:block;font-size:13px;font-weight:600;margin-bottom:5px;color:var(--ink-2)}
+  .value-row input{
+    width:100%;padding:9px 12px;border:1.5px solid var(--line-2);border-radius:var(--radius-sm);
+    background:#fff;min-height:42px;
+  }
+  .value-row input.err{border-color:var(--danger);background:#fffafa}
+  .value-row input:disabled{background:var(--surface-2);color:var(--ink-2)}
+  .hint{font-size:12.5px;color:var(--ink-3);margin-top:5px}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    border-radius:var(--radius-sm);border:1.5px solid var(--line-2);background:var(--surface);
+    padding:10px 18px;min-height:44px;font-weight:650;font-size:14.5px;
+  }
+  .btn:hover:not(:disabled){background:var(--surface-2)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover:not(:disabled){background:var(--accent-ink)}
+  .btn.danger{background:var(--danger);border-color:var(--danger);color:#fff}
+  .btn.danger:hover:not(:disabled){background:var(--danger-ink)}
+  .btn.ghost{border-color:transparent;background:transparent;color:var(--accent-ink)}
+  .btn.ghost:hover:not(:disabled){background:var(--accent-soft)}
+  .btn:disabled{background:var(--surface-2);border-color:var(--line);color:#5d6874;cursor:not-allowed}
+  .btn.danger:disabled,.btn.primary:disabled{background:var(--surface-2);border-color:var(--line);color:#5d6874}
+  .btn.sm{min-height:38px;padding:7px 14px;font-size:13.5px}
+
+  .action-row{display:flex;gap:12px;align-items:center;margin-top:20px;flex-wrap:wrap}
+  .action-note{font-size:13px;color:var(--ink-3)}
+  .done-banner{display:flex;gap:10px;align-items:center;background:var(--ok-soft);border:1px solid var(--ok-line);color:var(--ok);border-radius:var(--radius-sm);padding:10px 14px;font-weight:650;font-size:14px;margin-top:16px}
+
+  .recovery-block{background:var(--surface);border:1px solid var(--danger-line);border-left:4px solid var(--danger);border-radius:var(--radius);padding:14px 18px;margin-top:18px}
+  .recovery-block h4{margin:0 0 6px;font-size:13px;letter-spacing:.4px;text-transform:uppercase;color:var(--danger-ink);display:flex;align-items:center;gap:8px}
+  .recovery-block ol{margin:6px 0 0;padding-left:22px;color:var(--ink-2)}
+  .recovery-block li{margin:4px 0}
+  .undo-banner{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--warn-soft);border:1px solid var(--warn-line);border-radius:var(--radius);padding:12px 16px;margin-top:18px}
+  .undo-banner .clock{font-variant-numeric:tabular-nums;font-weight:800;font-size:17px;color:var(--warn-ink)}
+  .undo-banner .ub-text{flex:1;font-size:13.5px;color:var(--warn-ink);font-weight:600}
+  .contingency{margin-top:18px;border:1px solid var(--warn-line);background:var(--warn-soft);border-radius:var(--radius);padding:14px 18px}
+  .contingency h4{margin:0 0 6px;font-size:13px;letter-spacing:.4px;text-transform:uppercase;color:var(--warn-ink)}
+  .contingency p{margin:0;color:var(--ink-2);font-size:14px}
+  .gate-error{color:var(--danger);font-size:13px;font-weight:600;margin-top:8px}
+
+  /* ---------- audit ---------- */
+  .audit{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--shadow)}
+  .audit h2{font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--ink-3);margin:0;padding:14px 16px 10px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+  .audit h2 .count{font-variant-numeric:tabular-nums}
+  .audit-list{flex:1;overflow-y:auto;padding:10px 12px}
+  .audit-empty{color:var(--ink-3);font-size:13.5px;text-align:center;padding:28px 14px}
+  .ev{display:flex;gap:9px;padding:7px 6px;font-size:13px;border-bottom:1px dashed var(--line)}
+  .ev:last-child{border-bottom:none}
+  .ev .t{color:var(--ink-3);font-variant-numeric:tabular-nums;flex:none;font-size:12px;padding-top:1px}
+  .ev .dot{width:8px;height:8px;border-radius:50%;flex:none;margin-top:5px}
+  .ev.gate .dot{background:var(--accent)} .ev.ok .dot{background:var(--ok)}
+  .ev.danger .dot{background:var(--danger)} .ev.warn .dot{background:var(--warn-line)}
+  .ev.recovery .dot{background:var(--warn-ink)}
+  .ev .x{color:var(--ink-2)} .ev .x b{color:var(--ink);font-weight:650}
+  .ev.danger .x{color:var(--danger-ink)} .ev.ok .x{color:var(--ok)}
+  .ev.recovery .x{color:var(--warn-ink)} .ev.warn .x{color:var(--warn-ink)}
+
+  /* ---------- modal ---------- */
+  .overlay{position:fixed;inset:0;background:rgba(16,22,30,.55);display:none;align-items:center;justify-content:center;padding:24px;z-index:50}
+  .overlay.open{display:flex}
+  .modal{background:var(--surface);border-radius:14px;max-width:560px;width:100%;padding:26px 28px;box-shadow:0 20px 60px rgba(16,24,40,.35);max-height:90vh;overflow-y:auto}
+  .modal .m-tag{font-size:11px;font-weight:800;letter-spacing:.8px;color:#fff;background:var(--danger);border-radius:4px;padding:3px 8px;display:inline-block;margin-bottom:12px}
+  .modal h3{margin:0 0 8px;font-size:20px}
+  .modal .m-desc{color:var(--ink-2);margin:0 0 14px}
+  .modal .m-blast{background:var(--danger-soft);border:1px solid var(--danger-line);border-radius:var(--radius-sm);padding:12px 14px;font-size:13.5px;color:var(--danger-ink);margin-bottom:14px}
+  .modal .m-rec{border:1px solid var(--line);border-radius:var(--radius-sm);padding:12px 14px;font-size:13px;color:var(--ink-2);margin-bottom:18px}
+  .modal .m-rec b{display:block;color:var(--ink);margin-bottom:4px}
+  .modal label{display:block;font-size:13.5px;font-weight:650;margin-bottom:6px}
+  .modal input{width:100%;padding:11px 13px;border:1.5px solid var(--line-2);border-radius:var(--radius-sm);min-height:46px}
+  .modal .m-actions{display:flex;gap:12px;justify-content:flex-end;margin-top:20px}
+
+  /* ---------- completion ---------- */
+  .complete-card{background:var(--surface);border:1px solid var(--ok-line);border-radius:14px;padding:34px 36px;box-shadow:var(--shadow);max-width:640px}
+  .complete-card .big{width:56px;height:56px;border-radius:50%;background:var(--ok);color:#fff;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:16px}
+  .complete-card h2{margin:0 0 6px;font-size:26px}
+  .complete-card .sub{color:var(--ink-2);margin:0 0 20px}
+  .stat-row{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+  .stat{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius-sm);padding:10px 16px;min-width:110px}
+  .stat .n{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
+  .stat .l{font-size:12px;color:var(--ink-3);font-weight:600}
+  .stat.good .n{color:var(--ok)} .stat.bad .n{color:var(--danger)}
+
+  @media (max-width:1100px){
+    .columns{grid-template-columns:260px minmax(0,1fr)}
+    .audit{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar" id="runbook_header">
+    <div class="brand">
+      <span class="logo">GATEPASS</span>
+      <h1 id="rb-title">Runbook · Release 2.4.0 → Production</h1>
+    </div>
+    <div class="meta">
+      <span class="chip">CHG-2417</span>
+      <span class="chip">Window 14:00–16:00 UTC</span>
+      <span class="chip abort" title="Stop rule for this run">⛔ ABORT RULE — if a gate fails and recovery isn't viable, roll back and stop the run</span>
+    </div>
+    <div class="progress-wrap">
+      <span class="progress-num" id="prog-num"></span>
+      <div class="progress-track" role="progressbar" aria-label="Runbook progress" aria-valuemin="0" aria-valuemax="11" aria-valuenow="0" id="prog-track"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+    </div>
+  </header>
+
+  <div class="columns">
+    <nav class="rail" id="phase_step_rail" aria-label="Runbook phases and steps"></nav>
+    <main class="work" id="step_workregion" aria-live="polite"></main>
+    <aside class="audit" id="audit_recovery" aria-label="Audit trail">
+      <h2>Audit trail <span class="count" id="ev-count">0 events</span></h2>
+      <div class="audit-list" id="audit-list"></div>
+    </aside>
+  </div>
+</div>
+
+<div class="overlay" id="confirm_modal" role="dialog" aria-modal="true" aria-labelledby="m-title">
+  <div class="modal">
+    <span class="m-tag">IRREVERSIBLE ACTION</span>
+    <h3 id="m-title"></h3>
+    <p class="m-desc" id="m-desc"></p>
+    <div class="m-blast" id="m-blast"></div>
+    <div class="m-rec" id="m-rec"></div>
+    <label for="m-phrase" id="m-phrase-label"></label>
+    <input id="m-phrase" autocomplete="off" spellcheck="false" placeholder="">
+    <div class="m-actions">
+      <button class="btn" id="m-cancel">Cancel (safe)</button>
+      <button class="btn danger" id="m-execute" disabled>Confirm &amp; execute</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* =========================================================
+   Gatepass — single high-consequence workflow runner.
+   Data is inlined: the app is usable at first paint.
+   ========================================================= */
+
+const RUNBOOK = {
+  title: "Release 2.4.0 → Production",
+  changeRef: "CHG-2417",
+  phases: [
+    { id:"p1", name:"Pre-flight" },
+    { id:"p2", name:"Safeguard" },
+    { id:"p3", name:"Cutover" },
+    { id:"p4", name:"Finalize" },
+    { id:"p5", name:"Post-release" }
+  ],
+  steps: [
+    { id:"s1", phase:"p1", irreversible:false,
+      title:"Verify release readiness",
+      desc:"Confirm the release commit is green and healthy before anything touches production.",
+      gates:[
+        { id:"g1a", type:"checklist", label:"Preconditions", items:[
+            {id:"i1", label:"CI pipeline green on commit 9f3ce21"},
+            {id:"i2", label:"No open SEV-1 / SEV-2 incidents"},
+            {id:"i3", label:"QA sign-off recorded on CHG-2417"} ] },
+        { id:"g1b", type:"value", label:"Verify the release commit",
+          field:{label:"Release commit (short SHA)", placeholder:"e.g. 8a41f02", expected:"9f3ce21",
+                 hint:"Release board → deploy tag → short SHA."} }
+      ] },
+    { id:"s2", phase:"p1", irreversible:false,
+      title:"Confirm deploy window & communications",
+      desc:"Make sure the change window is approved and everyone who watches production knows it is about to change.",
+      gates:[
+        { id:"g2a", type:"checklist", label:"Communications", items:[
+            {id:"i1", label:"Change window 14:00–16:00 UTC approved on CHG-2417"},
+            {id:"i2", label:"Status page notice published"},
+            {id:"i3", label:"#ops-deploys notified with this runbook"} ] }
+      ] },
+    { id:"s3", phase:"p1", irreversible:false,
+      title:"Freeze the deploy pipeline",
+      desc:"Hold all other deploys for the duration of the cutover. This is reversible — the freeze is lifted in Finalize.",
+      gates:[
+        { id:"g3a", type:"checklist", label:"Freeze checklist", items:[
+            {id:"i1", label:"All in-flight builds drained"},
+            {id:"i2", label:"Pipeline freeze toggle set to FROZEN"} ] }
+      ] },
+    { id:"s4", phase:"p2", irreversible:false,
+      title:"Take pre-deploy backup",
+      desc:"Snapshot db-prod-1. Every recovery path downstream depends on this snapshot existing.",
+      gates:[
+        { id:"g4a", type:"checklist", label:"Backup checks", items:[
+            {id:"i1", label:"Snapshot completed — nothing left 'in progress'"},
+            {id:"i2", label:"Restore tested on staging this week"} ] },
+        { id:"g4b", type:"value", label:"Verify the snapshot",
+          field:{label:"Snapshot ID", placeholder:"bk-mmyy-hhmm", expected:"bk-1025-0930",
+                 hint:"Console → Backups → latest snapshot ID for db-prod-1."} }
+      ] },
+    { id:"s5", phase:"p2", irreversible:false,
+      title:"Scale down write traffic (maintenance mode)",
+      desc:"Flip the platform to maintenance mode so the migration runs against a quiet database. Reversible — one toggle.",
+      gates:[
+        { id:"g5a", type:"checklist", label:"Maintenance checks", items:[
+            {id:"i1", label:"Maintenance banner live"},
+            {id:"i2", label:"Write endpoints return 503 in smoke check"},
+            {id:"i3", label:"Queue depth below 100"} ] }
+      ] },
+    { id:"s6", phase:"p3", irreversible:true,
+      title:"Run database migration v73 → v74",
+      desc:"Apply schema migration v74 to db-prod-1. This changes production data structures.",
+      confirm:{ phrase:"MIGRATE DB-PROD-1",
+        blast:"Schema changes in db-prod-1 cannot be undone by re-running the migrator. Recovery requires a snapshot restore with ≈40 min RTO.",
+        recTitle:"Recovery path (no undo window)",
+        rec:["Stop the migrator and take db-prod-1 out of the pool",
+             "Restore snapshot bk-1025-0930 (≈40 min)",
+             "Re-run smoke checks, then retry or abort per CHG-2417"] },
+      undoWindowSec:null,
+      recovery:{ title:"If this migration must be recovered", steps:[
+             "Stop the migrator and take db-prod-1 out of the pool",
+             "Restore snapshot bk-1025-0930 (≈40 min)",
+             "Re-run smoke checks, then retry or abort per CHG-2417"] },
+      gates:[
+        { id:"g6a", type:"checklist", label:"Migration preconditions", items:[
+            {id:"i1", label:"Dry-run passed on staging shadow db"},
+            {id:"i2", label:"Estimated lock time < 30 s"} ] },
+        { id:"g6b", type:"value", label:"Verify backfill result",
+          field:{label:"Rows in audit_ledger after backfill", placeholder:"e.g. 1,048,320", expected:"1048320",
+                 hint:"Migration console → backfill summary (commas OK)."} }
+      ] },
+    { id:"s7", phase:"p3", irreversible:true,
+      title:"Promote build 2.4.0 to production",
+      desc:"Switch client traffic to the new build. Build 2.3.9 stays warm for 15 minutes.",
+      confirm:{ phrase:"PROMOTE 2.4.0",
+        blast:"Client traffic switches to build 2.4.0. Instant rollback is only possible while 2.3.9 is still warm (15 minutes).",
+        recTitle:"Rollback while the undo window is open",
+        rec:["Roll back — repoint traffic to 2.3.9 (instant; 2.4.0 stays deployed)",
+             "Confirm error rate recovers on prod-overview"] },
+      undoWindowSec:900,
+      recovery:{ title:"Recovery after the undo window closes", steps:[
+             "Redeploy 2.3.9 from the artifact registry (≈10 min)",
+             "Purge CDN cache for /app/*",
+             "Verify session stickiness on the load balancer"] },
+      gates:[
+        { id:"g7a", type:"checklist", label:"Canary results", items:[
+            {id:"i1", label:"Canary cohort (1%) healthy for 10 min"},
+            {id:"i2", label:"Error budget > 95% remaining this week"} ] },
+        { id:"g7b", type:"value", label:"Verify canary signal",
+          field:{label:"Canary error rate observed", placeholder:"e.g. 0.02%", expected:"0.02%",
+                 hint:"prod-overview → canary cohort error rate."} }
+      ] },
+    { id:"s8", phase:"p3", irreversible:false,
+      title:"Verify production health",
+      desc:"Read the 5-minute post-promotion numbers and confirm the release is healthy before making anything permanent.",
+      contingency:"If either number is out of bounds: roll traffic back to 2.3.9 immediately (step 7 rollback while warm, otherwise registry redeploy), then abort CHG-2417 and page the on-call SRE.",
+      gates:[
+        { id:"g8a", type:"value", label:"Error rate", field:{
+            label:"Error rate, 5-min window", placeholder:"e.g. 0.03%", expected:"0.03%",
+            hint:"prod-overview → error rate (5 min)."} },
+        { id:"g8b", type:"value", label:"Latency", field:{
+            label:"p95 latency (ms)", placeholder:"e.g. 312", expected:"287",
+            hint:"prod-overview → latency panel → p95."} },
+        { id:"g8c", type:"checklist", label:"Sustained health", items:[
+            {id:"i1", label:"SLO dashboards green for 10 consecutive minutes"},
+            {id:"i2", label:"No new alerts in #ops-alerts"} ] }
+      ] },
+    { id:"s9", phase:"p4", irreversible:true,
+      title:"Retire build 2.3.9 & purge old artifacts",
+      desc:"Scale down the 2.3.9 replicas and delete their artifacts. After this, instant rollback no longer exists.",
+      confirm:{ phrase:"RETIRED 2.3.9",
+        blast:"The 2.3.9 replicas and registry artifacts are permanently deleted. Instant rollback is no longer possible.",
+        recTitle:"Recovery path (slow rebuild)",
+        rec:["Rebuild 2.3.9 from tag release/2.3.9 (≈25 min)",
+             "Warm the fleet, then repoint traffic"] },
+      undoWindowSec:null,
+      recovery:{ title:"Recovery after retirement", steps:[
+             "Rebuild 2.3.9 from tag release/2.3.9 (≈25 min)",
+             "Warm the fleet, then repoint traffic",
+             "Record the deviation on CHG-2417"] },
+      gates:[
+        { id:"g9a", type:"checklist", label:"Go / No-Go", items:[
+            {id:"i1", label:"2.4.0 healthy for 30 minutes"},
+            {id:"i2", label:"Rollback decision point passed — Go recorded"} ] }
+      ] },
+    { id:"s10", phase:"p4", irreversible:false,
+      title:"Unfreeze pipeline & close the change",
+      desc:"Return the platform to normal operation and close the change record.",
+      gates:[
+        { id:"g10a", type:"checklist", label:"Close-out", items:[
+            {id:"i1", label:"Deploy freeze lifted"},
+            {id:"i2", label:"CHG-2417 moved to Complete"},
+            {id:"i3", label:"On-call handoff notes updated"} ] }
+      ] },
+    { id:"s11", phase:"p5", irreversible:false,
+      title:"Publish release notes & tag",
+      desc:"Leave a durable record of what shipped.",
+      gates:[
+        { id:"g11a", type:"checklist", label:"Record keeping", items:[
+            {id:"i1", label:"Release notes published"},
+            {id:"i2", label:"Tag v2.4.0 pushed"},
+            {id:"i3", label:"Runbook archived with audit log"} ] }
+      ] }
+  ]
+};
+
+/* ---------- state ---------- */
+let S;
+function initState(){
+  S = {
+    status:{}, gate:{}, currentIdx:0, viewIdx:0,
+    audit:[], warnings:0, confirmations:0, verifications:0,
+    undo:null,           // {stepId, endsAt}
+    completed:false, modalStepId:null, lastFocusId:null
+  };
+  RUNBOOK.steps.forEach(st=>{
+    S.status[st.id]="pending";
+    S.gate[st.id]={};
+    st.gates.forEach(g=>{
+      S.gate[st.id][g.id]= g.type==="checklist"
+        ? {items:g.items.map(()=>false), passed:false}
+        : {verified:false, failed:false, input:""};
+    });
+  });
+}
+const $  = (s,el)=> (el||document).querySelector(s);
+const norm = v => String(v).trim().replace(/[\s,]/g,"").toLowerCase();
+const now = ()=> new Date().toTimeString().slice(0,8);
+const stepBy=id=> RUNBOOK.steps.find(s=>s.id===id);
+const fmtClock = sec => { const m=Math.floor(sec/60), s=sec%60; return m+":"+String(s).padStart(2,"0"); };
+
+/* ---------- audit ---------- */
+function audit(kind, html){
+  S.audit.push({t:now(), kind, html});
+  renderAudit();
+}
+function renderAudit(){
+  const list = $("#audit-list");
+  $("#ev-count").textContent = S.audit.length + (S.audit.length===1?" event":" events");
+  if(!S.audit.length){
+    list.innerHTML = '<div class="audit-empty">No events yet.<br>Gates you pass, confirmations and recoveries are recorded here in order.</div>';
+    return;
+  }
+  list.innerHTML = S.audit.slice().reverse().map(e=>
+    '<div class="ev '+e.kind+'"><span class="t">'+e.t+'</span><span class="dot"></span><span class="x">'+e.html+'</span></div>'
+  ).join("");
+}
+
+/* ---------- rail ---------- */
+function stepStatus(st, idx){
+  if(S.status[st.id]==="done") return "done";
+  if(idx===S.currentIdx) return "current";
+  if(idx<S.currentIdx) return "done";       // reached via rollback edge cases
+  return "locked";
+}
+function renderRail(){
+  const rail = $("#phase_step_rail");
+  let html = "<h2>Runbook</h2>";
+  let n=0;
+  RUNBOOK.phases.forEach((ph,pi)=>{
+    const rows = RUNBOOK.steps.filter(s=>s.phase===ph.id);
+    html += '<div class="phase-label"><span class="ph-idx">PHASE '+(pi+1)+'</span> '+ph.name+'</div>';
+    rows.forEach(st=>{
+      const idx=n++; const cls=stepStatus(st,idx);
+      const irrev = st.irreversible ? '<span class="st-flag">IRREV</span>' : '';
+      let mark="";
+      if(cls==="done") mark="✓";
+      if(cls==="current") mark=String(idx+1);
+      const clickable = cls==="done"||cls==="current";
+      html += '<button class="step-row '+cls+'" data-step="'+st.id+'" '+
+        (clickable?"":'aria-disabled="true" tabindex="-1" title="Locked until earlier steps complete"')+
+        ' aria-current="'+(cls==="current"?"step":"false")+'">'+
+        '<span class="st-idx">'+(idx+1)+'</span><span class="st-name">'+st.title+'</span>'+irrev+
+        '<span class="st-mark" aria-hidden="true">'+mark+'</span></button>';
+    });
+  });
+  rail.innerHTML = html;
+}
+
+/* ---------- gates ---------- */
+function gatePassed(st,g){
+  const gs=S.gate[st.id][g.id];
+  return g.type==="checklist" ? gs.passed : gs.verified;
+}
+function allGatesPassed(st){ return st.gates.every(g=>gatePassed(st,g)); }
+
+function renderGate(st,g,readonly){
+  const gs=S.gate[st.id][g.id];
+  let body="", state;
+  if(g.type==="checklist"){
+    state = gs.passed ? "pass" : "pending";
+    body = g.items.map((it,i)=>
+      '<div class="gate-item'+(gs.items[i]?" checked":"")+'">'+
+      '<input type="checkbox" id="ck-'+g.id+"-"+i+'" data-gate="'+g.id+'" data-item="'+i+'" '+(gs.items[i]?"checked":"")+(readonly?" disabled":"")+'>'+
+      '<label for="ck-'+g.id+"-"+i+'">'+it.label+'</label></div>').join("");
+  } else {
+    state = gs.verified ? "pass" : (gs.failed ? "fail" : "pending");
+    body =
+      '<div class="value-row"><div class="vf">'+
+      '<label for="vf-'+g.id+'">'+g.field.label+'</label>'+
+      '<input id="vf-'+g.id+'" data-gate="'+g.id+'" value="'+(gs.input||"").replace(/"/g,"&quot;")+'" placeholder="'+g.field.placeholder+'" '+(readonly||gs.verified?"disabled":"")+(gs.failed&&!gs.verified?' class="err"':"")+'>'+
+      '<div class="hint">'+g.field.hint+'</div>'+
+      (gs.failed&&!gs.verified?'<div class="gate-error">Does not match the expected value. Check the source, then retry.</div>':"")+
+      '</div>'+
+      (readonly||gs.verified?"":'<button class="btn sm" style="margin-top:24px" data-verify="'+g.id+'">Verify</button>')+
+      '</div>';
+  }
+  const stateLabel = state==="pass"?"PASSED":(state==="fail"?"FAILED":"PENDING");
+  return '<section class="gate-card"><div class="gate-head"><h3>'+g.label+'</h3>'+
+    '<span class="gate-state '+state+'">'+stateLabel+'</span></div>'+body+'</section>';
+}
+
+/* ---------- work region ---------- */
+function renderWork(){
+  const w = $("#step_workregion");
+  if(S.completed){
+    const failed=S.warnings, ok=failed===0;
+    w.innerHTML =
+    '<div class="complete-card">'+
+      '<div class="big" aria-hidden="true">✓</div>'+
+      '<h2>Runbook complete</h2>'+
+      '<p class="sub">'+(ok?"Zero-mistake run: every gate passed on its first verification, and every irreversible action was confirmed and recoverable.":"Run complete with "+failed+" failed verification"+(failed===1?"":"s")+" — each one is recorded in the audit trail with its contingency.")+'</p>'+
+      '<div class="stat-row">'+
+        '<div class="stat good"><div class="n">'+RUNBOOK.steps.length+'/'+RUNBOOK.steps.length+'</div><div class="l">STEPS DONE</div></div>'+
+        '<div class="stat good"><div class="n">'+S.confirmations+'</div><div class="l">TYPED CONFIRMATIONS</div></div>'+
+        '<div class="stat good"><div class="n">'+S.verifications+'</div><div class="l">VALUES VERIFIED</div></div>'+
+        '<div class="stat '+(ok?"good":"bad")+'"><div class="n">'+failed+'</div><div class="l">FAILED CHECKS</div></div>'+
+      '</div>'+
+      '<div class="action-row"><button class="btn primary" id="copy-audit">Copy audit log</button>'+
+      '<button class="btn" id="restart">Restart runbook</button></div>'+
+    '</div>';
+    $("#copy-audit").addEventListener("click", copyAudit);
+    $("#restart").addEventListener("click", ()=>{ initState(); renderAll(); });
+    return;
+  }
+
+  const viewing = S.viewIdx!==S.currentIdx;
+  const st = RUNBOOK.steps[viewing?S.viewIdx:S.currentIdx];
+  const phIdx = RUNBOOK.phases.findIndex(p=>p.id===st.phase);
+  const readonly = viewing || S.status[st.id]==="done";
+  const done = S.status[st.id]==="done";
+  const gatesOk = allGatesPassed(st);
+  const phaseName = RUNBOOK.phases[phIdx].name;
+
+  let html =
+    '<div class="crumb">Phase '+(phIdx+1)+' of '+RUNBOOK.phases.length+' · '+phaseName+
+    (viewing?' · read-only review':'')+'</div>'+
+    '<h2>Step '+(RUNBOOK.steps.indexOf(st)+1)+' — '+st.title+'</h2>'+
+    '<p class="desc">'+st.desc+'</p>'+
+    '<div class="kind-banner '+(st.irreversible?"irreversible":"reversible")+'">'+
+      '<span class="kb-tag">'+(st.irreversible?"IRREVERSIBLE":"REVERSIBLE")+'</span>'+
+      (st.irreversible
+        ? "This action cannot be undone by re-running it. A typed confirmation is required, and a recovery path is documented below."
+        : "This action can be reversed later without data loss.")+
+    '</div>';
+
+  html += st.gates.map(g=>renderGate(st,g,readonly)).join("");
+
+  if(st.irreversible){
+    html += '<div class="recovery-block"><h4>↩ Recovery path — '+st.recovery.title+'</h4><ol>'+
+      st.recovery.steps.map(s=>"<li>"+s+"</li>").join("")+'</ol></div>';
+    if(done && st.undoWindowSec && S.undo && S.undo.stepId===st.id){
+      const left=Math.max(0,Math.ceil((S.undo.endsAt-Date.now())/1000));
+      html += '<div class="undo-banner"><span class="clock" id="undo-clock">'+fmtClock(left)+'</span>'+
+        '<span class="ub-text">Undo window open — instant rollback available (repoint traffic to 2.3.9).</span>'+
+        '<button class="btn danger sm" id="rollback-btn">Roll back now</button></div>';
+    }
+    if(done && st.undoWindowSec && (!S.undo || S.undo.stepId!==st.id)){
+      html += '<div class="done-banner">✓ Executed — undo window has closed. The documented recovery path above applies from here.</div>';
+    }
+  }
+  if(done && !(st.irreversible&&st.undoWindowSec)){
+    html += '<div class="done-banner">✓ Step completed and recorded in the audit trail.</div>';
+  }
+  if(st.contingency && st.gates.some(g=>S.gate[st.id][g.id].failed && !S.gate[st.id][g.id].verified)){
+    html += '<div class="contingency"><h4>⚠ Contingency</h4><p>'+st.contingency+'</p></div>';
+  }
+
+  // action row
+  html += '<div class="action-row">';
+  if(viewing){
+    html += '<button class="btn primary" id="back-current">Return to current step</button>';
+  } else if(!done){
+    html += '<button class="btn" id="back-btn" '+(S.currentIdx===0?"disabled":"")+'>Back</button>';
+    if(st.irreversible){
+      html += '<button class="btn danger" id="execute-btn" '+(gatesOk?"":"disabled")+'>Execute “'+st.title+'”…</button>';
+    } else {
+      html += '<button class="btn primary" id="complete-btn" '+(gatesOk?"":"disabled")+'>Mark step complete</button>';
+    }
+    html += '<span class="action-note">'+(gatesOk?"All gates passed — you may proceed.":"Complete every gate above to unlock this action.")+'</span>';
+  } else {
+    html += '<button class="btn" id="back-btn">Back</button>';
+    if(S.currentIdx<RUNBOOK.steps.length-1){
+      html += '<button class="btn primary" id="advance-btn">Continue → next step</button>';
+    } else {
+      html += '<button class="btn primary" id="finish-btn">Finish runbook</button>';
+    }
+  }
+  html += '</div>';
+  w.innerHTML = html;
+
+  // wire events
+  w.querySelectorAll('input[type=checkbox][data-gate]').forEach(cb=>{
+    cb.addEventListener("change", onCheck);
+  });
+  w.querySelectorAll("button[data-verify]").forEach(b=>{
+    b.addEventListener("click", ()=>onVerify(st.id, b.dataset.verify));
+  });
+  const bind=(id,fn)=>{ const el=$("#"+id,w); if(el) el.addEventListener("click",fn); };
+  bind("complete-btn", ()=>completeStep(st));
+  bind("execute-btn", ()=>openModal(st));
+  bind("advance-btn", advance);
+  bind("finish-btn", finish);
+  bind("back-btn", ()=>{ if(S.viewIdx!==S.currentIdx){S.viewIdx=S.currentIdx;renderAll();} else if(S.currentIdx>0){S.viewIdx=S.currentIdx-1;renderAll();} });
+  bind("back-current", ()=>{ S.viewIdx=S.currentIdx; renderAll(); });
+  bind("rollback-btn", ()=>rollback(st));
+  if(S.lastFocusId){ const el=document.getElementById(S.lastFocusId); if(el) el.focus(); S.lastFocusId=null; }
+}
+
+/* ---------- header ---------- */
+function renderHeader(){
+  const done = RUNBOOK.steps.filter(s=>S.status[s.id]==="done").length;
+  const total = RUNBOOK.steps.length;
+  $("#prog-num").textContent = done+" / "+total+" steps";
+  $("#prog-fill").style.width = (100*done/total)+"%";
+  const bar=$("#prog-track"); bar.setAttribute("aria-valuenow", String(done));
+}
+
+/* ---------- gate interactions ---------- */
+function onCheck(e){
+  const cb=e.target, gid=cb.dataset.gate, i=+cb.dataset.item;
+  const st=RUNBOOK.steps[S.viewIdx!==S.currentIdx?S.viewIdx:S.currentIdx];
+  const g=st.gates.find(x=>x.id===gid), gs=S.gate[st.id][gid];
+  gs.items[i]=cb.checked;
+  cb.closest(".gate-item").classList.toggle("checked",cb.checked);
+  const item=g.items[i];
+  if(cb.checked) audit("gate","Checked — <b>"+item.label+"</b> ("+g.label+")");
+  const all=gs.items.every(Boolean);
+  if(all && !gs.passed){
+    gs.passed=true; audit("ok","Gate passed — <b>"+g.label+"</b> ("+st.title+")");
+  } else if(!all && gs.passed){ gs.passed=false; }
+  // targeted update: chip on this gate card + action button (keeps keyboard focus)
+  const chip=cb.closest(".gate-card").querySelector(".gate-state");
+  if(all){ chip.className="gate-state pass"; chip.textContent="PASSED"; }
+  else { chip.className="gate-state pending"; chip.textContent="PENDING"; }
+  refreshActionButton(st);
+}
+function refreshActionButton(st){
+  const btn=$("#complete-btn")||$("#execute-btn");
+  if(btn) btn.disabled = !allGatesPassed(st);
+  const note=$(".action-note");
+  if(note) note.textContent = allGatesPassed(st) ? "All gates passed — you may proceed." : "Complete every gate above to unlock this action.";
+}
+function onVerify(stepId, gid){
+  const st=stepBy(stepId), g=st.gates.find(x=>x.id===gid), gs=S.gate[stepId][gid];
+  const input=document.getElementById("vf-"+gid);
+  gs.input=input.value;
+  if(norm(input.value)===norm(g.field.expected)){
+    gs.verified=true; gs.failed=false; S.verifications++;
+    audit("ok","Verified — <b>"+g.field.label+"</b> = "+input.value.trim()+" ("+st.title+")");
+  } else {
+    gs.failed=true; S.warnings++;
+    audit("danger","Verification FAILED — <b>"+g.field.label+"</b> “"+input.value.trim()+"” does not match expected. Contingency opened. ("+st.title+")");
+  }
+  S.lastFocusId = gs.verified ? null : ("vf-"+gid);
+  renderAll();
+}
+function completeStep(st){
+  S.status[st.id]="done";
+  audit("ok","<b>Step completed</b> — "+st.title+" (reversible; may be revisited)");
+  renderAll();
+}
+function advance(){
+  if(S.currentIdx<RUNBOOK.steps.length-1){ S.currentIdx++; S.viewIdx=S.currentIdx; renderAll(); }
+}
+function finish(){
+  S.completed=true;
+  audit("ok","<b>Runbook complete</b> — CHG-2417 closed. "+S.audit.length+" events recorded.");
+  renderAll();
+}
+
+/* ---------- modal ---------- */
+function openModal(st){
+  S.modalStepId=st.id; S.lastFocusId="execute-btn";
+  $("#m-title").textContent=st.title;
+  $("#m-desc").textContent=st.desc;
+  $("#m-blast").innerHTML="<b>Blast radius:</b> "+st.confirm.blast;
+  $("#m-rec").innerHTML="<b>"+st.confirm.recTitle+"</b><ol style='margin:4px 0 0;padding-left:20px'>"+st.confirm.rec.map(r=>"<li>"+r+"</li>").join("")+"</ol>";
+  $("#m-phrase-label").textContent='Type “'+st.confirm.phrase+'” to confirm you understand this is irreversible:';
+  const inp=$("#m-phrase"); inp.value=""; inp.className="";
+  $("#m-execute").disabled=true;
+  $("#confirm_modal").classList.add("open");
+  inp.focus();
+}
+function closeModal(){
+  $("#confirm_modal").classList.remove("open");
+  S.modalStepId=null;
+  if(S.lastFocusId){ const el=document.getElementById(S.lastFocusId); if(el) el.focus(); }
+}
+function wireModal(){
+  const inp=$("#m-phrase");
+  inp.addEventListener("input", ()=>{
+    const st=stepBy(S.modalStepId);
+    $("#m-execute").disabled = !(st && norm(inp.value)===norm(st.confirm.phrase));
+  });
+  inp.addEventListener("keydown", e=>{
+    if(e.key==="Enter" && !$("#m-execute").disabled) executeModal();
+  });
+  $("#m-cancel").addEventListener("click", ()=>{ audit("gate","Confirmation cancelled — no action taken (safe)"); closeModal(); });
+  $("#m-execute").addEventListener("click", executeModal);
+  $("#confirm_modal").addEventListener("click", e=>{ if(e.target===$("#confirm_modal")) closeModal(); });
+  document.addEventListener("keydown", e=>{ if(e.key==="Escape" && S.modalStepId) closeModal(); });
+}
+function executeModal(){
+  const st=stepBy(S.modalStepId); if(!st) return;
+  S.confirmations++;
+  audit("danger","Typed confirmation matched — <b>"+st.confirm.phrase+"</b>");
+  S.status[st.id]="done";
+  audit("danger","<b>Irreversible action executed</b> — "+st.title);
+  if(st.undoWindowSec){
+    S.undo={stepId:st.id, endsAt:Date.now()+st.undoWindowSec*1000};
+    audit("recovery","Undo window opened — <b>"+fmtClock(st.undoWindowSec)+"</b> for "+st.title+". Rollback stays available.");
+  }
+  closeModal();
+  renderAll();
+}
+function rollback(st){
+  if(!S.undo || S.undo.stepId!==st.id) return;
+  S.undo=null;
+  S.status[st.id]="pending";
+  // later steps collapse back to pending
+  const idx=RUNBOOK.steps.indexOf(st);
+  RUNBOOK.steps.forEach((s,i)=>{ if(i>idx && S.status[s.id]==="done") S.status[s.id]="pending"; });
+  S.currentIdx=idx; S.viewIdx=idx;
+  audit("recovery","<b>Rolled back</b> — "+st.title+". Traffic repointed to 2.3.9; window closed; step awaits re-execution.");
+  renderAll();
+}
+setInterval(()=>{
+  if(S && S.undo){
+    const left=Math.ceil((S.undo.endsAt-Date.now())/1000);
+    const clock=document.getElementById("undo-clock");
+    if(clock) clock.textContent=fmtClock(Math.max(0,left));
+    if(left<=0){
+      const st=stepBy(S.undo.stepId);
+      S.undo=null;
+      audit("recovery","Undo window closed — "+st.title+". Only the documented recovery path applies now.");
+      renderAll();
+    }
+  }
+},1000);
+
+/* ---------- misc ---------- */
+function copyAudit(){
+  const text=S.audit.map(e=>"["+e.t+"] "+e.kind.toUpperCase()+" — "+e.html.replace(/<[^>]+>/g,"")).join("\n");
+  const done=n=>{ const b=$("#copy-audit"); b.textContent=n; setTimeout(()=>b.textContent="Copy audit log",1600); };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(()=>done("Copied ✓")).catch(()=>fallback());
+  } else fallback();
+  function fallback(){
+    const ta=document.createElement("textarea"); ta.value=text; document.body.appendChild(ta);
+    ta.select(); try{document.execCommand("copy"); done("Copied ✓");}catch(e){done("Copy failed");} ta.remove();
+  }
+}
+function renderAll(){ renderHeader(); renderRail(); renderWork(); renderAudit(); }
+
+/* rail clicks (delegated) */
+$("#phase_step_rail").addEventListener("click", e=>{
+  const btn=e.target.closest(".step-row"); if(!btn) return;
+  if(btn.classList.contains("locked")){
+    btn.classList.remove("deny"); void btn.offsetWidth; btn.classList.add("deny");
+    return;
+  }
+  const idx=RUNBOOK.steps.findIndex(s=>s.id===btn.dataset.step);
+  S.viewIdx=idx; renderAll();
+});
+
+/* ---------- boot: usable at first paint, data inlined ---------- */
+initState();
+wireModal();
+renderAll();
+</script>
+</body>
+</html>

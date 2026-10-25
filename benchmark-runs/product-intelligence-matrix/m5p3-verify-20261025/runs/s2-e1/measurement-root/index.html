@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>棱镜 Lens · 多维数据探索台</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div id="app" hidden>
+  <header id="app-header" data-region="header" role="banner">
+    <div class="brand"><span class="logo" aria-hidden="true"></span>棱镜 Lens</div>
+    <span class="hdr-sep" aria-hidden="true">|</span>
+    <span class="dataset-title" id="hdr-dataset">OSS Radar 520 · 开源仓库观测集</span>
+    <div id="hdr-counts" aria-live="polite"></div>
+  </header>
+
+  <main id="main">
+    <aside id="dim-rail" class="panel" data-region="dimension-rail" role="region" aria-label="维度面板">
+      <div class="rail-head">
+        <h2>维度</h2>
+        <span class="hint" id="dim-badge"></span>
+      </div>
+      <div id="rail-groups" tabindex="0" aria-label="维度清单（可滚动）"></div>
+    </aside>
+
+    <section id="center">
+      <section id="chart-region" class="panel" data-region="data" role="region" aria-label="当前维度分布投影">
+        <div class="chart-head">
+          <h2 id="chart-title"></h2>
+          <span class="sub" id="chart-sub"></span>
+          <div id="legend" aria-label="着色图例（点击值可过滤）"></div>
+        </div>
+        <div id="chart-body"></div>
+        <div id="empty-panel" hidden>
+          <div class="t">无匹配记录</div>
+          <div class="s">当前过滤组合没有命中任何记录。图表与台账仍在原位，认知锚点未移动。</div>
+          <button class="mini-btn primary" id="btn-empty-reset">回到全集</button>
+        </div>
+      </section>
+
+      <section id="ledger-region" class="panel" data-region="collection" role="region" aria-label="记录台账">
+        <div class="ledger-head">
+          <h2>记录台账</h2>
+          <span class="hint">稳定顺序（按 id）· 被过滤行淡出保留 · 位置不随维度切换重置</span>
+          <span class="col-marks">
+            <span class="m-proj"><i></i>投影列</span>
+            <span class="m-color"><i></i>着色列</span>
+          </span>
+          <label class="match-toggle"><input type="checkbox" id="match-only">仅显示匹配</label>
+        </div>
+        <div id="ledger-scroll" tabindex="0" role="region" aria-label="记录台账（可滚动）">
+          <table id="ledger">
+            <thead id="ledger-head"></thead>
+            <tbody id="ledger-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+
+    <aside id="inspector" class="panel" data-region="detail" role="region" aria-label="记录检查器">
+      <div class="insp-head">
+        <h2>检查器</h2>
+        <div class="sub">选中记录的全部维度 · 当前投影行高亮</div>
+      </div>
+      <div id="insp-body" tabindex="0" aria-label="记录详情（可滚动）"></div>
+    </aside>
+  </main>
+
+  <footer id="state-bar" data-region="state-bar" role="region" aria-label="视图状态与操作轨迹">
+    <div class="chips-line">
+      <span class="chips-label">视图状态</span>
+      <span id="chips"></span>
+    </div>
+    <div class="bar-side">
+      <div class="bar-actions">
+        <button class="act-btn" id="btn-undo" title="撤销 (Ctrl+Z)">↶ 撤销</button>
+        <button class="act-btn" id="btn-redo" title="重做 (Ctrl+Shift+Z)">↷ 重做</button>
+        <button class="act-btn reset" id="btn-reset" title="回到全集：恢复初始投影/着色并清除全部过滤">⟲ 回到全集</button>
+        <span class="kbd-hint"><kbd>Ctrl+Z</kbd> 撤销 · <kbd>Ctrl+Shift+Z</kbd> 重做 · <kbd>Esc</kbd> 取消选择</span>
+      </div>
+      <div id="trail" tabindex="0" aria-label="操作轨迹（左右滚动，点击步骤可跳转）"></div>
+    </div>
+  </footer>
+</div>
+
+<div id="tooltip" role="tooltip" hidden></div>
+
+<div id="boot-error" hidden>
+  <div class="card">
+    <div class="t">应用初始化失败</div>
+    <div class="msg" id="boot-error-msg"></div>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

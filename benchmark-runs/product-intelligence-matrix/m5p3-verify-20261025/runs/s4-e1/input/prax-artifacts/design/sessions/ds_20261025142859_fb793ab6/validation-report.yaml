@@ -1,0 +1,224 @@
+plan_revision: 1
+evidence:
+  submitted_by: Claude（执行臂，direct_code 实现）
+  collected_at: 2026-10-25T15:14:00Z
+  items:
+    - check_id: keyboard
+      outcome: pass
+      source: prax browser measurement (receipt-bound)
+      notes: 绑定修复后实测回执（15:04:21，双 viewport）：a11y.focus_order=pass（0 倒挂、0 缺失焦点指示，Tab 序列 顶栏→层级轨单停靠点→前置自查输入）；a11y.target_size=pass（0 个 <24px 目标）。键盘操作：Tab 顺序单调、方向键在层级轨移动选择、Esc 依序关闭确认仪式/抽屉、模态内 Tab 圈定并还原焦点。
+      artifact_refs:
+        - validation-evidence/receipt-2026-10-25T15-04-21-829Z-d50d3de6-ffe8-4b89-ac0c-e97a4f7db56b.json
+        - app.js
+      measurement_receipt: validation-evidence/receipt-2026-10-25T15-04-21-829Z-d50d3de6-ffe8-4b89-ac0c-e97a4f7db56b.json
+    - check_id: product_model_alignment
+      outcome: pass
+      source: prax browser measurement (receipt-bound) + screenshot
+      notes: 实测回执+实拍截图（1440x900）印证：首屏同步呈现顶栏（办结品牌、流程名、总进度、恢复手册/重置演练）、左侧 5 阶段×11 步层级轨（不可逆节点红色标记）、右侧当前步骤详情（办理要点/前置自查/易错点/口径提示）；用户语言与 Product Frame 一致，无后端概念泄漏。
+      artifact_refs:
+        - validation-evidence/receipt-2026-10-25T15-04-21-829Z-d50d3de6-ffe8-4b89-ac0c-e97a4f7db56b.json
+        - validation-evidence/a613efdb-aeaa-49c3-a509-fa3daf17ebfe/viewport-1/type.min_projected_size/min-projected-size-1440x900.png
+        - app.js
+        - index.html
+      measurement_receipt: validation-evidence/receipt-2026-10-25T15-04-21-829Z-d50d3de6-ffe8-4b89-ac0c-e97a4f7db56b.json
+    - check_id: hierarchy_review
+      outcome: pass
+      source: prax browser measurement (receipt-bound) + screenshot
+      notes: 视觉显著性遵循 SDIR 重要性：dominant=当前步骤详情（最宽列、截图首屏焦点），primary=完成门与不可逆后果/恢复路径（红卡红标、sticky 操作条）与全局进度（顶栏常驻），supporting=前置自查/易错点/口径提示。实测 layout.overflow=0、responsive_collision=0、text.truncation=0、a11y.contrast=0 失败——层级以留白与字重表达，无 prominence 失配。
+      artifact_refs:
+        - validation-evidence/receipt-2026-10-25T15-04-21-829Z-d50d3de6-ffe8-4b89-ac0c-e97a4f7db56b.json
+        - validation-evidence/a613efdb-aeaa-49c3-a509-fa3daf17ebfe/viewport-1/type.min_projected_size/min-projected-size-1440x900.png
+        - styles.css
+      measurement_receipt: validation-evidence/receipt-2026-10-25T15-04-21-829Z-d50d3de6-ffe8-4b89-ac0c-e97a4f7db56b.json
+    - check_id: destructive_recovery
+      outcome: pass
+      source: prax browser measurement (receipt-bound) + code audit
+      notes: 5 个不可逆步骤：完成必须经独占确认仪式（后果说明+恢复路径+逐条承诺勾选，终步另需键入公司全名），未满足时确认按钮禁用（实测加载态 btnComplete 呈禁用样式，代码 canComplete/syncConfirmButton 一致）；步骤卡内常驻「执行前撤回/执行后补救」双格，「恢复手册」抽屉汇总全部不可逆节点、执行后仍可查；重置演练亦经确认模态。错误代价 high 与预防+恢复措施匹配。
+      artifact_refs:
+        - validation-evidence/receipt-2026-10-25T15-04-21-829Z-d50d3de6-ffe8-4b89-ac0c-e97a4f7db56b.json
+        - app.js
+      measurement_receipt: validation-evidence/receipt-2026-10-25T15-04-21-829Z-d50d3de6-ffe8-4b89-ac0c-e97a4f7db56b.json
+    - check_id: requirement_alignment
+      outcome: pass
+      source: code audit against brief.md
+      notes: 对照冻结简报逐条核对：complete×高后果流程（公司注销 workflow 单实例）；零失误走完全程（顺序锁定、完成门、易错点、口径提示）；验收种子「不可逆步骤有恢复/确认路径」——5 个不可逆节点均具备确认仪式与双恢复路径；交付约束：根路径 index.html 静态可开、初始数据内联首屏即用无加载态、无后端/账号/持久化、未部署；分支判定后不适用步骤标记并移出进度。
+      artifact_refs:
+        - brief.md
+        - app.js
+        - README.md
+evaluation:
+  status: PASS
+  checks:
+    - id: semantic_conformance
+      label: Semantic conformance
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR is valid, semantic, and aligned to the approved pattern.
+      evidence_required: false
+    - id: state_completeness
+      label: State completeness
+      kind: deterministic
+      profile: state_coverage
+      facet: behavioral
+      requirement: Required loading, empty, ready, and error states exist.
+      evidence_required: false
+    - id: product_model_alignment
+      label: Product model alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: User-facing structure and language preserve the Product Frame.
+      evidence_required: true
+    - id: keyboard
+      label: Keyboard operability
+      kind: empirical
+      profile: keyboard_accessibility
+      facet: behavioral
+      requirement: Primary work and selection are operable with keyboard and visible focus.
+      evidence_required: true
+    - id: hierarchy_review
+      label: Hierarchy review
+      kind: assistive
+      profile: semantic_integrity
+      facet: visual_hierarchy
+      requirement: Visual prominence follows SDIR importance rather than implementation convenience.
+      evidence_required: true
+    - id: representation_decided
+      label: Representation decided
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares representation.primary with a non-empty reason.
+      evidence_required: false
+    - id: state_ownership_declared
+      label: State ownership declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: Selection and preview states both have declared owners.
+      evidence_required: false
+    - id: acceptance_contract_present
+      label: Acceptance contract present
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 carries at least one acceptance criterion.
+      evidence_required: false
+    - id: complexity_budget_declared
+      label: Complexity budget declared
+      kind: deterministic
+      profile: semantic_integrity
+      facet: semantic
+      requirement: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      evidence_required: false
+    - id: destructive_recovery
+      label: Destructive recovery
+      kind: deterministic
+      profile: runtime_degradation
+      facet: behavioral
+      requirement: Destructive actions match error cost with prevention or recovery.
+      evidence_required: true
+    - id: requirement_alignment
+      label: Requirement alignment
+      kind: assistive
+      profile: semantic_integrity
+      facet: semantic
+      requirement: The delivered result matches the confirmed restatement, scope, and success definition.
+      evidence_required: true
+  findings:
+    - check_id: semantic_conformance
+      kind: deterministic
+      outcome: pass
+      message: SDIR is valid, semantic, and aligned to the approved pattern.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_completeness
+      kind: deterministic
+      outcome: pass
+      message: Required loading, empty, ready, and error states exist.
+      source: prax-validator
+      provenance: measured
+    - check_id: representation_decided
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares representation.primary with a non-empty reason.
+      source: prax-validator
+      provenance: measured
+    - check_id: state_ownership_declared
+      kind: deterministic
+      outcome: pass
+      message: Selection and preview states both have declared owners.
+      source: prax-validator
+      provenance: measured
+    - check_id: acceptance_contract_present
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 carries at least one acceptance criterion.
+      source: prax-validator
+      provenance: measured
+    - check_id: complexity_budget_declared
+      kind: deterministic
+      outcome: pass
+      message: SDIR 0.2 declares a complexity_budget block (values are not judged).
+      source: prax-validator
+      provenance: measured
+    - check_id: product_model_alignment
+      kind: assistive
+      outcome: pass
+      message: 实测回执+实拍截图（1440x900）印证：首屏同步呈现顶栏（办结品牌、流程名、总进度、恢复手册/重置演练）、左侧 5 阶段×11 步层级轨（不可逆节点红色标记）、右侧当前步骤详情（办理要点/前置自查/易错点/口径提示）；用户语言与 Product Frame 一致，无后端概念泄漏。
+      source: prax browser measurement (receipt-bound) + screenshot
+      provenance: attested
+    - check_id: keyboard
+      kind: empirical
+      outcome: pass
+      message: 绑定修复后实测回执（15:04:21，双 viewport）：a11y.focus_order=pass（0 倒挂、0 缺失焦点指示，Tab 序列 顶栏→层级轨单停靠点→前置自查输入）；a11y.target_size=pass（0 个 <24px 目标）。键盘操作：Tab 顺序单调、方向键在层级轨移动选择、Esc 依序关闭确认仪式/抽屉、模态内 Tab 圈定并还原焦点。
+      source: prax browser measurement (receipt-bound)
+      provenance: measured
+    - check_id: hierarchy_review
+      kind: assistive
+      outcome: pass
+      message: 视觉显著性遵循 SDIR 重要性：dominant=当前步骤详情（最宽列、截图首屏焦点），primary=完成门与不可逆后果/恢复路径（红卡红标、sticky 操作条）与全局进度（顶栏常驻），supporting=前置自查/易错点/口径提示。实测 layout.overflow=0、responsive_collision=0、text.truncation=0、a11y.contrast=0 失败——层级以留白与字重表达，无 prominence 失配。
+      source: prax browser measurement (receipt-bound) + screenshot
+      provenance: attested
+    - check_id: destructive_recovery
+      kind: deterministic
+      outcome: pass
+      message: 5 个不可逆步骤：完成必须经独占确认仪式（后果说明+恢复路径+逐条承诺勾选，终步另需键入公司全名），未满足时确认按钮禁用（实测加载态 btnComplete 呈禁用样式，代码 canComplete/syncConfirmButton 一致）；步骤卡内常驻「执行前撤回/执行后补救」双格，「恢复手册」抽屉汇总全部不可逆节点、执行后仍可查；重置演练亦经确认模态。错误代价 high 与预防+恢复措施匹配。
+      source: prax browser measurement (receipt-bound) + code audit
+      provenance: attested
+    - check_id: requirement_alignment
+      kind: assistive
+      outcome: pass
+      message: 对照冻结简报逐条核对：complete×高后果流程（公司注销 workflow 单实例）；零失误走完全程（顺序锁定、完成门、易错点、口径提示）；验收种子「不可逆步骤有恢复/确认路径」——5 个不可逆节点均具备确认仪式与双恢复路径；交付约束：根路径 index.html 静态可开、初始数据内联首屏即用无加载态、无后端/账号/持久化、未部署；分支判定后不适用步骤标记并移出进度。
+      source: code audit against brief.md
+      provenance: attested
+  missing_evidence: []
+  warnings: []
+  readiness:
+    deterministic_passed: true
+    measurement:
+      receipt_ref: validation-evidence/receipt-2026-10-25T15-04-21-829Z-d50d3de6-ffe8-4b89-ac0c-e97a4f7db56b.json
+      binding:
+        validation-evidence/receipt-2026-10-25T15-04-21-829Z-d50d3de6-ffe8-4b89-ac0c-e97a4f7db56b.json: implementation_current
+      error_failures_open: 0
+      warning_dispositions: []
+    convergence:
+      stalled: false
+      unresolved: []
+    evidence_current: true
+    claims:
+      measured:
+        - semantic_conformance
+        - state_completeness
+        - representation_decided
+        - state_ownership_declared
+        - acceptance_contract_present
+        - complexity_budget_declared
+        - keyboard
+      attested:
+        - product_model_alignment
+        - hierarchy_review
+        - destructive_recovery
+        - requirement_alignment
+      skipped: []

@@ -1,0 +1,154 @@
+version: "0.2"
+screen:
+  id: data_explorer_screen
+  intent:
+    primary_task: 在多维数据集上选择/切换维度（投影轴、着色、分组、过滤），连续探索不同切片而无需重建认知
+    secondary_tasks:
+      - 查看单条记录的多维细节
+      - 回退某一步过滤/投影操作或一键清空回到全集
+      - 读取当前视图的构成（处于哪些维度、哪些过滤生效、剩多少条）
+  archetype:
+    pattern_ref: PAT-DATA-EXPLORER
+  density_intent: compact
+  regions:
+    - id: data
+      role: collection
+      importance: dominant
+      visibility:
+        condition: always
+      behavior_intent:
+        - comparison_group
+        - filter_then_inspect
+    - id: collection
+      role: experimental:collection
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: inspector（选中记录详情）
+      role: experimental:inspector（选中记录详情）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: dimension list（分组维度面板）
+      role: experimental:dimension list（分组维度面板）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: state bar（状态归属条与操作轨迹）
+      role: experimental:state bar（状态归属条与操作轨迹）
+      importance: primary
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 色彩图例（可点击过滤）
+      role: experimental:色彩图例（可点击过滤）
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: 数据集概览计数
+      role: experimental:数据集概览计数
+      importance: supporting
+      visibility:
+        condition: always
+      behavior_intent: []
+    - id: detail
+      role: contextual_inspector
+      importance: contextual
+      visibility:
+        condition: selection_driven
+      behavior_intent:
+        - selection_driven
+  relationships:
+    - id: region_rel_data_detail
+      source: data
+      target: detail
+      type: selection_drives_contextual_detail
+  interaction_intents:
+    - preserve_context
+    - keyboard_equivalent
+  required_states:
+    - loading
+    - empty
+    - ready
+    - selected
+    - error
+  decision_points:
+    - id: region_realization
+      question: How should the platform adapter realize the semantic regions while preserving hierarchy?
+      adapter_may_choose:
+        - native landmarks
+        - accessible composite widgets
+        - responsive region arrangement
+  unresolved: []
+  rejected_alternatives:
+    - option: 卡片网格流
+      reason: 高密度无界数据下扫描效率低，无法呈现分布
+    - option: 关系网络图
+      reason: 关系性仅 medium，无网络语义
+    - option: 树形钻取
+      reason: 层级性 medium 但非主负担，树形切换会重置认知
+  user_job:
+    verb: explore
+    target: 多维数据
+    success: 维度切换不重置认知；过滤/投影状态有归属且可回退
+  primary_object:
+    type: dataset
+    label: 多维数据集
+  information_shape:
+    cardinality: unbounded
+    relationality: medium
+    hierarchy: medium
+    temporality: low
+    density: high
+    dimensionality: high
+    spatiality: none
+    volatility: medium
+    uncertainty: low
+    comparison_need: none
+  representation:
+    primary:
+      type: chart
+      reason: dimensional-space 的主导表示：任一维度可即时成为分布投影（分类→条形、数值→直方图+条带），同位同尺度切换承载'换灯不换桌'的心智模型
+    supporting:
+      - type: table
+        reason: 稳定顺序的记录台账是被过滤仍可见的认知锚点，保证切换维度时行位置不跳
+      - type: list
+        reason: 维度清单按分类/数值/时间分组，是切换动作的发源地
+  priority:
+    primary:
+      - data
+      - collection
+      - inspector（选中记录详情）
+      - dimension list（分组维度面板）
+      - state bar（状态归属条与操作轨迹）
+    contextual:
+      - 色彩图例（可点击过滤）
+      - 数据集概览计数
+      - detail
+  interaction:
+    preview: none
+    inspect: select
+    navigate: none
+    locate: none
+  state_ownership:
+    - state: selection
+      owner: data
+    - state: preview
+      owner: session
+  complexity_budget:
+    permanent_panels: 5
+    permanent_primary_actions: 3
+    modes: 1
+    state_owners: 1
+    navigation_levels: 1
+    persistent_filters: 1
+    new_semantic_concepts: 3
+    keyboard_contracts: 1
+    mobile_conflicts: 0
+    permanent_surfaces: 1
+  acceptance:
+    - 用户在切换投影/着色/分组维度后：①关注记录与已读语义保持可见（不重置）；②每条生效的过滤/投影都能指出'来自哪个维度的什么条件'并可单步撤销或一键回全集

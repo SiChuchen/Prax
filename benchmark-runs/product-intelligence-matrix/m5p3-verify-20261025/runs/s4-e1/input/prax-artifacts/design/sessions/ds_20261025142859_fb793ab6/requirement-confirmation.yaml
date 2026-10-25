@@ -1,0 +1,30 @@
+version: "0.1"
+user_quote:
+  - 动词：complete；对象：高后果流程；成功标准：零失误走完全程
+  - 判别：单一高后果流程，零失误走完全程、不可逆步骤有恢复/确认路径
+  - 验收种子：不可逆步骤有恢复/确认路径
+  - 从零实现一个单页 Web 应用（新目录、新代码）
+  - 应用在页面加载完成时即处于可用状态（初始数据随首屏就绪，不得以加载态作为可测状态）
+restatement: 构建一个单页静态 Web 应用：引导用户从零到一、零失误地走完一个具体的高后果流程（workflow 对象，单一流程实例）。核心是分层（阶段→步骤）顺序推进、每步防错信息，以及最关键的验收种子——不可逆步骤必须同时具备：执行前的强确认路径（后果说明+确认仪式）与执行后/未执行时的恢复/补救路径。初始数据随首屏就绪，无加载态，本地静态可开。
+boundaries:
+  in_scope:
+    - 单页 Web 向导：引导用户零失误走完一个具体的高后果流程（含阶段→步骤两级层级导航与进度）
+    - 不可逆步骤的强确认交互（前置后果说明 + 确认仪式）与恢复/补救路径展示（含全程可查的恢复手册）
+    - 步骤级防错信息：前置自查清单、易错点、口径差异提示、口径时效提示
+    - 流程内轻量分支判定（按条件推荐路径并标记不适用步骤）
+    - 本地静态交付：根路径 index.html，首屏即用、无加载态，可重置重演
+  out_of_scope:
+    - 后端、账号体系、持久化服务与外部部署
+    - 真实政务/银行系统对接或代办理功能
+    - 多流程库、流程间比较视图
+    - 移动端适配
+  scope_complete: true
+open_questions: []
+confirmation:
+  status: explicit_user_confirmation
+  evidence:
+    - type: conversation_message
+      ref: "用户任务消息：“Read REQUIREMENT below and build the product it describes… Work through Prax for this task: start a design session (design_start with mode greenfield)… using the brief as the requirement text.”（本会话首条用户消息，含完整 REQUIREMENT）"
+    - type: user_document
+      ref: brief.md（用户置入工作区根目录的需求文档，冻结版简报 cell-j10-s09）
+  confirmed_at: 2026-10-25T14:30:00Z
