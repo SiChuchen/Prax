@@ -1445,6 +1445,8 @@ export class PraxService {
       ]);
       return {
         status: "EXPAND",
+        message: "Plan view — not an evaluation verdict. Submit evidence and call design_validate (mode evaluate) to evaluate and close.",
+        phase: session.phase,
         checks: plan.checks,
         findings: [],
         missing_evidence: [
@@ -1494,7 +1496,28 @@ export class PraxService {
         { key: "validationReport", value: { plan_revision: persistedPlan.revision, evidence } },
         ...(planChanged ? [{ key: "validationPlan" as const, value: persistedPlan }] : []),
       ]);
-      return { status: "PASS", checks: plan.checks, findings: [], missing_evidence: [], next: nextTool("design_validate") };
+      // m5.3 (m5p1 s2/s6): this PASS means "evidence accepted", and both
+      // non-closing m5p1 sessions ended here — the agent read it as the
+      // validation verdict and quit in VALIDATION without ever calling
+      // mode=evaluate. The handoff must say what it is, what phase the
+      // session is in, and what is still outstanding.
+      const coveredPass = new Set(evidence.items.filter((item) => item.outcome === "pass").map((item) => item.check_id));
+      const outstanding = [
+        ...new Set([
+          ...plan.checks.filter((check) => check.evidence_required && !coveredPass.has(check.id)).map((check) => check.id),
+          ...regressionCheckIds.filter((checkId) => !coveredPass.has(checkId)),
+        ]),
+      ];
+      return {
+        status: "PASS",
+        message: `Evidence accepted — this is not an evaluation verdict. The session remains open in ${session.phase}; ${outstanding.length > 0 ? `${outstanding.length} item(s) still lack passing evidence` : "all evidence-required items have passing submissions"}. Call design_validate (mode evaluate) with the evidence to evaluate and close.`,
+        phase: session.phase,
+        outstanding,
+        checks: plan.checks,
+        findings: [],
+        missing_evidence: [],
+        next: nextTool("design_validate"),
+      };
     }
 
     let evidence = input.evidence ?? prior?.evidence;
