@@ -160,4 +160,83 @@ describe("validation convergence protocol (Task B3, spec §5.6)", () => {
     expect(third.status).toBe("REVIEW");
     expect((third as { code?: string }).code).not.toBe("VALIDATION_CONVERGENCE_STALLED");
   });
+
+  it("procedural rounds with zero open findings never enter the convergence history (m5-loop-20261024 s4)", async () => {
+    const { service, store } = await startModifySurfaceSession("ds_conv_procedural");
+    const plan = await service.designValidate({ design_session_id: "ds_conv_procedural", mode: "plan" });
+    const required = (plan.checks as Array<{ id: string; evidence_required: boolean }>)
+      .filter((check) => check.evidence_required);
+    // Partial evidence: every submitted item passes, the rest is missing —
+    // EXPAND with zero fail/inconclusive findings (the receipt-plumbing shape
+    // m5 s4 cycled through: history [0,0,0,0] stalled a fully-green session).
+    const partial = {
+      submitted_by: "operator",
+      collected_at: new Date().toISOString(),
+      items: [required[0]!].map((check) => ({
+        check_id: check.id,
+        outcome: "pass" as const,
+        source: "operator review",
+        notes: `${check.id} pass`,
+        artifact_refs: [],
+      })),
+    };
+
+    for (let round = 1; round <= 4; round += 1) {
+      const result = await service.designValidate({
+        design_session_id: "ds_conv_procedural",
+        mode: "evaluate",
+        evidence: partial,
+      });
+      expect(result.status).toBe("EXPAND");
+      expect((result as { code?: string }).code).not.toBe("VALIDATION_CONVERGENCE_STALLED");
+    }
+    const session = await store.getSession("ds_conv_procedural");
+    expect(session.validation_loop?.history).toEqual([]);
+  });
+
+  it("a stall state persists through a zero-findings procedural round until real evidence resolves it", async () => {
+    const { service, store } = await startModifySurfaceSession("ds_conv_persist");
+    const plan = await service.designValidate({ design_session_id: "ds_conv_persist", mode: "plan" });
+    const required = (plan.checks as Array<{ id: string; evidence_required: boolean }>)
+      .filter((check) => check.evidence_required);
+    const failing = [required[0]!.id];
+    // Three flat failing rounds → stall (baseline + two non-improving).
+    const third = await (async () => {
+      let last: PraxOutput | undefined;
+      for (let round = 0; round < 3; round += 1) {
+        last = await service.designValidate({
+          design_session_id: "ds_conv_persist",
+          mode: "evaluate",
+          evidence: evidenceForPlan(plan, failing),
+        });
+      }
+      return last!;
+    })();
+    expect((third as { code?: string }).code).toBe("VALIDATION_CONVERGENCE_STALLED");
+    // A procedural zero-findings round must neither append nor reset the stall…
+    const partial = {
+      submitted_by: "operator",
+      collected_at: new Date().toISOString(),
+      items: [required[1]!].map((check) => ({
+        check_id: check.id,
+        outcome: "pass" as const,
+        source: "operator review",
+        notes: `${check.id} pass`,
+        artifact_refs: [],
+      })),
+    };
+    const procedural = await service.designValidate({
+      design_session_id: "ds_conv_persist",
+      mode: "evaluate",
+      evidence: partial,
+    });
+    expect(procedural.status).toBe("REVIEW");
+    expect((procedural as { code?: string }).code).toBe("VALIDATION_CONVERGENCE_STALLED");
+    // …and it appends nothing: the history still holds only the three real
+    // evaluations. (Full closure needs a measured regression receipt — the
+    // §5.4 trust boundary — which this receiptless fixture cannot produce;
+    // post-stall gate openness is covered by the first test's fourth call.)
+    const session = await store.getSession("ds_conv_persist");
+    expect(session.validation_loop?.history.length).toBe(3);
+  });
 });

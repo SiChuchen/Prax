@@ -1559,30 +1559,17 @@ export class PraxService {
     // open-finding count; the first entry is the baseline and never counts as
     // non-improving; two consecutive non-improving entries → REVIEW stall. The
     // gate is never locked by a stall (the routing-deadlock lesson).
+    // m5.1 (m5-loop-20261024 s4): rounds with ZERO open findings are procedural
+    // — evidence/receipt plumbing, ADR-006 §4 measurement rounds in spirit.
+    // They carry no convergence signal (there is nothing unresolved to report,
+    // so a stall message would be vacuous) and must not append; a prior stall
+    // persists through them until real evidence reaches a new minimum or a
+    // PASS completes.
     const openFindings = mergedFindings.filter(
       (finding) => finding.outcome === "fail" || finding.outcome === "inconclusive",
     ).length;
     const loopBefore = session.validation_loop ?? { history: [] };
-    let validationLoop = loopBefore;
-    let stalled = false;
-    if (status !== "PASS") {
-      const history = [...loopBefore.history, { evaluated_at: now, open_findings: openFindings }];
-      let minimum = history.length > 0 ? history[0]!.open_findings : 0;
-      let consecutive = 0;
-      for (let index = 1; index < history.length; index += 1) {
-        const entry = history[index]!;
-        if (entry.open_findings < minimum) {
-          minimum = entry.open_findings;
-          consecutive = 0;
-        } else {
-          consecutive += 1;
-        }
-      }
-      stalled = consecutive >= 2;
-      validationLoop = { history };
-    }
-    const stalledBefore = (() => {
-      const history = loopBefore.history;
+    const computeStalled = (history: Array<{ evaluated_at: string; open_findings: number }>) => {
       let minimum = history.length > 0 ? history[0]!.open_findings : 0;
       let consecutive = 0;
       for (let index = 1; index < history.length; index += 1) {
@@ -1595,7 +1582,19 @@ export class PraxService {
         }
       }
       return consecutive >= 2;
-    })();
+    };
+    const stalledBefore = computeStalled(loopBefore.history);
+    let validationLoop = loopBefore;
+    let stalled = false;
+    if (status !== "PASS") {
+      if (openFindings > 0) {
+        const history = [...loopBefore.history, { evaluated_at: now, open_findings: openFindings }];
+        stalled = computeStalled(history);
+        validationLoop = { history };
+      } else {
+        stalled = stalledBefore;
+      }
+    }
     if (stalled && status !== "BLOCK") status = "REVIEW";
     // §5.7 R4: convergence is runtime-tracked truth — the validator leaves a
     // placeholder that only the service can fill with the real loop state

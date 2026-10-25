@@ -49,6 +49,26 @@ measure→fix handoff is part of that closing friction (Gate F).
    the self-run CLI fallback instruction — the gate is never blocked by
    measurement infrastructure.
 
+## Amendment m5.1 (2026-10-25) — measurement-procedural rounds leave the B3 history
+
+Evidence (`m5-loop-20261024`): the loop engaged in 4/4 E1 sessions and fixed
+measured a11y (contrast 4/4 vs 0/2), but 3/4 sessions stalled at
+`VALIDATION_CONVERGENCE_STALLED`. One phenotype is a protocol bug: s4's
+convergence history was `[0,0,0,0]` — receipt-plumbing rejections
+(`MEASUREMENT_RECEIPT_MISSING`, `MEASUREMENT_BINDING_INVALID`) append
+zero-open-finding entries, and three flat zeros trip the stall on a session
+with nothing unresolved (the stall message "report unresolved findings" is
+vacuous there). §4's exclusion principle — measurement rounds are not
+stalled evaluations — extends to ALL zero-open-finding non-PASS rounds:
+they carry no convergence signal and no longer append. A prior stall
+persists through them (a partial all-pass submission is progress on
+evidence, not a new findings minimum) until a round with open findings
+reaches a new minimum or a PASS completes. Rounds with ≥1 open finding
+stall exactly as before (m5 s5/s6's flat-3 SDIR-contract stalls are the
+detector working as designed — that discoverability gap is registered
+separately, not a convergence-protocol change).
+Tests: `tests/validation-convergence.test.ts` (400/400).
+
 ## Alternatives rejected
 
 - **New `design_measure` tool**: widens the 12-tool surface for no benefit;

@@ -185,3 +185,17 @@ Three-way 回流 updates:
 | measure→fix loop value | **re-scoped**: proven for measured a11y conversion (G2), NOT yet for session closing (G1) | this batch |
 | H-23 lifecycle | **unchanged**: rewrite-and-reprobe still deferred (pre-registered in m5 protocol §1; needs multi-cell batch) | m5 protocol |
 | type.min_projected_size | **new blind-spot entry**: feedback carries measured px but 3/4 E1 runs still shipped sub-12px text — investigate feedback phrasing vs check semantics before next batch | this batch |
+
+### §8.1 m5.1 engineering slice (2026-10-25)
+
+ADR-006 amendment delivered (candidate fix #1 from §8): zero-open-finding
+non-PASS rounds no longer append to the B3 convergence history (s4 phenotype
+[0,0,0,0] fixed; stall persists through them; ≥1-finding stalls unchanged).
+400/400 tests (2 new). The s5/s6 phenotype (flat-3 SDIR-contract findings —
+`representation_decided`, `state_ownership_declared`,
+`acceptance_contract_present` failing while measured product is green) is the
+detector working as designed; registered as a separate discoverability gap
+(agents did not act on these check ids): candidate next slice = stall/EXPAND
+output gains a per-finding fix-path hint (which tool regenerates the missing
+artifact fields). Verification of the m5.1 change in a live B-arm batch is
+NOT yet run — pre-register before doing so.
